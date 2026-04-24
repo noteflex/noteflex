@@ -1,0 +1,155 @@
+import { useCallback, useRef, useState } from "react";
+
+/**
+ * 세션 내 n+2 재출제 큐.
+ *
+ * 규칙:
+ *  - 오답 1회차 → 2턴 뒤 재등장 (기본 n+2)
+ *  - 오답 2회차 → 1턴 뒤 재등장 (단축)
+ *  - 오답 3회차 → 즉시 다음 턴 (강제 교정)
+ *  - 정답 시 큐에서 제거
+ *
+ * 식별자: note_key + octave + accidental + clef 조합으로 유일화 (같은 음이라도
+ * 성부/옥타브가 다르면 다른 문제로 취급).
+ *
+ * 세트/스테이지 전환 시 큐는 유지된다 (같은 세션 = 같은 사용자 의도).
+ * 게임오버/성공/리플레이 시에는 reset()을 호출해 초기화한다.
+ */
+
+export interface RetryNoteKey {
+  key: string; // "C", "D", "F#", ...
+  octave: string; // "4"
+  accidental?: "#" | "b";
+  clef: "treble" | "bass";
+}
+
+interface RetryEntry {
+  id: string; // composed key
+  note: RetryNoteKey;
+  scheduledAtTurn: number; // currentTurn + N
+  missCount: number; // 1, 2, 3...
+}
+
+function composeId(n: RetryNoteKey): string {
+  const acc = n.accidental ?? "";
+  return `${n.clef}:${n.key}${acc}${n.octave}`;
+}
+
+// 오답 횟수에 따른 간격
+function intervalFor(missCount: number): number {
+  if (missCount <= 1) return 2; // 첫 오답: n+2
+  if (missCount === 2) return 1; // 재오답: n+1
+  return 0; // 3회 이상: 즉시 다음 턴
+}
+
+export interface UseRetryQueueReturn {
+  /** 현재 큐에 쌓인 항목 수 (디버그용) */
+  size: number;
+  /** 디버그용: 큐 스냅샷 */
+  snapshot: RetryEntry[];
+  /** 오답 발생 → 큐에 등록 또는 기존 항목 업데이트 */
+  scheduleRetry: (note: RetryNoteKey, currentTurn: number) => void;
+  /** 정답 시 해당 음표 큐에서 제거 */
+  resolve: (note: RetryNoteKey) => void;
+  /** 현재 턴에 출제 예정인 항목 반환 (있으면 꺼내고 큐에서 제거) */
+  popDueOrNull: (currentTurn: number) => RetryNoteKey | null;
+  /** 세션 초기화 (게임오버/리플레이/신규 세션) */
+  reset: () => void;
+  /** 특정 음표가 큐에 있는지 확인 (디버그) */
+  has: (note: RetryNoteKey) => boolean;
+}
+
+export function useRetryQueue(): UseRetryQueueReturn {
+  // 활성 큐: 현재 재출제 대기 중인 항목
+  const queueRef = useRef<Map<string, RetryEntry>>(new Map());
+
+  // 누적 오답 카운터: pop되어도 resolve 전까지 유지
+  // (같은 음표를 pop 후 또 틀렸을 때 missCount가 제대로 누적되도록)
+  const missCountRef = useRef<Map<string, number>>(new Map());
+
+  // 디버그 패널용으로 크기·스냅샷만 state에 반영
+  const [size, setSize] = useState(0);
+  const [snapshot, setSnapshot] = useState<RetryEntry[]>([]);
+
+  const syncDebug = useCallback(() => {
+    const list = Array.from(queueRef.current.values()).sort(
+      (a, b) => a.scheduledAtTurn - b.scheduledAtTurn
+    );
+    setSize(list.length);
+    setSnapshot(list);
+  }, []);
+
+  const scheduleRetry = useCallback(
+    (note: RetryNoteKey, currentTurn: number) => {
+      const id = composeId(note);
+      // 누적 missCount 사용 (queueRef에서 사라진 뒤에도 유지됨)
+      const prevMissCount = missCountRef.current.get(id) ?? 0;
+      const newMissCount = prevMissCount + 1;
+      missCountRef.current.set(id, newMissCount);
+
+      const interval = intervalFor(newMissCount);
+      const entry: RetryEntry = {
+        id,
+        note,
+        scheduledAtTurn: currentTurn + interval,
+        missCount: newMissCount,
+      };
+      queueRef.current.set(id, entry);
+      syncDebug();
+    },
+    [syncDebug]
+  );
+
+  const resolve = useCallback(
+    (note: RetryNoteKey) => {
+      const id = composeId(note);
+      // 정답이면 누적 오답 기록도 초기화 (다음에 또 틀리면 1회차부터)
+      const hadMiss = missCountRef.current.delete(id);
+      const wasInQueue = queueRef.current.delete(id);
+      if (hadMiss || wasInQueue) {
+        syncDebug();
+      }
+    },
+    [syncDebug]
+  );
+
+  const popDueOrNull = useCallback(
+    (currentTurn: number): RetryNoteKey | null => {
+      // scheduledAtTurn이 작은 것 우선 (가장 오래 기다린 것)
+      let bestId: string | null = null;
+      let bestTurn = Infinity;
+      for (const [id, entry] of queueRef.current) {
+        if (entry.scheduledAtTurn <= currentTurn && entry.scheduledAtTurn < bestTurn) {
+          bestId = id;
+          bestTurn = entry.scheduledAtTurn;
+        }
+      }
+      if (!bestId) return null;
+      const entry = queueRef.current.get(bestId)!;
+      queueRef.current.delete(bestId);
+      syncDebug();
+      return entry.note;
+    },
+    [syncDebug]
+  );
+
+  const reset = useCallback(() => {
+    queueRef.current.clear();
+    missCountRef.current.clear();
+    syncDebug();
+  }, [syncDebug]);
+
+  const has = useCallback((note: RetryNoteKey): boolean => {
+    return queueRef.current.has(composeId(note));
+  }, []);
+
+  return {
+    size,
+    snapshot,
+    scheduleRetry,
+    resolve,
+    popDueOrNull,
+    reset,
+    has,
+  };
+}
