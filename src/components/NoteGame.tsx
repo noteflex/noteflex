@@ -293,7 +293,7 @@ const TIMER_SECONDS = 9999;
 // 개발용 디버그 패널 표시 (true로 바꾸면 retry queue 상태 확인 가능)
 const SHOW_RETRY_DEBUG = false;
 
-interface PianoGameProps {
+interface NoteGameProps {
   onReset?: () => void;
   onLevelSelect?: () => void;
   /** 다음 레벨로 진행 (프리미엄 체크 등은 Index.tsx에서) */
@@ -304,14 +304,14 @@ interface PianoGameProps {
   skipCountdown?: boolean;
 }
 
-export default function PianoGame({
+export default function NoteGame({
   onReset,
   onLevelSelect,
   onNextLevel,
   level = 1,
   customNotes,
   skipCountdown = false,
-}: PianoGameProps) {
+}: NoteGameProps) {
   const { logNote }   = useNoteLogger();
   const recorder      = useSessionRecorder();
   const retryQueue    = useRetryQueue();                         // ★ n+2 재출제 큐
@@ -921,6 +921,20 @@ export default function PianoGame({
         onLevelSelect={onLevelSelect}
         isFinalLevel={level >= 7}
       />
+
+      {/* 개발 전용 힌트 — 프로덕션 빌드에서 트리쉐이킹으로 제거됨 */}
+      {import.meta.env.DEV && currentTarget && (
+        <div className="fixed bottom-4 right-4 z-50">
+          <button
+            type="button"
+            onClick={() => alert(`정답: ${getNoteAnswer(currentTarget)}`)}
+            className="px-3 py-1 bg-yellow-200 text-yellow-900 text-xs rounded shadow"
+            aria-label="dev-hint"
+          >
+            💡 정답 보기 (DEV)
+          </button>
+        </div>
+      )}
     </div>
   );
 }

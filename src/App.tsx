@@ -15,6 +15,7 @@ import AdminUsers from "./pages/admin/AdminUsers.tsx";
 import AdminUserDetail from "./pages/admin/AdminUserDetail.tsx";
 import AdminLogs from "./pages/admin/AdminLogs.tsx";
 import AdminBatchRuns from "./pages/admin/AdminBatchRuns.tsx";
+import ProfilePage from "./pages/ProfilePage.tsx";
 
 const queryClient = new QueryClient();
 
@@ -33,6 +34,7 @@ const App = () => (
             <Route path="/checkout/failed" element={<CheckoutFailed />} />
             <Route path="/checkout/success" element={<CheckoutSuccess />} />
             <Route path="/home" element={<Home />} />
+            <Route path="/profile" element={<ProfilePage />} />
 
             {/* 관리자 콘솔 */}
             <Route path="/admin" element={<AdminLayout />}>

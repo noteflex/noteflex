@@ -1,10 +1,10 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { render, screen, act } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import PianoGame from "./PianoGame";
+import NoteGame from "./NoteGame";
 
 /**
- * PianoGame 스트레스 테스트 (자동 플레이).
+ * NoteGame 스트레스 테스트 (자동 플레이).
  *
  * 각 레벨(1~7) × 시나리오(전정답/전오답/랜덤50%) 조합을 자동으로 플레이하고
  * 흐름이 끝까지 안전하게 진행되는지 검증한다.
@@ -188,15 +188,16 @@ const BASIC_LEVELS = [1, 2, 3, 4] as const;
 const ADVANCED_LEVELS = [5, 6, 7] as const;
 const ALL_LEVELS = [...BASIC_LEVELS, ...ADVANCED_LEVELS] as const;
 
-describe("PianoGame Stress Test - 각 레벨 자동 플레이", () => {
+describe("NoteGame Stress Test - 각 레벨 자동 플레이", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    localStorage.setItem("noteflex.solfege_system", "en");
   });
 
   describe.each(ALL_LEVELS)("Level %d", (level) => {
     it(`전부 정답 → success 도달`, async () => {
       const user = userEvent.setup();
-      render(<PianoGame level={level} skipCountdown />);
+      render(<NoteGame level={level} skipCountdown />);
 
       const result = await playUntilEnd(user, "all-correct");
 
@@ -219,7 +220,7 @@ describe("PianoGame Stress Test - 각 레벨 자동 플레이", () => {
 
     it(`전부 오답 → 5번 안에 game over`, async () => {
       const user = userEvent.setup();
-      render(<PianoGame level={level} skipCountdown />);
+      render(<NoteGame level={level} skipCountdown />);
 
       const result = await playUntilEnd(user, "all-wrong");
 
@@ -238,7 +239,7 @@ describe("PianoGame Stress Test - 각 레벨 자동 플레이", () => {
 
     it(`랜덤 50% → 안전하게 종료 (success OR gameover)`, async () => {
       const user = userEvent.setup();
-      render(<PianoGame level={level} skipCountdown />);
+      render(<NoteGame level={level} skipCountdown />);
 
       const result = await playUntilEnd(user, "random-50");
 
@@ -253,14 +254,15 @@ describe("PianoGame Stress Test - 각 레벨 자동 플레이", () => {
   });
 });
 
-describe("PianoGame Stress Test - 데이터 일관성", () => {
+describe("NoteGame Stress Test - 데이터 일관성", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    localStorage.setItem("noteflex.solfege_system", "en");
   });
 
   it("정답 수와 recordNote(correct=true) 호출 수 일치", async () => {
     const user = userEvent.setup();
-    render(<PianoGame level={1} skipCountdown />);
+    render(<NoteGame level={1} skipCountdown />);
 
     await playUntilEnd(user, "all-correct");
 
@@ -281,7 +283,7 @@ describe("PianoGame Stress Test - 데이터 일관성", () => {
 
   it("오답 5회 시 recordNote 호출 5회, game over", async () => {
     const user = userEvent.setup();
-    render(<PianoGame level={1} skipCountdown />);
+    render(<NoteGame level={1} skipCountdown />);
 
     await playUntilEnd(user, "all-wrong");
 
@@ -295,7 +297,7 @@ describe("PianoGame Stress Test - 데이터 일관성", () => {
 
   it("세션 endSession이 정확히 1번 호출됨", async () => {
     const user = userEvent.setup();
-    render(<PianoGame level={1} skipCountdown />);
+    render(<NoteGame level={1} skipCountdown />);
 
     await playUntilEnd(user, "all-correct");
 
@@ -311,7 +313,7 @@ describe("PianoGame Stress Test - 데이터 일관성", () => {
 
   it("게임오버 시 endSession('gameover') 호출됨", async () => {
     const user = userEvent.setup();
-    render(<PianoGame level={1} skipCountdown />);
+    render(<NoteGame level={1} skipCountdown />);
 
     await playUntilEnd(user, "all-wrong");
 

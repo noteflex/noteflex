@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { initSound } from "@/lib/sound";
-import PianoGame from "@/components/PianoGame";
+import NoteGame from "@/components/NoteGame";
 import LevelSelect from "@/components/LevelSelect";
 import AuthModal from "@/components/AuthModal";
 import PremiumRequiredDialog from "@/components/PremiumRequiredDialog";
@@ -32,6 +32,12 @@ function AuthBar({ authLoading, user, onSignOut, onLoginRequest }: AuthBarProps)
             className="text-xs px-3 py-1.5 rounded-lg border border-border text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
           >
             연습 대시보드
+          </Link>
+          <Link
+            to="/profile"
+            className="text-xs px-3 py-1.5 rounded-lg border border-border text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+          >
+            프로필
           </Link>
           <span className="text-xs text-muted-foreground truncate max-w-[150px]">
             {user.email}
@@ -140,12 +146,12 @@ export default function Index() {
           style={{ background: "radial-gradient(circle at top, #ffffff 0%, #f8f5e4 100%)" }}
         >
           <div className="flex flex-col items-center gap-4 animate-fade-up">
-            <span className="text-7xl">🎹</span>
+            <span className="text-7xl">🎼</span>
             <h1 className="text-3xl sm:text-4xl font-bold text-foreground tracking-tight text-center" style={{ textWrap: "balance" as any }}>
-              Piano Note Trainer
+              Noteflex
             </h1>
             <p className="text-muted-foreground text-center max-w-sm text-base">
-              오선지에 표시된 음표의 이름을 맞춰보세요!
+              오선지에 표시된 음표의 이름을 맞혀 독보 능력을 키워보세요!
             </p>
           </div>
 
@@ -200,9 +206,9 @@ export default function Index() {
   if (screen === "loading") {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen gap-6 px-4">
-        <div className="text-7xl animate-pulse">🎹</div>
+        <div className="text-7xl animate-pulse">🎼</div>
         <p className="text-lg text-muted-foreground font-medium animate-fade-up">
-          피아노 사운드 로딩 중...
+          사운드 로딩 중...
         </p>
         <div className="w-48 h-1.5 bg-muted rounded-full overflow-hidden">
           <div className="h-full bg-primary rounded-full animate-loading-bar" />
@@ -244,8 +250,8 @@ export default function Index() {
         className="safe-area-page flex flex-col items-center min-h-screen px-4 py-8 sm:py-12 pt-16"
         style={{ background: "radial-gradient(circle at top, #ffffff 0%, #f8f5e4 100%)" }}
       >
-        <h1 className="text-xl font-bold text-foreground mb-6 tracking-tight">🎹 Piano Note Trainer</h1>
-        <PianoGame
+        <h1 className="text-xl font-bold text-foreground mb-6 tracking-tight">🎼 Noteflex — 악보 독보 훈련</h1>
+        <NoteGame
           key={`level-${selectedLevel}`}
           onReset={handleGoMain}
           onLevelSelect={() => setScreen("levelSelect")}

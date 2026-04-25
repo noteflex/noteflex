@@ -1,10 +1,13 @@
 import { cn } from "@/lib/utils";
+import { useSolfegeSystem } from "@/hooks/useSolfegeSystem";
+import { toSolfege, toSolfegeAriaLabel } from "@/lib/solfege";
 
 /**
  * 고정형 7버튼 — 애플 아이콘 스타일
  *  - 버튼 물리적 위치 세션 내내 불변 (근육 기억)
  *  - 조표 바뀌면 라벨(text)만 동적 변경
  *  - 색상은 letter에 귀속, 조표 영향 없음
+ *  - 계이름은 useSolfegeSystem 기준으로 표시
  */
 
 const NOTE_LETTERS = ["C", "D", "E", "F", "G", "A", "B"] as const;
@@ -32,14 +35,14 @@ function resolveButton(
   letter: NoteLetter,
   keySharps?: string[],
   keyFlats?: string[],
-): { display: string; answer: string } {
+): { baseDisplay: string; answer: string; accidentalSuffix: string } {
   if (keySharps?.includes(letter)) {
-    return { display: `${letter}\u266F`, answer: `${letter}#` };
+    return { baseDisplay: letter, answer: `${letter}#`, accidentalSuffix: "\u266F" };
   }
   if (keyFlats?.includes(letter)) {
-    return { display: `${letter}\u266D`, answer: `${letter}b` };
+    return { baseDisplay: letter, answer: `${letter}b`, accidentalSuffix: "\u266D" };
   }
-  return { display: letter, answer: letter };
+  return { baseDisplay: letter, answer: letter, accidentalSuffix: "" };
 }
 
 export default function NoteButtons({
@@ -49,12 +52,19 @@ export default function NoteButtons({
   keySharps,
   keyFlats,
 }: NoteButtonsProps) {
+  const { system } = useSolfegeSystem();
+
   return (
     <div className="w-full px-2 sm:px-0" role="group" aria-label="음표 정답 입력">
       <div className="grid grid-cols-7 gap-1.5 sm:gap-2.5 max-w-2xl mx-auto">
         {NOTE_LETTERS.map((letter) => {
-          const { display, answer } = resolveButton(letter, keySharps, keyFlats);
+          const { baseDisplay, answer, accidentalSuffix } = resolveButton(letter, keySharps, keyFlats);
           const isDisabled = disabled || (disabledNotes?.has(answer) ?? false);
+          const solfegeLabel = toSolfege(baseDisplay, system);
+          const displayLabel = `${solfegeLabel}${accidentalSuffix}`;
+          const ariaLabel = accidentalSuffix
+            ? `${solfegeLabel}${accidentalSuffix} 선택`
+            : toSolfegeAriaLabel(baseDisplay, system);
 
           return (
             <button
@@ -88,13 +98,13 @@ export default function NoteButtons({
                 "focus-visible:outline-none focus-visible:ring-2",
                 "focus-visible:ring-offset-2 focus-visible:ring-primary",
               )}
-              aria-label={`${display} 선택`}
+              aria-label={ariaLabel}
             >
               <span
                 aria-hidden
                 className="pointer-events-none absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent"
               />
-              <span className="relative z-10">{display}</span>
+              <span className="relative z-10">{displayLabel}</span>
             </button>
           );
         })}

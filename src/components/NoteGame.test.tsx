@@ -1,10 +1,10 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import PianoGame from "./PianoGame";
+import NoteGame from "./NoteGame";
 
 /**
- * PianoGame 통합 테스트
+ * NoteGame 통합 테스트
  *
  * 검증 목표:
  *  - 오답 시 retry queue에 등록되는가
@@ -128,13 +128,14 @@ function getLifeCount(): number {
 // 테스트
 // ────────────────────────────────────────────────
 
-describe("PianoGame - Retry Queue 통합", () => {
+describe("NoteGame - Retry Queue 통합", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    localStorage.setItem("noteflex.solfege_system", "en");
   });
 
   it("초기 상태: 큐 비어있고 첫 음표 출제됨", () => {
-    render(<PianoGame level={1} skipCountdown />);
+    render(<NoteGame level={1} skipCountdown />);
 
     const q = getCurrentQuestion();
     expect(q).not.toBeNull();
@@ -145,7 +146,7 @@ describe("PianoGame - Retry Queue 통합", () => {
 
   it("오답 시 큐에 등록되고 다음 문제로 자동 진행", async () => {
     const user = userEvent.setup();
-    render(<PianoGame level={1} skipCountdown />);
+    render(<NoteGame level={1} skipCountdown />);
 
     const q1 = getCurrentQuestion()!;
     const wrongBtn = getWrongButton(q1);
@@ -160,7 +161,7 @@ describe("PianoGame - Retry Queue 통합", () => {
 
   it("정답 시 큐에 등록되지 않음", async () => {
     const user = userEvent.setup();
-    render(<PianoGame level={1} skipCountdown />);
+    render(<NoteGame level={1} skipCountdown />);
 
     const q1 = getCurrentQuestion()!;
     const correctBtn = getCorrectButton(q1);
@@ -172,7 +173,7 @@ describe("PianoGame - Retry Queue 통합", () => {
 
   it("오답 3번 연속 · 큐 상태 계약 검증", async () => {
     const user = userEvent.setup();
-    render(<PianoGame level={1} skipCountdown />);
+    render(<NoteGame level={1} skipCountdown />);
 
     for (let i = 0; i < 3; i++) {
       const q = getCurrentQuestion();
@@ -198,7 +199,7 @@ describe("PianoGame - Retry Queue 통합", () => {
 
   it("오답 후 N턴 뒤 🔁 재출제 배지가 표시됨", async () => {
     const user = userEvent.setup();
-    render(<PianoGame level={1} skipCountdown />);
+    render(<NoteGame level={1} skipCountdown />);
 
     const q1 = getCurrentQuestion()!;
     await user.click(getWrongButton(q1)); // turn 1, due @2
@@ -218,8 +219,14 @@ describe("PianoGame - Retry Queue 통합", () => {
   });
 
   it("재출제된 음표를 정답하면 큐에서 제거됨", async () => {
+    // Math.random 고정: q1=index0(C6, key=C), q2=index7(C5, key=C, 다른 octave)
+    // → q2 정답 처리 시 q1 retry가 resolve되지 않고 turn=2에 재출제됨
+    const mockRandom = vi.spyOn(Math, "random")
+      .mockReturnValueOnce(0)    // q1: C6
+      .mockReturnValueOnce(0.5); // q2: C5 (다른 octave라 retry는 유지됨)
+
     const user = userEvent.setup();
-    render(<PianoGame level={1} skipCountdown />);
+    render(<NoteGame level={1} skipCountdown />);
 
     const q1 = getCurrentQuestion()!;
     await user.click(getWrongButton(q1)); // size=1
@@ -227,7 +234,10 @@ describe("PianoGame - Retry Queue 통합", () => {
     const q2 = getCurrentQuestion()!;
     await user.click(getCorrectButton(q2)); // turn=2
 
-    // q1과 같은 음표가 재출제 중
+    mockRandom.mockRestore();
+
+    // q1과 같은 key의 음표가 재출제 중 (🔁 배지 확인으로 재출제 보장)
+    expect(screen.getByText(/🔁 재출제/)).toBeInTheDocument();
     const qRetry = getCurrentQuestion()!;
     expect(qRetry.key).toBe(q1.key);
 
@@ -241,7 +251,7 @@ describe("PianoGame - Retry Queue 통합", () => {
 
   it("재출제된 음표를 또 틀리면 재재출제까지 이어짐", async () => {
     const user = userEvent.setup();
-    render(<PianoGame level={1} skipCountdown />);
+    render(<NoteGame level={1} skipCountdown />);
 
     const q1 = getCurrentQuestion()!;
     await user.click(getWrongButton(q1)); // turn 1, miss×1, due @2

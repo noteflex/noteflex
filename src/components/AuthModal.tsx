@@ -7,11 +7,12 @@ import {
   detectLocale,
   detectTimezone,
   validateBirthDate,
-  validateNickname,
   calculateAge,
   checkEmailExists,
   COUNTRY_OPTIONS,
 } from "@/lib/profile";
+import { useNicknameAvailability } from "@/hooks/useNicknameAvailability";
+import { nicknameErrorMessage, validateNicknameFormat } from "@/lib/nicknameValidation";
 
 interface AuthModalProps {
   onClose: () => void;
@@ -32,6 +33,9 @@ export default function AuthModal({ onClose }: AuthModalProps) {
 
   // Step 2 (프로필)
   const [nickname, setNickname] = useState("");
+  const nicknameStatus = useNicknameAvailability(
+    mode === "signup" && signupStep === 2 ? nickname : ""
+  );
   const [birthYear, setBirthYear] = useState("");
   const [birthMonth, setBirthMonth] = useState("");
   const [birthDay, setBirthDay] = useState("");
@@ -108,9 +112,9 @@ export default function AuthModal({ onClose }: AuthModalProps) {
   const handleSignupSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const nicknameError = validateNickname(nickname);
-    if (nicknameError) {
-      toast({ title: nicknameError, variant: "destructive" });
+    const nicknameValidation = validateNicknameFormat(nickname);
+    if (!nicknameValidation.valid) {
+      toast({ title: nicknameErrorMessage(nicknameValidation.reason), variant: "destructive" });
       return;
     }
 
@@ -164,7 +168,7 @@ export default function AuthModal({ onClose }: AuthModalProps) {
           description: "보호자 동의가 필요한 연령입니다. 일부 기능이 제한될 수 있어요.",
         });
       } else {
-        toast({ title: "회원가입 완료!", description: "환영합니다 🎹" });
+        toast({ title: "회원가입 완료!", description: "환영합니다 🎼" });
       }
 
       onClose();
@@ -200,7 +204,7 @@ export default function AuthModal({ onClose }: AuthModalProps) {
                 <span className="text-3xl">✨</span>
                 <span className="text-3xl">🎹</span>
               </div>
-              <h2 className="text-xl font-bold text-foreground">피아노 마스터 시작하기</h2>
+              <h2 className="text-xl font-bold text-foreground">독보 마스터 시작하기</h2>
               <p className="text-xs text-muted-foreground text-center">
                 {signupStep === 1
                   ? "계정을 만들고 첫 걸음을 시작해요"
@@ -375,18 +379,49 @@ export default function AuthModal({ onClose }: AuthModalProps) {
           {mode === "signup" && signupStep === 2 && (
             <form onSubmit={handleSignupSubmit} className="flex flex-col gap-4">
               {/* 닉네임 */}
-              <div>
+              <div className="space-y-1">
                 <label className="text-sm font-semibold text-foreground block mb-1.5 ml-1">
                   닉네임 <span className="text-destructive">*</span>
                 </label>
                 <input
                   type="text"
                   value={nickname}
-                  onChange={(e) => setNickname(e.target.value)}
-                  placeholder="사용할 닉네임을 입력해주세요"
+                  onChange={(e) => setNickname(e.target.value.toLowerCase())}
+                  placeholder="3~20자, 영문 소문자/숫자/밑줄"
+                  maxLength={20}
                   required
                   className="w-full px-4 py-2.5 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                 />
+                {/* 닉네임 실시간 검증 피드백 */}
+                {nicknameStatus.state === "checking" && (
+                  <p className="text-xs text-muted-foreground ml-1">확인 중...</p>
+                )}
+                {nicknameStatus.state === "available" && (
+                  <p className="text-xs text-green-600 ml-1">✅ 사용 가능한 닉네임입니다</p>
+                )}
+                {nicknameStatus.state === "invalid_format" && (
+                  <p className="text-xs text-destructive ml-1">{nicknameStatus.reason}</p>
+                )}
+                {nicknameStatus.state === "taken" && (
+                  <div className="space-y-1">
+                    <p className="text-xs text-destructive ml-1">이미 사용 중인 닉네임입니다</p>
+                    {nicknameStatus.suggestions.length > 0 && (
+                      <div className="flex flex-wrap gap-2 items-center ml-1">
+                        <span className="text-xs text-muted-foreground">추천:</span>
+                        {nicknameStatus.suggestions.map((s) => (
+                          <button
+                            key={s}
+                            type="button"
+                            onClick={() => setNickname(s)}
+                            className="text-xs text-primary underline underline-offset-2 hover:text-primary/80"
+                          >
+                            {s}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* 생년월일 */}
@@ -502,10 +537,15 @@ export default function AuthModal({ onClose }: AuthModalProps) {
                 </button>
                 <button
                   type="submit"
-                  disabled={loading}
+                  disabled={
+                    loading ||
+                    nicknameStatus.state === "checking" ||
+                    nicknameStatus.state === "taken" ||
+                    nicknameStatus.state === "invalid_format"
+                  }
                   className="flex-1 py-3 rounded-xl bg-primary text-primary-foreground font-semibold text-sm shadow hover:shadow-md transition-all active:scale-95 disabled:opacity-50"
                 >
-                  {loading ? "처리 중..." : "🎹 시작하기"}
+                  {loading ? "처리 중..." : "🎼 시작하기"}
                 </button>
               </div>
             </form>
