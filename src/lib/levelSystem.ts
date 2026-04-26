@@ -8,6 +8,11 @@
  *   서브레벨 2: 5초 / 목숨 4 (숙련)
  *   서브레벨 3: 3초 / 목숨 3 (마스터)
  *
+ * 단계별 stage 구성 (NoteGame이 사용):
+ *   서브레벨 1: 27노트 / 3 stages (정확성 + 흐름 맛보기)
+ *   서브레벨 2: 40노트 / 3 stages (흐름 + 시야 확장)
+ *   서브레벨 3: 66노트 / 4 stages (시야 + 지구력)
+ *
  * 단계 통과 조건 (3개 모두 충족):
  *   - 플레이 횟수 ≥ 5회
  *   - 한 게임에서 연속 정답 ≥ 5개 (한 번이라도)
@@ -27,6 +32,23 @@ export type SubscriptionTier = "guest" | "free" | "pro";
 
 export type Sublevel = 1 | 2 | 3;
 
+/**
+ * 게임 진행 단위 — 한 sublevel 안의 stage 구성.
+ *
+ * - batchSize: 한 화면에 동시 표시되는 음표 수 (1=순차, 3·5·7=동시 표시)
+ * - totalSets: 이 stage 안에서 반복할 세트 수
+ * - notesPerSet: 한 세트당 처리할 노트 수
+ *
+ * 한 stage의 총 노트 수 = totalSets × notesPerSet
+ * (※ batchSize > 1일 때도 한 batch가 끝나면 화면 클리어 후 다음 batch)
+ */
+export interface GameStageConfig {
+  readonly stage: number;
+  readonly batchSize: number;
+  readonly totalSets: number;
+  readonly notesPerSet: number;
+}
+
 export interface SublevelConfig {
   /** 음표당 제한 시간(초) */
   timeLimit: number;
@@ -34,6 +56,8 @@ export interface SublevelConfig {
   lives: number;
   /** 표시용 라벨 */
   label: string;
+  /** 게임 진행 stage 배열 (NoteGame이 사용) */
+  stages: readonly GameStageConfig[];
 }
 
 /**
@@ -63,10 +87,49 @@ export interface SublevelCompletion {
 // ─────────────────────────────────────────────
 
 export const SUBLEVEL_CONFIGS: Record<Sublevel, SublevelConfig> = {
-  1: { timeLimit: 7, lives: 5, label: "입문" },
-  2: { timeLimit: 5, lives: 4, label: "숙련" },
-  3: { timeLimit: 3, lives: 3, label: "마스터" },
+  1: {
+    timeLimit: 7,
+    lives: 5,
+    label: "입문",
+    // 27노트 ≈ 1:53 — 정확성 + 흐름 맛보기
+    stages: [
+      { stage: 1, batchSize: 1, totalSets: 2, notesPerSet: 3 }, //  6
+      { stage: 2, batchSize: 1, totalSets: 3, notesPerSet: 5 }, // 15
+      { stage: 3, batchSize: 3, totalSets: 2, notesPerSet: 3 }, //  6
+    ],
+  },
+  2: {
+    timeLimit: 5,
+    lives: 4,
+    label: "숙련",
+    // 40노트 ≈ 2:00 — 흐름 + 시야 확장
+    stages: [
+      { stage: 1, batchSize: 1, totalSets: 3, notesPerSet: 5 }, // 15
+      { stage: 2, batchSize: 3, totalSets: 2, notesPerSet: 5 }, // 10
+      { stage: 3, batchSize: 5, totalSets: 3, notesPerSet: 5 }, // 15
+    ],
+  },
+  3: {
+    timeLimit: 3,
+    lives: 3,
+    label: "마스터",
+    // 66노트 ≈ 1:59 — 시야 + 지구력
+    stages: [
+      { stage: 1, batchSize: 3, totalSets: 3, notesPerSet: 3 }, //  9
+      { stage: 2, batchSize: 5, totalSets: 3, notesPerSet: 5 }, // 15
+      { stage: 3, batchSize: 7, totalSets: 3, notesPerSet: 7 }, // 21
+      { stage: 4, batchSize: 7, totalSets: 3, notesPerSet: 7 }, // 21
+    ],
+  },
 };
+
+/** 커스텀 악보(level=0)용 기본 stage 흐름 — sublevel 개념 없음 */
+export const CUSTOM_SCORE_STAGES: readonly GameStageConfig[] = [
+  { stage: 1, batchSize: 1, totalSets: 3, notesPerSet: 3 },
+  { stage: 2, batchSize: 1, totalSets: 3, notesPerSet: 5 },
+  { stage: 3, batchSize: 3, totalSets: 3, notesPerSet: 3 },
+  { stage: 4, batchSize: 5, totalSets: 3, notesPerSet: 5 },
+];
 
 export const PASS_CRITERIA = {
   MIN_PLAY_COUNT: 5,
@@ -77,6 +140,32 @@ export const PASS_CRITERIA = {
 export const TOTAL_SUBLEVELS = 21; // 7 × 3
 export const MAX_LEVEL = 7;
 export const MAX_SUBLEVEL = 3;
+
+// ─────────────────────────────────────────────
+// Stage 헬퍼
+// ─────────────────────────────────────────────
+
+/**
+ * sublevel 또는 커스텀 모드의 stage 배열 반환.
+ * isCustom=true면 sublevel 무관 기본 stage 흐름 사용.
+ */
+export function getStagesFor(
+  sublevel: Sublevel,
+  isCustom: boolean = false
+): readonly GameStageConfig[] {
+  if (isCustom) return CUSTOM_SCORE_STAGES;
+  return SUBLEVEL_CONFIGS[sublevel].stages;
+}
+
+/** stage 배열의 총 노트 수 (검증·테스트용) */
+export function totalNotesInStages(
+  stages: readonly GameStageConfig[]
+): number {
+  return stages.reduce(
+    (sum, s) => sum + s.totalSets * s.notesPerSet,
+    0
+  );
+}
 
 // ─────────────────────────────────────────────
 // 계산 함수

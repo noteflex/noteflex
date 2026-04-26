@@ -1,0 +1,80 @@
+// src/pages/BlogPost.tsx
+import { useEffect, useState } from "react";
+import { Link, useParams } from "react-router-dom";
+import Footer from "@/components/Footer";
+import MarkdownContent from "@/components/MarkdownContent";
+import { loadBlogPost, type BlogPost as BlogPostType } from "@/lib/markdownLoader";
+
+export default function BlogPost() {
+  const { slug } = useParams<{ slug: string }>();
+  const [post, setPost] = useState<BlogPostType | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [notFound, setNotFound] = useState(false);
+
+  useEffect(() => {
+    if (!slug) {
+      setNotFound(true);
+      setLoading(false);
+      return;
+    }
+    let cancelled = false;
+    loadBlogPost(slug).then((p) => {
+      if (cancelled) return;
+      if (!p) {
+        setNotFound(true);
+      } else {
+        setPost(p);
+      }
+      setLoading(false);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [slug]);
+
+  return (
+    <div className="min-h-screen flex flex-col bg-background">
+      <header className="border-b border-border bg-background/95 backdrop-blur-sm sticky top-0 z-10">
+        <div className="max-w-3xl mx-auto px-4 py-4 flex items-center justify-between">
+          <Link to="/" className="flex items-center gap-2 text-base font-bold">
+            <span className="text-xl">🎼</span> Noteflex
+          </Link>
+          <Link
+            to="/blog"
+            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            ← 블로그 목록
+          </Link>
+        </div>
+      </header>
+
+      <main className="flex-1 max-w-3xl mx-auto px-4 py-10 w-full">
+        {loading ? (
+          <p className="text-muted-foreground">불러오는 중...</p>
+        ) : notFound || !post ? (
+          <div className="py-12 text-center">
+            <h1 className="text-2xl font-bold mb-2">글을 찾을 수 없습니다</h1>
+            <p className="text-muted-foreground mb-6">
+              요청하신 글이 존재하지 않습니다.
+            </p>
+            <Link to="/blog" className="text-primary underline">
+              블로그 목록으로 돌아가기
+            </Link>
+          </div>
+        ) : (
+          <>
+            <h1 className="text-3xl font-bold mb-2 text-foreground">
+              {post.meta.title || post.slug}
+            </h1>
+            {post.meta.date && (
+              <p className="text-sm text-muted-foreground mb-10">{post.meta.date}</p>
+            )}
+            <MarkdownContent>{post.content}</MarkdownContent>
+          </>
+        )}
+      </main>
+
+      <Footer />
+    </div>
+  );
+}

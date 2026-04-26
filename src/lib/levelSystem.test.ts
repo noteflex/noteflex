@@ -1,4 +1,6 @@
 import { describe, it, expect } from "vitest";
+import { getStagesFor, totalNotesInStages, CUSTOM_SCORE_STAGES } from "./levelSystem";
+
 import {
   SUBLEVEL_CONFIGS,
   PASS_CRITERIA,
@@ -303,5 +305,82 @@ describe("isValidSublevel", () => {
   it("정수가 아닌 입력", () => {
     expect(isValidSublevel(1.5, 1)).toBe(false);
     expect(isValidSublevel(1, 1.5)).toBe(false);
+  });
+});
+
+describe("SUBLEVEL_CONFIGS — stage 구성", () => {
+  it("sublevel 1 (입문): 27노트, 3 stages", () => {
+    const stages = SUBLEVEL_CONFIGS[1].stages;
+    expect(stages).toHaveLength(3);
+    expect(totalNotesInStages(stages)).toBe(27);
+  });
+
+  it("sublevel 2 (숙련): 40노트, 3 stages", () => {
+    const stages = SUBLEVEL_CONFIGS[2].stages;
+    expect(stages).toHaveLength(3);
+    expect(totalNotesInStages(stages)).toBe(40);
+  });
+
+  it("sublevel 3 (마스터): 66노트, 4 stages", () => {
+    const stages = SUBLEVEL_CONFIGS[3].stages;
+    expect(stages).toHaveLength(4);
+    expect(totalNotesInStages(stages)).toBe(66);
+  });
+
+  it("모든 sublevel의 stage는 batchSize, totalSets, notesPerSet > 0", () => {
+    for (const sublevel of [1, 2, 3] as const) {
+      for (const stage of SUBLEVEL_CONFIGS[sublevel].stages) {
+        expect(stage.batchSize).toBeGreaterThan(0);
+        expect(stage.totalSets).toBeGreaterThan(0);
+        expect(stage.notesPerSet).toBeGreaterThan(0);
+      }
+    }
+  });
+
+  it("stage 번호는 1부터 순차", () => {
+    for (const sublevel of [1, 2, 3] as const) {
+      const stages = SUBLEVEL_CONFIGS[sublevel].stages;
+      stages.forEach((s, i) => {
+        expect(s.stage).toBe(i + 1);
+      });
+    }
+  });
+});
+
+describe("getStagesFor", () => {
+  it("sublevel 1·2·3 → SUBLEVEL_CONFIGS[sublevel].stages", () => {
+    expect(getStagesFor(1)).toBe(SUBLEVEL_CONFIGS[1].stages);
+    expect(getStagesFor(2)).toBe(SUBLEVEL_CONFIGS[2].stages);
+    expect(getStagesFor(3)).toBe(SUBLEVEL_CONFIGS[3].stages);
+  });
+
+  it("isCustom=true → CUSTOM_SCORE_STAGES (sublevel 무관)", () => {
+    expect(getStagesFor(1, true)).toBe(CUSTOM_SCORE_STAGES);
+    expect(getStagesFor(2, true)).toBe(CUSTOM_SCORE_STAGES);
+    expect(getStagesFor(3, true)).toBe(CUSTOM_SCORE_STAGES);
+  });
+
+  it("isCustom=false (기본) → sublevel 따라 다름", () => {
+    expect(getStagesFor(1, false)).toBe(SUBLEVEL_CONFIGS[1].stages);
+    expect(getStagesFor(3, false)).toBe(SUBLEVEL_CONFIGS[3].stages);
+  });
+});
+
+describe("totalNotesInStages", () => {
+  it("빈 배열은 0", () => {
+    expect(totalNotesInStages([])).toBe(0);
+  });
+
+  it("단일 stage: totalSets × notesPerSet", () => {
+    expect(totalNotesInStages([
+      { stage: 1, batchSize: 1, totalSets: 3, notesPerSet: 5 },
+    ])).toBe(15);
+  });
+
+  it("여러 stage 합산", () => {
+    expect(totalNotesInStages([
+      { stage: 1, batchSize: 1, totalSets: 2, notesPerSet: 3 }, // 6
+      { stage: 2, batchSize: 3, totalSets: 3, notesPerSet: 5 }, // 15
+    ])).toBe(21);
   });
 });

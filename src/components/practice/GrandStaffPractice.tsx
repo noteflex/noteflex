@@ -8,10 +8,31 @@ export type StaffHistoryEntry = {
   clef?: "treble" | "bass";
 };
 
+/**
+ * Batch 모드용 음표 정보.
+ * NoteGame이 currentBatch를 그대로 펼쳐서 전달.
+ */
+export type BatchNoteEntry = {
+  note: string;          // 예: "C4"
+  accidental?: "#" | "b";
+  clef?: "treble" | "bass";
+};
+
 type Props = {
-  targetNote: string | null;
+  // ── History 모드 (batchSize=1, 기본) ──
+  /** 현재 답해야 할 음표. batch 모드에선 batchNotes[batchIndex]가 자동으로 빨강. */
+  targetNote?: string | null;
   targetAccidental?: "#" | "b" | null;
-  noteHistory: StaffHistoryEntry[];
+  /** 직전 답한 음표들 (batchSize=1 stage에서만 사용) */
+  noteHistory?: StaffHistoryEntry[];
+
+  // ── Batch 모드 (batchSize > 1) ──
+  /** 현재 batch 전체 음표 배열. 제공되면 batch 모드로 작동. */
+  batchNotes?: BatchNoteEntry[];
+  /** 현재 답해야 할 batch 내 인덱스 (0-base). 첫 등장 시 빨강. */
+  batchIndex?: number;
+
+  // ── 공통 ──
   clef?: "treble" | "bass";
   level?: number;
   keySignature?: string;
@@ -22,8 +43,10 @@ type Props = {
 
 export const TOTAL_SLOTS = 8;
 const MAX_HISTORY = TOTAL_SLOTS - 1;
-const TARGET_COLOR = "#b91c1c";
-const HISTORY_COLOR = "#1c1917";
+
+const TARGET_COLOR  = "#b91c1c"; // 빨강 (현재 답할 음표)
+const HISTORY_COLOR = "#1c1917"; // 검정 (대기 중 또는 history)
+const ANSWERED_COLOR = "#9ca3af"; // 회색 (batch 모드에서 이미 답한 음표)
 
 // ── 레이아웃 기준 상수 ────────────────────────────────────────
 const SVG_W    = 800;
@@ -82,8 +105,7 @@ type LevelStyle = {
   ledgerW?: number;
   noteStartX?: number;
   noteSpacing?: number;
-  keySigToNoteGap?: number; 
-
+  keySigToNoteGap?: number;
 };
 
 const DEFAULT_STYLE = {
@@ -94,30 +116,22 @@ const DEFAULT_STYLE = {
   noteheadRX:         15.5,
   noteheadRY:         11.5,
   noteheadRotation:   -20,
-  stemLen:            90,   // ← 더 길게 (눈에 확 띄도록)
+  stemLen:            90,
   stemW:              2.5,
   accidentalFontSize: 72,
   accidentalOffsetX:  -22,
   keySigFontSize:     64,
   keySigSpacing:      13,
-  keySigStartX:       95,    // ← 75→95 (bass clef와 겹치지 않게)
+  keySigStartX:       95,
   braceFontSize:      310,
-  braceOffsetX:       -6,    // ← textAnchor="end" 기준: STAFF_X1 - 4에 brace 오른쪽 끝
+  braceOffsetX:       -6,
   ledgerHalf:         22,
   ledgerW:            3.0,
   noteStartX:         180,
   noteSpacing:        0,
-  keySigToNoteGap:    50,   // 조표와 첫 음표 사이 간격 (음표 1개 크기)
-
+  keySigToNoteGap:    50,
 } as const;
 
-// ─────────────────────────────────────────────────────────────
-// LEVEL_STYLES
-// Lv5-7: 넓은 음역(treble C3~C7, bass C1~C5) 수용
-//   - staffTop=182: C7 덧줄(staff 위 228px)까지 공간 확보
-//   - svgH=656: C1 덧줄(bass staff 아래 132px)까지 수용
-//   - bassYOff=220: 두 오선 간격 124px
-// ─────────────────────────────────────────────────────────────
 const LEVEL_STYLES: Record<number, LevelStyle> = {
   1: { staffTop:  98, staffBot: 194, svgH: 294, bassYOff:   0 },
   2: { staffTop:  74, staffBot: 170, svgH: 294, bassYOff:   0 },
@@ -302,7 +316,6 @@ function renderKeySignature(
 }
 
 // ── 중괄호 ────────────────────────────────────────────────────
-// textAnchor="end"로 brace의 우측 끝을 STAFF_X1 바로 왼쪽에 정렬
 function renderBrace(staffTop: number, staffBot: number, bassYOff: number, style: ResolvedStyle) {
   const centerY = (staffTop + staffBot + bassYOff) / 2;
   return (
@@ -401,6 +414,8 @@ export function GrandStaffPractice({
   targetNote,
   targetAccidental,
   noteHistory,
+  batchNotes,
+  batchIndex,
   clef = "treble",
   level = 1,
   keySignature: _keySignature,
@@ -414,9 +429,32 @@ export function GrandStaffPractice({
   const hasKeySignature = keySigCount > 0;
   const style = resolveStyle(level, keySigCount);
 
+  // batch 모드 판별: batchNotes 배열 있고 길이 > 0이면 batch 모드
+  const isBatchMode = !!batchNotes && batchNotes.length > 0;
+
   const notes = useMemo((): NoteEntry[] => {
+    // ── Batch 모드: 한 batch 전체를 동시에 그림, 인덱스에 따라 색상 분기 ──
+    if (isBatchMode && batchNotes) {
+      const idx = batchIndex ?? 0;
+      return batchNotes.map((n, i) => {
+        let color: string;
+        if (i < idx) color = ANSWERED_COLOR;       // 회색 (답한 것)
+        else if (i === idx) color = TARGET_COLOR;  // 빨강 (현재)
+        else color = HISTORY_COLOR;                // 검정 (대기)
+
+        return {
+          x:    style.noteStartX + i * style.noteSpacing,
+          note: n.note,
+          acc:  n.accidental ?? null,
+          color,
+          clef: (n.clef ?? clef) as "treble" | "bass",
+        };
+      });
+    }
+
+    // ── History 모드 (기존): targetNote + noteHistory ──
     if (!targetNote) return [];
-    const visible = noteHistory.slice(-MAX_HISTORY);
+    const visible = (noteHistory ?? []).slice(-MAX_HISTORY);
     return [
       ...visible.map((h, i) => ({
         x:    style.noteStartX + i * style.noteSpacing,
@@ -433,7 +471,17 @@ export function GrandStaffPractice({
         clef,
       },
     ];
-  }, [targetNote, targetAccidental, noteHistory, clef, style.noteStartX, style.noteSpacing]);
+  }, [
+    isBatchMode,
+    batchNotes,
+    batchIndex,
+    targetNote,
+    targetAccidental,
+    noteHistory,
+    clef,
+    style.noteStartX,
+    style.noteSpacing,
+  ]);
 
   const trebleNotes = isGrand
     ? notes.filter(n => n.clef === "treble")
@@ -443,8 +491,6 @@ export function GrandStaffPractice({
     : (clef === "bass" ? notes : []);
 
   return (
-    // padding-bottom 트릭으로 aspect ratio 고정
-    // (aspect-ratio CSS는 일부 브라우저에서 subpixel rounding 이슈가 있어 흔들림 발생)
     <div
       className={cn("relative w-full overflow-hidden rounded-xl", className)}
       style={{
@@ -508,5 +554,3 @@ export function GrandStaffPractice({
     </div>
   );
 }
-
-export default GrandStaffPractice;

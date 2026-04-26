@@ -1,5 +1,6 @@
+
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import { render, screen, waitFor, within } from "@testing-library/react";
+import { render, screen, waitFor, within, act } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import NoteGame from "./NoteGame";
 
@@ -51,6 +52,18 @@ vi.mock("@/lib/sound", () => ({
 
 vi.mock("@/contexts/AuthContext", () => ({
   useAuth: () => ({ user: { id: "test-user" }, loading: false }),
+}));
+
+const mockRecordAttempt = vi.fn().mockResolvedValue(null);
+
+vi.mock("@/hooks/useLevelProgress", () => ({
+  useLevelProgress: () => ({
+    progress: [],
+    loading: false,
+    fetchProgress: vi.fn(),
+    recordAttempt: mockRecordAttempt,
+    getProgressFor: vi.fn().mockReturnValue(null),
+  }),
 }));
 
 // GrandStaffPractice는 렌더링만 되면 되므로 단순화
@@ -131,11 +144,12 @@ function getLifeCount(): number {
 describe("NoteGame - Retry Queue 통합", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockRecordAttempt.mockResolvedValue(null);
     localStorage.setItem("noteflex.solfege_system", "en");
   });
 
   it("초기 상태: 큐 비어있고 첫 음표 출제됨", () => {
-    render(<NoteGame level={1} skipCountdown />);
+    render(<NoteGame level={1} sublevel={1} skipCountdown />);
 
     const q = getCurrentQuestion();
     expect(q).not.toBeNull();
@@ -146,7 +160,7 @@ describe("NoteGame - Retry Queue 통합", () => {
 
   it("오답 시 큐에 등록되고 다음 문제로 자동 진행", async () => {
     const user = userEvent.setup();
-    render(<NoteGame level={1} skipCountdown />);
+    render(<NoteGame level={1} sublevel={1} skipCountdown />);
 
     const q1 = getCurrentQuestion()!;
     const wrongBtn = getWrongButton(q1);
@@ -161,7 +175,7 @@ describe("NoteGame - Retry Queue 통합", () => {
 
   it("정답 시 큐에 등록되지 않음", async () => {
     const user = userEvent.setup();
-    render(<NoteGame level={1} skipCountdown />);
+    render(<NoteGame level={1} sublevel={1} skipCountdown />);
 
     const q1 = getCurrentQuestion()!;
     const correctBtn = getCorrectButton(q1);
@@ -173,7 +187,7 @@ describe("NoteGame - Retry Queue 통합", () => {
 
   it("오답 3번 연속 · 큐 상태 계약 검증", async () => {
     const user = userEvent.setup();
-    render(<NoteGame level={1} skipCountdown />);
+    render(<NoteGame level={1} sublevel={1} skipCountdown />);
 
     for (let i = 0; i < 3; i++) {
       const q = getCurrentQuestion();
@@ -198,26 +212,31 @@ describe("NoteGame - Retry Queue 통합", () => {
   });
 
   it("오답 후 N턴 뒤 🔁 재출제 배지가 표시됨", async () => {
+    // 결정적: q1=index0, q2=index2 (서로 다른 음표 보장)
+    const mockRandom = vi.spyOn(Math, "random")
+      .mockReturnValueOnce(0)     // q1: TREBLE_NOTES[0] = C6
+      .mockReturnValueOnce(0.2);  // q2: TREBLE_NOTES[3] = G5 (다른 letter)
+  
     const user = userEvent.setup();
-    render(<NoteGame level={1} skipCountdown />);
-
+    render(<NoteGame level={1} sublevel={1} skipCountdown />);
+  
     const q1 = getCurrentQuestion()!;
     await user.click(getWrongButton(q1)); // turn 1, due @2
-
-    // 한 번 더 답(아무거나) → turn 2
+  
     const q2 = getCurrentQuestion()!;
+    // q1과 q2가 다른 letter 보장
+    expect(q2.key).not.toBe(q1.key);
     await user.click(getCorrectButton(q2));
-
-    // 이제 turn 2 → retry가 나와야 함
-    // 현재 출제 = q1과 같은 key여야 함
+  
     const q3 = getCurrentQuestion()!;
     expect(q3.key).toBe(q1.key);
     expect(q3.octave).toBe(q1.octave);
-
-    // 재출제 배지 확인
     expect(screen.getByText(/🔁 재출제/)).toBeInTheDocument();
+  
+    mockRandom.mockRestore();
   });
 
+  
   it("재출제된 음표를 정답하면 큐에서 제거됨", async () => {
     // Math.random 고정: q1=index0(C6, key=C), q2=index7(C5, key=C, 다른 octave)
     // → q2 정답 처리 시 q1 retry가 resolve되지 않고 turn=2에 재출제됨
@@ -226,7 +245,7 @@ describe("NoteGame - Retry Queue 통합", () => {
       .mockReturnValueOnce(0.5); // q2: C5 (다른 octave라 retry는 유지됨)
 
     const user = userEvent.setup();
-    render(<NoteGame level={1} skipCountdown />);
+    render(<NoteGame level={1} sublevel={1} skipCountdown />);
 
     const q1 = getCurrentQuestion()!;
     await user.click(getWrongButton(q1)); // size=1
@@ -251,7 +270,7 @@ describe("NoteGame - Retry Queue 통합", () => {
 
   it("재출제된 음표를 또 틀리면 재재출제까지 이어짐", async () => {
     const user = userEvent.setup();
-    render(<NoteGame level={1} skipCountdown />);
+    render(<NoteGame level={1} sublevel={1} skipCountdown />);
 
     const q1 = getCurrentQuestion()!;
     await user.click(getWrongButton(q1)); // turn 1, miss×1, due @2
@@ -278,5 +297,174 @@ describe("NoteGame - Retry Queue 통합", () => {
 
     // turn은 3
     expect(getDebugTurn()).toBe(3);
+  });
+});
+
+// ────────────────────────────────────────────────
+// 서브레벨 설정 적용 검증
+// ────────────────────────────────────────────────
+describe("NoteGame - 서브레벨 설정", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockRecordAttempt.mockResolvedValue(null);
+    localStorage.setItem("noteflex.solfege_system", "en");
+  });
+
+  it("sublevel=2: 목숨 4개 → 4번 오답 시 게임오버", async () => {
+    const user = userEvent.setup();
+    render(<NoteGame level={1} sublevel={2} skipCountdown />);
+
+    for (let i = 0; i < 4; i++) {
+      const q = getCurrentQuestion();
+      if (!q) break;
+      await user.click(getWrongButton(q));
+    }
+
+    expect(screen.queryByText(/게임 오버/)).not.toBeNull();
+  });
+
+  it("sublevel=3: 목숨 3개 → 3번 오답 시 게임오버", async () => {
+    const user = userEvent.setup();
+    render(<NoteGame level={1} sublevel={3} skipCountdown />);
+
+    for (let i = 0; i < 3; i++) {
+      const q = getCurrentQuestion();
+      if (!q) break;
+      await user.click(getWrongButton(q));
+    }
+
+    expect(screen.queryByText(/게임 오버/)).not.toBeNull();
+  });
+
+  it("sublevel=1: 목숨 5개 → 4번 오답 후 게임오버 안 됨", async () => {
+    const user = userEvent.setup();
+    render(<NoteGame level={1} sublevel={1} skipCountdown />);
+
+    for (let i = 0; i < 4; i++) {
+      const q = getCurrentQuestion();
+      if (!q) break;
+      await user.click(getWrongButton(q));
+    }
+
+    // 4번 오답 후에도 게임오버 아님 (목숨 1개 남음)
+    expect(screen.queryByText(/게임 오버/)).toBeNull();
+  });
+});
+
+// ────────────────────────────────────────────────
+// best_streak + recordAttempt 콜백 검증
+// ────────────────────────────────────────────────
+describe("NoteGame - 진도 기록 (recordAttempt)", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockRecordAttempt.mockResolvedValue(null);
+    localStorage.setItem("noteflex.solfege_system", "en");
+  });
+
+  it("gameover 시 recordAttempt 호출됨 (level, sublevel, gameStatus)", async () => {
+    const user = userEvent.setup();
+    render(<NoteGame level={1} sublevel={2} skipCountdown />);
+
+    // sublevel=2 → lives=4: 4번 오답으로 gameover
+    for (let i = 0; i < 4; i++) {
+      const q = getCurrentQuestion();
+      if (!q) break;
+      await user.click(getWrongButton(q));
+    }
+
+    await waitFor(() => expect(screen.queryByText(/게임 오버/)).not.toBeNull());
+    await act(async () => { await new Promise((r) => setTimeout(r, 0)); });
+
+    expect(mockRecordAttempt).toHaveBeenCalledTimes(1);
+    const [callLevel, callSublevel, , , , callStatus] = mockRecordAttempt.mock.calls[0];
+    expect(callLevel).toBe(1);
+    expect(callSublevel).toBe(2);
+    expect(callStatus).toBe("gameover");
+  });
+
+  it("gameover 시 시도횟수·정답수·streak 정확히 전달됨", async () => {
+    const user = userEvent.setup();
+    render(<NoteGame level={1} sublevel={2} skipCountdown />);
+
+    // 4번 오답 (correct=0, streak=0)
+    for (let i = 0; i < 4; i++) {
+      const q = getCurrentQuestion();
+      if (!q) break;
+      await user.click(getWrongButton(q));
+    }
+
+    await waitFor(() => expect(screen.queryByText(/게임 오버/)).not.toBeNull());
+    await act(async () => { await new Promise((r) => setTimeout(r, 0)); });
+
+    expect(mockRecordAttempt).toHaveBeenCalledTimes(1);
+    const [, , attempts, correct, maxStreak] = mockRecordAttempt.mock.calls[0];
+    expect(attempts).toBe(4);
+    expect(correct).toBe(0);
+    expect(maxStreak).toBe(0);
+  });
+
+  it("5연속 정답 후 오답 → maxStreak=5 전달됨", async () => {
+    const user = userEvent.setup();
+    render(<NoteGame level={1} sublevel={1} skipCountdown />);
+
+    // 5 연속 정답
+    for (let i = 0; i < 5; i++) {
+      const q = getCurrentQuestion();
+      if (!q || screen.queryByText(/게임 오버/)) break;
+      await user.click(getCorrectButton(q));
+    }
+
+    // 5번 오답 → gameover
+    for (let i = 0; i < 5; i++) {
+      const q = getCurrentQuestion();
+      if (!q || screen.queryByText(/게임 오버/)) break;
+      await user.click(getWrongButton(q));
+    }
+
+    await waitFor(() => expect(screen.queryByText(/게임 오버/)).not.toBeNull());
+    await act(async () => { await new Promise((r) => setTimeout(r, 0)); });
+
+    expect(mockRecordAttempt).toHaveBeenCalledTimes(1);
+    const [, , , , maxStreak] = mockRecordAttempt.mock.calls[0];
+    expect(maxStreak).toBe(5);
+  });
+
+  it("onAttemptRecorded 콜백: recordAttempt 결과를 그대로 전달", async () => {
+    const fakeResult = {
+      level: 1,
+      sublevel: 2,
+      play_count: 1,
+      total_attempts: 4,
+      total_correct: 0,
+      accuracy: 0,
+      best_streak: 0,
+      passed: false,
+      just_passed: false,
+    };
+    mockRecordAttempt.mockResolvedValue(fakeResult);
+
+    const onAttemptRecorded = vi.fn();
+    const user = userEvent.setup();
+    render(
+      <NoteGame
+        level={1}
+        sublevel={2}
+        skipCountdown
+        onAttemptRecorded={onAttemptRecorded}
+      />
+    );
+
+    for (let i = 0; i < 4; i++) {
+      const q = getCurrentQuestion();
+      if (!q) break;
+      await user.click(getWrongButton(q));
+    }
+
+    await waitFor(() => expect(screen.queryByText(/게임 오버/)).not.toBeNull());
+    await act(async () => { await new Promise((r) => setTimeout(r, 0)); });
+
+    expect(onAttemptRecorded).toHaveBeenCalledWith(
+      expect.objectContaining(fakeResult)
+    );
   });
 });

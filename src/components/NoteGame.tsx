@@ -11,9 +11,17 @@ import { useRetryQueue } from "@/hooks/useRetryQueue";
 import { useUserMastery, type MasteryMap } from "@/hooks/useUserMastery";
 import { getNoteWeight, weightedPickIndex } from "@/lib/noteWeighting";
 import {
+  SUBLEVEL_CONFIGS,
+  getStagesFor,
+  type Sublevel,
+  type GameStageConfig,
+} from "@/lib/levelSystem";
+import { useLevelProgress, type RecordAttemptResult } from "@/hooks/useLevelProgress";
+import {
   GrandStaffPractice,
   TOTAL_SLOTS,
   type StaffHistoryEntry,
+  type BatchNoteEntry,
 } from "@/components/practice/GrandStaffPractice";
 
 
@@ -59,35 +67,6 @@ function getRandomKeySignature(level: number): KeySignatureType {
   if (level === 6) return FLAT_KEYS[Math.floor(Math.random() * FLAT_KEYS.length)];
   const allKeys = [...SHARP_KEYS, ...FLAT_KEYS];
   return allKeys[Math.floor(Math.random() * allKeys.length)];
-}
-
-// ═════════════════════════════════════════════════════════════
-// 게임 단계 설계 — 레벨별로 다름
-// ═════════════════════════════════════════════════════════════
-type GameStageConfig = {
-  readonly stage: number;
-  readonly batchSize: number;
-  readonly totalSets: number;
-  readonly notesPerSet: number;
-};
-
-
-// Lv1-4: 점진적 난이도
-const GAME_STAGES_BASIC: readonly GameStageConfig[] = [
-  { stage: 1, batchSize: 1, totalSets: 3, notesPerSet: 3 },
-  { stage: 2, batchSize: 1, totalSets: 3, notesPerSet: 5 },
-  { stage: 3, batchSize: 3, totalSets: 3, notesPerSet: 3 },
-  { stage: 4, batchSize: 5, totalSets: 3, notesPerSet: 5 },
-] as const;
-
-// Lv5-7: 처음부터 7개씩, 7세트
-const GAME_STAGES_ADVANCED: readonly GameStageConfig[] = [
-  { stage: 1, batchSize: 7, totalSets: 7, notesPerSet: 7 },
-] as const;
-
-function getStagesForLevel(level: number, isCustom: boolean): readonly GameStageConfig[] {
-  if (!isCustom && level >= 5) return GAME_STAGES_ADVANCED;
-  return GAME_STAGES_BASIC;
 }
 
 // ── 기본 음표 풀 ──────────────────────────────────────────────
@@ -223,7 +202,6 @@ function generateKeyBatch(
     let picked: NoteType;
     let attempts = 0;
     do {
-      // 가중치 기반 샘플링 (masteryMap이 비어있으면 균등)
       const weights = candidates.map(n => {
         const acc = getAccidental(n.key);
         return getNoteWeight(masteryMap, clef, n.key, n.octave, acc);
@@ -238,15 +216,42 @@ function generateKeyBatch(
       batch[batch.length - 1].octave === picked.octave
     );
 
+    const acc = getAccidental(picked.key);
+
+    // [TEMP DEBUG] computedAcc=undefined인 모순 케이스만 출력
+    const sharpsHas = keySig.sharps ? keySig.sharps.includes(picked.key) : false;
+    const flatsHas = keySig.flats ? keySig.flats.includes(picked.key) : false;
+    const expectedAcc = sharpsHas ? "#" : flatsHas ? "b" : undefined;
+    if (acc !== expectedAcc) {
+      console.log("[KEYBATCH MISMATCH]", {
+        pickedKey: picked.key,
+        keySigKey: keySig.key,
+        sharps: keySig.sharps,
+        flats: keySig.flats,
+        sharpsIncludes: sharpsHas,
+        flatsIncludes: flatsHas,
+        getAccidentalReturned: acc,
+        expectedAcc,
+      });
+    } else if (acc === undefined && (sharpsHas || flatsHas)) {
+      console.log("[KEYBATCH BUG]", {
+        pickedKey: picked.key,
+        keySigKey: keySig.key,
+        sharps: keySig.sharps,
+        flats: keySig.flats,
+      });
+    }
+
     batch.push({
       ...picked,
-      accidental: getAccidental(picked.key),
+      accidental: acc,
       clef,
     });
   }
 
   return { notes: batch };
 }
+
 
 function generateBatch(
   pool: NoteType[],
@@ -259,7 +264,6 @@ function generateBatch(
     let n: NoteType;
     let attempts = 0;
     do {
-      // 가중치 기반 샘플링 (masteryMap이 비어있으면 균등)
       const weights = pool.map(note =>
         getNoteWeight(masteryMap, clef, note.key, note.octave, note.accidental)
       );
@@ -287,21 +291,27 @@ function getSoundKey(note: NoteType): string {
   return `${note.key}${note.octave}`;
 }
 
-const MAX_LIVES    = 5;
-const TIMER_SECONDS = 9999;
-
-// 개발용 디버그 패널 표시 (true로 바꾸면 retry queue 상태 확인 가능)
 const SHOW_RETRY_DEBUG = false;
 
 interface NoteGameProps {
   onReset?: () => void;
   onLevelSelect?: () => void;
-  /** 다음 레벨로 진행 (프리미엄 체크 등은 Index.tsx에서) */
   onNextLevel?: () => void;
   level?: number;
+  sublevel?: Sublevel;
   customNotes?: NoteType[];
-  /** 테스트용: 카운트다운 스킵 */
   skipCountdown?: boolean;
+  onAttemptRecorded?: (
+    result: RecordAttemptResult & {
+      level: number;
+      sublevel: Sublevel;
+      totalAttempts: number;
+      totalCorrect: number;
+      bestStreak: number;
+      gameStatus: "success" | "gameover";
+    }
+  ) => void;
+  useExternalDialogs?: boolean;
 }
 
 export default function NoteGame({
@@ -309,15 +319,28 @@ export default function NoteGame({
   onLevelSelect,
   onNextLevel,
   level = 1,
+  sublevel = 1,
   customNotes,
   skipCountdown = false,
+  onAttemptRecorded,
+  useExternalDialogs = false,
 }: NoteGameProps) {
+  const sublevelConfig = SUBLEVEL_CONFIGS[sublevel];
+  const MAX_LIVES      = sublevelConfig.lives;
+  const TIMER_SECONDS  = sublevelConfig.timeLimit;
+
   const { logNote }   = useNoteLogger();
   const recorder      = useSessionRecorder();
-  const retryQueue    = useRetryQueue();                         // ★ n+2 재출제 큐
-  const { masteryMap } = useUserMastery();                       // ★ 약점/마스터 플래그 (로그인 유저만)
+  const retryQueue    = useRetryQueue();
+  const { masteryMap } = useUserMastery();
+  const { recordAttempt } = useLevelProgress();
   const noteStartTime = useRef<number>(Date.now());
-  const turnCounterRef = useRef<number>(0);                      // ★ 세션 내 턴 카운터
+  const turnCounterRef = useRef<number>(0);
+
+  const totalAttemptsRef  = useRef(0);
+  const totalCorrectRef   = useRef(0);
+  const currentStreakRef  = useRef(0);
+  const bestStreakRef     = useRef(0);
   const isCustom      = level === 0 && !!customNotes;
   const NOTES         = isCustom ? customNotes : getNotesForLevel(level);
   const needsKeySig   = level >= 5;
@@ -328,9 +351,8 @@ export default function NoteGame({
     ? (customNotes.some(n => parseInt(n.octave) >= 4) ? "treble" as const : "bass" as const)
     : "treble" as const;
 
-  const stages = getStagesForLevel(level, isCustom);
+  const stages: readonly GameStageConfig[] = getStagesFor(sublevel, isCustom);
 
-  // ── 초기 상태 ──────────────────────────────────────────────
   const [initResult] = useState(() => {
     const firstBatchSize = stages[0].batchSize;
 
@@ -351,9 +373,15 @@ export default function NoteGame({
     };
   });
 
-  const [currentBatch,        setCurrentBatch]        = useState<NoteType[]>(initResult.notes);
+  const [batchAndKey, setBatchAndKey] = useState<{
+    batch: NoteType[];
+    keySig: KeySignatureType;
+  }>({ batch: initResult.notes, keySig: initResult.keySig });
+
+  const currentBatch        = batchAndKey.batch;
+  const currentKeySignature = batchAndKey.keySig;
+
   const [currentIndex,        setCurrentIndex]        = useState(0);
-  const [currentKeySignature, setCurrentKeySignature] = useState<KeySignatureType>(initResult.keySig);
   const [lives,               setLives]               = useState(MAX_LIVES);
   const [phase,               setPhase]               = useState<"playing" | "gameover" | "success">("playing");
   const [disabledNotes,       setDisabledNotes]       = useState<Set<string>>(new Set());
@@ -368,12 +396,11 @@ export default function NoteGame({
   const [currentSet, setCurrentSet] = useState(1);
   const [setProgress,setSetProgress]= useState(0);
 
-  // ★ retry override: 현재 턴에서 batch 원본 대신 retry 음표를 낼 경우 저장
   const [retryOverride, setRetryOverride] = useState<NoteType | null>(null);
 
   const currentStageConfig = stages[stageIdx];
+  const isBatchDisplay = currentStageConfig.batchSize > 1;
 
-  // 실제 출제 대상: retryOverride가 있으면 그것, 아니면 batch 원본
   const currentTarget = retryOverride ?? currentBatch[currentIndex] ?? null;
 
   const currentClef: "treble" | "bass" =
@@ -383,15 +410,46 @@ export default function NoteGame({
   const targetNoteStr    = currentTarget ? `${currentTarget.key}${currentTarget.octave}` : null;
   const targetAccidental = currentTarget?.accidental ?? null;
 
+  // [TEMP DEBUG] 매 렌더마다 batch ↔ keySig 정합성 캡처
+  if (level >= 5 && currentBatch.length > 0) {
+    const keyLetters = new Set([
+      ...(currentKeySignature.sharps || []),
+      ...(currentKeySignature.flats || []),
+    ]);
+    for (const note of currentBatch) {
+      if (keyLetters.has(note.key) && note.accidental === undefined) {
+        console.log("[RENDER MISMATCH]", {
+          renderTime: Date.now(),
+          batchNotes: currentBatch.map(n => `${n.key}${n.octave}${n.accidental ?? ""}`),
+          keySigKey: currentKeySignature.key,
+          sharps: currentKeySignature.sharps,
+          flats: currentKeySignature.flats,
+          stageIdx,
+          currentSet,
+          turnCounter: turnCounterRef.current,
+        });
+        break;
+      }
+    }
+  }
+
+
+
+  const batchNotesForDisplay: BatchNoteEntry[] | undefined =
+    isBatchDisplay && !retryOverride
+      ? currentBatch.map(n => ({
+          note: `${n.key}${n.octave}`,
+          accidental: n.accidental,
+          clef: n.clef,
+        }))
+      : undefined;
+
   const stageLabel = `Stage ${currentStageConfig.stage}: ${
     currentStageConfig.batchSize === 1
       ? `음표 ${currentStageConfig.notesPerSet}개 순차`
-      : `음표 ${currentStageConfig.batchSize}개`
+      : `음표 ${currentStageConfig.batchSize}개 동시`
   } (${currentSet}/${currentStageConfig.totalSets} 세트)`;
 
-  // ─────────────────────────────────────────────────────────
-  // 세션 시작
-  // ─────────────────────────────────────────────────────────
   useEffect(() => {
     const sessionType: "regular" | "custom_score" = isCustom ? "custom_score" : "regular";
     recorder.startSession(level, sessionType);
@@ -405,37 +463,85 @@ export default function NoteGame({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // ─────────────────────────────────────────────────────────
-  // 세션 종료
-  // ─────────────────────────────────────────────────────────
   useEffect(() => {
     if (phase === "success" || phase === "gameover") {
-      const reason = phase === "success" ? "completed" : "gameover";
+      const reason     = phase === "success" ? "completed" : "gameover";
+      const gameStatus: "success" | "gameover" = phase === "success" ? "success" : "gameover";
+
       recorder.endSession(reason).then((result) => {
+        if (result) setSessionResult(result);
+      });
+
+      recordAttempt(
+        level,
+        sublevel,
+        totalAttemptsRef.current,
+        totalCorrectRef.current,
+        bestStreakRef.current,
+        gameStatus,
+      ).then((result) => {
         if (result) {
-          setSessionResult(result);
+          onAttemptRecorded?.({
+            ...result,
+            level,
+            sublevel,
+            totalAttempts: totalAttemptsRef.current,
+            totalCorrect: totalCorrectRef.current,
+            bestStreak: bestStreakRef.current,
+            gameStatus,
+          });
         }
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase]);
 
-  // ── 새 배치 생성 ───────────────────────────────────────────
-  const generateNewBatch = useCallback((batchSize: number): NoteType[] => {
+// [TEMP DEBUG] keySig + currentBatch 일관성 체크
+useEffect(() => {
+  if (level >= 5 && currentBatch.length > 0) {
+    const keyLetters = new Set([
+      ...(currentKeySignature.sharps || []),
+      ...(currentKeySignature.flats || []),
+    ]);
+    for (const note of currentBatch) {
+      const letterInKey = keyLetters.has(note.key);
+      if (letterInKey && note.accidental === undefined) {
+        console.log("[INCONSISTENCY]", {
+          note: `${note.key}${note.octave}`,
+          accidental: note.accidental,
+          keySigKey: currentKeySignature.key,
+          keySharps: currentKeySignature.sharps,
+          keyFlats: currentKeySignature.flats,
+        });
+      }
+    }
+  }
+}, [currentBatch, currentKeySignature, level]);
+
+  const generateNewBatch = useCallback((batchSize: number): {
+    batch: NoteType[];
+    keySig: KeySignatureType;
+  } => {
     if (isCustom) {
-      return generateBatch(customNotes, batchSize, customClef, masteryMap);
+      return {
+        batch: generateBatch(customNotes, batchSize, customClef, masteryMap),
+        keySig: currentKeySignature,
+      };
     }
     if (level >= 5) {
       const newKey = getRandomKeySignature(level);
-      setCurrentKeySignature(newKey);
-      return generateKeyBatch(level, batchSize, newKey, masteryMap).notes;
+      return {
+        batch: generateKeyBatch(level, batchSize, newKey, masteryMap).notes,
+        keySig: newKey,
+      };
     }
     const lvClef = getClefForLevel(level);
-    return generateBatch(NOTES, batchSize, lvClef, masteryMap);
-  }, [NOTES, isCustom, customNotes, level, customClef, masteryMap]);
+    return {
+      batch: generateBatch(NOTES, batchSize, lvClef, masteryMap),
+      keySig: { key: "C", abcKey: "C" } as KeySignatureType,
+    };
+  }, [NOTES, isCustom, customNotes, level, customClef, masteryMap, currentKeySignature]);
 
-  // ── 다음 출제 준비 (retry 체크) ──────────────────────────
-  // 다음 turn으로 넘어갈 때 호출. retry queue에 due한 것이 있으면 override로 설정.
   const prepareNextTurn = useCallback(() => {
     turnCounterRef.current += 1;
     const due = retryQueue.popDueOrNull(turnCounterRef.current);
@@ -455,9 +561,8 @@ export default function NoteGame({
     return null;
   }, [retryQueue]);
 
-  // ── 세트 완료 처리 ─────────────────────────────────────────
   const handleSetComplete = useCallback((currentStageIdx: number, currentSetNum: number) => {
-    const stagesRef = getStagesForLevel(level, isCustom);
+    const stagesRef = stages;
     const stageConfig = stagesRef[currentStageIdx];
 
     if (currentSetNum >= stageConfig.totalSets) {
@@ -472,11 +577,17 @@ export default function NoteGame({
       setSetProgress(0);
       setAnsweredNotes([]);
 
-      const notes = generateNewBatch(nextStage.batchSize);
-      setCurrentBatch(notes);
+      const result = generateNewBatch(nextStage.batchSize);
+      setBatchAndKey(result);
+      const notes = result.batch;
       setCurrentIndex(0);
       setDisabledNotes(new Set());
       setTimerKey(prev => prev + 1);
+
+      // 키사인이 바뀌면 이전 retry는 의미 없음 → 큐 초기화 (Lv5+)
+      if (level >= 5) {
+        retryQueue.reset();
+      }
 
       const retryNote = prepareNextTurn();
       const toPlay = retryNote ?? notes[0];
@@ -487,22 +598,25 @@ export default function NoteGame({
       setSetProgress(0);
       setAnsweredNotes([]);
 
-      const notes = generateNewBatch(stageConfig.batchSize);
-      setCurrentBatch(notes);
+      const result = generateNewBatch(stageConfig.batchSize);
+      setBatchAndKey(result);
+      const notes = result.batch;
       setCurrentIndex(0);
       setDisabledNotes(new Set());
       setTimerKey(prev => prev + 1);
+
+      if (level >= 5) {
+        retryQueue.reset();
+      }
 
       const retryNote = prepareNextTurn();
       const toPlay = retryNote ?? notes[0];
       playNote(getSoundKey(toPlay));
     }
-  }, [generateNewBatch, level, isCustom, prepareNextTurn]);
+  }, [generateNewBatch, stages, prepareNextTurn, level, retryQueue]);
 
-  // ── 다음 턴으로 진행 (정답/오답 공통) ──────────────────────
-  // wasRetry: 직전에 출제된 게 retry 음표였는지 (true면 index 유지)
   const advanceToNextTurn = useCallback((wasRetry: boolean) => {
-    const stagesRef = getStagesForLevel(level, isCustom);
+    const stagesRef = stages;
     const stageConfig = stagesRef[stageIdx];
 
     if (wasRetry) {
@@ -524,12 +638,18 @@ export default function NoteGame({
         handleSetComplete(stageIdx, currentSet);
       } else {
         setSetProgress(newProgress);
-        const notes = generateNewBatch(stageConfig.batchSize);
-        setCurrentBatch(notes);
+        const result = generateNewBatch(stageConfig.batchSize);
+        setBatchAndKey(result);
+        const notes = result.batch;
         setCurrentIndex(0);
         setDisabledNotes(new Set());
         setTimerKey(prev => prev + 1);
         noteStartTime.current = Date.now();
+
+        // 키사인이 바뀌면 이전 retry는 의미 없음 → 큐 초기화 (Lv5+)
+        if (level >= 5) {
+          retryQueue.reset();
+        }
 
         const retryNote = prepareNextTurn();
         const toPlay = retryNote ?? notes[0];
@@ -545,12 +665,10 @@ export default function NoteGame({
       const toPlay = retryNote ?? currentBatch[nextIndex];
       playNote(getSoundKey(toPlay));
     }
-  }, [level, isCustom, stageIdx, currentIndex, currentBatch, setProgress, currentSet, generateNewBatch, handleSetComplete, prepareNextTurn]);
-
-  // 첫 마운트 시 카운트다운 표시 여부 (replay 시에도 표시)
+  }, [stages, stageIdx, currentIndex, currentBatch, setProgress, currentSet, generateNewBatch, handleSetComplete, prepareNextTurn, level, retryQueue]);
+  
   const [showCountdown, setShowCountdown] = useState(!skipCountdown);
 
-  // 카운트다운 완료 시: 사운드 준비 확인 후 첫 음표 재생
   const handleCountdownComplete = useCallback(() => {
     setShowCountdown(false);
     if (currentBatch.length > 0) {
@@ -565,7 +683,6 @@ export default function NoteGame({
     noteStartTime.current = Date.now();
   }, [currentBatch]);
 
-  // ── 답변 처리 ──────────────────────────────────────────────
   const handleAnswer = useCallback((answer: string) => {
     if (phase !== "playing" || !currentTarget) return;
 
@@ -583,7 +700,6 @@ export default function NoteGame({
     };
 
     if (answer === correctAnswer) {
-      // ── 정답 처리 ──
       setAnsweredNotes(prev => [
         ...prev.slice(-(TOTAL_SLOTS - 2)),
         {
@@ -617,6 +733,13 @@ export default function NoteGame({
       retryQueue.resolve(retryKey);
       setScore(prev => prev + 1);
 
+      totalAttemptsRef.current += 1;
+      totalCorrectRef.current  += 1;
+      currentStreakRef.current += 1;
+      if (currentStreakRef.current > bestStreakRef.current) {
+        bestStreakRef.current = currentStreakRef.current;
+      }
+
       const newStreak = individualStreak + 1;
       setIndividualStreak(newStreak);
       if (newStreak >= 3) {
@@ -628,10 +751,8 @@ export default function NoteGame({
         setIndividualStreak(0);
       }
 
-      // 공통 진행 로직으로 다음 턴
       advanceToNextTurn(wasRetry);
     } else {
-      // ── 오답 처리 ──
       logNote({
         note_key: getNoteAnswer(currentTarget),
         octave: parseInt(currentTarget.octave),
@@ -652,11 +773,14 @@ export default function NoteGame({
                   : null,
       });
 
-      // retry queue 등록 (현재 turn 기준)
       retryQueue.scheduleRetry(retryKey, turnCounterRef.current);
 
       playWrong();
       setIndividualStreak(0);
+
+      totalAttemptsRef.current += 1;
+      currentStreakRef.current = 0;
+
       const newLives = lives - 1;
       setLives(newLives);
 
@@ -665,12 +789,10 @@ export default function NoteGame({
         return;
       }
 
-      // ★ 오답 시 바로 다음 턴으로 진행 (C 옵션: Duolingo 스타일)
       advanceToNextTurn(wasRetry);
     }
   }, [phase, currentTarget, retryOverride, lives, individualStreak, logNote, recorder, level, isCustom, customClef, retryQueue, advanceToNextTurn]);
 
-  // ── 타이머 만료 ────────────────────────────────────────────
   const handleTimerExpire = useCallback(() => {
     if (phase !== "playing" || !currentTarget) return;
     const clefForLog = currentTarget.clef ?? (isCustom ? customClef : getClefForLevel(level));
@@ -705,6 +827,10 @@ export default function NoteGame({
 
     playWrong();
     setIndividualStreak(0);
+
+    totalAttemptsRef.current += 1;
+    currentStreakRef.current = 0;
+
     const newLives = lives - 1;
     setLives(newLives);
 
@@ -716,7 +842,6 @@ export default function NoteGame({
     advanceToNextTurn(wasRetry);
   }, [phase, lives, currentTarget, retryOverride, logNote, recorder, level, isCustom, customClef, retryQueue, advanceToNextTurn]);
 
-  // ── 리플레이 ───────────────────────────────────────────────
   const handleReplay = () => {
     setLives(MAX_LIVES);
     setPhase("playing");
@@ -733,22 +858,23 @@ export default function NoteGame({
     setSessionResult(null);
     setRetryOverride(null);
 
-    // retry queue 초기화, turn counter 리셋
     retryQueue.reset();
-    turnCounterRef.current = 0;
+    turnCounterRef.current  = 0;
+    totalAttemptsRef.current = 0;
+    totalCorrectRef.current  = 0;
+    currentStreakRef.current = 0;
+    bestStreakRef.current    = 0;
 
     const sessionType: "regular" | "custom_score" = isCustom ? "custom_score" : "regular";
     recorder.startSession(level, sessionType);
 
-    const stagesRef = getStagesForLevel(level, isCustom);
-    const firstStage = stagesRef[0];
-    const notes = generateNewBatch(firstStage.batchSize);
-    setCurrentBatch(notes);
+    const firstStage = stages[0];
+    const result = generateNewBatch(firstStage.batchSize);
+    setBatchAndKey(result);
+    const notes = result.batch;
 
-    // 리플레이 시에도 카운트다운 표시 (사용자 요청, skipCountdown=true면 건너뜀)
     setShowCountdown(!skipCountdown);
     if (skipCountdown) {
-      // 카운트 스킵: 첫 음표 즉시 재생
       if (isSamplerReady()) {
         playNote(getSoundKey(notes[0]));
       }
@@ -756,8 +882,10 @@ export default function NoteGame({
     }
   };
 
-  // ── 게임 오버 ──────────────────────────────────────────────
   if (phase === "gameover") {
+    if (useExternalDialogs) {
+      return <div className="flex flex-col items-center gap-6 animate-fade-up" aria-label="game over" />;
+    }
     return (
       <div className="flex flex-col items-center gap-6 animate-fade-up">
         <div className="text-6xl">🎹</div>
@@ -781,7 +909,6 @@ export default function NoteGame({
     );
   }
 
-  // ── 메인 ───────────────────────────────────────────────────
   return (
     <div className="flex flex-col items-center gap-3 w-full animate-fade-up">
 
@@ -789,7 +916,6 @@ export default function NoteGame({
         <CountdownOverlay seconds={3} onComplete={handleCountdownComplete} />
       )}
 
-      {/* 테스트 헬퍼용 — 시각적으로 숨겨진 현재 정답 마커 */}
       <span className="sr-only">
         현재 정답: {targetNoteStr ?? "(없음)"}
         {targetAccidental ? ` ${targetAccidental}` : ""}
@@ -844,6 +970,8 @@ export default function NoteGame({
             targetNote={targetNoteStr}
             targetAccidental={targetAccidental}
             noteHistory={answeredNotes}
+            batchNotes={batchNotesForDisplay}
+            batchIndex={isBatchDisplay ? currentIndex : undefined}
             clef={currentClef}
             level={level}
             keySignature={currentKeySignature.abcKey}
@@ -854,8 +982,33 @@ export default function NoteGame({
 
         <div className="w-full mt-1">
           <p className="text-center text-sm text-muted-foreground mb-3">
-            {currentIndex + 1}번째 음표의 이름은?
+            {isBatchDisplay
+              ? `${currentIndex + 1}/${currentBatch.length}번째 음표의 이름은?`
+              : `${currentIndex + 1}번째 음표의 이름은?`}
           </p>
+
+          {(() => {
+            if (level >= 5 && currentBatch.length > 0 && currentTarget) {
+              const sharpsToButton = needsKeySig ? currentKeySignature.sharps : undefined;
+              const flatsToButton = needsKeySig ? currentKeySignature.flats : undefined;
+              const keyLetters = new Set([
+                ...(sharpsToButton || []),
+                ...(flatsToButton || []),
+              ]);
+              if (keyLetters.has(currentTarget.key) && currentTarget.accidental === undefined) {
+                console.log("[BUTTON-NOTE MISMATCH]", {
+                  noteKey: currentTarget.key,
+                  noteAccidental: currentTarget.accidental,
+                  buttonSharps: sharpsToButton,
+                  buttonFlats: flatsToButton,
+                  batchAndKeySigKey: currentKeySignature.key,
+                  batchNotes: currentBatch.map(n => `${n.key}${n.octave}${n.accidental ?? ""}`),
+                });
+              }
+            }
+            return null;
+          })()}
+
           <NoteButtons
             onNoteClick={handleAnswer}
             disabled={phase !== "playing" || showCountdown}
@@ -875,12 +1028,10 @@ export default function NoteGame({
         🔊 다시 듣기
       </button>
 
-      {/* 테스트 헬퍼 + 개발용 디버그 데이터 — sr-only로 항상 DOM에 유지 */}
       <span className="sr-only">
         turn: {turnCounterRef.current} · size: {retryQueue.size}
       </span>
 
-      {/* 개발용 디버그 패널 (SHOW_RETRY_DEBUG=true일 때만 시각적으로 표시) */}
       {SHOW_RETRY_DEBUG && (
         <div className="mt-4 w-full max-w-[490px] rounded-lg border border-dashed border-amber-500/40 bg-amber-500/5 px-3 py-2 text-xs">
           <div className="flex items-center justify-between mb-1">
@@ -909,10 +1060,9 @@ export default function NoteGame({
       )}
 
       <MissionSuccessModal
-        open={phase === "success"}
+        open={phase === "success" && !useExternalDialogs}
         score={score}
         onNextLevel={
-          // 마지막 레벨(7)이면 다음 버튼 없음, 그 외엔 onNextLevel 호출
           level >= 7 || !onNextLevel
             ? undefined
             : () => onNextLevel()
@@ -922,7 +1072,6 @@ export default function NoteGame({
         isFinalLevel={level >= 7}
       />
 
-      {/* 개발 전용 힌트 — 프로덕션 빌드에서 트리쉐이킹으로 제거됨 */}
       {import.meta.env.DEV && currentTarget && (
         <div className="fixed bottom-4 right-4 z-50">
           <button
