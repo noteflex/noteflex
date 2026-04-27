@@ -4,6 +4,7 @@ import NoteButtons from "./NoteButtons";
 import MissionSuccessModal from "./MissionSuccessModal";
 import CountdownTimer from "./CountdownTimer";
 import CountdownOverlay from "./CountdownOverlay";
+import AccidentalSwipeTutorial from "./AccidentalSwipeTutorial";
 import { playNote, playWrong, isSamplerReady, initSound } from "@/lib/sound";
 import { useNoteLogger } from "@/hooks/useNoteLogger";
 import { useSessionRecorder } from "@/hooks/useSessionRecorder";
@@ -926,6 +927,8 @@ useEffect(() => {
         <CountdownOverlay seconds={3} onComplete={handleCountdownComplete} />
       )}
 
+      <AccidentalSwipeTutorial level={level} triggerOpen={!showCountdown} />
+
       <span className="sr-only">
         현재 정답: {targetNoteStr ?? "(없음)"}
         {targetAccidental ? ` ${targetAccidental}` : ""}
@@ -1025,6 +1028,7 @@ useEffect(() => {
             disabledNotes={disabledNotes}
             keySharps={needsKeySig ? currentKeySignature.sharps : undefined}
             keyFlats={needsKeySig ? currentKeySignature.flats : undefined}
+            swipeEnabled={level >= 5}
           />
         </div>
 

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import { render, screen, act, waitFor } from "@testing-library/react";
+import { render, screen, act, waitFor, fireEvent } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import NoteGame from "./NoteGame";
 
@@ -139,6 +139,86 @@ function isGameEnded(): boolean {
 
 type Strategy = "all-correct" | "all-wrong" | "random-50";
 
+/**
+ * Lv5+에서 swipe로 ♯/♭를 입력하는 시뮬레이션.
+ * NoteButtons swipeEnabled=true 모드의 useSwipeAccidental은 pointermove에서
+ * 임계 거리(56px) 도달 시 즉시 commit. dy 음수=위(♯), 양수=아래(♭).
+ *
+ * fireEvent.pointer*는 jsdom 환경에서 React handler까지 도달하지 못해
+ * native PointerEvent를 직접 dispatch. PointerEvent 미지원 시 MouseEvent로 fallback.
+ */
+function makePointerEvent(type: string, init: PointerEventInit & { clientX: number; clientY: number }): Event {
+  try {
+    return new PointerEvent(type, { ...init, bubbles: true, cancelable: true });
+  } catch {
+    const e = new MouseEvent(type, { ...init, bubbles: true, cancelable: true });
+    Object.defineProperty(e, "pointerId", { value: init.pointerId ?? 1 });
+    return e;
+  }
+}
+
+async function swipeAccidental(btn: HTMLElement, accidental: "#" | "b") {
+  const dy = accidental === "#" ? -80 : 80;
+  // act로 wrap해 native event → React state update → re-render 까지 flush.
+  await act(async () => {
+    btn.dispatchEvent(makePointerEvent("pointerdown", { pointerId: 1, button: 0, clientX: 50, clientY: 100 }));
+    btn.dispatchEvent(makePointerEvent("pointermove", { pointerId: 1, clientX: 50, clientY: 100 + dy }));
+    btn.dispatchEvent(makePointerEvent("pointerup",   { pointerId: 1, clientX: 50, clientY: 100 + dy }));
+  });
+}
+
+/** 정답 시도. 자연음=클릭, ♯/♭=swipe. 답할 수 없으면 false. */
+async function answerCorrectFor(
+  user: ReturnType<typeof userEvent.setup>,
+  q: CurrentQuestion
+): Promise<boolean> {
+  // swipe 모드(Lv5+): letter 자연음 라벨로 검색
+  const naturalBtn = screen.queryByLabelText(`${q.key} 선택`);
+  if (naturalBtn && !(naturalBtn as HTMLButtonElement).disabled) {
+    if (q.accidental === "#" || q.accidental === "b") {
+      await swipeAccidental(naturalBtn, q.accidental);
+    } else {
+      await user.click(naturalBtn);
+    }
+    return true;
+  }
+  // legacy 라벨(Lv1-4 keySig 적용 케이스 — 현재 코드에는 없지만 fallback): "F♯ 선택"
+  if (q.accidental) {
+    const labelled = screen.queryByLabelText(
+      `${q.key}${q.accidental === "#" ? "♯" : "♭"} 선택`
+    );
+    if (labelled && !(labelled as HTMLButtonElement).disabled) {
+      await user.click(labelled);
+      return true;
+    }
+  }
+  return false;
+}
+
+/** 오답 시도: 다른 letter를 자연음 클릭. */
+async function answerWrongFor(
+  user: ReturnType<typeof userEvent.setup>,
+  q: CurrentQuestion
+): Promise<boolean> {
+  const letters = ["C", "D", "E", "F", "G", "A", "B"];
+  const wrongLetter = letters.find((l) => l !== q.key);
+  if (!wrongLetter) return false;
+  const btn = screen.queryByLabelText(`${wrongLetter} 선택`);
+  if (!btn || (btn as HTMLButtonElement).disabled) {
+    // legacy 라벨 fallback
+    const all = screen.queryAllByRole("button");
+    const fallback = all.find((b) => {
+      const label = b.getAttribute("aria-label") ?? "";
+      return label.startsWith(wrongLetter) && label.includes("선택");
+    });
+    if (!fallback || (fallback as HTMLButtonElement).disabled) return false;
+    await user.click(fallback);
+    return true;
+  }
+  await user.click(btn);
+  return true;
+}
+
 /** 시나리오에 맞춰 한 턴 답하기. 성공 시 true, 답할 버튼 없으면 false. */
 async function answerOnce(
   user: ReturnType<typeof userEvent.setup>,
@@ -157,17 +237,9 @@ async function answerOnce(
     shouldAnswerCorrect = x - Math.floor(x) >= 0.3;  // 70% 정답 (retry queue 누적 방지)
   }
 
-  const btn = shouldAnswerCorrect
-    ? getCorrectButton(q)
-    : getAnyWrongButton(q);
-
-  if (!btn || (btn as HTMLButtonElement).disabled) {
-    // 버튼 없거나 disabled → 답할 수 없음 (이미 끝남)
-    return false;
-  }
-
-  await user.click(btn);
-  return true;
+  return shouldAnswerCorrect
+    ? answerCorrectFor(user, q)
+    : answerWrongFor(user, q);
 }
 
 const MAX_TURNS = 2000; // 안전 상한 (sublevel별 27/40/66노트 + retry 폭증 여유)
