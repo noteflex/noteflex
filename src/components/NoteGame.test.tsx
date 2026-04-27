@@ -158,19 +158,21 @@ describe("NoteGame - Retry Queue 통합", () => {
     expect(getDebugTurn()).toBe(0);
   });
 
-  it("오답 시 큐에 등록되고 다음 문제로 자동 진행", async () => {
+  it("오답 시 큐에 마커 등록 + 같은 음표 자리에 그대로 유지 (신규 정책)", async () => {
     const user = userEvent.setup();
     render(<NoteGame level={1} sublevel={1} skipCountdown />);
 
     const q1 = getCurrentQuestion()!;
-    const wrongBtn = getWrongButton(q1);
-    await user.click(wrongBtn);
+    await user.click(getWrongButton(q1));
 
-    // 큐 사이즈 1
+    // 마커 1개 등록
     expect(getDebugQueueSize()).toBe(1);
-    // 턴 1 증가
-    expect(getDebugTurn()).toBe(1);
-    // 다음 문제로 진행 (같은 음표일 수도 있지만 state는 진행됨)
+    // 신규 정책: 오답 시 turn 변동 X
+    expect(getDebugTurn()).toBe(0);
+    // 같은 음표 화면에 그대로
+    const q1After = getCurrentQuestion()!;
+    expect(q1After.key).toBe(q1.key);
+    expect(q1After.octave).toBe(q1.octave);
   });
 
   it("정답 시 큐에 등록되지 않음", async () => {
@@ -185,118 +187,130 @@ describe("NoteGame - Retry Queue 통합", () => {
     expect(getDebugTurn()).toBe(1);
   });
 
-  it("오답 3번 연속 · 큐 상태 계약 검증", async () => {
+  it("같은 음표 3번 연속 오답: 같은 자리 유지 + turn 변동 X + 큐 size 1 (신규 정책)", async () => {
     const user = userEvent.setup();
     render(<NoteGame level={1} sublevel={1} skipCountdown />);
 
+    const q1 = getCurrentQuestion()!;
     for (let i = 0; i < 3; i++) {
-      const q = getCurrentQuestion();
-      if (!q) continue;
-      await user.click(getWrongButton(q));
+      await user.click(getWrongButton(q1));
+      const qAfter = getCurrentQuestion();
+      expect(qAfter).not.toBeNull();
+      // 신규 정책: 같은 음표 화면에 그대로
+      expect(qAfter!.key).toBe(q1.key);
+      expect(qAfter!.octave).toBe(q1.octave);
     }
 
-    // 턴은 확정적으로 3 (retry 여부와 무관하게 매 클릭이 1턴 진행)
-    await waitFor(() => {
-      expect(getDebugTurn()).toBe(3);
-    });
-
-    // 큐 사이즈는 retry 사이클 타이밍에 따라 0~3 가능:
-    //  - scheduleRetry 직후: +1
-    //  - prepareNextTurn의 popDueOrNull이 due 항목을 꺼내면: -1
-    //  - 같은 음표가 반복 출제되면 Map.set으로 덮어씀 (size 변화 없음)
-    // 이 테스트는 "UI와 useRetryQueue 훅이 연결돼 있고 런타임 에러가 나지 않음"만 검증.
-    // 큐 로직의 세부 계약은 `useRetryQueue.test.ts` 15개 테스트가 책임진다.
-    const size = getDebugQueueSize();
-    expect(size).toBeGreaterThanOrEqual(0);
-    expect(size).toBeLessThanOrEqual(3);
+    // 신규 정책: 오답 시 turn 증가 X
+    expect(getDebugTurn()).toBe(0);
+    // 같은 음표 markMissed 반복 → Map.set 덮어쓰기로 size 1
+    expect(getDebugQueueSize()).toBe(1);
   });
 
-  it("오답 후 N턴 뒤 🔁 재출제 배지가 표시됨", async () => {
-    // 결정적: q1=index0, q2=index2 (서로 다른 음표 보장)
+  it("오답 → 정답 후 N+2턴 뒤 🔁 재출제 배지 표시 (신규 정책: turn=3에 등장)", async () => {
+    // 결정적: q1, q2, q3가 서로 다른 letter 보장.
+    // 신규 정책에서 q1 정답 시 due=turn+2=3. 이후 q2, q3 정답 진행 후 turn=3에 q1 pop.
     const mockRandom = vi.spyOn(Math, "random")
-      .mockReturnValueOnce(0)     // q1: TREBLE_NOTES[0] = C6
-      .mockReturnValueOnce(0.2);  // q2: TREBLE_NOTES[3] = G5 (다른 letter)
-  
+      .mockReturnValueOnce(0)     // q1
+      .mockReturnValueOnce(0.2)   // q2
+      .mockReturnValueOnce(0.4)   // q3
+      .mockReturnValueOnce(0.6);  // q4 (retry 우선이라 화면엔 안 뜸)
+
     const user = userEvent.setup();
     render(<NoteGame level={1} sublevel={1} skipCountdown />);
-  
+
     const q1 = getCurrentQuestion()!;
-    await user.click(getWrongButton(q1)); // turn 1, due @2
-  
+    await user.click(getWrongButton(q1));    // 같은 자리 유지, turn=0
+    await user.click(getCorrectButton(q1));  // turn=1, q1 due=3
+
     const q2 = getCurrentQuestion()!;
-    // q1과 q2가 다른 letter 보장
     expect(q2.key).not.toBe(q1.key);
-    await user.click(getCorrectButton(q2));
-  
+    await user.click(getCorrectButton(q2));  // turn=2
+
     const q3 = getCurrentQuestion()!;
-    expect(q3.key).toBe(q1.key);
-    expect(q3.octave).toBe(q1.octave);
+    expect(q3.key).not.toBe(q1.key);
+    await user.click(getCorrectButton(q3));  // turn=3 → q1 due 도달, pop
+
+    // q1 재출제 + 배지 등장
     expect(screen.getByText(/🔁 재출제/)).toBeInTheDocument();
-  
+    const qRetry = getCurrentQuestion()!;
+    expect(qRetry.key).toBe(q1.key);
+    expect(qRetry.octave).toBe(q1.octave);
+
     mockRandom.mockRestore();
   });
 
   
-  it("재출제된 음표를 정답하면 큐에서 제거됨", async () => {
-    // Math.random 고정: q1=index0(C6, key=C), q2=index7(C5, key=C, 다른 octave)
-    // → q2 정답 처리 시 q1 retry가 resolve되지 않고 turn=2에 재출제됨
+  it("재출제된 음표를 정답하면 큐에서 영구 제거됨 (신규 정책 12=P)", async () => {
     const mockRandom = vi.spyOn(Math, "random")
-      .mockReturnValueOnce(0)    // q1: C6
-      .mockReturnValueOnce(0.5); // q2: C5 (다른 octave라 retry는 유지됨)
+      .mockReturnValueOnce(0)
+      .mockReturnValueOnce(0.2)
+      .mockReturnValueOnce(0.4)
+      .mockReturnValueOnce(0.6);
 
     const user = userEvent.setup();
     render(<NoteGame level={1} sublevel={1} skipCountdown />);
 
     const q1 = getCurrentQuestion()!;
-    await user.click(getWrongButton(q1)); // size=1
+    await user.click(getWrongButton(q1));    // 같은 자리, size=1
+    await user.click(getCorrectButton(q1));  // turn=1, due=3
 
     const q2 = getCurrentQuestion()!;
-    await user.click(getCorrectButton(q2)); // turn=2
+    await user.click(getCorrectButton(q2));  // turn=2
 
-    mockRandom.mockRestore();
+    const q3 = getCurrentQuestion()!;
+    await user.click(getCorrectButton(q3));  // turn=3 → q1 재출제
 
-    // q1과 같은 key의 음표가 재출제 중 (🔁 배지 확인으로 재출제 보장)
     expect(screen.getByText(/🔁 재출제/)).toBeInTheDocument();
     const qRetry = getCurrentQuestion()!;
     expect(qRetry.key).toBe(q1.key);
 
     await user.click(getCorrectButton(qRetry));
 
-    // 큐에서 사라져야 함
+    // 영구 제거 + 배지 사라짐
     expect(getDebugQueueSize()).toBe(0);
-    // 재출제 배지도 사라짐
     expect(screen.queryByText(/🔁 재출제/)).not.toBeInTheDocument();
+
+    mockRandom.mockRestore();
   });
 
-  it("재출제된 음표를 또 틀리면 재재출제까지 이어짐", async () => {
+  it("재출제된 음표를 또 오답하면 같은 자리 유지 + 라이프 -1 (신규 정책)", async () => {
+    const mockRandom = vi.spyOn(Math, "random")
+      .mockReturnValueOnce(0)
+      .mockReturnValueOnce(0.2)
+      .mockReturnValueOnce(0.4)
+      .mockReturnValueOnce(0.6);
+
     const user = userEvent.setup();
     render(<NoteGame level={1} sublevel={1} skipCountdown />);
 
     const q1 = getCurrentQuestion()!;
-    await user.click(getWrongButton(q1)); // turn 1, miss×1, due @2
-
+    await user.click(getWrongButton(q1));
+    await user.click(getCorrectButton(q1));
     const q2 = getCurrentQuestion()!;
-    await user.click(getCorrectButton(q2)); // turn 2 → retry 출제
+    await user.click(getCorrectButton(q2));
+    const q3 = getCurrentQuestion()!;
+    await user.click(getCorrectButton(q3));
 
-    // retry 출제됨 (q1 재등장)
-    const qRetry1 = getCurrentQuestion()!;
-    expect(qRetry1.key).toBe(q1.key);
-    expect(qRetry1.octave).toBe(q1.octave);
+    // q1 재출제 시점
+    const qRetry = getCurrentQuestion()!;
+    expect(qRetry.key).toBe(q1.key);
+    const turnBeforeWrong = getDebugTurn();
 
-    // 또 오답 → turn 3으로 이동.
-    // miss×2니까 due @3 (n+1). advanceToNextTurn 내부에서 즉시 pop됨.
-    await user.click(getWrongButton(qRetry1));
+    // 재출제 자리에서 또 오답
+    await user.click(getWrongButton(qRetry));
 
-    // 여전히 q1이 출제 중 (재재출제)
-    const qRetry2 = getCurrentQuestion()!;
-    expect(qRetry2.key).toBe(q1.key);
-    expect(qRetry2.octave).toBe(q1.octave);
-
-    // 재출제 배지 여전히 있음
+    // 신규 정책: 여전히 q1, turn 변동 X, 배지 유지
+    const qStill = getCurrentQuestion()!;
+    expect(qStill.key).toBe(q1.key);
+    expect(qStill.octave).toBe(q1.octave);
+    expect(getDebugTurn()).toBe(turnBeforeWrong);
     expect(screen.getByText(/🔁 재출제/)).toBeInTheDocument();
 
-    // turn은 3
-    expect(getDebugTurn()).toBe(3);
+    // 게임오버 아님
+    expect(screen.queryByText(/게임 오버/)).toBeNull();
+
+    mockRandom.mockRestore();
   });
 });
 

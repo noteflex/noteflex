@@ -47,8 +47,18 @@ export interface UseRetryQueueReturn {
   size: number;
   /** 디버그용: 큐 스냅샷 */
   snapshot: RetryEntry[];
-  /** 오답 발생 → 큐에 등록 또는 기존 항목 업데이트 */
+  /** 오답 발생 → 큐에 등록 또는 기존 항목 업데이트 (legacy API: due = currentTurn+interval) */
   scheduleRetry: (note: RetryNoteKey, currentTurn: number) => void;
+  /**
+   * 신규 정책용: 오답 시 마커만 등록 (같은 자리 유지 정책에서는 due가 의미 없음).
+   * missCount +1, scheduledAtTurn = MAX_SAFE_INTEGER (정답 시 갱신될 때까지 popping 안 됨).
+   */
+  markMissed: (note: RetryNoteKey) => void;
+  /**
+   * 신규 정책용: 큐에 마커가 있던 음표를 정답 처리하면 due를 N+2 후로 갱신.
+   * 마커가 없으면 no-op (오답 이력 없는 음표는 큐에 안 들어감 — 해석 11=X).
+   */
+  rescheduleAfterCorrect: (note: RetryNoteKey, currentTurn: number) => void;
   /** 정답 시 해당 음표 큐에서 제거 */
   resolve: (note: RetryNoteKey) => void;
   /** 현재 턴에 출제 예정인 항목 반환 (있으면 꺼내고 큐에서 제거) */
@@ -95,6 +105,41 @@ export function useRetryQueue(): UseRetryQueueReturn {
         missCount: newMissCount,
       };
       queueRef.current.set(id, entry);
+      syncDebug();
+    },
+    [syncDebug]
+  );
+
+  const markMissed = useCallback(
+    (note: RetryNoteKey) => {
+      const id = composeId(note);
+      const prevMissCount = missCountRef.current.get(id) ?? 0;
+      const newMissCount = prevMissCount + 1;
+      missCountRef.current.set(id, newMissCount);
+
+      const entry: RetryEntry = {
+        id,
+        note,
+        scheduledAtTurn: Number.MAX_SAFE_INTEGER,
+        missCount: newMissCount,
+      };
+      queueRef.current.set(id, entry);
+      syncDebug();
+    },
+    [syncDebug]
+  );
+
+  const rescheduleAfterCorrect = useCallback(
+    (note: RetryNoteKey, currentTurn: number) => {
+      const id = composeId(note);
+      const existing = queueRef.current.get(id);
+      if (!existing) return; // 오답 이력 없음 (해석 11=X) → no-op
+
+      const updated: RetryEntry = {
+        ...existing,
+        scheduledAtTurn: currentTurn + 2,
+      };
+      queueRef.current.set(id, updated);
       syncDebug();
     },
     [syncDebug]
@@ -147,6 +192,8 @@ export function useRetryQueue(): UseRetryQueueReturn {
     size,
     snapshot,
     scheduleRetry,
+    markMissed,
+    rescheduleAfterCorrect,
     resolve,
     popDueOrNull,
     reset,

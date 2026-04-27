@@ -518,7 +518,9 @@ useEffect(() => {
   }
 }, [currentBatch, currentKeySignature, level]);
 
-  const generateNewBatch = useCallback((batchSize: number): {
+  // forceNewKeySig=true이면 Lv5+에서 새 keySig 생성 (stage 전환·리플레이 시).
+  // false(기본)면 currentKeySignature 재사용 → 같은 stage 안에서 키사인 고정 유지.
+  const generateNewBatch = useCallback((batchSize: number, forceNewKeySig: boolean = false): {
     batch: NoteType[];
     keySig: KeySignatureType;
   } => {
@@ -529,10 +531,10 @@ useEffect(() => {
       };
     }
     if (level >= 5) {
-      const newKey = getRandomKeySignature(level);
+      const keySig = forceNewKeySig ? getRandomKeySignature(level) : currentKeySignature;
       return {
-        batch: generateKeyBatch(level, batchSize, newKey, masteryMap).notes,
-        keySig: newKey,
+        batch: generateKeyBatch(level, batchSize, keySig, masteryMap).notes,
+        keySig,
       };
     }
     const lvClef = getClefForLevel(level);
@@ -577,7 +579,8 @@ useEffect(() => {
       setSetProgress(0);
       setAnsweredNotes([]);
 
-      const result = generateNewBatch(nextStage.batchSize);
+      // stage 전환 → Lv5+의 새 keySig 생성
+      const result = generateNewBatch(nextStage.batchSize, true);
       setBatchAndKey(result);
       const notes = result.batch;
       setCurrentIndex(0);
@@ -605,10 +608,7 @@ useEffect(() => {
       setDisabledNotes(new Set());
       setTimerKey(prev => prev + 1);
 
-      if (level >= 5) {
-        retryQueue.reset();
-      }
-
+      // 같은 stage 내 set 전환은 retry queue 유지 (사용자 지시).
       const retryNote = prepareNextTurn();
       const toPlay = retryNote ?? notes[0];
       playNote(getSoundKey(toPlay));
@@ -646,11 +646,7 @@ useEffect(() => {
         setTimerKey(prev => prev + 1);
         noteStartTime.current = Date.now();
 
-        // 키사인이 바뀌면 이전 retry는 의미 없음 → 큐 초기화 (Lv5+)
-        if (level >= 5) {
-          retryQueue.reset();
-        }
-
+        // 같은 set 안 batch 갈이는 retry queue 유지 (사용자 지시).
         const retryNote = prepareNextTurn();
         const toPlay = retryNote ?? notes[0];
         playNote(getSoundKey(toPlay));
@@ -730,7 +726,6 @@ useEffect(() => {
                   : null,
       });
 
-      retryQueue.resolve(retryKey);
       setScore(prev => prev + 1);
 
       totalAttemptsRef.current += 1;
@@ -751,7 +746,15 @@ useEffect(() => {
         setIndividualStreak(0);
       }
 
-      advanceToNextTurn(wasRetry);
+      // 신규 정책: 재출제(wasRetry) 정답 → 영구 제거 (12=P).
+      // 일반 정답 → 진행 후 큐 마커 있던 경우만 N+2 후 재출제로 갱신 (11=X, 마커 없으면 no-op).
+      if (wasRetry) {
+        retryQueue.resolve(retryKey);
+        advanceToNextTurn(true);
+      } else {
+        advanceToNextTurn(false);
+        retryQueue.rescheduleAfterCorrect(retryKey, turnCounterRef.current);
+      }
     } else {
       logNote({
         note_key: getNoteAnswer(currentTarget),
@@ -773,7 +776,9 @@ useEffect(() => {
                   : null,
       });
 
-      retryQueue.scheduleRetry(retryKey, turnCounterRef.current);
+      // 신규 정책: 오답 시 같은 자리 유지 (currentIndex/turn 변동 X).
+      // 큐에는 마커만 등록 (해석 10=A, due=MAX → 정답 시 갱신).
+      retryQueue.markMissed(retryKey);
 
       playWrong();
       setIndividualStreak(0);
@@ -789,14 +794,15 @@ useEffect(() => {
         return;
       }
 
-      advanceToNextTurn(wasRetry);
+      // 같은 자리 유지하되 사용자가 다시 풀 시간을 줘야 하므로 타이머만 리셋.
+      setTimerKey(prev => prev + 1);
+      noteStartTime.current = Date.now();
     }
   }, [phase, currentTarget, retryOverride, lives, individualStreak, logNote, recorder, level, isCustom, customClef, retryQueue, advanceToNextTurn]);
 
   const handleTimerExpire = useCallback(() => {
     if (phase !== "playing" || !currentTarget) return;
     const clefForLog = currentTarget.clef ?? (isCustom ? customClef : getClefForLevel(level));
-    const wasRetry = retryOverride !== null;
 
     logNote({
       note_key: getNoteAnswer(currentTarget),
@@ -818,12 +824,13 @@ useEffect(() => {
                 : null,
     });
 
-    retryQueue.scheduleRetry({
+    // 신규 정책: 타이머 만료 = 오답과 동일 처리. 같은 자리 유지 + 마커 등록.
+    retryQueue.markMissed({
       key: currentTarget.key,
       octave: currentTarget.octave,
       accidental: currentTarget.accidental,
       clef: clefForLog,
-    }, turnCounterRef.current);
+    });
 
     playWrong();
     setIndividualStreak(0);
@@ -839,8 +846,10 @@ useEffect(() => {
       return;
     }
 
-    advanceToNextTurn(wasRetry);
-  }, [phase, lives, currentTarget, retryOverride, logNote, recorder, level, isCustom, customClef, retryQueue, advanceToNextTurn]);
+    // 타이머만 리셋해서 사용자가 같은 음표를 다시 풀 시간 확보.
+    setTimerKey(prev => prev + 1);
+    noteStartTime.current = Date.now();
+  }, [phase, lives, currentTarget, logNote, recorder, level, isCustom, customClef, retryQueue]);
 
   const handleReplay = () => {
     setLives(MAX_LIVES);
@@ -869,7 +878,8 @@ useEffect(() => {
     recorder.startSession(level, sessionType);
 
     const firstStage = stages[0];
-    const result = generateNewBatch(firstStage.batchSize);
+    // 리플레이는 새 게임 시작이므로 Lv5+ 새 keySig 생성
+    const result = generateNewBatch(firstStage.batchSize, true);
     setBatchAndKey(result);
     const notes = result.batch;
 
