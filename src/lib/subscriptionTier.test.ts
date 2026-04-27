@@ -38,4 +38,15 @@ describe("getUserTier", () => {
       getUserTier({ id: "u1" }, { subscription_tier: "free", is_premium: true })
     ).toBe("pro");
   });
+
+  it("role='admin' → pro (구독 컬럼이 비어 있어도 모든 레벨 접근)", () => {
+    expect(getUserTier({ id: "u1" }, { role: "admin" })).toBe("pro");
+    expect(
+      getUserTier({ id: "u1" }, { role: "admin", subscription_tier: "free", is_premium: false })
+    ).toBe("pro");
+  });
+
+  it("role='admin' 우선순위: user 없으면 guest 그대로", () => {
+    expect(getUserTier(null, { role: "admin" })).toBe("guest");
+  });
 });

@@ -53,6 +53,7 @@ export default function LevelSelect({
   const { user, profile } = useAuth();
   const { progress, loading, getProgressFor } = useLevelProgress();
   const tier = getUserTier(user ?? null, profile ?? null);
+  const isAdmin = profile?.role === "admin";
 
   const [upgradeOpen, setUpgradeOpen]   = useState(false);
   const [lockMsg,     setLockMsg]       = useState<string | null>(null);
@@ -75,7 +76,7 @@ export default function LevelSelect({
       ? true
       : (getProgressFor(prev.level, prev.sublevel)?.passed ?? false);
 
-    if (!isPrevPassed) {
+    if (!isPrevPassed && !isAdmin) {
       const pl = formatSublevel(prev!.level, prev!.sublevel as Sublevel);
       return {
         passed: false, inProgress: false,

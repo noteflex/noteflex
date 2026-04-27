@@ -5,6 +5,7 @@ import MissionSuccessModal from "./MissionSuccessModal";
 import CountdownTimer from "./CountdownTimer";
 import CountdownOverlay from "./CountdownOverlay";
 import AccidentalSwipeTutorial from "./AccidentalSwipeTutorial";
+import { useAuth } from "@/contexts/AuthContext";
 import { playNote, playWrong, isSamplerReady, initSound } from "@/lib/sound";
 import { useNoteLogger } from "@/hooks/useNoteLogger";
 import { useSessionRecorder } from "@/hooks/useSessionRecorder";
@@ -335,6 +336,8 @@ export default function NoteGame({
   const retryQueue    = useRetryQueue();
   const { masteryMap } = useUserMastery();
   const { recordAttempt } = useLevelProgress();
+  const { profile }   = useAuth();
+  const isAdminOrDev  = profile?.role === "admin" || import.meta.env.DEV;
   const noteStartTime = useRef<number>(Date.now());
   const turnCounterRef = useRef<number>(0);
 
@@ -950,6 +953,17 @@ useEffect(() => {
             >
               ← 레벨 선택
             </button>
+          </div>
+        )}
+
+        {isAdminOrDev && currentTarget && (
+          <div className="w-full flex justify-center mt-1">
+            <div className="px-4 py-1.5 rounded-lg bg-yellow-100 border border-yellow-300 text-yellow-900 text-sm font-mono font-bold shadow-sm">
+              💡 정답: {getNoteAnswer(currentTarget)}
+              <span className="ml-2 text-xs font-sans font-normal text-yellow-700">
+                (admin/dev only)
+              </span>
+            </div>
           </div>
         )}
 
