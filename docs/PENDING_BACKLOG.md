@@ -48,13 +48,18 @@
 
 다음 세션에서 가장 먼저 잡을 항목.
 
-### 0.1 N+2 재출제 즉시 등장 버그 🐛
+### 0.1 N+2 재출제 즉시 등장 버그 ✅ (2026-04-29, `bb692cd`)
 **사용자 검증**: "첫 번째 음표를 2번 틀린 후 정답을 맞추면 바로 다음 음표가 같은 음표가 나온다."
 
 - 사용자 의도: 같은 음표가 최대한 연속으로 안 나오게
 - 실제 동작: 정답 후 같은 음표가 즉시 다음 자리에 등장
-- 추정 원인: turn counter 증가 타이밍 + retry queue due 계산 어긋남
-- 수정 위치: `src/hooks/useRetryQueue.ts` + `src/components/NoteGame.tsx`
+- **실제 원인**: retry queue가 아니라 `generateBatch`의 batch 내부 dedup이 cross-batch에 적용 안 됨 + batchSize=1 stage(Lv1~4)에서 매 advance마다 새 batch 생성 시 batch[0]이 직전 정답 음표와 동일 가능
+- **수정**:
+  - 옵션 D — `generateBatch`/`generateKeyBatch`에 `lastShownNote` 인자 추가, batch[0]이 직전 음표와 같은 clef·key·octave면 재픽
+  - 옵션 B — `useRetryQueue.markJustAnswered(note, currentTurn)` 추가, popDueOrNull이 markedTurn~markedTurn+1 동안 해당 id pop 제외 (이중 안전장치)
+  - 정답 처리 시 `advanceToNextTurn` 직전에 `markJustAnswered` 호출 → advance 안의 popDueOrNull(N+1)이 같은 음표 pop 안 함
+- **수정 위치**: `src/hooks/useRetryQueue.ts` + `src/components/NoteGame.tsx`
+- **테스트**: `NoteGame.batch.test.ts` (5 케이스) + `useRetryQueue.test.ts` (4 케이스 추가) — 274/274 PASS
 
 ### 0.2 Lv5+ 조표 음표 비율 부족 🐛
 **사용자 검증**: "조표 붙은 음표가 안 나와 swipe 검증 자체 막힘."
@@ -485,7 +490,7 @@ Claude가 출시 임박 시 자동 고지.
 ## 14. 33일 작업 일정 (Phase 별)
 
 ### Week 1 (4/29 ~ 5/2): 버그 + 정책 결정 + 사업자 시작
-- [ ] §0.1 N+2 즉시 등장 버그
+- [x] §0.1 N+2 즉시 등장 버그 ✅ (2026-04-29, `bb692cd`)
 - [ ] §0.2 Lv5+ 조표 비율
 - [ ] §0.3 카운트다운 버퍼링
 - [ ] §0-1.5 재도전 배지 삭제
@@ -565,6 +570,9 @@ Claude가 출시 임박 시 자동 고지.
 - ✅ 8개 분석 문서 (`3d49b57`)
 - ✅ 설계 vs 코드 갭 분석
 - ✅ Green Billion 명세 통합
+
+**2026-04-29**:
+- ✅ §0.1 N+2 재출제 즉시 등장 버그 (`bb692cd`) — 옵션 D (cross-batch dedup) + 옵션 B (retry pop 1턴 가드). 진짜 원인은 retry queue가 아닌 `generateBatch`의 cross-batch dedup 부재였음. 9개 신규 테스트 + 기존 265개 회귀 없음 (274/274 PASS).
 
 ---
 

@@ -210,16 +210,23 @@
 
 → **결정 필요**: 재출제 배지 삭제할지
 
-### 3.10 N+2 재출제 즉시 등장 버그 🐛
+### 3.10 N+2 재출제 즉시 등장 버그 ✅ (2026-04-29, `bb692cd`)
 
 **사용자 검증으로 확인된 동작 이슈**:
 
 > "첫 번째 음표를 2번 틀린 후 정답을 맞추면 바로 다음 음표가 같은 음표가 나오네"
 
 설계 의도: "같은 음표가 최대한 연속으로 안 나오게 하고 싶다"
-실제 동작: 같은 자리 정답 → 같은 음표가 다음 자리에 즉시 등장
+실제 동작 (수정 전): 같은 자리 정답 → 같은 음표가 다음 자리에 즉시 등장
 
-→ retry queue의 due 계산 또는 turn counter 증가 타이밍 버그. 다음 세션 작업 항목.
+**진짜 원인** (분석 결과 추정과 다름): retry queue의 due 계산은 정상이었음. `generateBatch`의 batch 내부 인접 dedup이 cross-batch에 적용 안 됐고, batchSize=1 stage(Lv1~4 초반)에서 매 advance마다 새 batch를 생성하므로 `batch[0]`이 직전 정답 음표와 동일하게 픽 가능. mastery 가중치가 방금 틀린 음표를 더 자주 픽하도록 편향시켜 확률 증가.
+
+**수정**:
+- 옵션 D — `generateBatch`/`generateKeyBatch`에 `lastShownNote` 인자 추가, batch[0]이 직전 음표와 같은 clef·key·octave면 재픽
+- 옵션 B — `useRetryQueue.markJustAnswered(note, currentTurn)` 추가, popDueOrNull이 markedTurn~markedTurn+1 동안 해당 id pop 제외 (이중 안전장치)
+- 정답 처리 시 `advanceToNextTurn` 직전에 `markJustAnswered` 호출
+
+**테스트**: `NoteGame.batch.test.ts` (5 케이스) + `useRetryQueue.test.ts` (4 케이스 추가) — 274/274 PASS
 
 ---
 
@@ -367,7 +374,7 @@
 
 ### 🐛 버그 (사용자 검증 확인됨)
 
-1. **N+2 즉시 등장** — 정답 후 같은 음표가 즉시 다음 자리에 등장 (사용자 의도: "최대한 연속 안 나오게")
+1. ✅ **N+2 즉시 등장** — `bb692cd` (cross-batch dedup + retry pop 가드)
 2. **Lv5+ 조표 음표 비율 부족** — 6:4/4:6/7:3/3:7 의도 미반영, 자연음만 나와서 swipe 검증 막힘
 
 ### 🔴 출시 후 펜딩 (이미 PENDING_BACKLOG.md에 박힘)
@@ -393,7 +400,7 @@
 
 ### Phase 7-A (출시 전 마무리)
 
-1. 🐛 N+2 즉시 등장 버그 수정 (turn counter 또는 due 계산)
+1. ✅ N+2 즉시 등장 버그 수정 — `bb692cd` (실제 원인은 cross-batch dedup 부재)
 2. 🐛 Lv5+ 조표 비율 수정 (6:4 등 반영)
 3. ❌ 재도전 배지 삭제
 4. ❌ 단계 Clear 기준 결정 + 코드 통일
