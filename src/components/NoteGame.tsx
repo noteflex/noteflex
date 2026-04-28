@@ -154,11 +154,12 @@ function pickBalancedCount(size: number): number {
   return Math.floor(Math.random() * (size - 1)) + 1;
 }
 
-function generateKeyBatch(
+export function generateKeyBatch(
   _level: number,
   size: number,
   keySig: KeySignatureType,
   masteryMap: MasteryMap = new Map(),
+  lastShownNote?: NoteType | null,
 ): { notes: NoteType[] } {
   const accidentalLetters = new Set<string>([
     ...(keySig.sharps || []),
@@ -213,9 +214,16 @@ function generateKeyBatch(
       attempts++;
       if (attempts > 200) break;
     } while (
-      batch.length > 0 &&
-      batch[batch.length - 1].key === picked.key &&
-      batch[batch.length - 1].octave === picked.octave
+      // batch 내부 인접 중복 방지
+      (batch.length > 0 &&
+        batch[batch.length - 1].key === picked.key &&
+        batch[batch.length - 1].octave === picked.octave) ||
+      // 옵션 D: cross-batch dedup — batch[0]이 직전 정답 음표와 같은 것 방지 (clef까지 일치할 때만)
+      (batch.length === 0 &&
+        lastShownNote != null &&
+        lastShownNote.clef === clef &&
+        lastShownNote.key === picked.key &&
+        lastShownNote.octave === picked.octave)
     );
 
     const acc = getAccidental(picked.key);
@@ -255,11 +263,12 @@ function generateKeyBatch(
 }
 
 
-function generateBatch(
+export function generateBatch(
   pool: NoteType[],
   size: number,
   clef: "treble" | "bass",
   masteryMap: MasteryMap = new Map(),
+  lastShownNote?: NoteType | null,
 ): NoteType[] {
   const batch: NoteType[] = [];
   for (let i = 0; i < size; i++) {
@@ -274,9 +283,16 @@ function generateBatch(
       attempts++;
       if (attempts > 200) break;
     } while (
-      batch.length > 0 &&
-      batch[batch.length - 1].key === n.key &&
-      batch[batch.length - 1].octave === n.octave
+      // batch 내부 인접 중복 방지
+      (batch.length > 0 &&
+        batch[batch.length - 1].key === n.key &&
+        batch[batch.length - 1].octave === n.octave) ||
+      // 옵션 D: cross-batch dedup — batch[0]이 직전 정답 음표와 같은 것 방지 (clef까지 일치할 때만)
+      (batch.length === 0 &&
+        lastShownNote != null &&
+        lastShownNote.clef === clef &&
+        lastShownNote.key === n.key &&
+        lastShownNote.octave === n.octave)
     );
     batch.push({ ...n, clef });
   }
@@ -524,26 +540,31 @@ useEffect(() => {
 
   // forceNewKeySig=true이면 Lv5+에서 새 keySig 생성 (stage 전환·리플레이 시).
   // false(기본)면 currentKeySignature 재사용 → 같은 stage 안에서 키사인 고정 유지.
-  const generateNewBatch = useCallback((batchSize: number, forceNewKeySig: boolean = false): {
+  // lastShownNote: 직전 화면에 떠 있던 음표 — 새 batch[0]이 이것과 같은 음표가 되지 않도록 회피 (옵션 D).
+  const generateNewBatch = useCallback((
+    batchSize: number,
+    forceNewKeySig: boolean = false,
+    lastShownNote?: NoteType | null,
+  ): {
     batch: NoteType[];
     keySig: KeySignatureType;
   } => {
     if (isCustom) {
       return {
-        batch: generateBatch(customNotes, batchSize, customClef, masteryMap),
+        batch: generateBatch(customNotes, batchSize, customClef, masteryMap, lastShownNote),
         keySig: currentKeySignature,
       };
     }
     if (level >= 5) {
       const keySig = forceNewKeySig ? getRandomKeySignature(level) : currentKeySignature;
       return {
-        batch: generateKeyBatch(level, batchSize, keySig, masteryMap).notes,
+        batch: generateKeyBatch(level, batchSize, keySig, masteryMap, lastShownNote).notes,
         keySig,
       };
     }
     const lvClef = getClefForLevel(level);
     return {
-      batch: generateBatch(NOTES, batchSize, lvClef, masteryMap),
+      batch: generateBatch(NOTES, batchSize, lvClef, masteryMap, lastShownNote),
       keySig: { key: "C", abcKey: "C" } as KeySignatureType,
     };
   }, [NOTES, isCustom, customNotes, level, customClef, masteryMap, currentKeySignature]);
@@ -567,7 +588,11 @@ useEffect(() => {
     return null;
   }, [retryQueue]);
 
-  const handleSetComplete = useCallback((currentStageIdx: number, currentSetNum: number) => {
+  const handleSetComplete = useCallback((
+    currentStageIdx: number,
+    currentSetNum: number,
+    lastShownNote?: NoteType | null,
+  ) => {
     const stagesRef = stages;
     const stageConfig = stagesRef[currentStageIdx];
 
@@ -584,7 +609,7 @@ useEffect(() => {
       setAnsweredNotes([]);
 
       // stage 전환 → Lv5+의 새 keySig 생성
-      const result = generateNewBatch(nextStage.batchSize, true);
+      const result = generateNewBatch(nextStage.batchSize, true, lastShownNote);
       setBatchAndKey(result);
       const notes = result.batch;
       setCurrentIndex(0);
@@ -605,7 +630,7 @@ useEffect(() => {
       setSetProgress(0);
       setAnsweredNotes([]);
 
-      const result = generateNewBatch(stageConfig.batchSize);
+      const result = generateNewBatch(stageConfig.batchSize, false, lastShownNote);
       setBatchAndKey(result);
       const notes = result.batch;
       setCurrentIndex(0);
@@ -634,15 +659,17 @@ useEffect(() => {
     }
 
     const nextIndex = currentIndex + 1;
+    // 옵션 D: 직전에 화면에 떠 있던 음표 (cross-batch dedup용)
+    const lastShownNote = currentBatch[currentIndex] ?? null;
 
     if (nextIndex >= currentBatch.length) {
       const newProgress = setProgress + currentBatch.length;
 
       if (newProgress >= stageConfig.notesPerSet) {
-        handleSetComplete(stageIdx, currentSet);
+        handleSetComplete(stageIdx, currentSet, lastShownNote);
       } else {
         setSetProgress(newProgress);
-        const result = generateNewBatch(stageConfig.batchSize);
+        const result = generateNewBatch(stageConfig.batchSize, false, lastShownNote);
         setBatchAndKey(result);
         const notes = result.batch;
         setCurrentIndex(0);
@@ -752,6 +779,8 @@ useEffect(() => {
 
       // 신규 정책: 재출제(wasRetry) 정답 → 영구 제거 (12=P).
       // 일반 정답 → 진행 후 큐 마커 있던 경우만 N+2 후 재출제로 갱신 (11=X, 마커 없으면 no-op).
+      // 옵션 B: advance 직전에 markJustAnswered → 그 안의 popDueOrNull(N+1)이 같은 음표를 안 뽑음.
+      retryQueue.markJustAnswered(retryKey, turnCounterRef.current);
       if (wasRetry) {
         retryQueue.resolve(retryKey);
         advanceToNextTurn(true);

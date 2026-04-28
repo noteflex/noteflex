@@ -274,4 +274,82 @@ describe("useRetryQueue", () => {
       expect(result.current.has(noteF3)).toBe(false);
     });
   });
+
+  describe("옵션 B: 방금 정답한 음표 1턴 pop 제외 (markJustAnswered)", () => {
+    // 사용자가 방금 정답한 음표가 같은 턴 또는 직후 턴에 retry로 다시 등장하는 것을 막는다.
+    // §0.1 N+2 즉시 등장 버그의 보조 안전장치.
+
+    it("markJustAnswered 직후 1턴은 due여도 pop 안 됨", () => {
+      const { result } = renderHook(() => useRetryQueue());
+
+      act(() => {
+        result.current.scheduleRetry(noteG4, 0); // due @ turn 2
+      });
+      act(() => {
+        result.current.markJustAnswered(noteG4, 1);
+      });
+
+      // turn 2: due이지만 마커로 블록
+      expect(result.current.popDueOrNull(2)).toBeNull();
+
+      // turn 3: 마커 만료 → pop 가능
+      let popped: ReturnType<typeof result.current.popDueOrNull> = null;
+      act(() => {
+        popped = result.current.popDueOrNull(3);
+      });
+      expect(popped).toEqual(noteG4);
+    });
+
+    it("같은 턴에 marked + due여도 pop 안 됨", () => {
+      const { result } = renderHook(() => useRetryQueue());
+
+      act(() => {
+        result.current.scheduleRetry(noteG4, 0); // due @ turn 2
+      });
+      act(() => {
+        result.current.markJustAnswered(noteG4, 2);
+      });
+
+      // 같은 턴에 marked → 블록
+      expect(result.current.popDueOrNull(2)).toBeNull();
+    });
+
+    it("markJustAnswered는 다른 음표 pop에 영향 없음", () => {
+      const { result } = renderHook(() => useRetryQueue());
+
+      act(() => {
+        result.current.scheduleRetry(noteF3, 0); // due @ turn 2
+      });
+      act(() => {
+        result.current.markJustAnswered(noteG4, 1); // 다른 음표 마킹
+      });
+
+      let popped: ReturnType<typeof result.current.popDueOrNull> = null;
+      act(() => {
+        popped = result.current.popDueOrNull(2);
+      });
+      expect(popped).toEqual(noteF3);
+    });
+
+    it("reset 시 마커도 클리어", () => {
+      const { result } = renderHook(() => useRetryQueue());
+
+      act(() => {
+        result.current.markJustAnswered(noteG4, 1);
+      });
+      act(() => {
+        result.current.reset();
+      });
+      act(() => {
+        result.current.scheduleRetry(noteG4, 0); // due @ turn 2
+      });
+
+      // reset 후엔 마커 영향 없음
+      let popped: ReturnType<typeof result.current.popDueOrNull> = null;
+      act(() => {
+        popped = result.current.popDueOrNull(2);
+      });
+      expect(popped).toEqual(noteG4);
+    });
+  });
 });

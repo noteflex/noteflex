@@ -61,6 +61,12 @@ export interface UseRetryQueueReturn {
   rescheduleAfterCorrect: (note: RetryNoteKey, currentTurn: number) => void;
   /** 정답 시 해당 음표 큐에서 제거 */
   resolve: (note: RetryNoteKey) => void;
+  /**
+   * 옵션 B: 방금 정답한 음표를 1턴 동안 popDueOrNull 대상에서 제외.
+   * markedTurn 기준으로 currentTurn === markedTurn 또는 currentTurn === markedTurn+1
+   * 일 때만 블록. 그 이후 턴부터는 자동 만료. §0.1 N+2 즉시 등장 버그 보조 안전장치.
+   */
+  markJustAnswered: (note: RetryNoteKey, currentTurn: number) => void;
   /** 현재 턴에 출제 예정인 항목 반환 (있으면 꺼내고 큐에서 제거) */
   popDueOrNull: (currentTurn: number) => RetryNoteKey | null;
   /** 세션 초기화 (게임오버/리플레이/신규 세션) */
@@ -76,6 +82,9 @@ export function useRetryQueue(): UseRetryQueueReturn {
   // 누적 오답 카운터: pop되어도 resolve 전까지 유지
   // (같은 음표를 pop 후 또 틀렸을 때 missCount가 제대로 누적되도록)
   const missCountRef = useRef<Map<string, number>>(new Map());
+
+  // 옵션 B: 방금 정답한 음표 1턴 pop 제외 마커
+  const justAnsweredRef = useRef<{ id: string; turn: number } | null>(null);
 
   // 디버그 패널용으로 크기·스냅샷만 state에 반영
   const [size, setSize] = useState(0);
@@ -158,12 +167,22 @@ export function useRetryQueue(): UseRetryQueueReturn {
     [syncDebug]
   );
 
+  const markJustAnswered = useCallback(
+    (note: RetryNoteKey, currentTurn: number) => {
+      justAnsweredRef.current = { id: composeId(note), turn: currentTurn };
+    },
+    []
+  );
+
   const popDueOrNull = useCallback(
     (currentTurn: number): RetryNoteKey | null => {
+      const ja = justAnsweredRef.current;
       // scheduledAtTurn이 작은 것 우선 (가장 오래 기다린 것)
       let bestId: string | null = null;
       let bestTurn = Infinity;
       for (const [id, entry] of queueRef.current) {
+        // 옵션 B: 방금 정답한 음표는 markedTurn 또는 markedTurn+1 턴에선 skip
+        if (ja && id === ja.id && currentTurn - ja.turn <= 1) continue;
         if (entry.scheduledAtTurn <= currentTurn && entry.scheduledAtTurn < bestTurn) {
           bestId = id;
           bestTurn = entry.scheduledAtTurn;
@@ -181,6 +200,7 @@ export function useRetryQueue(): UseRetryQueueReturn {
   const reset = useCallback(() => {
     queueRef.current.clear();
     missCountRef.current.clear();
+    justAnsweredRef.current = null;
     syncDebug();
   }, [syncDebug]);
 
@@ -195,6 +215,7 @@ export function useRetryQueue(): UseRetryQueueReturn {
     markMissed,
     rescheduleAfterCorrect,
     resolve,
+    markJustAnswered,
     popDueOrNull,
     reset,
     has,
