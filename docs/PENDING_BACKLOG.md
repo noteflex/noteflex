@@ -48,7 +48,7 @@
 
 다음 세션에서 가장 먼저 잡을 항목.
 
-### 0.1 N+2 재출제 즉시 등장 버그 ✅ (2026-04-29, `bb692cd`)
+### 0.1 N+2 재출제 즉시 등장 버그 ✅ (2026-04-29, `bb692cd`) · 🔴 디버그 instrumentation 출시 전 제거 필요
 **사용자 검증**: "첫 번째 음표를 2번 틀린 후 정답을 맞추면 바로 다음 음표가 같은 음표가 나온다."
 
 - 사용자 의도: 같은 음표가 최대한 연속으로 안 나오게
@@ -60,6 +60,14 @@
   - 정답 처리 시 `advanceToNextTurn` 직전에 `markJustAnswered` 호출 → advance 안의 popDueOrNull(N+1)이 같은 음표 pop 안 함
 - **수정 위치**: `src/hooks/useRetryQueue.ts` + `src/components/NoteGame.tsx`
 - **테스트**: `NoteGame.batch.test.ts` (5 케이스) + `useRetryQueue.test.ts` (4 케이스 추가) — 274/274 PASS
+
+#### 0.1-cleanup 🔴 디버그 instrumentation 제거 (출시 전, Week 5 안에)
+사용자 검증용 임시 추적 코드. 검증 끝나면 제거.
+- 삭제 파일: `src/lib/retryQueueDebug.ts`
+- `NoteGame.tsx`에서 `// [§0.1 DEBUG]` 마커 grep으로 모두 제거 (import 6개·prepareNextTurn 로그·markMissed×2·markJustAnswered·rescheduleAfterCorrect·resolve·정답 배지 인라인 turn/queue 표시·`SHOW_RETRY_DEBUG_FOR_ADMIN_OR_DEV` 상수)
+- `lastRetryPopRef` ref 제거
+- 패널 게이트 `SHOW_RETRY_DEBUG_FOR_ADMIN_OR_DEV && isAdminOrDev` → `SHOW_RETRY_DEBUG`(false) 원복 또는 패널 전체 제거
+- 검증 가이드: 사용자가 dev server에서 Lv1 Stage1 → 첫 음표 2번 틀린 후 정답 → 콘솔 로그로 `markMissed` ×2 → `markJustAnswered` → `prepareNextTurn(qsize=1)` → batch[0] != 직전 음표 확인 → 2턴 후 retry로 다시 등장 확인.
 
 ### 0.2 Lv5+ 조표 음표 비율 부족 🐛
 **사용자 검증**: "조표 붙은 음표가 안 나와 swipe 검증 자체 막힘."

@@ -10,6 +10,14 @@ import { playNote, playWrong, isSamplerReady, initSound } from "@/lib/sound";
 import { useNoteLogger } from "@/hooks/useNoteLogger";
 import { useSessionRecorder } from "@/hooks/useSessionRecorder";
 import { useRetryQueue } from "@/hooks/useRetryQueue";
+// [§0.1 DEBUG] — 출시 전 제거. PENDING_BACKLOG §0.1 cleanup.
+import {
+  logMarkMissed,
+  logMarkJustAnswered,
+  logRescheduleAfterCorrect,
+  logResolveRetry,
+  logPrepareNextTurn,
+} from "@/lib/retryQueueDebug";
 import { useUserMastery, type MasteryMap } from "@/hooks/useUserMastery";
 import { getNoteWeight, weightedPickIndex } from "@/lib/noteWeighting";
 import {
@@ -309,7 +317,8 @@ function getSoundKey(note: NoteType): string {
   return `${note.key}${note.octave}`;
 }
 
-const SHOW_RETRY_DEBUG = false;
+// [§0.1 DEBUG] — admin/dev에서만 retry queue 패널 노출. 출시 전 false로 원복 (또는 panel 전체 제거).
+const SHOW_RETRY_DEBUG_FOR_ADMIN_OR_DEV = true;
 
 interface NoteGameProps {
   onReset?: () => void;
@@ -356,6 +365,8 @@ export default function NoteGame({
   const isAdminOrDev  = profile?.role === "admin" || import.meta.env.DEV;
   const noteStartTime = useRef<number>(Date.now());
   const turnCounterRef = useRef<number>(0);
+  // [§0.1 DEBUG] — 마지막 retry pop 추적 (admin/dev 패널 표시용). 출시 전 제거.
+  const lastRetryPopRef = useRef<{ note: NoteType; turn: number } | null>(null);
 
   const totalAttemptsRef  = useRef(0);
   const totalCorrectRef   = useRef(0);
@@ -571,6 +582,8 @@ useEffect(() => {
 
   const prepareNextTurn = useCallback(() => {
     turnCounterRef.current += 1;
+    // [§0.1 DEBUG] — pop 직전 queue size 캡처
+    const qsizeBefore = retryQueue.size;
     const due = retryQueue.popDueOrNull(turnCounterRef.current);
     if (due) {
       const retryNote: NoteType = {
@@ -582,9 +595,15 @@ useEffect(() => {
         clef: due.clef,
       };
       setRetryOverride(retryNote);
+      // [§0.1 DEBUG]
+      logPrepareNextTurn(turnCounterRef.current, qsizeBefore, due, retryNote, null);
+      // [§0.1 DEBUG] — 마지막 pop 추적
+      lastRetryPopRef.current = { note: retryNote, turn: turnCounterRef.current };
       return retryNote;
     }
     setRetryOverride(null);
+    // [§0.1 DEBUG] — fallback은 caller가 결정하므로 displayed=null로 로깅
+    logPrepareNextTurn(turnCounterRef.current, qsizeBefore, null, null, null);
     return null;
   }, [retryQueue]);
 
@@ -781,12 +800,21 @@ useEffect(() => {
       // 일반 정답 → 진행 후 큐 마커 있던 경우만 N+2 후 재출제로 갱신 (11=X, 마커 없으면 no-op).
       // 옵션 B: advance 직전에 markJustAnswered → 그 안의 popDueOrNull(N+1)이 같은 음표를 안 뽑음.
       retryQueue.markJustAnswered(retryKey, turnCounterRef.current);
+      logMarkJustAnswered(turnCounterRef.current, retryKey); // [§0.1 DEBUG]
       if (wasRetry) {
         retryQueue.resolve(retryKey);
+        logResolveRetry(turnCounterRef.current, retryKey); // [§0.1 DEBUG]
         advanceToNextTurn(true);
       } else {
         advanceToNextTurn(false);
         retryQueue.rescheduleAfterCorrect(retryKey, turnCounterRef.current);
+        // [§0.1 DEBUG] — rescheduleAfterCorrect의 결과 due 값을 snapshot에서 찾기
+        {
+          const updated = retryQueue.snapshot.find((e) => e.id === `${retryKey.clef}:${retryKey.key}${retryKey.accidental ?? ""}${retryKey.octave}`);
+          if (updated) {
+            logRescheduleAfterCorrect(turnCounterRef.current, retryKey, updated.scheduledAtTurn, retryQueue.snapshot);
+          }
+        }
       }
     } else {
       logNote({
@@ -812,6 +840,7 @@ useEffect(() => {
       // 신규 정책: 오답 시 같은 자리 유지 (currentIndex/turn 변동 X).
       // 큐에는 마커만 등록 (해석 10=A, due=MAX → 정답 시 갱신).
       retryQueue.markMissed(retryKey);
+      logMarkMissed(turnCounterRef.current, retryKey, retryQueue.snapshot); // [§0.1 DEBUG]
 
       playWrong();
       setIndividualStreak(0);
@@ -858,12 +887,16 @@ useEffect(() => {
     });
 
     // 신규 정책: 타이머 만료 = 오답과 동일 처리. 같은 자리 유지 + 마커 등록.
-    retryQueue.markMissed({
-      key: currentTarget.key,
-      octave: currentTarget.octave,
-      accidental: currentTarget.accidental,
-      clef: clefForLog,
-    });
+    {
+      const timeoutKey = {
+        key: currentTarget.key,
+        octave: currentTarget.octave,
+        accidental: currentTarget.accidental,
+        clef: clefForLog,
+      };
+      retryQueue.markMissed(timeoutKey);
+      logMarkMissed(turnCounterRef.current, timeoutKey, retryQueue.snapshot); // [§0.1 DEBUG] (timeout)
+    }
 
     playWrong();
     setIndividualStreak(0);
@@ -989,6 +1022,13 @@ useEffect(() => {
           <div className="w-full flex justify-center mt-1">
             <div className="px-4 py-1.5 rounded-lg bg-yellow-100 border border-yellow-300 text-yellow-900 text-sm font-mono font-bold shadow-sm">
               💡 정답: {getNoteAnswer(currentTarget)}
+              {/* [§0.1 DEBUG] — turn/queue 요약 인라인 표시. 출시 전 제거. */}
+              <span className="ml-3 text-xs font-sans font-normal text-yellow-800">
+                · turn {turnCounterRef.current} · queue {retryQueue.size}
+                {lastRetryPopRef.current && (
+                  <> · last retry: {lastRetryPopRef.current.note.key}{lastRetryPopRef.current.note.accidental ?? ""}{lastRetryPopRef.current.note.octave} @ turn {lastRetryPopRef.current.turn}</>
+                )}
+              </span>
               <span className="ml-2 text-xs font-sans font-normal text-yellow-700">
                 (admin/dev only)
               </span>
@@ -1089,7 +1129,7 @@ useEffect(() => {
         turn: {turnCounterRef.current} · size: {retryQueue.size}
       </span>
 
-      {SHOW_RETRY_DEBUG && (
+      {SHOW_RETRY_DEBUG_FOR_ADMIN_OR_DEV && isAdminOrDev && (
         <div className="mt-4 w-full max-w-[490px] rounded-lg border border-dashed border-amber-500/40 bg-amber-500/5 px-3 py-2 text-xs">
           <div className="flex items-center justify-between mb-1">
             <span className="font-semibold text-amber-700">
