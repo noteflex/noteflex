@@ -67,8 +67,15 @@ export interface UseRetryQueueReturn {
    * 일 때만 블록. 그 이후 턴부터는 자동 만료. §0.1 N+2 즉시 등장 버그 보조 안전장치.
    */
   markJustAnswered: (note: RetryNoteKey, currentTurn: number) => void;
-  /** 현재 턴에 출제 예정인 항목 반환 (있으면 꺼내고 큐에서 제거) */
-  popDueOrNull: (currentTurn: number) => RetryNoteKey | null;
+  /**
+   * 현재 턴에 출제 예정인 항목 반환 (있으면 꺼내고 큐에서 제거).
+   * lastShownNote가 주어지면 해당 ID는 skip (전역 dedup §0.1 정책).
+   * 모든 due 후보가 lastShownNote와 일치하면 null 반환 → caller가 일반 batch[0]로 fallback.
+   */
+  popDueOrNull: (
+    currentTurn: number,
+    lastShownNote?: RetryNoteKey | null,
+  ) => RetryNoteKey | null;
   /** 세션 초기화 (게임오버/리플레이/신규 세션) */
   reset: () => void;
   /** 특정 음표가 큐에 있는지 확인 (디버그) */
@@ -175,14 +182,20 @@ export function useRetryQueue(): UseRetryQueueReturn {
   );
 
   const popDueOrNull = useCallback(
-    (currentTurn: number): RetryNoteKey | null => {
+    (
+      currentTurn: number,
+      lastShownNote?: RetryNoteKey | null,
+    ): RetryNoteKey | null => {
       const ja = justAnsweredRef.current;
+      const lastId = lastShownNote ? composeId(lastShownNote) : null;
       // scheduledAtTurn이 작은 것 우선 (가장 오래 기다린 것)
       let bestId: string | null = null;
       let bestTurn = Infinity;
       for (const [id, entry] of queueRef.current) {
         // 옵션 B: 방금 정답한 음표는 markedTurn 또는 markedTurn+1 턴에선 skip
         if (ja && id === ja.id && currentTurn - ja.turn <= 1) continue;
+        // §0.1 전역 dedup: 직전 표시 음표와 같은 ID skip (1턴 지연 fallback)
+        if (lastId && id === lastId) continue;
         if (entry.scheduledAtTurn <= currentTurn && entry.scheduledAtTurn < bestTurn) {
           bestId = id;
           bestTurn = entry.scheduledAtTurn;

@@ -207,29 +207,25 @@ describe("NoteGame - Retry Queue 통합", () => {
     expect(getDebugQueueSize()).toBe(1);
   });
 
-  it("오답 → 정답 후 N+2턴 뒤 🔁 재출제 배지 표시 (신규 정책: turn=3에 등장)", async () => {
-    // 결정적: q1, q2, q3가 서로 다른 letter 보장.
-    // 신규 정책에서 q1 정답 시 due=turn+2=3. 이후 q2, q3 정답 진행 후 turn=3에 q1 pop.
+  it("오답 → 정답 후 N+2턴 뒤 🔁 재출제 배지 표시 (신규 정책: turn=2에 등장)", async () => {
+    // 결정적: q1, q2가 서로 다른 letter 보장.
+    // 신규 정책 N+2: q1 오답 후 정답(같은 자리) → rescheduleAfterCorrect at turn=0 → due=2.
+    // advance → turn=1 (q2 표시). q2 정답 → advance → turn=2 → popDueOrNull → q1 retry pop.
     const mockRandom = vi.spyOn(Math, "random")
       .mockReturnValueOnce(0)     // q1
       .mockReturnValueOnce(0.2)   // q2
-      .mockReturnValueOnce(0.4)   // q3
-      .mockReturnValueOnce(0.6);  // q4 (retry 우선이라 화면엔 안 뜸)
+      .mockReturnValueOnce(0.4);  // q3 candidate (retry 우선)
 
     const user = userEvent.setup();
     render(<NoteGame level={1} sublevel={1} skipCountdown />);
 
     const q1 = getCurrentQuestion()!;
     await user.click(getWrongButton(q1));    // 같은 자리 유지, turn=0
-    await user.click(getCorrectButton(q1));  // turn=1, q1 due=3
+    await user.click(getCorrectButton(q1));  // 정답, due=2 (advance 전 reschedule). advance→turn=1.
 
     const q2 = getCurrentQuestion()!;
     expect(q2.key).not.toBe(q1.key);
-    await user.click(getCorrectButton(q2));  // turn=2
-
-    const q3 = getCurrentQuestion()!;
-    expect(q3.key).not.toBe(q1.key);
-    await user.click(getCorrectButton(q3));  // turn=3 → q1 due 도달, pop
+    await user.click(getCorrectButton(q2));  // turn=2 → q1 due 도달, pop
 
     // q1 재출제 + 배지 등장
     expect(screen.getByText(/🔁 재출제/)).toBeInTheDocument();
@@ -240,26 +236,22 @@ describe("NoteGame - Retry Queue 통합", () => {
     mockRandom.mockRestore();
   });
 
-  
+
   it("재출제된 음표를 정답하면 큐에서 영구 제거됨 (신규 정책 12=P)", async () => {
     const mockRandom = vi.spyOn(Math, "random")
       .mockReturnValueOnce(0)
       .mockReturnValueOnce(0.2)
-      .mockReturnValueOnce(0.4)
-      .mockReturnValueOnce(0.6);
+      .mockReturnValueOnce(0.4);
 
     const user = userEvent.setup();
     render(<NoteGame level={1} sublevel={1} skipCountdown />);
 
     const q1 = getCurrentQuestion()!;
     await user.click(getWrongButton(q1));    // 같은 자리, size=1
-    await user.click(getCorrectButton(q1));  // turn=1, due=3
+    await user.click(getCorrectButton(q1));  // due=2
 
     const q2 = getCurrentQuestion()!;
-    await user.click(getCorrectButton(q2));  // turn=2
-
-    const q3 = getCurrentQuestion()!;
-    await user.click(getCorrectButton(q3));  // turn=3 → q1 재출제
+    await user.click(getCorrectButton(q2));  // turn=2 → q1 재출제
 
     expect(screen.getByText(/🔁 재출제/)).toBeInTheDocument();
     const qRetry = getCurrentQuestion()!;
@@ -278,8 +270,7 @@ describe("NoteGame - Retry Queue 통합", () => {
     const mockRandom = vi.spyOn(Math, "random")
       .mockReturnValueOnce(0)
       .mockReturnValueOnce(0.2)
-      .mockReturnValueOnce(0.4)
-      .mockReturnValueOnce(0.6);
+      .mockReturnValueOnce(0.4);
 
     const user = userEvent.setup();
     render(<NoteGame level={1} sublevel={1} skipCountdown />);
@@ -289,10 +280,8 @@ describe("NoteGame - Retry Queue 통합", () => {
     await user.click(getCorrectButton(q1));
     const q2 = getCurrentQuestion()!;
     await user.click(getCorrectButton(q2));
-    const q3 = getCurrentQuestion()!;
-    await user.click(getCorrectButton(q3));
 
-    // q1 재출제 시점
+    // q1 재출제 시점 (turn=2)
     const qRetry = getCurrentQuestion()!;
     expect(qRetry.key).toBe(q1.key);
     const turnBeforeWrong = getDebugTurn();

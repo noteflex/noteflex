@@ -352,4 +352,123 @@ describe("useRetryQueue", () => {
       expect(popped).toEqual(noteG4);
     });
   });
+
+  describe("§0.1 전역 dedup: popDueOrNull(turn, lastShownNote?)", () => {
+    // retry pop 음표가 직전 표시 음표와 같지 않도록 호출자가 lastShownNote를 전달하면
+    // popDueOrNull은 그 ID를 skip한다. 다른 due 후보 있으면 그것 pop, 없으면 null
+    // (caller는 일반 batch[0] (이미 dedup된)로 fallback → 1턴 지연).
+
+    it("lastShownNote와 동일한 due만 있으면 null 반환 (1턴 지연 fallback)", () => {
+      const { result } = renderHook(() => useRetryQueue());
+
+      // turn 0: G4 오답 → due @ turn 2
+      act(() => {
+        result.current.scheduleRetry(noteG4, 0);
+      });
+
+      // turn 2: due이지만 직전 표시가 G4였다면 skip
+      expect(result.current.popDueOrNull(2, noteG4)).toBeNull();
+      // 큐에는 그대로 남아있음 (다음 턴 재시도 가능)
+      expect(result.current.size).toBe(1);
+
+      // turn 3: lastShownNote 다른 음표면 pop 가능 (1턴 지연 후 등장)
+      let popped: ReturnType<typeof result.current.popDueOrNull> = null;
+      act(() => {
+        popped = result.current.popDueOrNull(3, noteF3);
+      });
+      expect(popped).toEqual(noteG4);
+    });
+
+    it("다른 due 후보 있으면 그것 pop (lastShownNote와 일치하는 것만 skip)", () => {
+      const { result } = renderHook(() => useRetryQueue());
+
+      // turn 0: G4 오답 → due @ turn 2
+      // turn 0: F3 오답 → due @ turn 2
+      act(() => {
+        result.current.scheduleRetry(noteG4, 0);
+        result.current.scheduleRetry(noteF3, 0);
+      });
+
+      // turn 2: 둘 다 due. 직전이 G4면 F3 pop
+      let popped: ReturnType<typeof result.current.popDueOrNull> = null;
+      act(() => {
+        popped = result.current.popDueOrNull(2, noteG4);
+      });
+      expect(popped).toEqual(noteF3);
+      // G4는 큐에 남아있음
+      expect(result.current.has(noteG4)).toBe(true);
+      expect(result.current.size).toBe(1);
+    });
+
+    it("lastShownNote 없으면 기존 동작 (가장 오래 기다린 것 우선)", () => {
+      const { result } = renderHook(() => useRetryQueue());
+
+      act(() => {
+        result.current.scheduleRetry(noteG4, 0); // due @2
+        result.current.scheduleRetry(noteF3, 1); // due @3
+      });
+
+      let popped: ReturnType<typeof result.current.popDueOrNull> = null;
+      act(() => {
+        popped = result.current.popDueOrNull(3); // lastShownNote 없음
+      });
+      expect(popped).toEqual(noteG4); // 먼저 due된 것
+    });
+
+    it("lastShownNote는 ja(markJustAnswered)와 함께 작동 (둘 다 skip)", () => {
+      const { result } = renderHook(() => useRetryQueue());
+
+      // 큐에 G4, F3 둘 다 due
+      act(() => {
+        result.current.scheduleRetry(noteG4, 0); // due @ 2
+        result.current.scheduleRetry(noteF3, 0); // due @ 2
+      });
+
+      // ja 마커: F3 (1턴 윈도우)
+      // lastShownNote: G4
+      // → 둘 다 skip → null
+      act(() => {
+        result.current.markJustAnswered(noteF3, 1);
+      });
+      expect(result.current.popDueOrNull(2, noteG4)).toBeNull();
+
+      // turn 3: ja 만료. lastShownNote=G4면 F3 pop
+      let popped: ReturnType<typeof result.current.popDueOrNull> = null;
+      act(() => {
+        popped = result.current.popDueOrNull(3, noteG4);
+      });
+      expect(popped).toEqual(noteF3);
+    });
+
+    it("clef 다르면 같은 key/octave여도 skip 안 함", () => {
+      const { result } = renderHook(() => useRetryQueue());
+      const noteG4Bass = { key: "G", octave: "4", clef: "bass" as const };
+
+      act(() => {
+        result.current.scheduleRetry(noteG4, 0); // treble due @ 2
+      });
+
+      // lastShown은 G4 bass — 다른 ID이므로 skip 안 됨
+      let popped: ReturnType<typeof result.current.popDueOrNull> = null;
+      act(() => {
+        popped = result.current.popDueOrNull(2, noteG4Bass);
+      });
+      expect(popped).toEqual(noteG4);
+    });
+
+    it("accidental 다르면 같은 key/octave/clef여도 skip 안 함", () => {
+      const { result } = renderHook(() => useRetryQueue());
+
+      act(() => {
+        result.current.scheduleRetry(noteGsharp4, 0); // due @ 2
+      });
+
+      // lastShown은 G4 (natural) — 다른 ID
+      let popped: ReturnType<typeof result.current.popDueOrNull> = null;
+      act(() => {
+        popped = result.current.popDueOrNull(2, noteG4);
+      });
+      expect(popped).toEqual(noteGsharp4);
+    });
+  });
 });

@@ -133,7 +133,8 @@ const ADV_BASS_NOTES   = buildNoteRange(1, 5);
 const GRAND_TREBLE_NOTES = ADV_TREBLE_NOTES;
 const GRAND_BASS_NOTES   = ADV_BASS_NOTES;
 
-function getNotesForLevel(level: number): NoteType[] {
+// simulator/테스트에서 재사용 (Lv1~4 풀)
+export function getNotesForLevel(level: number): NoteType[] {
   switch (level) {
     case 1: return TREBLE_NOTES;
     case 2: return BASS_NOTES;
@@ -143,7 +144,7 @@ function getNotesForLevel(level: number): NoteType[] {
   }
 }
 
-function getClefForLevel(level: number): "treble" | "bass" {
+export function getClefForLevel(level: number): "treble" | "bass" {
   if (level === 2 || level === 4) return "bass";
   return "treble";
 }
@@ -367,6 +368,9 @@ export default function NoteGame({
   const turnCounterRef = useRef<number>(0);
   // [§0.1 DEBUG] — 마지막 retry pop 추적 (admin/dev 패널 표시용). 출시 전 제거.
   const lastRetryPopRef = useRef<{ note: NoteType; turn: number } | null>(null);
+  // §0.1 전역 dedup — 직전에 화면에 떠 있던 음표 (정답·오답 모두 갱신).
+  // popDueOrNull에 전달해 같은 ID retry pop을 1턴 지연시킨다.
+  const lastShownNoteRef = useRef<NoteType | null>(null);
 
   const totalAttemptsRef  = useRef(0);
   const totalCorrectRef   = useRef(0);
@@ -485,6 +489,7 @@ export default function NoteGame({
     const sessionType: "regular" | "custom_score" = isCustom ? "custom_score" : "regular";
     recorder.startSession(level, sessionType);
     turnCounterRef.current = 0;
+    lastShownNoteRef.current = null;
     retryQueue.reset();
     return () => {
       if (recorder.isRecording) {
@@ -580,11 +585,21 @@ useEffect(() => {
     };
   }, [NOTES, isCustom, customNotes, level, customClef, masteryMap, currentKeySignature]);
 
-  const prepareNextTurn = useCallback(() => {
+  const prepareNextTurn = useCallback((lastShownNote?: NoteType | null) => {
     turnCounterRef.current += 1;
     // [§0.1 DEBUG] — pop 직전 queue size 캡처
     const qsizeBefore = retryQueue.size;
-    const due = retryQueue.popDueOrNull(turnCounterRef.current);
+    // §0.1 전역 dedup: lastShownNote 인자 우선, 없으면 ref 폴백 (handleAnswer에서 갱신됨).
+    const lastShown = lastShownNote ?? lastShownNoteRef.current;
+    const lastShownKey = lastShown
+      ? {
+          key: lastShown.key,
+          octave: lastShown.octave,
+          accidental: lastShown.accidental,
+          clef: lastShown.clef ?? (isCustom ? customClef : getClefForLevel(level)),
+        }
+      : null;
+    const due = retryQueue.popDueOrNull(turnCounterRef.current, lastShownKey);
     if (due) {
       const retryNote: NoteType = {
         name: due.key,
@@ -605,7 +620,7 @@ useEffect(() => {
     // [§0.1 DEBUG] — fallback은 caller가 결정하므로 displayed=null로 로깅
     logPrepareNextTurn(turnCounterRef.current, qsizeBefore, null, null, null);
     return null;
-  }, [retryQueue]);
+  }, [retryQueue, isCustom, customClef, level]);
 
   const handleSetComplete = useCallback((
     currentStageIdx: number,
@@ -640,7 +655,7 @@ useEffect(() => {
         retryQueue.reset();
       }
 
-      const retryNote = prepareNextTurn();
+      const retryNote = prepareNextTurn(lastShownNote);
       const toPlay = retryNote ?? notes[0];
       playNote(getSoundKey(toPlay));
     } else {
@@ -657,7 +672,7 @@ useEffect(() => {
       setTimerKey(prev => prev + 1);
 
       // 같은 stage 내 set 전환은 retry queue 유지 (사용자 지시).
-      const retryNote = prepareNextTurn();
+      const retryNote = prepareNextTurn(lastShownNote);
       const toPlay = retryNote ?? notes[0];
       playNote(getSoundKey(toPlay));
     }
@@ -668,7 +683,9 @@ useEffect(() => {
     const stageConfig = stagesRef[stageIdx];
 
     if (wasRetry) {
-      const retryNote = prepareNextTurn();
+      // wasRetry: 직전 표시 = retryOverride 음표 (lastShownNoteRef에서 가져옴).
+      // markJustAnswered가 이미 그 ID skip하므로 이중 안전장치.
+      const retryNote = prepareNextTurn(lastShownNoteRef.current);
       if (retryNote) {
         playNote(getSoundKey(retryNote));
       } else if (currentBatch[currentIndex]) {
@@ -697,7 +714,7 @@ useEffect(() => {
         noteStartTime.current = Date.now();
 
         // 같은 set 안 batch 갈이는 retry queue 유지 (사용자 지시).
-        const retryNote = prepareNextTurn();
+        const retryNote = prepareNextTurn(lastShownNote);
         const toPlay = retryNote ?? notes[0];
         playNote(getSoundKey(toPlay));
       }
@@ -707,7 +724,7 @@ useEffect(() => {
       setTimerKey(prev => prev + 1);
       noteStartTime.current = Date.now();
 
-      const retryNote = prepareNextTurn();
+      const retryNote = prepareNextTurn(lastShownNote);
       const toPlay = retryNote ?? currentBatch[nextIndex];
       playNote(getSoundKey(toPlay));
     }
@@ -731,6 +748,10 @@ useEffect(() => {
 
   const handleAnswer = useCallback((answer: string) => {
     if (phase !== "playing" || !currentTarget) return;
+
+    // §0.1 전역 dedup: 직전 표시 음표 추적 (정답·오답 모두 갱신).
+    // popDueOrNull에 전달되어 같은 ID retry pop을 1턴 지연시킨다.
+    lastShownNoteRef.current = currentTarget;
 
     const correctAnswer = getNoteAnswer(currentTarget);
     const responseTimeMs = Date.now() - noteStartTime.current;
@@ -804,9 +825,20 @@ useEffect(() => {
       if (wasRetry) {
         retryQueue.resolve(retryKey);
         logResolveRetry(turnCounterRef.current, retryKey); // [§0.1 DEBUG]
-        advanceToNextTurn(true);
+        // §0.1 사각지대: retry 답한 음표가 currentBatch[currentIndex]와 같으면
+        // 그 batch 음표는 이미 retry로 답한 셈 → 일반 advance로 진행 (batch 1음표 자동 통과).
+        // 이렇게 하지 않으면 retry 직후 같은 음표가 또 화면에 떠 사용자가 같은 음표 두 번 본다.
+        const cur = currentBatch[currentIndex];
+        const sameAsBatchCurrent =
+          cur != null &&
+          cur.key === retryKey.key &&
+          cur.octave === retryKey.octave &&
+          (cur.accidental ?? null) === (retryKey.accidental ?? null) &&
+          (cur.clef ?? clefForLog) === retryKey.clef;
+        advanceToNextTurn(sameAsBatchCurrent ? false : true);
       } else {
-        advanceToNextTurn(false);
+        // §0.1 N+2 정책: due = 정답turn + 2가 되도록 advance 전에 reschedule.
+        // 순서가 반대면 advance 안에서 turnCounterRef +1 → due = (정답turn+1)+2 = N+3 발생.
         retryQueue.rescheduleAfterCorrect(retryKey, turnCounterRef.current);
         // [§0.1 DEBUG] — rescheduleAfterCorrect의 결과 due 값을 snapshot에서 찾기
         {
@@ -815,6 +847,7 @@ useEffect(() => {
             logRescheduleAfterCorrect(turnCounterRef.current, retryKey, updated.scheduledAtTurn, retryQueue.snapshot);
           }
         }
+        advanceToNextTurn(false);
       }
     } else {
       logNote({
@@ -864,6 +897,8 @@ useEffect(() => {
 
   const handleTimerExpire = useCallback(() => {
     if (phase !== "playing" || !currentTarget) return;
+    // §0.1 전역 dedup: 타이머 만료도 직전 표시 음표 갱신 (오답과 동일 처리).
+    lastShownNoteRef.current = currentTarget;
     const clefForLog = currentTarget.clef ?? (isCustom ? customClef : getClefForLevel(level));
 
     logNote({
@@ -935,6 +970,7 @@ useEffect(() => {
 
     retryQueue.reset();
     turnCounterRef.current  = 0;
+    lastShownNoteRef.current = null;
     totalAttemptsRef.current = 0;
     totalCorrectRef.current  = 0;
     currentStreakRef.current = 0;
