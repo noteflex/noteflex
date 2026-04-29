@@ -48,18 +48,24 @@
 
 다음 세션에서 가장 먼저 잡을 항목.
 
-### 0.1 N+2 재출제 즉시 등장 버그 ✅ (2026-04-29, `bb692cd`) · 🔴 디버그 instrumentation 출시 전 제거 필요
+### 0.1 N+2 재출제 즉시 등장 버그 ✅ (2026-04-29 `bb692cd` 1차 + 2026-04-30 `4e2b6ef` 전역 dedup 확장) · 🔴 디버그 instrumentation 출시 전 제거 필요
 **사용자 검증**: "첫 번째 음표를 2번 틀린 후 정답을 맞추면 바로 다음 음표가 같은 음표가 나온다."
 
-- 사용자 의도: 같은 음표가 최대한 연속으로 안 나오게
-- 실제 동작: 정답 후 같은 음표가 즉시 다음 자리에 등장
-- **실제 원인**: retry queue가 아니라 `generateBatch`의 batch 내부 dedup이 cross-batch에 적용 안 됨 + batchSize=1 stage(Lv1~4)에서 매 advance마다 새 batch 생성 시 batch[0]이 직전 정답 음표와 동일 가능
-- **수정**:
-  - 옵션 D — `generateBatch`/`generateKeyBatch`에 `lastShownNote` 인자 추가, batch[0]이 직전 음표와 같은 clef·key·octave면 재픽
-  - 옵션 B — `useRetryQueue.markJustAnswered(note, currentTurn)` 추가, popDueOrNull이 markedTurn~markedTurn+1 동안 해당 id pop 제외 (이중 안전장치)
-  - 정답 처리 시 `advanceToNextTurn` 직전에 `markJustAnswered` 호출 → advance 안의 popDueOrNull(N+1)이 같은 음표 pop 안 함
-- **수정 위치**: `src/hooks/useRetryQueue.ts` + `src/components/NoteGame.tsx`
-- **테스트**: `NoteGame.batch.test.ts` (5 케이스) + `useRetryQueue.test.ts` (4 케이스 추가) — 274/274 PASS
+- 사용자 의도 (2026-04-30 재확정): 같은 음표가 **연속으로 절대 안 나오게** (전역). 1턴 지연 ~5% 허용.
+- **1차 수정 (`bb692cd` 2026-04-29)**: cross-batch dedup (옵션 D) + retry pop 1턴 가드 (옵션 B). batchSize=1 케이스 해결. 그러나 retry pop 음표 자체에는 lastShownNote 비교 없어 사각지대 잔존.
+- **2차 수정 (`4e2b6ef` 2026-04-30 전역 dedup 확장)**:
+  - `popDueOrNull(turn, lastShownNote?)` 시그니처 확장 — due 후보 중 lastShownNote와 같은 ID는 skip. 모든 후보가 같으면 null → caller가 일반 batch[0]로 fallback (1턴 지연).
+  - `lastShownNoteRef` ref 추가 — handleAnswer 시작에서 갱신. 4개 prepareNextTurn 호출 지점 모두에 lastShownNote 명시 전달.
+  - **wasRetry 사각지대 fix**: retry 답한 음표가 `currentBatch[currentIndex]`와 같으면 `advanceToNextTurn(false)` (일반 advance)로 처리. retry로 이미 답한 셈이라 batch 음표 1개 자동 통과 — 사용자 입장에서 "같은 음표 바로 또 답하라"는 사각지대 사라짐.
+  - **N+2 정책 정확화**: `rescheduleAfterCorrect`를 `advanceToNextTurn` 전에 호출하도록 순서 변경. 기존엔 advance 후 호출이라 turn이 이미 +1되어 due=N+3이었음. 수정 후 due=N+2 정확.
+  - 03_GAME_LOGIC.md §3.2 표 정정 — "1회/2회/3회 차등" → "무조건 N+2".
+- **수정 위치**: `src/hooks/useRetryQueue.ts` (popDueOrNull 시그니처) + `src/components/NoteGame.tsx` (ref + 4 호출 지점 + wasRetry 사각지대 + N+2 순서) + `docs/03_GAME_LOGIC.md` §3.2.
+- **검증 도구 (`src/lib/simulator/`)**: NoteGame logic의 React-free 시뮬레이터. Lv1~4 × sub1~3 random 70% × 500g/each = 18000 games. invariant 위반 0건. delayedFallback 16.64% (사용자 ~5% 예상보다 높지만 추정치 — 큐 size>0 + lastShown skip 시 +1, 정확한 측정 아님). retry 간격 분포 N+2: 1976 (압도적), N+5+ 소수 (큐 충돌 시 1턴 지연된 케이스).
+- **테스트**: 304/304 PASS. 새 추가:
+  - `useRetryQueue.test.ts` 5케이스 (popDueOrNull lastShown skip)
+  - `NoteGame.consecutive.test.tsx` 9케이스 (Lv1-4 × all-correct/random-70 + Lv1 sub2)
+  - `NoteGame.invariants.test.tsx` 5케이스 (markMissed/markJustAnswered/rescheduleAfterCorrect 호출 횟수)
+  - `src/lib/simulator/sim.test.ts` 10케이스 (1만 게임 fuzz + 정량 보고서)
 
 #### 0.1-cleanup 🔴 디버그 instrumentation 제거 (출시 전, Week 5 안에)
 사용자 검증용 임시 추적 코드. 검증 끝나면 제거.
@@ -581,6 +587,9 @@ Claude가 출시 임박 시 자동 고지.
 
 **2026-04-29**:
 - ✅ §0.1 N+2 재출제 즉시 등장 버그 (`bb692cd`) — 옵션 D (cross-batch dedup) + 옵션 B (retry pop 1턴 가드). 진짜 원인은 retry queue가 아닌 `generateBatch`의 cross-batch dedup 부재였음. 9개 신규 테스트 + 기존 265개 회귀 없음 (274/274 PASS).
+
+**2026-04-30**:
+- ✅ §0.1 전역 dedup 확장 (`4e2b6ef`) — popDueOrNull(turn, lastShown?) 시그니처 확장 + `lastShownNoteRef` 4개 호출 지점 적용 + wasRetry 사각지대 fix (retry == currentBatch[currentIndex] 시 일반 advance) + N+2 정확화 (rescheduleAfterCorrect를 advance 전 호출, 기존 advance 후라 due=N+3이었음) + simulator (1만 게임 fuzz) + 19개 신규 테스트 (304/304 PASS).
 
 ---
 

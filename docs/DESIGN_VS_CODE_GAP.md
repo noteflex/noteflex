@@ -210,23 +210,35 @@
 
 → **결정 필요**: 재출제 배지 삭제할지
 
-### 3.10 N+2 재출제 즉시 등장 버그 ✅ (2026-04-29, `bb692cd`)
+### 3.10 N+2 재출제 즉시 등장 버그 ✅ (1차 2026-04-29 `bb692cd` + 2차 2026-04-30 `4e2b6ef` 전역 dedup)
 
 **사용자 검증으로 확인된 동작 이슈**:
 
 > "첫 번째 음표를 2번 틀린 후 정답을 맞추면 바로 다음 음표가 같은 음표가 나오네"
 
-설계 의도: "같은 음표가 최대한 연속으로 안 나오게 하고 싶다"
-실제 동작 (수정 전): 같은 자리 정답 → 같은 음표가 다음 자리에 즉시 등장
+설계 의도 (2026-04-30 재확정): "같은 음표가 **연속으로 절대 안 나오게**" (전역). 1턴 지연 ~5% 허용.
 
 **진짜 원인** (분석 결과 추정과 다름): retry queue의 due 계산은 정상이었음. `generateBatch`의 batch 내부 인접 dedup이 cross-batch에 적용 안 됐고, batchSize=1 stage(Lv1~4 초반)에서 매 advance마다 새 batch를 생성하므로 `batch[0]`이 직전 정답 음표와 동일하게 픽 가능. mastery 가중치가 방금 틀린 음표를 더 자주 픽하도록 편향시켜 확률 증가.
 
-**수정**:
+**1차 수정 (`bb692cd` 2026-04-29)**:
 - 옵션 D — `generateBatch`/`generateKeyBatch`에 `lastShownNote` 인자 추가, batch[0]이 직전 음표와 같은 clef·key·octave면 재픽
 - 옵션 B — `useRetryQueue.markJustAnswered(note, currentTurn)` 추가, popDueOrNull이 markedTurn~markedTurn+1 동안 해당 id pop 제외 (이중 안전장치)
 - 정답 처리 시 `advanceToNextTurn` 직전에 `markJustAnswered` 호출
 
-**테스트**: `NoteGame.batch.test.ts` (5 케이스) + `useRetryQueue.test.ts` (4 케이스 추가) — 274/274 PASS
+**2차 수정 (`4e2b6ef` 2026-04-30 전역 dedup 확장)**:
+- `popDueOrNull(turn, lastShownNote?)` 시그니처 확장 — due 후보 중 lastShownNote와 같은 ID skip. 모든 후보가 같으면 null → 일반 batch[0] (이미 dedup됨) fallback (1턴 지연).
+- `lastShownNoteRef` ref + 4개 prepareNextTurn 호출 지점 모두에 lastShownNote 명시 전달.
+- **wasRetry 사각지대 fix**: retry 답한 음표가 `currentBatch[currentIndex]`와 같으면 일반 advance(false) — batch 음표 1개 자동 통과.
+- **N+2 정확화**: `rescheduleAfterCorrect`를 advance 전에 호출 (구 동작은 advance 후 호출이라 turn += 1 영향으로 due=N+3이었음). 이제 due=N+2 정확. 03_GAME_LOGIC.md §3.2 표 정정.
+
+**검증 도구 (`src/lib/simulator/`)**:
+- React-free game logic 시뮬레이터. Lv1~4 × sub1~3 random 70% × 500g/each = 18000 games, invariant 위반 0건. delayedFallback 16.64% (1턴 지연 fallback 추정치 — 정확한 측정엔 lastShown 동일 due 카운팅 보강 필요). retry 간격 분포 N+2: 1976 (압도적), N+5+ 소수.
+
+**테스트**: 304/304 PASS. 새로 추가:
+- `useRetryQueue.test.ts` 5케이스 (popDueOrNull lastShown skip)
+- `NoteGame.consecutive.test.tsx` 9케이스 (전역 dedup invariant)
+- `NoteGame.invariants.test.tsx` 5케이스 (호출 횟수 회귀 방지)
+- `src/lib/simulator/sim.test.ts` 10케이스 (1만 게임 fuzz + 정량 보고서)
 
 ---
 
