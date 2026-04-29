@@ -196,7 +196,7 @@ AdSense 심사 통과율을 높이기 위해:
 /model로 Sonnet 전환 후 시작.
 
 작업 후:
-1. src/content/blog/2026-MM-DD-{slug}.md 파일 생성 (오늘 날짜 기준)
+1. src/content/blog/{오늘날짜}-{slug}.md 파일 생성. 오늘 날짜는 작업 시점 한국 시간 (date 명령어로 확인). 형식 YYYY-MM-DD.
 2. docs/marketing/blog_topics_100.md §6 작성 이력 테이블에 추가 (날짜·일차·번호·제목·slug·카테고리·자수·핵심 키워드)
 3. 작업 보고: 파일 경로 + 자수 + 핵심 키워드 + 한 줄 요약
 
@@ -208,6 +208,18 @@ AdSense 심사 통과율을 높이기 위해:
 - 서론·본론·결론 명시 표현 금지, 자연 흐름
 - Noteflex 자연 연계는 본문 80% 이후 1~2단락만
 - 외부 신뢰성 출처 (위키·논문·공식 자료) 가능 시 인용
+
+파일 frontmatter 형식 (Markdown 파일 최상단):
+---
+title: "글 제목"
+date: YYYY-MM-DD
+description: "메타 설명 (150자 이내)"
+keywords: ["키워드1", "키워드2", "키워드3"]
+slug: "url-slug"
+category: "초견 기초" 또는 "악보 읽기" 또는 "학습 방법" 또는 "음표 인식" 또는 "직군 가이드" 또는 "악기별" 또는 "학습 데이터" 또는 "Noteflex 기능" 또는 "브랜딩"
+day: N
+---
+
 ```
 
 **매일 바꿀 부분**: `N일차` 한 곳만 (예: `1일차`, `2일차`).
