@@ -87,12 +87,13 @@
 - 사용자 의도 (설계 §3.3.아): 6:4 / 4:6 / 7:3 / 3:7 비율로 자연음 vs 조표 + treble/bass 골고루
 - 수정 위치: `src/components/NoteGame.tsx` `generateKeyBatch()` `pickBalancedCount`/`accSlots`
 
-### 0.3 카운트다운 후 첫 음표 버퍼링
+### ✅ 0.3 카운트다운 후 첫 음표 버퍼링 (완료 2026-05-01, commit eac606a)
 **설계 §3.3.나 + 메모리**: "카운트다운 끝남 = 음표 표시 + 사운드 동시. 버퍼링 없어야 함. Lv7-3 3초 제한에서 답 시간 부족."
 
-- 수정 방향: 200~500ms 안정화 지연 또는 첫 음표 grace period
-- 수정 위치: `NoteGame.tsx`의 `handleCountdownComplete`
-- §0-1.1 반응속도 평균 35% 통과 조건과 함께 처리 (Lv 7-3 평균 1.05초 안에 답하려면 첫 음표 부담 큼)
+- `FIRST_NOTE_GRACE_MS = 300ms` — handleCountdownComplete 내부를 300ms setTimeout으로 감쌈
+- `setTimerKey(prev => prev+1)` grace 내부에 포함 → Sub3 즉시 타임아웃 버그 동시 수정
+- `noteStartTime.current`도 grace 내부에서 설정 → 반응속도 정확한 측정
+- 4개 TDD 테스트 (NoteGame.countdown.test.tsx)
 
 ### 0.4 UI 음표 잘림·색깔·history 누적 🆕🐛 (사용자 검증 발견 + 설계 위반)
 
@@ -627,7 +628,7 @@ Claude가 출시 임박 시 자동 고지.
 - [x] §0-1.1~0-1.6 정책 결정 ✅ (사용자, 2026-04-29)
 - [ ] §0.4 UI 음표 history·크기·색깔·잘림 방지 (사용자 발견 + 설계 §3.3.라 위반) ⭐
 - [x] §0.2 Lv5+ 조표 비율 (6:4 / 4:6 / 7:3 / 3:7) ✅ (2026-04-30, commit bb062c3)
-- [ ] §0.3 카운트다운 후 첫 음표 버퍼링 (Lv 7-3 1.05초 부담 완화)
+- [x] §0.3 카운트다운 후 첫 음표 버퍼링 (Lv 7-3 1.05초 부담 완화) ✅ (2026-05-01, commit eac606a)
 - [x] §0-1.1 코드 적용: PASS_CRITERIA 갱신 (정답률 85% / 반응속도 평균 35% / 수행 10회 / 최대 연속 5회) ✅ (2026-04-30)
 - [x] §0-1.2 코드 적용: SUBLEVEL_CONFIGS 갱신 (Sub 3 = 3 stage) ✅ (2026-04-30)
 - [x] §0-1.4 코드 적용: 음표 배치 + set 반복 횟수 갱신 ✅ (2026-04-30)
