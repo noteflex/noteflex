@@ -9,9 +9,12 @@
  *   서브레벨 3: 3초 / 목숨 3 (마스터)
  *
  * 단계별 stage 구성 (NoteGame이 사용):
- *   서브레벨 1: 28노트 / 3 stages (정확성 + 흐름 맛보기)
- *   서브레벨 2: 30노트 / 3 stages (흐름 + 시야 확장)
- *   서브레벨 3: 45노트 / 3 stages (시야 + 지구력)
+ *   [Lv 1~4] 서브레벨 1: 28노트 / 3 stages (정확성 + 흐름 맛보기)
+ *   [Lv 1~4] 서브레벨 2: 30노트 / 3 stages (흐름 + 시야 확장)
+ *   [Lv 1~4] 서브레벨 3: 45노트 / 3 stages (시야 + 지구력)
+ *   [Lv 5~7] 서브레벨 1: 51노트 / 3 stages (batchSize 3·5·7, 조표 본격 도입)
+ *   [Lv 5~7] 서브레벨 2: 51노트 / 3 stages (batchSize 3·5·7)
+ *   [Lv 5~7] 서브레벨 3: 57노트 / 3 stages (batchSize 5·7·7)
  *
  * 단계 통과 조건 (4개 모두 충족):
  *   - 플레이 횟수 ≥ 10회
@@ -134,6 +137,28 @@ export const CUSTOM_SCORE_STAGES: readonly GameStageConfig[] = [
   { stage: 4, batchSize: 5, totalSets: 3, notesPerSet: 5 },
 ];
 
+/**
+ * Lv 5~7 전용 stage 구성 — 조표 시스템 본격 도입.
+ * batchSize=1·2 미사용 (조표 음표 혼합 최소 3개 batch부터 유효).
+ */
+export const LV5_SUBLEVEL_STAGES: Record<Sublevel, readonly GameStageConfig[]> = {
+  1: [
+    { stage: 1, batchSize: 3, totalSets: 5, notesPerSet: 3 }, // 15
+    { stage: 2, batchSize: 5, totalSets: 3, notesPerSet: 5 }, // 15
+    { stage: 3, batchSize: 7, totalSets: 3, notesPerSet: 7 }, // 21
+  ],
+  2: [
+    { stage: 1, batchSize: 3, totalSets: 5, notesPerSet: 3 }, // 15
+    { stage: 2, batchSize: 5, totalSets: 3, notesPerSet: 5 }, // 15
+    { stage: 3, batchSize: 7, totalSets: 3, notesPerSet: 7 }, // 21
+  ],
+  3: [
+    { stage: 1, batchSize: 5, totalSets: 3, notesPerSet: 5 }, // 15
+    { stage: 2, batchSize: 7, totalSets: 3, notesPerSet: 7 }, // 21
+    { stage: 3, batchSize: 7, totalSets: 3, notesPerSet: 7 }, // 21
+  ],
+};
+
 export const PASS_CRITERIA = {
   MIN_PLAY_COUNT: 10,
   MIN_BEST_STREAK: 5,
@@ -156,9 +181,11 @@ export const MAX_SUBLEVEL = 3;
  */
 export function getStagesFor(
   sublevel: Sublevel,
-  isCustom: boolean = false
+  isCustom: boolean = false,
+  level: number = 1,
 ): readonly GameStageConfig[] {
   if (isCustom) return CUSTOM_SCORE_STAGES;
+  if (level >= 5) return LV5_SUBLEVEL_STAGES[sublevel];
   return SUBLEVEL_CONFIGS[sublevel].stages;
 }
 

@@ -399,7 +399,7 @@ export default function NoteGame({
     ? (customNotes.some(n => parseInt(n.octave) >= 4) ? "treble" as const : "bass" as const)
     : "treble" as const;
 
-  const stages: readonly GameStageConfig[] = getStagesFor(sublevel, isCustom);
+  const stages: readonly GameStageConfig[] = getStagesFor(sublevel, isCustom, level);
 
   const [initResult] = useState(() => {
     const firstBatchSize = stages[0].batchSize;

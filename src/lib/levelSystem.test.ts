@@ -3,6 +3,7 @@ import { getStagesFor, totalNotesInStages, CUSTOM_SCORE_STAGES } from "./levelSy
 
 import {
   SUBLEVEL_CONFIGS,
+  LV5_SUBLEVEL_STAGES,
   PASS_CRITERIA,
   TOTAL_SUBLEVELS,
   calculateAccuracy,
@@ -437,21 +438,88 @@ describe("SUBLEVEL_CONFIGS — stage 구성", () => {
 });
 
 describe("getStagesFor", () => {
-  it("sublevel 1·2·3 → SUBLEVEL_CONFIGS[sublevel].stages", () => {
+  it("level 미지정(기본 Lv1) → SUBLEVEL_CONFIGS stages 반환", () => {
     expect(getStagesFor(1)).toBe(SUBLEVEL_CONFIGS[1].stages);
     expect(getStagesFor(2)).toBe(SUBLEVEL_CONFIGS[2].stages);
     expect(getStagesFor(3)).toBe(SUBLEVEL_CONFIGS[3].stages);
   });
 
-  it("isCustom=true → CUSTOM_SCORE_STAGES (sublevel 무관)", () => {
+  it("isCustom=true → CUSTOM_SCORE_STAGES (level·sublevel 무관)", () => {
     expect(getStagesFor(1, true)).toBe(CUSTOM_SCORE_STAGES);
-    expect(getStagesFor(2, true)).toBe(CUSTOM_SCORE_STAGES);
-    expect(getStagesFor(3, true)).toBe(CUSTOM_SCORE_STAGES);
+    expect(getStagesFor(2, true, 5)).toBe(CUSTOM_SCORE_STAGES);
+    expect(getStagesFor(3, true, 7)).toBe(CUSTOM_SCORE_STAGES);
   });
 
-  it("isCustom=false (기본) → sublevel 따라 다름", () => {
-    expect(getStagesFor(1, false)).toBe(SUBLEVEL_CONFIGS[1].stages);
-    expect(getStagesFor(3, false)).toBe(SUBLEVEL_CONFIGS[3].stages);
+  it("Lv 1~4 → SUBLEVEL_CONFIGS stages", () => {
+    expect(getStagesFor(1, false, 1)).toBe(SUBLEVEL_CONFIGS[1].stages);
+    expect(getStagesFor(3, false, 4)).toBe(SUBLEVEL_CONFIGS[3].stages);
+  });
+
+  it("Lv 5~7 → LV5_SUBLEVEL_STAGES", () => {
+    expect(getStagesFor(1, false, 5)).toBe(LV5_SUBLEVEL_STAGES[1]);
+    expect(getStagesFor(2, false, 6)).toBe(LV5_SUBLEVEL_STAGES[2]);
+    expect(getStagesFor(3, false, 7)).toBe(LV5_SUBLEVEL_STAGES[3]);
+  });
+
+  it("Lv 5 경계: Lv4와 Lv5 stages가 다름", () => {
+    expect(getStagesFor(1, false, 4)).not.toBe(getStagesFor(1, false, 5));
+    expect(getStagesFor(1, false, 4)).toBe(SUBLEVEL_CONFIGS[1].stages);
+    expect(getStagesFor(1, false, 5)).toBe(LV5_SUBLEVEL_STAGES[1]);
+  });
+});
+
+describe("LV5_SUBLEVEL_STAGES — Lv5~7 stage 구성", () => {
+  it("sublevel 1 (입문): 51노트, 3 stages (batchSize 3·5·7)", () => {
+    const stages = LV5_SUBLEVEL_STAGES[1];
+    expect(stages).toHaveLength(3);
+    expect(totalNotesInStages(stages)).toBe(51);
+    expect(stages[0].batchSize).toBe(3);
+    expect(stages[1].batchSize).toBe(5);
+    expect(stages[2].batchSize).toBe(7);
+  });
+
+  it("sublevel 2 (숙련): 51노트, 3 stages (batchSize 3·5·7)", () => {
+    const stages = LV5_SUBLEVEL_STAGES[2];
+    expect(stages).toHaveLength(3);
+    expect(totalNotesInStages(stages)).toBe(51);
+    expect(stages[0].batchSize).toBe(3);
+    expect(stages[1].batchSize).toBe(5);
+    expect(stages[2].batchSize).toBe(7);
+  });
+
+  it("sublevel 3 (마스터): 57노트, 3 stages (batchSize 5·7·7)", () => {
+    const stages = LV5_SUBLEVEL_STAGES[3];
+    expect(stages).toHaveLength(3);
+    expect(totalNotesInStages(stages)).toBe(57);
+    expect(stages[0].batchSize).toBe(5);
+    expect(stages[1].batchSize).toBe(7);
+    expect(stages[2].batchSize).toBe(7);
+  });
+
+  it("모든 stage: batchSize=notesPerSet, batchSize ≥ 3", () => {
+    for (const sublevel of [1, 2, 3] as const) {
+      for (const stage of LV5_SUBLEVEL_STAGES[sublevel]) {
+        expect(stage.batchSize).toBeGreaterThanOrEqual(3);
+        expect(stage.batchSize).toBe(stage.notesPerSet);
+        expect(stage.totalSets).toBeGreaterThan(0);
+      }
+    }
+  });
+
+  it("stage 번호는 1부터 순차", () => {
+    for (const sublevel of [1, 2, 3] as const) {
+      LV5_SUBLEVEL_STAGES[sublevel].forEach((s, i) => {
+        expect(s.stage).toBe(i + 1);
+      });
+    }
+  });
+
+  it("getStagesFor로 얻은 Lv5 stages = 직접 LV5_SUBLEVEL_STAGES 동일", () => {
+    for (const lv of [5, 6, 7]) {
+      for (const sub of [1, 2, 3] as const) {
+        expect(getStagesFor(sub, false, lv)).toBe(LV5_SUBLEVEL_STAGES[sub]);
+      }
+    }
   });
 });
 

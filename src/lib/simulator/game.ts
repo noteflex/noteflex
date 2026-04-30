@@ -128,7 +128,7 @@ export function simulateGame(cfg: SimConfig): SimResult {
   }
   const pool = getNotesForLevel(cfg.level);
   const clef = getClefForLevel(cfg.level);
-  const stages = getStagesFor(cfg.sublevel, false);
+  const stages = getStagesFor(cfg.sublevel, false, cfg.level);
 
   const queue = new SimRetryQueue();
   let stageIdx = 0;
