@@ -163,6 +163,14 @@ function pickBalancedCount(size: number): number {
   return Math.floor(Math.random() * (size - 1)) + 1;
 }
 
+/** §0.2: batchSize별 조표 음표 목표 비율 */
+function getAccidentalRatio(batchSize: number): number {
+  if (batchSize <= 1) return 0.30; // 7:3
+  if (batchSize <= 3) return 0.40; // 6:4
+  if (batchSize <= 5) return 0.60; // 4:6
+  return 0.70;                     // 3:7 (batchSize=7)
+}
+
 export function generateKeyBatch(
   _level: number,
   size: number,
@@ -182,21 +190,26 @@ export function generateKeyBatch(
     return undefined;
   };
 
-  const trebleCount = pickBalancedCount(size);
-  const clefSlots: Array<"treble" | "bass"> = [
-    ...Array(trebleCount).fill("treble"),
-    ...Array(size - trebleCount).fill("bass"),
-  ];
-  shuffleArray(clefSlots);
+  // §0.2 clef 분배:
+  //   batchSize=1 → set 단위 50% coin flip
+  //   batchSize>1 → pickBalancedCount (1~size-1 treble 보장, 평균 50%)
+  let clefSlots: Array<"treble" | "bass">;
+  if (size <= 1) {
+    clefSlots = [Math.random() < 0.5 ? "treble" : "bass"];
+  } else {
+    const trebleCount = pickBalancedCount(size);
+    clefSlots = [
+      ...Array(trebleCount).fill("treble"),
+      ...Array(size - trebleCount).fill("bass"),
+    ] as Array<"treble" | "bass">;
+    shuffleArray(clefSlots);
+  }
 
+  // §0.2 조표 비율: batchSize별 목표 비율로 per-note 확률 적용 (size > 1 하드게이트 제거)
   let accSlots: boolean[];
-  if (hasAccidentals && size > 1) {
-    const accCount = pickBalancedCount(size);
-    accSlots = [
-      ...Array(accCount).fill(true),
-      ...Array(size - accCount).fill(false),
-    ];
-    shuffleArray(accSlots);
+  if (hasAccidentals) {
+    const accRatio = getAccidentalRatio(size);
+    accSlots = Array.from({ length: size }, () => Math.random() < accRatio);
   } else {
     accSlots = Array(size).fill(false);
   }
