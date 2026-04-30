@@ -54,9 +54,10 @@ describe("SUBLEVEL_CONFIGS", () => {
 
 describe("PASS_CRITERIA", () => {
   it("통과 조건 상수값", () => {
-    expect(PASS_CRITERIA.MIN_PLAY_COUNT).toBe(5);
+    expect(PASS_CRITERIA.MIN_PLAY_COUNT).toBe(10);
     expect(PASS_CRITERIA.MIN_BEST_STREAK).toBe(5);
-    expect(PASS_CRITERIA.MIN_ACCURACY).toBe(0.8);
+    expect(PASS_CRITERIA.MIN_ACCURACY).toBe(0.85);
+    expect(PASS_CRITERIA.MIN_AVG_REACTION_RATIO).toBe(0.35);
   });
 });
 
@@ -81,20 +82,20 @@ describe("calculateAccuracy", () => {
   });
 });
 
-describe("checkPassed - 3개 조건 모두 충족 검증", () => {
+describe("checkPassed - 4개 조건 모두 충족 검증", () => {
   it("모든 조건 충족 → passed=true", () => {
     const p = makeProgress({
-      play_count: 5,
+      play_count: 10,
       best_streak: 5,
       total_attempts: 10,
-      total_correct: 8, // 80%
+      total_correct: 9, // 90%
     });
     expect(checkPassed(p)).toBe(true);
   });
 
   it("play_count 부족 → passed=false", () => {
     const p = makeProgress({
-      play_count: 4, // 미달
+      play_count: 9, // 미달
       best_streak: 5,
       total_attempts: 10,
       total_correct: 9,
@@ -104,7 +105,7 @@ describe("checkPassed - 3개 조건 모두 충족 검증", () => {
 
   it("best_streak 부족 → passed=false", () => {
     const p = makeProgress({
-      play_count: 5,
+      play_count: 10,
       best_streak: 4, // 미달
       total_attempts: 10,
       total_correct: 9,
@@ -114,7 +115,7 @@ describe("checkPassed - 3개 조건 모두 충족 검증", () => {
 
   it("accuracy 부족 → passed=false", () => {
     const p = makeProgress({
-      play_count: 5,
+      play_count: 10,
       best_streak: 5,
       total_attempts: 10,
       total_correct: 7, // 70%
@@ -122,14 +123,70 @@ describe("checkPassed - 3개 조건 모두 충족 검증", () => {
     expect(checkPassed(p)).toBe(false);
   });
 
-  it("정확히 경계값 (5, 5, 80%) → passed=true", () => {
+  it("정확히 경계값 (10, 5, 85%) → passed=true", () => {
     const p = makeProgress({
-      play_count: 5,
+      play_count: 10,
       best_streak: 5,
       total_attempts: 100,
-      total_correct: 80, // 80% 정확히
+      total_correct: 85, // 85% 정확히
     });
     expect(checkPassed(p)).toBe(true);
+  });
+
+  it("avg_reaction_time 없음 (undefined) → 통과 처리", () => {
+    const p = makeProgress({
+      play_count: 10,
+      best_streak: 5,
+      total_attempts: 10,
+      total_correct: 9,
+      // avg_reaction_time 미기록
+    });
+    expect(checkPassed(p)).toBe(true);
+  });
+
+  it("avg_reaction_time 기준 이하 (sublevel 1: ~2.45s) → passed=true", () => {
+    const p = makeProgress({
+      sublevel: 1,
+      play_count: 10,
+      best_streak: 5,
+      total_attempts: 10,
+      total_correct: 9,
+      avg_reaction_time: 2.44,
+    });
+    expect(checkPassed(p)).toBe(true);
+  });
+
+  it("avg_reaction_time 초과 (sublevel 1: >~2.45s) → passed=false", () => {
+    const p = makeProgress({
+      sublevel: 1,
+      play_count: 10,
+      best_streak: 5,
+      total_attempts: 10,
+      total_correct: 9,
+      avg_reaction_time: 2.5,
+    });
+    expect(checkPassed(p)).toBe(false);
+  });
+
+  it("sublevel 3 반응속도 기준 (~3×0.35=1.05s)", () => {
+    const ok = makeProgress({
+      sublevel: 3,
+      play_count: 10,
+      best_streak: 5,
+      total_attempts: 10,
+      total_correct: 9,
+      avg_reaction_time: 1.04,
+    });
+    const fail = makeProgress({
+      sublevel: 3,
+      play_count: 10,
+      best_streak: 5,
+      total_attempts: 10,
+      total_correct: 9,
+      avg_reaction_time: 1.06,
+    });
+    expect(checkPassed(ok)).toBe(true);
+    expect(checkPassed(fail)).toBe(false);
   });
 });
 
@@ -139,12 +196,13 @@ describe("getCompletion - UI 진행률", () => {
     expect(c.playCount.satisfied).toBe(false);
     expect(c.bestStreak.satisfied).toBe(false);
     expect(c.accuracy.satisfied).toBe(false);
+    expect(c.avgReactionTime.satisfied).toBe(true); // 미기록 → 통과 처리
     expect(c.allSatisfied).toBe(false);
   });
 
   it("정답률만 미달", () => {
     const p = makeProgress({
-      play_count: 5,
+      play_count: 10,
       best_streak: 5,
       total_attempts: 10,
       total_correct: 7, // 70%
@@ -156,15 +214,46 @@ describe("getCompletion - UI 진행률", () => {
     expect(c.allSatisfied).toBe(false);
   });
 
-  it("모두 충족", () => {
+  it("모두 충족 (avg_reaction_time 없음)", () => {
     const p = makeProgress({
-      play_count: 5,
+      play_count: 10,
       best_streak: 5,
       total_attempts: 10,
       total_correct: 9,
     });
     const c = getCompletion(p);
     expect(c.allSatisfied).toBe(true);
+  });
+
+  it("avgReactionTime required = timeLimit × 0.35", () => {
+    // sublevel 1: timeLimit=7, required=2.45
+    const c1 = getCompletion(makeProgress({ sublevel: 1 }));
+    expect(c1.avgReactionTime.required).toBeCloseTo(2.45);
+
+    // sublevel 3: timeLimit=3, required=1.05
+    const c3 = getCompletion(makeProgress({ sublevel: 3 }));
+    expect(c3.avgReactionTime.required).toBeCloseTo(1.05);
+  });
+
+  it("avg_reaction_time 기록 있을 때 current 반영", () => {
+    const p = makeProgress({ sublevel: 1, avg_reaction_time: 2.0 });
+    const c = getCompletion(p);
+    expect(c.avgReactionTime.current).toBe(2.0);
+    expect(c.avgReactionTime.satisfied).toBe(true);
+  });
+
+  it("avg_reaction_time 초과 시 allSatisfied=false", () => {
+    const p = makeProgress({
+      sublevel: 1,
+      play_count: 10,
+      best_streak: 5,
+      total_attempts: 10,
+      total_correct: 9,
+      avg_reaction_time: 3.0, // 7×0.35=2.45 초과
+    });
+    const c = getCompletion(p);
+    expect(c.avgReactionTime.satisfied).toBe(false);
+    expect(c.allSatisfied).toBe(false);
   });
 });
 
@@ -309,22 +398,22 @@ describe("isValidSublevel", () => {
 });
 
 describe("SUBLEVEL_CONFIGS — stage 구성", () => {
-  it("sublevel 1 (입문): 27노트, 3 stages", () => {
+  it("sublevel 1 (입문): 28노트, 3 stages", () => {
     const stages = SUBLEVEL_CONFIGS[1].stages;
     expect(stages).toHaveLength(3);
-    expect(totalNotesInStages(stages)).toBe(27);
+    expect(totalNotesInStages(stages)).toBe(28);
   });
 
-  it("sublevel 2 (숙련): 40노트, 3 stages", () => {
+  it("sublevel 2 (숙련): 30노트, 3 stages", () => {
     const stages = SUBLEVEL_CONFIGS[2].stages;
     expect(stages).toHaveLength(3);
-    expect(totalNotesInStages(stages)).toBe(40);
+    expect(totalNotesInStages(stages)).toBe(30);
   });
 
-  it("sublevel 3 (마스터): 66노트, 4 stages", () => {
+  it("sublevel 3 (마스터): 45노트, 3 stages", () => {
     const stages = SUBLEVEL_CONFIGS[3].stages;
-    expect(stages).toHaveLength(4);
-    expect(totalNotesInStages(stages)).toBe(66);
+    expect(stages).toHaveLength(3);
+    expect(totalNotesInStages(stages)).toBe(45);
   });
 
   it("모든 sublevel의 stage는 batchSize, totalSets, notesPerSet > 0", () => {

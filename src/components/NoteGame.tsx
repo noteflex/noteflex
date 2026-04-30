@@ -642,16 +642,17 @@ useEffect(() => {
       setSetProgress(0);
       setAnsweredNotes([]);
 
-      // stage 전환 → Lv5+의 새 keySig 생성
-      const result = generateNewBatch(nextStage.batchSize, true, lastShownNote);
+      // §0-1.6: Lv5+에서 미답 retry ≥2이면 다음 stage도 같은 조표 유지
+      const keepKeySig = level >= 5 && retryQueue.size >= 2;
+      const result = generateNewBatch(nextStage.batchSize, !keepKeySig, lastShownNote);
       setBatchAndKey(result);
       const notes = result.batch;
       setCurrentIndex(0);
       setDisabledNotes(new Set());
       setTimerKey(prev => prev + 1);
 
-      // 키사인이 바뀌면 이전 retry는 의미 없음 → 큐 초기화 (Lv5+)
-      if (level >= 5) {
+      // 조표가 바뀌면 이전 retry는 의미 없음 → 큐 초기화 (Lv5+)
+      if (level >= 5 && !keepKeySig) {
         retryQueue.reset();
       }
 

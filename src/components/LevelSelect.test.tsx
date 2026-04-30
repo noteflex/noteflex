@@ -296,7 +296,7 @@ describe("LevelSelect - 진행 중 셀", () => {
     const progress = [
       // 1-1 passed (to unlock 1-2)
       makeProgress({ level: 1, sublevel: 1, passed: true, play_count: 5 }),
-      // 1-2 in progress: 2/3 criteria met (play_count≥5 ✅, best_streak=3 ❌, accuracy 90% ✅)
+      // 1-2 in progress: 2/4 criteria met (play_count=5 ❌, best_streak=3 ❌, accuracy 90% ✅, avgReactionTime 미기록 ✅)
       makeProgress({
         level: 1, sublevel: 2,
         play_count: 5, best_streak: 3,
@@ -316,10 +316,10 @@ describe("LevelSelect - 진행 중 셀", () => {
     expect(screen.getByLabelText("Lv 1-2 진행 중")).toBeInTheDocument();
   });
 
-  it("Lv 1-2 셀에 달성 조건 수 표시 (2/3 달성)", () => {
+  it("Lv 1-2 셀에 달성 조건 수 표시 (2/4 달성)", () => {
     renderLevelSelect();
     const cell = screen.getByLabelText("Lv 1-2 진행 중");
-    expect(cell).toHaveTextContent("2/3 달성");
+    expect(cell).toHaveTextContent("2/4 달성");
   });
 
   it("진행 중 셀 클릭 → onSelectSublevel(1, 2) 호출", async () => {

@@ -9,14 +9,15 @@
  *   서브레벨 3: 3초 / 목숨 3 (마스터)
  *
  * 단계별 stage 구성 (NoteGame이 사용):
- *   서브레벨 1: 27노트 / 3 stages (정확성 + 흐름 맛보기)
- *   서브레벨 2: 40노트 / 3 stages (흐름 + 시야 확장)
- *   서브레벨 3: 66노트 / 4 stages (시야 + 지구력)
+ *   서브레벨 1: 28노트 / 3 stages (정확성 + 흐름 맛보기)
+ *   서브레벨 2: 30노트 / 3 stages (흐름 + 시야 확장)
+ *   서브레벨 3: 45노트 / 3 stages (시야 + 지구력)
  *
- * 단계 통과 조건 (3개 모두 충족):
- *   - 플레이 횟수 ≥ 5회
+ * 단계 통과 조건 (4개 모두 충족):
+ *   - 플레이 횟수 ≥ 10회
  *   - 한 게임에서 연속 정답 ≥ 5개 (한 번이라도)
- *   - 누적 정답률 ≥ 80%
+ *   - 누적 정답률 ≥ 85%
+ *   - sublevel 평균 반응속도 ≤ 타이머 × 35% (기록 없으면 통과 처리)
  *
  * 구독 게이트:
  *   - guest:  Lv 1만 (3단계)
@@ -72,6 +73,8 @@ export interface SublevelProgress {
   total_attempts: number;
   total_correct: number;
   passed: boolean;
+  /** sublevel 누적 평균 반응속도(초). 기록 없으면 undefined → 통과 처리 */
+  avg_reaction_time?: number;
 }
 
 /** UI 표시용 진행률 정보 */
@@ -79,6 +82,7 @@ export interface SublevelCompletion {
   playCount: { current: number; required: number; satisfied: boolean };
   bestStreak: { current: number; required: number; satisfied: boolean };
   accuracy: { current: number; required: number; satisfied: boolean };
+  avgReactionTime: { current: number | null; required: number; satisfied: boolean };
   allSatisfied: boolean;
 }
 
@@ -91,21 +95,21 @@ export const SUBLEVEL_CONFIGS: Record<Sublevel, SublevelConfig> = {
     timeLimit: 7,
     lives: 5,
     label: "입문",
-    // 27노트 ≈ 1:53 — 정확성 + 흐름 맛보기
+    // 28노트 — 정확성 + 흐름 맛보기
     stages: [
-      { stage: 1, batchSize: 1, totalSets: 2, notesPerSet: 3 }, //  6
-      { stage: 2, batchSize: 1, totalSets: 3, notesPerSet: 5 }, // 15
-      { stage: 3, batchSize: 3, totalSets: 2, notesPerSet: 3 }, //  6
+      { stage: 1, batchSize: 1, totalSets: 6, notesPerSet: 1 }, //  6
+      { stage: 2, batchSize: 1, totalSets: 7, notesPerSet: 1 }, //  7
+      { stage: 3, batchSize: 3, totalSets: 5, notesPerSet: 3 }, // 15
     ],
   },
   2: {
     timeLimit: 5,
     lives: 4,
     label: "숙련",
-    // 40노트 ≈ 2:00 — 흐름 + 시야 확장
+    // 30노트 — 흐름 + 시야 확장
     stages: [
-      { stage: 1, batchSize: 1, totalSets: 3, notesPerSet: 5 }, // 15
-      { stage: 2, batchSize: 3, totalSets: 2, notesPerSet: 5 }, // 10
+      { stage: 1, batchSize: 1, totalSets: 6, notesPerSet: 1 }, //  6
+      { stage: 2, batchSize: 3, totalSets: 3, notesPerSet: 3 }, //  9
       { stage: 3, batchSize: 5, totalSets: 3, notesPerSet: 5 }, // 15
     ],
   },
@@ -113,12 +117,11 @@ export const SUBLEVEL_CONFIGS: Record<Sublevel, SublevelConfig> = {
     timeLimit: 3,
     lives: 3,
     label: "마스터",
-    // 66노트 ≈ 1:59 — 시야 + 지구력
+    // 45노트 — 시야 + 지구력
     stages: [
       { stage: 1, batchSize: 3, totalSets: 3, notesPerSet: 3 }, //  9
       { stage: 2, batchSize: 5, totalSets: 3, notesPerSet: 5 }, // 15
       { stage: 3, batchSize: 7, totalSets: 3, notesPerSet: 7 }, // 21
-      { stage: 4, batchSize: 7, totalSets: 3, notesPerSet: 7 }, // 21
     ],
   },
 };
@@ -132,9 +135,11 @@ export const CUSTOM_SCORE_STAGES: readonly GameStageConfig[] = [
 ];
 
 export const PASS_CRITERIA = {
-  MIN_PLAY_COUNT: 5,
+  MIN_PLAY_COUNT: 10,
   MIN_BEST_STREAK: 5,
-  MIN_ACCURACY: 0.8,
+  MIN_ACCURACY: 0.85,
+  /** sublevel 평균 반응속도 ≤ 타이머 × 이 비율 */
+  MIN_AVG_REACTION_RATIO: 0.35,
 } as const;
 
 export const TOTAL_SUBLEVELS = 21; // 7 × 3
@@ -177,18 +182,26 @@ export function calculateAccuracy(progress: SublevelProgress): number {
   return progress.total_correct / progress.total_attempts;
 }
 
-/** 단계 통과 조건 충족 여부 (3개 모두) */
+/** 단계 통과 조건 충족 여부 (4개 모두) */
 export function checkPassed(progress: SublevelProgress): boolean {
+  const timeLimit = SUBLEVEL_CONFIGS[progress.sublevel].timeLimit;
+  const reactionRequired = timeLimit * PASS_CRITERIA.MIN_AVG_REACTION_RATIO;
+  const reactionOk =
+    progress.avg_reaction_time === undefined ||
+    progress.avg_reaction_time <= reactionRequired;
   return (
     progress.play_count >= PASS_CRITERIA.MIN_PLAY_COUNT &&
     progress.best_streak >= PASS_CRITERIA.MIN_BEST_STREAK &&
-    calculateAccuracy(progress) >= PASS_CRITERIA.MIN_ACCURACY
+    calculateAccuracy(progress) >= PASS_CRITERIA.MIN_ACCURACY &&
+    reactionOk
   );
 }
 
 /** UI 진행률 정보 생성 */
 export function getCompletion(progress: SublevelProgress): SublevelCompletion {
   const accuracy = calculateAccuracy(progress);
+  const timeLimit = SUBLEVEL_CONFIGS[progress.sublevel].timeLimit;
+  const reactionRequired = timeLimit * PASS_CRITERIA.MIN_AVG_REACTION_RATIO;
 
   const playCount = {
     current: progress.play_count,
@@ -208,12 +221,24 @@ export function getCompletion(progress: SublevelProgress): SublevelCompletion {
     satisfied: accuracy >= PASS_CRITERIA.MIN_ACCURACY,
   };
 
+  const avgReactionTime = {
+    current: progress.avg_reaction_time ?? null,
+    required: reactionRequired,
+    satisfied:
+      progress.avg_reaction_time === undefined ||
+      progress.avg_reaction_time <= reactionRequired,
+  };
+
   return {
     playCount,
     bestStreak,
     accuracy: accuracyResult,
+    avgReactionTime,
     allSatisfied:
-      playCount.satisfied && bestStreak.satisfied && accuracyResult.satisfied,
+      playCount.satisfied &&
+      bestStreak.satisfied &&
+      accuracyResult.satisfied &&
+      avgReactionTime.satisfied,
   };
 }
 

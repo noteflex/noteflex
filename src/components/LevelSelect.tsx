@@ -92,8 +92,12 @@ export default function LevelSelect({
     let criteriaCount = 0;
     if (prog) {
       const c = getCompletion(prog);
-      criteriaCount = [c.playCount.satisfied, c.bestStreak.satisfied, c.accuracy.satisfied]
-        .filter(Boolean).length;
+      criteriaCount = [
+        c.playCount.satisfied,
+        c.bestStreak.satisfied,
+        c.accuracy.satisfied,
+        c.avgReactionTime.satisfied,
+      ].filter(Boolean).length;
     }
 
     return { passed, inProgress, lockReason: null, prevLabel: null, criteriaCount };
@@ -305,7 +309,7 @@ function SublevelCell({ level, sublevel, state, onClick }: SublevelCellProps) {
 
   // ── 진행 중 ─────────────────────────────────────────────────
   if (state.inProgress) {
-    const pct = Math.round((state.criteriaCount / 3) * 100);
+    const pct = Math.round((state.criteriaCount / 4) * 100);
     return (
       <button
         aria-label={`${label} 진행 중`}
@@ -320,7 +324,7 @@ function SublevelCell({ level, sublevel, state, onClick }: SublevelCellProps) {
           {shortLabel}
         </span>
         <span className="text-[9px] font-semibold text-amber-600 dark:text-amber-400">
-          {state.criteriaCount}/3 달성
+          {state.criteriaCount}/4 달성
         </span>
         <div className="w-full bg-amber-200 dark:bg-amber-800 rounded-full h-1 mt-0.5">
           <div
