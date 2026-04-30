@@ -1035,11 +1035,6 @@ useEffect(() => {
         {targetAccidental ? ` ${targetAccidental}` : ""}
       </span>
 
-      {retryOverride && (
-        <div className="text-center w-full mt-1">
-          <span className="text-xs bg-amber-500/20 text-amber-700 px-2 py-0.5 rounded">🔁 재출제</span>
-        </div>
-      )}
 
       <div className="w-full max-w-[490px] flex flex-col gap-3">
 

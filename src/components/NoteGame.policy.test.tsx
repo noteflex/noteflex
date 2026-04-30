@@ -152,8 +152,6 @@ describe("NoteGame 신규 정책 - 정답 시 진행", () => {
     expect(getDebugTurn()).toBe(1);
     // 11=X: 오답 이력 없으면 큐에 등록 X
     expect(getDebugQueueSize()).toBe(0);
-    // 🔁 배지 없음
-    expect(screen.queryByText(/🔁 재출제/)).toBeNull();
   });
 });
 
@@ -226,9 +224,6 @@ describe("NoteGame 신규 정책 - 오답 후 정답 처리", () => {
 
     // 큐: 마커는 유지하되 due를 N+2 후로 갱신 → size 그대로 1
     expect(getDebugQueueSize()).toBe(1);
-
-    // 진행 직후이므로 🔁 배지는 아직 없음
-    expect(screen.queryByText(/🔁 재출제/)).toBeNull();
   });
 });
 
@@ -236,7 +231,7 @@ describe("NoteGame 신규 정책 - 오답 후 정답 처리", () => {
 // F. 재출제 등장
 // ────────────────────────────────────────────────
 describe("NoteGame 신규 정책 - 재출제 등장 타이밍", () => {
-  it("F. 오답 → 정답 → 정답: turn=2 시점에 q1 재출제 (🔁 배지) — N+2 정책", async () => {
+  it("F. 오답 → 정답 → 정답: turn=2 시점에 q1 재출제 — N+2 정책", async () => {
     // 결정적 시퀀스: q1, q2가 서로 다른 letter
     // N+2 정책: q1 정답 시 (advance 전) rescheduleAfterCorrect → due=0+2=2.
     // advance → turn=1 (q2). q2 정답 → advance → turn=2 → popDueOrNull → q1 pop.
@@ -261,8 +256,7 @@ describe("NoteGame 신규 정책 - 재출제 등장 타이밍", () => {
     await user.click(getCorrectButton(q2));
     expect(getDebugTurn()).toBe(2);
 
-    // 🔁 재출제 배지 + q1과 같은 음표 출제
-    expect(screen.getByText(/🔁 재출제/)).toBeInTheDocument();
+    // q1과 같은 음표 재출제
     const qRetry = getCurrentQuestion()!;
     expect(qRetry.key).toBe(q1.key);
     expect(qRetry.octave).toBe(q1.octave);
@@ -275,7 +269,7 @@ describe("NoteGame 신규 정책 - 재출제 등장 타이밍", () => {
 // G. 재출제 정답 → 영구 제거
 // ────────────────────────────────────────────────
 describe("NoteGame 신규 정책 - 재출제 음표 정답 시 (12=P)", () => {
-  it("G. 재출제된 음표 정답: 큐에서 영구 제거 + 배지 사라짐", async () => {
+  it("G. 재출제된 음표 정답: 큐에서 영구 제거", async () => {
     const mockRandom = vi.spyOn(Math, "random")
       .mockReturnValueOnce(0)
       .mockReturnValueOnce(0.2)
@@ -291,7 +285,6 @@ describe("NoteGame 신규 정책 - 재출제 음표 정답 시 (12=P)", () => {
     await user.click(getCorrectButton(q2));
 
     // q1 재출제 중 (turn=2)
-    expect(screen.getByText(/🔁 재출제/)).toBeInTheDocument();
     const qRetry = getCurrentQuestion()!;
     expect(qRetry.key).toBe(q1.key);
 
@@ -300,7 +293,6 @@ describe("NoteGame 신규 정책 - 재출제 음표 정답 시 (12=P)", () => {
 
     // 큐 영구 제거
     expect(getDebugQueueSize()).toBe(0);
-    expect(screen.queryByText(/🔁 재출제/)).toBeNull();
 
     mockRandom.mockRestore();
   });
@@ -310,7 +302,7 @@ describe("NoteGame 신규 정책 - 재출제 음표 정답 시 (12=P)", () => {
 // H. 재출제 오답 → 같은 자리 유지
 // ────────────────────────────────────────────────
 describe("NoteGame 신규 정책 - 재출제 음표 오답 시", () => {
-  it("H. 재출제된 음표 오답: 같은 자리 유지 + 라이프 -1 + 🔁 배지 유지", async () => {
+  it("H. 재출제된 음표 오답: 같은 자리 유지 + 라이프 -1", async () => {
     const mockRandom = vi.spyOn(Math, "random")
       .mockReturnValueOnce(0)
       .mockReturnValueOnce(0.2)
@@ -325,7 +317,6 @@ describe("NoteGame 신규 정책 - 재출제 음표 오답 시", () => {
     const q2 = getCurrentQuestion()!;
     await user.click(getCorrectButton(q2));
 
-    expect(screen.getByText(/🔁 재출제/)).toBeInTheDocument();
     const qRetry = getCurrentQuestion()!;
     expect(qRetry.key).toBe(q1.key);
     const turnBeforeWrong = getDebugTurn();
@@ -340,9 +331,6 @@ describe("NoteGame 신규 정책 - 재출제 음표 오답 시", () => {
 
     // turn 변동 X (오답 시 advanceToNextTurn 호출 X)
     expect(getDebugTurn()).toBe(turnBeforeWrong);
-
-    // 🔁 배지 유지 (retryOverride가 그대로)
-    expect(screen.getByText(/🔁 재출제/)).toBeInTheDocument();
 
     // 게임오버 아님
     expect(screen.queryByText(/게임 오버/)).toBeNull();

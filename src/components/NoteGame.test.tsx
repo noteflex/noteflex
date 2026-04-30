@@ -227,8 +227,7 @@ describe("NoteGame - Retry Queue 통합", () => {
     expect(q2.key).not.toBe(q1.key);
     await user.click(getCorrectButton(q2));  // turn=2 → q1 due 도달, pop
 
-    // q1 재출제 + 배지 등장
-    expect(screen.getByText(/🔁 재출제/)).toBeInTheDocument();
+    // q1 재출제
     const qRetry = getCurrentQuestion()!;
     expect(qRetry.key).toBe(q1.key);
     expect(qRetry.octave).toBe(q1.octave);
@@ -253,15 +252,13 @@ describe("NoteGame - Retry Queue 통합", () => {
     const q2 = getCurrentQuestion()!;
     await user.click(getCorrectButton(q2));  // turn=2 → q1 재출제
 
-    expect(screen.getByText(/🔁 재출제/)).toBeInTheDocument();
     const qRetry = getCurrentQuestion()!;
     expect(qRetry.key).toBe(q1.key);
 
     await user.click(getCorrectButton(qRetry));
 
-    // 영구 제거 + 배지 사라짐
+    // 영구 제거
     expect(getDebugQueueSize()).toBe(0);
-    expect(screen.queryByText(/🔁 재출제/)).not.toBeInTheDocument();
 
     mockRandom.mockRestore();
   });
@@ -289,12 +286,11 @@ describe("NoteGame - Retry Queue 통합", () => {
     // 재출제 자리에서 또 오답
     await user.click(getWrongButton(qRetry));
 
-    // 신규 정책: 여전히 q1, turn 변동 X, 배지 유지
+    // 신규 정책: 여전히 q1, turn 변동 X
     const qStill = getCurrentQuestion()!;
     expect(qStill.key).toBe(q1.key);
     expect(qStill.octave).toBe(q1.octave);
     expect(getDebugTurn()).toBe(turnBeforeWrong);
-    expect(screen.getByText(/🔁 재출제/)).toBeInTheDocument();
 
     // 게임오버 아님
     expect(screen.queryByText(/게임 오버/)).toBeNull();
