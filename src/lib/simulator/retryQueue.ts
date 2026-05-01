@@ -39,10 +39,12 @@ export class SimRetryQueue {
     const id = composeId(note);
     const newMiss = (this.miss.get(id) ?? 0) + 1;
     this.miss.set(id, newMiss);
+    // §4 fix (2026-05-01): 큐에 reschedule된 due 보존 — useRetryQueue.ts와 parity.
+    const existing = this.q.get(id);
     this.q.set(id, {
       id,
       note,
-      scheduledAtTurn: Number.MAX_SAFE_INTEGER,
+      scheduledAtTurn: existing?.scheduledAtTurn ?? Number.MAX_SAFE_INTEGER,
       missCount: newMiss,
     });
   }
