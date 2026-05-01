@@ -233,6 +233,47 @@
 - `NoteGame.invariants.test.tsx` 5케이스 (호출 횟수 회귀 방지)
 - `src/lib/simulator/sim.test.ts` 10케이스 (1만 게임 fuzz + 정량 보고서)
 
+### 3.11 GrandStaffPractice UI 음표 history·색깔·크기·잘림 🐛 → 4 step 계획 수립 (2026-05-01 Opus 분석)
+
+**사용자 발견 이슈 3개**:
+1. **색깔 불일치** — 악보에서 target 음표가 빨간색이어야 하나 black으로 표시되는 경우 있음
+2. **history 누적 X** — batchSize=1 stage에서 이전 음표들이 악보에 남아야 하는데 매 set 완료 시 즉시 초기화됨
+3. **음표 크기·잘림** — history 음표가 작게 표시되거나 viewBox 경계에서 잘림
+
+**Opus 분석 결과 (GrandStaffPractice.tsx 556줄 전체 추적)**:
+
+*Gap 1 — 색깔*: `TARGET_COLOR="#b91c1c"` (red), `HISTORY_COLOR="#1c1917"` (black), `ANSWERED_COLOR="#9ca3af"` (gray) — 모두 인라인 SVG 속성으로 분기됨. 현재 구현에서 `batchNotes[0]`이 target일 때 색깔 분기는 올바름. 단 history mode(batchNotes 없음)에서 legacy 렌더링 경로가 별도 존재 — 두 경로가 분리돼 있어 일관성 확인 필요.
+
+*Gap 2 — history 누적*: `handleSetComplete`가 `setAnsweredNotes([])` 호출. batchSize=1, notesPerSet=1인 stage(Sub1 1단계·2단계, Sub2 1단계)에서는 매 음표 정답 후 set 완료가 되어 history 즉시 초기화. 결과적으로 batchSize=1 구간에서 history 음표 0개 — 설계 의도("이전 음표들이 남아있어야 한다")와 불일치.
+
+*Gap 3 — 크기·잘림*: `noteSpacing` 계산에서 `gapCount`가 level 기반(Lv5+=6, 나머지=4)으로 계산됨 — batchSize가 아닌 level 기반이라 많은 history 음표가 쌓일 때 간격 계산 오차 가능. 현 viewBox=800 기준 최대 7개 history + target = 8개 음표가 들어갈 때 spacing 계산 미검증.
+
+**4 step 구현 계획**:
+- **Step 1 (30분)**: 색깔 분기 두 경로 통일 — history/batch 모드 모두 동일한 색깔 상수 사용 확인
+- **Step 2 (2~3시간)**: history 누적 fix — `handleSetComplete`의 `setAnsweredNotes([])` 를 batchSize=1 stage에서 조건부로 실행. stage 전환 시에만 초기화, 동일 stage 내 단일 음표 정답은 history 유지. 최대 누적 개수(예: 7) 초과 시 가장 오래된 것부터 제거.
+- **Step 3 (1~2시간)**: 크기 계산 fix — gapCount를 batchSize 기반으로 전환, history 최대치를 반영한 viewBox 여백 확보
+- **Step 4 (30분)**: 잘림 방지 — viewBox 좌우 padding 보장, 마지막 음표가 오른쪽 경계를 넘지 않도록 clamp
+
+**예상 총 소요**: 4~6시간 (§0.4 구현 세션)
+
+### 3.12 카운트다운 후 첫 음표 버퍼링 + Sub3 즉시 타임아웃 ✅ (2026-05-01, commit `eac606a`)
+
+**버그**: 카운트다운(3초) 완료 직후 game state가 활성화돼 첫 음표 타이머가 즉시 시작 — Sub3(3초 제한)에서 카운트다운 3초가 elapsed로 잡혀 첫 tick(50ms)에 timeout expire.
+
+**수정**:
+- `FIRST_NOTE_GRACE_MS = 300` 상수 추가 (NoteGame.tsx)
+- `handleCountdownComplete` 내부에 `setTimeout(..., 300)` 래퍼 추가
+- grace setTimeout 내부에서 `setTimerKey(prev => prev+1)` 호출 → CountdownTimer의 `useEffect([resetKey])`가 `startRef.current = Date.now()` 리셋
+- `noteStartTime.current` 설정도 grace 내부로 이동
+
+**테스트 (4개, vi.useFakeTimers)**:
+1. 카운트다운 직후 버튼 여전히 disabled (grace 중)
+2. 299ms → disabled, +1ms=300ms → enabled
+3. Sub3: grace+50ms 시점 playWrong 미호출
+4. Sub3: grace 후 full 3초 타이머 — 2.9초 미만료, 3.05초 만료
+
+337/337 PASS.
+
 ---
 
 ## 4. 배치고사 시스템 🔴
@@ -364,7 +405,7 @@
 
 ---
 
-## 10. 핵심 차이 요약 — 우선순위별 (2026-04-29 갱신)
+## 10. 핵심 차이 요약 — 우선순위별 (2026-05-01 갱신)
 
 ### ✅ 사용자 결정 완료 (2026-04-29) — 코드 적용 작업 남음
 
@@ -382,8 +423,8 @@
 
 1. **N+2 즉시 등장** ✅ 완료 (commit 4e2b6ef, 2026-04-29) — 옵션 D + B + 호출 순서 정정 + 시뮬레이터 검증
 2. **Lv5+ 조표 음표 비율 부족** ✅ 완료 (commit bb062c3, 2026-04-30) — batchSize별 30%/40%/60%/70% 조표 비율 + treble/bass 50:50 + 두 자리표 보장
-3. **UI 음표 잘림·색깔·history 누적 X** 🆕 — 사용자 발견 (Week 1, §0.4)
-4. **첫 음표 버퍼링** — 카운트다운 후 안정화 지연 추가 (Week 1, §0.3)
+3. **첫 음표 버퍼링 + Sub3 즉시 타임아웃** ✅ 완료 (commit eac606a, 2026-05-01) — FIRST_NOTE_GRACE_MS=300, setTimerKey 리셋, 4개 TDD 테스트
+4. **UI 음표 잘림·색깔·history 누적 X** 🆕 — 분석 완료 (§3.11, 4 step 계획 수립), 구현 예정 (§0.4)
 
 ### 🔴 출시 후 펜딩 (이미 PENDING_BACKLOG.md에 박힘)
 
@@ -404,20 +445,23 @@
 
 ---
 
-## 11. 다음 세션 작업 우선순위 (2026-04-29 갱신)
+## 11. 다음 세션 작업 우선순위 (2026-05-01 갱신)
 
-### Week 1 잔여 작업 (사용자 결정 사항 코드 적용)
+### Week 1 완료 현황
 
 1. ✅ §0.1 N+2 즉시 등장 버그 수정 (commit 4e2b6ef, 2026-04-29)
-2. 🆕 §0.4 UI 음표 history·크기·색깔·잘림 방지 (사용자 발견)
-3. 🐛 §0.2 Lv5+ 조표 비율 수정 (6:4 / 4:6 / 7:3 / 3:7)
-4. 🐛 §0.3 카운트다운 후 첫 음표 버퍼링
-5. ✅ §0-1.5 재도전 배지 삭제 (10분)
-6. ✅ §0-1.1 코드 적용 (PASS_CRITERIA 4개 조건)
-7. ✅ §0-1.2 코드 적용 (Sub 3 = 3 stage)
-8. ✅ §0-1.4 코드 적용 (음표 배치 + set 반복)
-9. ✅ §0-1.6 같은 조표 연속 학습 구현
-10. **🔴 §7.3 Calibration 구현 (사용자 명시 — 정체성)** ⭐
+2. ✅ §0.2 Lv5+ 조표 비율 수정 (commit bb062c3, 2026-04-30)
+3. ✅ §0.3 카운트다운 후 첫 음표 버퍼링 + Sub3 즉시 타임아웃 (commit eac606a, 2026-05-01)
+4. ✅ §0.4 분석 완료 — 4 step 계획 수립 (§3.11, 2026-05-01 Opus)
+5. ✅ §0-1.5 재도전 배지 삭제 (commit f09919c)
+6. ✅ §0-1.1~§0-1.6 코드 전체 적용 (commit 6c1a7e8)
+
+### Week 2 우선순위 (다음 작업)
+
+1. **🔴 §0.4 GrandStaffPractice 구현** (§3.11 4 step, 4~6시간) — Step 1 색깔 → Step 2 history → Step 3 크기 → Step 4 잘림 방지
+2. **🔴 §7.3 Calibration** (사용자 명시 — 정체성) ⭐
+3. §13.1 다국어 (KR+EN, 도메인·라우팅·콘텐츠 분리)
+4. §13.2 라우팅 보호 + PWA 등록
 
 ### Week 2~3 (인프라 + 결제 + 비즈니스)
 
@@ -462,3 +506,4 @@
 - 2026-04-28: 초안 작성 (설계 PDF vs Claude Code 8개 분석 문서 비교)
 - 2026-04-29: 사용자 결정 9개 + §0.1 완료 (commit 4e2b6ef) + §7.3 Calibration 출시 전 필수 격상 + §10/§11 갱신 (결정 완료 반영) + §2.4/§2.6/§5 평가 마크 ✅ 업데이트
 - 2026-04-30: §0-1 코드 적용 완료 — §0-1.1~0-1.6 모두 구현 (commits f09919c, 6c1a7e8) + §2.6 PASS_CRITERIA 테이블 ✅ 갱신 + §2.6 같은조표연속학습 ✅ + §9.1 재도전마크 ✅ + §3.8 조표 비율 + treble/bass ✅ (commit bb062c3)
+- 2026-05-01: §3.11 §0.4 GrandStaffPractice 분석 추가 (Opus 보고서, 3갭 4 step 계획) + §3.12 §0.3 ✅ 추가 (commit eac606a) + §10/§11 갱신 (Week 1 완료 현황, Week 2 우선순위)
