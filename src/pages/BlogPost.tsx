@@ -6,19 +6,19 @@ import MarkdownContent from "@/components/MarkdownContent";
 import { loadBlogPost, type BlogPost as BlogPostType } from "@/lib/markdownLoader";
 
 export default function BlogPost() {
-  const { slug } = useParams<{ slug: string }>();
+  const { lang, slug } = useParams<{ lang: string; slug: string }>();
   const [post, setPost] = useState<BlogPostType | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
 
   useEffect(() => {
-    if (!slug) {
+    if (!lang || !slug) {
       setNotFound(true);
       setLoading(false);
       return;
     }
     let cancelled = false;
-    loadBlogPost(slug).then((p) => {
+    loadBlogPost(`${lang}/${slug}`).then((p) => {
       if (cancelled) return;
       if (!p) {
         setNotFound(true);
@@ -30,7 +30,9 @@ export default function BlogPost() {
     return () => {
       cancelled = true;
     };
-  }, [slug]);
+  }, [lang, slug]);
+
+  const backLabel = lang === "en" ? "← Blog" : "← 블로그 목록";
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -43,26 +45,35 @@ export default function BlogPost() {
             to="/blog"
             className="text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
-            ← 블로그 목록
+            {backLabel}
           </Link>
         </div>
       </header>
 
       <main className="flex-1 max-w-3xl mx-auto px-4 py-10 w-full">
         {loading ? (
-          <p className="text-muted-foreground">불러오는 중...</p>
+          <p className="text-muted-foreground">
+            {lang === "en" ? "Loading..." : "불러오는 중..."}
+          </p>
         ) : notFound || !post ? (
           <div className="py-12 text-center">
-            <h1 className="text-2xl font-bold mb-2">글을 찾을 수 없습니다</h1>
+            <h1 className="text-2xl font-bold mb-2">
+              {lang === "en" ? "Post not found" : "글을 찾을 수 없습니다"}
+            </h1>
             <p className="text-muted-foreground mb-6">
-              요청하신 글이 존재하지 않습니다.
+              {lang === "en"
+                ? "The requested post does not exist."
+                : "요청하신 글이 존재하지 않습니다."}
             </p>
             <Link to="/blog" className="text-primary underline">
-              블로그 목록으로 돌아가기
+              {lang === "en" ? "Back to blog" : "블로그 목록으로 돌아가기"}
             </Link>
           </div>
         ) : (
           <>
+            {post.meta.category && (
+              <p className="text-xs text-muted-foreground mb-2">{post.meta.category}</p>
+            )}
             <h1 className="text-3xl font-bold mb-2 text-foreground">
               {post.meta.title || post.slug}
             </h1>

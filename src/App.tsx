@@ -43,7 +43,8 @@ const App = () => (
 
             {/* 블로그 (항상 노출) */}
             <Route path="/blog" element={<Blog />} />
-            <Route path="/blog/:slug" element={<BlogPost />} />
+            <Route path="/blog/:lang/:slug" element={<BlogPost />} />
+            <Route path="/blog/:slug" element={<Navigate to="/blog" replace />} />
 
             {/* 게임·인증·결제 라우트 — Coming Soon 모드에서 차단 */}
             <Route
