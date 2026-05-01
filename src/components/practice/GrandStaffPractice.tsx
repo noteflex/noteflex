@@ -460,7 +460,7 @@ export function GrandStaffPractice({
         x:    style.noteStartX + i * style.noteSpacing,
         note: h.note,
         acc:  h.accidental ?? null,
-        color: HISTORY_COLOR,
+        color: ANSWERED_COLOR,
         clef: (h.clef ?? clef) as "treble" | "bass",
       })),
       {
