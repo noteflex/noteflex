@@ -926,6 +926,7 @@ useEffect(() => {
 
   const handleTimerExpire = useCallback(() => {
     if (phase !== "playing" || !currentTarget) return;
+
     // §0.1 전역 dedup: 타이머 만료도 직전 표시 음표 갱신 (오답과 동일 처리).
     lastShownNoteRef.current = currentTarget;
     const clefForLog = currentTarget.clef ?? (isCustom ? customClef : getClefForLevel(level));
