@@ -90,7 +90,7 @@ function advanceThroughCountdown() {
 // 테스트
 // ──────────────────────────────────────────────────
 
-describe("§0.3 countdown grace buffer", () => {
+describe("§0.3 countdown → first note (grace 제거 후, 2026-05-01 개정)", () => {
   beforeEach(() => {
     vi.useFakeTimers();
     mockPlayWrong.mockClear();
@@ -101,70 +101,56 @@ describe("§0.3 countdown grace buffer", () => {
     vi.useRealTimers();
   });
 
-  it("1. 카운트다운 완료 직후에도 오버레이가 유지됨 (0ms)", () => {
+  it("1. 카운트다운 종료 즉시 NoteButtons 활성화 (grace 없음)", () => {
     render(<NoteGame level={1} sublevel={1} />);
 
-    // 카운트다운 3초 진행 (count 3→2→1→0, onComplete 호출됨)
-    advanceThroughCountdown();
+    advanceThroughCountdown(); // count 3→2→1→0, onComplete 동기 실행
 
-    // onComplete 직후 — 아직 300ms 버퍼 중, 오버레이 유지
-    // NoteButtons는 여전히 disabled (showCountdown=true)
+    // grace 제거 — 카운트다운 끝나자마자 버튼 활성화
     const noteButtons = screen.queryAllByRole("button").filter(
       (b) => b.getAttribute("aria-label")?.endsWith(" 선택")
     );
     expect(noteButtons.length).toBeGreaterThan(0);
-    expect(noteButtons.every((b) => (b as HTMLButtonElement).disabled)).toBe(true);
+    expect(noteButtons.some((b) => !(b as HTMLButtonElement).disabled)).toBe(true);
   });
 
-  it("2. 299ms 시점에도 버튼 disabled, 300ms에 활성화됨", () => {
+  it("2. 카운트다운 종료 즉시 첫 음표 사운드 재생", () => {
+    // playNote는 다른 mock이라 직접 검증 어려움 → playWrong 미호출(즉시 타임아웃 X)로 간접 검증
     render(<NoteGame level={1} sublevel={1} />);
 
     advanceThroughCountdown();
 
-    // 299ms: 아직 버퍼 중
-    act(() => { vi.advanceTimersByTime(299); });
-    const buttonsAt299 = screen.queryAllByRole("button").filter(
-      (b) => b.getAttribute("aria-label")?.endsWith(" 선택")
-    );
-    expect(buttonsAt299.every((b) => (b as HTMLButtonElement).disabled)).toBe(true);
+    // 첫 음표 표시 직후 (CountdownTimer 첫 tick 50ms)
+    act(() => { vi.advanceTimersByTime(50); });
 
-    // +1ms = 300ms: 게임 시작, 버튼 활성화
-    act(() => { vi.advanceTimersByTime(1); });
-    const buttonsAt300 = screen.queryAllByRole("button").filter(
-      (b) => b.getAttribute("aria-label")?.endsWith(" 선택")
-    );
-    expect(buttonsAt300.some((b) => !(b as HTMLButtonElement).disabled)).toBe(true);
+    // 즉시 타임아웃 없어야 함 (Sub1=7초)
+    expect(mockPlayWrong).not.toHaveBeenCalled();
   });
 
-  it("3. Sub3: 카운트다운 후 첫 음표가 즉시 타임아웃 되지 않음", () => {
-    // Sub3 timeLimit=3초. 버그: setTimerKey 없으면 카운트다운 3초 후
-    // startRef=T0인 상태에서 unpaused → 첫 tick(50ms)에 elapsed≥3000 → 즉시 expire
+  it("3. Sub3: 카운트다운 후 첫 음표가 즉시 타임아웃 되지 않음 (setTimerKey 효과)", () => {
+    // Sub3 timeLimit=3초. setTimerKey가 startRef를 동기 리셋하지 않으면
+    // 카운트다운 3초 = elapsed 3초로 첫 tick(50ms)에 즉시 expire.
     render(<NoteGame level={1} sublevel={3} />);
 
     advanceThroughCountdown();
 
-    // 300ms grace + 50ms (CountdownTimer 첫 tick interval)
-    act(() => { vi.advanceTimersByTime(350); });
+    // 첫 tick (50ms) — elapsed는 startRef 리셋 후 50ms여야 함
+    act(() => { vi.advanceTimersByTime(50); });
 
-    // 즉시 타임아웃 없어야 함 — playWrong 미호출
     expect(mockPlayWrong).not.toHaveBeenCalled();
   });
 
-  it("4. Sub3: grace 후 타이머는 full 3초로 리셋됨 (3초 뒤 만료)", () => {
+  it("4. Sub3: 타이머는 full 3초로 리셋됨 (3초 뒤 만료)", () => {
     render(<NoteGame level={1} sublevel={3} />);
 
-    advanceThroughCountdown(); // T=3000ms, grace setTimeout 예약됨
+    advanceThroughCountdown(); // T=3000ms, onComplete 동기 실행 → startRef 리셋
 
-    // grace 300ms — 별도 act()로 실행해야 React effects가 T=3300ms에서 flush됨
-    // (=startRef.current = 3300ms로 올바르게 리셋)
-    act(() => { vi.advanceTimersByTime(300); });
-
-    // 2.9초 진행 — 타이머 2900/3000ms (아직 만료 전)
-    act(() => { vi.advanceTimersByTime(2900); });
+    // 2.95초 진행 — 타이머 2950/3000ms (아직 만료 전)
+    act(() => { vi.advanceTimersByTime(2950); });
     expect(mockPlayWrong).not.toHaveBeenCalled();
 
-    // 150ms 더 → elapsed ≈ 3050ms > 3000ms → 만료
-    act(() => { vi.advanceTimersByTime(150); });
+    // 100ms 더 → elapsed ≈ 3050ms > 3000ms → 만료
+    act(() => { vi.advanceTimersByTime(100); });
     expect(mockPlayWrong).toHaveBeenCalledTimes(1);
   });
 });

@@ -334,9 +334,6 @@ function getSoundKey(note: NoteType): string {
 // [§0.1 DEBUG] — admin/dev에서만 retry queue 패널 노출. 출시 전 false로 원복 (또는 panel 전체 제거).
 const SHOW_RETRY_DEBUG_FOR_ADMIN_OR_DEV = true;
 
-/** §0.3 — 카운트다운 완료 후 첫 음표 표시까지의 버퍼(ms) */
-const FIRST_NOTE_GRACE_MS = 300;
-
 interface NoteGameProps {
   onReset?: () => void;
   onLevelSelect?: () => void;
@@ -754,20 +751,19 @@ useEffect(() => {
   const [showCountdown, setShowCountdown] = useState(!skipCountdown);
 
   const handleCountdownComplete = useCallback(() => {
-    setTimeout(() => {
-      setShowCountdown(false);
-      setTimerKey(prev => prev + 1); // §0.3: Sub3 즉시 타임아웃 방지 — startRef 리셋
-      noteStartTime.current = Date.now();
-      if (currentBatch.length > 0) {
-        if (isSamplerReady()) {
+    // §0.3 (개정 2026-05-01): grace setTimeout 제거 — setTimerKey가 startRef를 동기 리셋해 Sub3 안전 보장.
+    setShowCountdown(false);
+    setTimerKey(prev => prev + 1);
+    noteStartTime.current = Date.now();
+    if (currentBatch.length > 0) {
+      if (isSamplerReady()) {
+        playNote(getSoundKey(currentBatch[0]));
+      } else {
+        initSound().then(() => {
           playNote(getSoundKey(currentBatch[0]));
-        } else {
-          initSound().then(() => {
-            playNote(getSoundKey(currentBatch[0]));
-          });
-        }
+        });
       }
-    }, FIRST_NOTE_GRACE_MS);
+    }
   }, [currentBatch]);
 
   const handleAnswer = useCallback((answer: string) => {
