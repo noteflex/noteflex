@@ -728,6 +728,11 @@ useEffect(() => {
    *  2. 부족분 = batchSize - retryCount, 새 음표 generateNewBatch (학습 보조)
    *  3. retry 음표 idx<retryCount, 새 음표 idx>=retryCount
    *
+   * §0.1 dedup (2026-05-01 검증 + 박힘):
+   *  - 옵션 5: lastShown과 다른 ID retry 우선 정렬 (batch[0] dedup 보장)
+   *  - 옵션 7: missedArray 모두 lastShown 같은 ID인 좁은 케이스 → retry skip + 새 음표만 batch
+   *    (다음 batch에서 lastShown 변경 후 retry 정상 처리)
+   *
    * 큐(useRetryQueue)는 사용 X — final-retry는 N+2 알고리즘 외부.
    * missedMap을 인자로 받아 stale state 회피.
    */
@@ -743,21 +748,41 @@ useEffect(() => {
     if (missedArray.length === 0) return null;
 
     const targetBatchSize = getFinalRetryBatchSize(missedArray.length);
-    const retryCount = Math.min(missedArray.length, targetBatchSize);
-    const retryNotes = missedArray.slice(0, retryCount);
+
+    // §0.1 dedup (옵션 5): lastShown과 다른 ID retry 우선.
+    const lastShownId = lastShownNote ? missedNoteIdOf(lastShownNote, currentClef) : null;
+    const sortedMissed = lastShownId
+      ? [
+          ...missedArray.filter(n => missedNoteIdOf(n, currentClef) !== lastShownId),
+          ...missedArray.filter(n => missedNoteIdOf(n, currentClef) === lastShownId),
+        ]
+      : missedArray;
+
+    const retryCount = Math.min(sortedMissed.length, targetBatchSize);
+    const retryNotes = sortedMissed.slice(0, retryCount);
+
+    // §0.1 dedup (옵션 7): retry[0]이 lastShown과 같으면 (missedArray 모두 lastShown 케이스) retry skip.
+    if (
+      retryCount > 0 &&
+      lastShownId &&
+      missedNoteIdOf(retryNotes[0], currentClef) === lastShownId
+    ) {
+      const newResult = generateNewBatch(targetBatchSize, false, lastShownNote);
+      return { batch: newResult.batch, keySig: newResult.keySig, retryCount: 0 };
+    }
 
     const newCount = targetBatchSize - retryCount;
     if (newCount === 0) {
       return { batch: retryNotes, keySig: currentKeySignature, retryCount };
     }
-    const lastShown = retryNotes[retryNotes.length - 1] ?? lastShownNote ?? null;
-    const newResult = generateNewBatch(newCount, false, lastShown);
+    const lastShownForNew = retryNotes[retryNotes.length - 1] ?? lastShownNote ?? null;
+    const newResult = generateNewBatch(newCount, false, lastShownForNew);
     return {
       batch: [...retryNotes, ...newResult.batch],
       keySig: newResult.keySig,
       retryCount,
     };
-  }, [getFinalRetryBatchSize, generateNewBatch, currentKeySignature]);
+  }, [getFinalRetryBatchSize, generateNewBatch, currentKeySignature, missedNoteIdOf, currentClef]);
 
   /**
    * §4 (2026-05-01) — 단순화: turnCounter += 1만.

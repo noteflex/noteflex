@@ -40,7 +40,7 @@ export interface SimEvent {
   turn: number;
   /** 답한 음표 (currentTarget) */
   shown: NoteType;
-  /** retry override 여부 */
+  /** retry 음표 여부 (§4 신규: idx<retryCount 기반) */
   isRetry: boolean;
   correct: boolean;
   /**
@@ -53,6 +53,17 @@ export interface SimEvent {
    * 정책 N+2 검증용. -1이면 retry 아님.
    */
   retryAppearedAt: number;
+  // §4 (2026-05-01) 신규 — 옵셔널 (기존 호환).
+  /** "playing" | "final-retry" */
+  phase?: "playing" | "final-retry";
+  /** 현재 batch 내 retry 음표 개수 (batch[0..retryCount-1]) */
+  retryCount?: number;
+  /** 현재 missedNotes 크기 */
+  missedSize?: number;
+  /** 현재 batch 내 인덱스 */
+  batchIndex?: number;
+  /** 현재 batch 크기 */
+  batchSize?: number;
 }
 
 export interface SimResult {
@@ -72,6 +83,13 @@ export interface SimResult {
   /** 1턴 지연 fallback 발생 횟수 (popDueOrNull이 lastShown skip으로 null 반환한 case 추정) */
   delayedRetryFallbacks: number;
   events: SimEvent[];
+  // §4 (2026-05-01) 신규 — 옵셔널.
+  /** final-retry phase 진입 여부 */
+  finalRetryEntered?: boolean;
+  /** final-retry phase 진입 시 missedNotes 크기 */
+  finalRetryStartCount?: number;
+  /** final-retry phase 진입 시점 turn */
+  finalRetryStartTurn?: number;
 }
 
 // ─────────────────────────────────────────────
@@ -113,6 +131,124 @@ function noteId(n: NoteType, fallbackClef: "treble" | "bass"): string {
 }
 
 // ─────────────────────────────────────────────
+// §4 (2026-05-01) — final-retry phase 헬퍼
+// ─────────────────────────────────────────────
+
+/**
+ * §4 final-retry phase 배치 크기 동적 결정 (NoteGame.tsx와 parity).
+ *  - missedCount 1~2 → batchSize 3
+ *  - missedCount 3~4 → batchSize 5
+ *  - missedCount 5+  → batchSize 7
+ */
+function getFinalRetryBatchSize(missedCount: number): number {
+  if (missedCount <= 2) return 3;
+  if (missedCount <= 4) return 5;
+  return 7;
+}
+
+function dueToNote(due: RetryNoteKey): NoteType {
+  return {
+    name: due.key,
+    key: due.key,
+    y: 0,
+    octave: due.octave,
+    accidental: due.accidental,
+    clef: due.clef,
+  } as NoteType;
+}
+
+/**
+ * §4 — Batch 구성: (batchSize) - (큐 pop 수) = 새 음표 수.
+ * popDueOrNull(turn, prev)로 §0.1 인접 dedup 보장.
+ */
+function composeBatch(
+  batchSize: number,
+  queue: SimRetryQueue,
+  pool: NoteType[],
+  clef: "treble" | "bass",
+  turn: number,
+  lastShown: NoteType | null,
+): { batch: NoteType[]; retryCount: number; fallbackHits: number } {
+  const retryNotes: NoteType[] = [];
+  let prev: NoteType | null = lastShown;
+  let fallbackHits = 0;
+  while (retryNotes.length < batchSize) {
+    const lastShownKey = prev ? noteToRetryKey(prev, clef) : null;
+    const queueSizeBefore = queue.size;
+    const due = queue.popDueOrNull(turn, lastShownKey);
+    if (!due) {
+      // 큐가 비어있지 않은데 due null이면 lastShown skip 또는 due 미달.
+      if (queueSizeBefore > 0 && lastShownKey) fallbackHits += 1;
+      break;
+    }
+    retryNotes.push(dueToNote(due));
+    prev = retryNotes[retryNotes.length - 1];
+  }
+  const newCount = batchSize - retryNotes.length;
+  const newNotes =
+    newCount > 0 ? generateBatch(pool, newCount, clef, new Map(), prev) : [];
+  return {
+    batch: [...retryNotes, ...newNotes],
+    retryCount: retryNotes.length,
+    fallbackHits,
+  };
+}
+
+/**
+ * §4 final-retry batch 구성: missedNotes에서 retry + generateBatch 새 음표.
+ * 큐(SimRetryQueue) 사용 X — final-retry는 N+2 알고리즘 외부.
+ *
+ * §0.1 dedup (2026-05-01 박힘):
+ *  - 옵션 5: lastShown과 다른 ID retry 우선 (batch[0] dedup)
+ *  - 옵션 7: missedArray 모두 lastShown인 케이스 → retry skip + 새 음표만 batch
+ */
+function composeFinalRetryBatch(
+  missedMap: Map<string, NoteType>,
+  pool: NoteType[],
+  clef: "treble" | "bass",
+  lastShown: NoteType | null,
+): { batch: NoteType[]; retryCount: number } | null {
+  const missedArray = Array.from(missedMap.values());
+  if (missedArray.length === 0) return null;
+
+  const targetBatchSize = getFinalRetryBatchSize(missedArray.length);
+
+  // §0.1 dedup (옵션 5): lastShown과 다른 ID retry 우선.
+  const lastShownId = lastShown ? noteId(lastShown, clef) : null;
+  const sortedMissed = lastShownId
+    ? [
+        ...missedArray.filter(n => noteId(n, clef) !== lastShownId),
+        ...missedArray.filter(n => noteId(n, clef) === lastShownId),
+      ]
+    : missedArray;
+
+  const retryCount = Math.min(sortedMissed.length, targetBatchSize);
+  const retryNotes = sortedMissed.slice(0, retryCount);
+
+  // §0.1 dedup (옵션 7): retry[0]이 lastShown과 같으면 (missedArray 모두 lastShown) retry skip.
+  if (
+    retryCount > 0 &&
+    lastShownId &&
+    noteId(retryNotes[0], clef) === lastShownId
+  ) {
+    const newNotes = generateBatch(pool, targetBatchSize, clef, new Map(), lastShown);
+    return { batch: newNotes, retryCount: 0 };
+  }
+
+  const newCount = targetBatchSize - retryCount;
+  if (newCount === 0) {
+    return { batch: retryNotes, retryCount };
+  }
+  const lastShownForNew =
+    retryNotes[retryNotes.length - 1] ?? lastShown ?? null;
+  const newNotes = generateBatch(pool, newCount, clef, new Map(), lastShownForNew);
+  return {
+    batch: [...retryNotes, ...newNotes],
+    retryCount,
+  };
+}
+
+// ─────────────────────────────────────────────
 // 게임 한 판 시뮬레이션
 // ─────────────────────────────────────────────
 
@@ -130,22 +266,34 @@ export function simulateGame(cfg: SimConfig): SimResult {
   const clef = getClefForLevel(cfg.level);
   const stages = getStagesFor(cfg.sublevel, false, cfg.level);
 
+  // ────── 라이프 (§0-1 정책: sub1=5, sub2=4, sub3=3) ──────
+  const sublevelLives = (() => {
+    if (cfg.sublevel === 1) return 5;
+    if (cfg.sublevel === 2) return 4;
+    return 3;
+  })();
+  const MAX_LIVES = sublevelLives;
+  let lives = sublevelLives;
+  let individualStreak = 0; // §4-Q3 lives 회복용 (3연속 정답 시 +1)
+
   const queue = new SimRetryQueue();
   let stageIdx = 0;
   let currentSet = 1;
   let setProgress = 0;
-  let currentBatch: NoteType[] = generateBatch(
-    pool,
-    stages[0].batchSize,
-    clef,
-    new Map(),
-    null,
-  );
-  let currentIndex = 0;
-  let retryOverride: NoteType | null = null;
   let turn = 0;
+
+  // §4 — 첫 batch는 큐 비어있음 → composeBatch = 새 음표만, retryCount=0.
+  const initial = composeBatch(stages[0].batchSize, queue, pool, clef, turn, null);
+  let currentBatch: NoteType[] = initial.batch;
+  let currentRetryCount = initial.retryCount;
+  let currentIndex = 0;
   let lastShownNote: NoteType | null = null;
-  // markedTurn 추적: retry 음표가 미스된 turn → 다음 등장까지 간격 계산용
+  let phase: "playing" | "final-retry" = "playing";
+  let delayedRetryFallbacks = initial.fallbackHits;
+
+  // §4 — sublevel 전체에서 끝까지 못 푼 음표 (markMissed → add, retry 정답 → delete).
+  const missedNotes = new Map<string, NoteType>();
+  // markedTurn 추적: retry 음표가 미스된 turn → 다음 등장까지 간격 계산용.
   const missedTurnMap = new Map<string, number>();
 
   const events: SimEvent[] = [];
@@ -156,41 +304,15 @@ export function simulateGame(cfg: SimConfig): SimResult {
   let missCount = 0;
   let retryAppearances = 0;
   let consecutiveViolations = 0;
-  let delayedRetryFallbacks = 0;
-  // 라이프
-  const sublevelLives = (() => {
-    if (cfg.sublevel === 1) return 5;
-    if (cfg.sublevel === 2) return 4;
-    return 3;
-  })();
-  let lives = sublevelLives;
 
-  // ────── helper: prepareNextTurn 동등 ──────
-  const prepareNextTurn = (lastShown: NoteType | null): NoteType | null => {
+  // §4 final-retry 통계.
+  let finalRetryEntered = false;
+  let finalRetryStartCount = 0;
+  let finalRetryStartTurn = -1;
+
+  // ────── helper: prepareNextTurn 단순화 (§4: turn += 1만, popDueOrNull은 composeBatch가 담당). ──────
+  const prepareNextTurn = (): void => {
     turn += 1;
-    const lastShownKey = lastShown ? noteToRetryKey(lastShown, clef) : null;
-    const queueSizeBefore = queue.size;
-    const due = queue.popDueOrNull(turn, lastShownKey);
-    if (due) {
-      retryOverride = {
-        name: due.key,
-        key: due.key,
-        y: 0,
-        octave: due.octave,
-        accidental: due.accidental,
-        clef: due.clef,
-      } as NoteType;
-      return retryOverride;
-    }
-    // queue에 due 후보가 있었으나 lastShown skip으로 null이면 1턴 지연 fallback
-    if (queueSizeBefore > 0 && lastShownKey) {
-      // 큐에 lastShownKey와 동일 ID due가 있었는지 정확히 알려면 별도 검사 필요.
-      // 근사: 큐가 비어있지 않은데 due null이면 fallback 가능성.
-      // 정밀도는 낮지만 추세 추정용.
-      delayedRetryFallbacks += 1;
-    }
-    retryOverride = null;
-    return null;
   };
 
   // ────── helper: shouldAnswerCorrect ──────
@@ -205,15 +327,14 @@ export function simulateGame(cfg: SimConfig): SimResult {
     return rng.next() < correctRate;
   };
 
-  // 첫 음표 + 첫 prepareNextTurn (NoteGame은 첫 음표는 batch[0]으로 바로 시작 — turn=0).
-  // simulator는 prepareNextTurn을 첫 turn에서 호출하지 않음 (NoteGame 동등).
   let endReason: SimResult["endReason"] = "max-turns";
 
   for (let safety = 0; safety < maxTurns; safety++) {
-    const currentTarget = retryOverride ?? currentBatch[currentIndex] ?? null;
+    const currentTarget = currentBatch[currentIndex] ?? null;
     if (!currentTarget) break;
 
-    const isRetryTurn = retryOverride !== null;
+    // §4 wasRetry = batch 안 retry 자리(idx<retryCount)에 있는 음표인지.
+    const isRetryTurn = currentIndex < currentRetryCount;
     const targetId = noteId(currentTarget, clef);
     noteShownFreq[targetId] = (noteShownFreq[targetId] ?? 0) + 1;
     if (isRetryTurn) {
@@ -228,8 +349,9 @@ export function simulateGame(cfg: SimConfig): SimResult {
 
     const correct = shouldAnswerCorrect(currentTarget);
     const retryKey = noteToRetryKey(currentTarget, clef);
+    const missedId = noteId(currentTarget, clef);
 
-    // invariant 검사: 직전 정답 음표 → 다음 표시 음표 같음?
+    // invariant: 직전 정답 음표 → 다음 표시 음표 같은가?
     const prevId = lastShownNote ? noteId(lastShownNote, clef) : null;
     const violation = prevId !== null && prevId === targetId;
     if (violation) consecutiveViolations += 1;
@@ -241,78 +363,130 @@ export function simulateGame(cfg: SimConfig): SimResult {
       correct,
       consecutiveViolation: violation,
       retryAppearedAt: isRetryTurn ? turn - (missedTurnMap.get(targetId) ?? turn) : -1,
+      phase,
+      retryCount: currentRetryCount,
+      missedSize: missedNotes.size,
+      batchIndex: currentIndex,
+      batchSize: currentBatch.length,
     });
 
     if (correct) {
       correctCount += 1;
-      // markJustAnswered
+      individualStreak += 1;
+
+      // §4-Q3 (B): 3연속 정답 시 lives +1 (NoteGame.tsx parity).
+      if (individualStreak >= 3) {
+        if (lives < MAX_LIVES) {
+          lives += 1;
+        }
+        individualStreak = 0;
+      }
+
       queue.markJustAnswered(retryKey, turn);
-      if (isRetryTurn) {
-        queue.resolve(retryKey);
-        // §0.1 사각지대 fix: retry == currentBatch[currentIndex]면 일반 advance.
-        const cur = currentBatch[currentIndex];
-        const sameAsBatchCurrent =
-          cur != null &&
-          cur.key === retryKey.key &&
-          cur.octave === retryKey.octave &&
-          (cur.accidental ?? null) === (retryKey.accidental ?? null) &&
-          (cur.clef ?? clef) === retryKey.clef;
-        retryOverride = null;
-        // 정답 시에만 lastShownNote 갱신 (오답은 같은 자리 유지 → invariant 검사 의미 X).
-        lastShownNote = currentTarget;
-        if (sameAsBatchCurrent) {
-          advance(false);
+
+      if (phase === "playing") {
+        if (isRetryTurn) {
+          queue.resolve(retryKey);
+          missedNotes.delete(missedId);
         } else {
-          advance(true);
+          queue.rescheduleAfterCorrect(retryKey, turn);
         }
       } else {
-        retryOverride = null;
-        lastShownNote = currentTarget;
-        // §0.1 N+2: advance 전 rescheduleAfterCorrect (due=정답turn+2).
-        queue.rescheduleAfterCorrect(retryKey, turn);
-        advance(false);
+        // final-retry phase: 큐 무관. retry 음표만 missedNotes에서 제거.
+        if (isRetryTurn) missedNotes.delete(missedId);
       }
+
+      lastShownNote = currentTarget;
+      advance();
     } else {
-      // 오답: 같은 자리 유지. lastShownNote 갱신 X (의도된 same-note이므로).
+      // 오답
       missCount += 1;
       noteMissFreq[targetId] = (noteMissFreq[targetId] ?? 0) + 1;
-      queue.markMissed(retryKey);
-      if (!missedTurnMap.has(targetId)) missedTurnMap.set(targetId, turn);
-      lives -= 1;
-      if (lives <= 0) {
-        endReason = "gameover";
-        break;
+      individualStreak = 0;
+
+      if (phase === "playing") {
+        // 메인 phase: markMissed + missedNotes.add + lives -1 + 같은 자리 유지.
+        queue.markMissed(retryKey);
+        missedNotes.set(missedId, currentTarget);
+        if (!missedTurnMap.has(targetId)) missedTurnMap.set(targetId, turn);
+        lives -= 1;
+        if (lives <= 0) {
+          endReason = "gameover";
+          break;
+        }
+        // 같은 자리 유지 (lastShownNote 갱신 X)
+      } else {
+        // final-retry phase: 큐·missedNotes 추가 X. retry 음표면 missedNotes에서 제거.
+        lives -= 1;
+        if (lives <= 0) {
+          endReason = "gameover";
+          break;
+        }
+        if (isRetryTurn) missedNotes.delete(missedId);
+        lastShownNote = currentTarget;
+        advance();
       }
     }
 
     if (endReason !== "max-turns") break;
   }
 
-  function advance(wasRetry: boolean): void {
-    const stageConfig = stages[stageIdx];
-    if (wasRetry) {
-      const next = prepareNextTurn(lastShownNote);
-      if (!next) {
-        // currentBatch[currentIndex] 그대로
-      }
-      return;
+  function advance(): void {
+    if (phase === "playing") {
+      advancePlaying();
+    } else {
+      advanceFinalRetry();
     }
+  }
+
+  function advancePlaying(): void {
+    const stageConfig = stages[stageIdx];
     const nextIndex = currentIndex + 1;
     const lastShown = currentBatch[currentIndex] ?? null;
+
     if (nextIndex >= currentBatch.length) {
       const newProgress = setProgress + currentBatch.length;
       if (newProgress >= stageConfig.notesPerSet) {
         handleSetComplete(stageIdx, currentSet, lastShown);
       } else {
         setProgress = newProgress;
-        currentBatch = generateBatch(pool, stageConfig.batchSize, clef, new Map(), lastShown);
+        prepareNextTurn();
+        const result = composeBatch(stageConfig.batchSize, queue, pool, clef, turn, lastShown);
+        currentBatch = result.batch;
+        currentRetryCount = result.retryCount;
+        delayedRetryFallbacks += result.fallbackHits;
         currentIndex = 0;
-        prepareNextTurn(lastShown);
       }
     } else {
       currentIndex = nextIndex;
-      prepareNextTurn(lastShown);
+      prepareNextTurn();
     }
+  }
+
+  function advanceFinalRetry(): void {
+    const nextIndex = currentIndex + 1;
+    const lastShown = currentBatch[currentIndex] ?? null;
+
+    if (nextIndex < currentBatch.length) {
+      currentIndex = nextIndex;
+      prepareNextTurn();
+      return;
+    }
+
+    // batch 끝 — missedNotes 비면 success, 아니면 다음 final-retry batch (batchSize 동적).
+    if (missedNotes.size === 0) {
+      endReason = "success";
+      return;
+    }
+    const result = composeFinalRetryBatch(missedNotes, pool, clef, lastShown);
+    if (!result) {
+      endReason = "success";
+      return;
+    }
+    prepareNextTurn();
+    currentBatch = result.batch;
+    currentRetryCount = result.retryCount;
+    currentIndex = 0;
   }
 
   function handleSetComplete(
@@ -324,6 +498,21 @@ export function simulateGame(cfg: SimConfig): SimResult {
     if (curSetNum >= stageConfig.totalSets) {
       const nextStageIdx = curStageIdx + 1;
       if (nextStageIdx >= stages.length) {
+        // §4: 모든 stage 끝 — missedNotes 남으면 final-retry phase 진입.
+        if (missedNotes.size > 0) {
+          const result = composeFinalRetryBatch(missedNotes, pool, clef, lastShown);
+          if (result) {
+            phase = "final-retry";
+            finalRetryEntered = true;
+            finalRetryStartCount = missedNotes.size;
+            finalRetryStartTurn = turn;
+            prepareNextTurn();
+            currentBatch = result.batch;
+            currentRetryCount = result.retryCount;
+            currentIndex = 0;
+            return;
+          }
+        }
         endReason = "success";
         return;
       }
@@ -331,15 +520,21 @@ export function simulateGame(cfg: SimConfig): SimResult {
       stageIdx = nextStageIdx;
       currentSet = 1;
       setProgress = 0;
-      currentBatch = generateBatch(pool, nextStage.batchSize, clef, new Map(), lastShown);
+      prepareNextTurn();
+      const result = composeBatch(nextStage.batchSize, queue, pool, clef, turn, lastShown);
+      currentBatch = result.batch;
+      currentRetryCount = result.retryCount;
+      delayedRetryFallbacks += result.fallbackHits;
       currentIndex = 0;
-      prepareNextTurn(lastShown);
     } else {
       currentSet = curSetNum + 1;
       setProgress = 0;
-      currentBatch = generateBatch(pool, stageConfig.batchSize, clef, new Map(), lastShown);
+      prepareNextTurn();
+      const result = composeBatch(stageConfig.batchSize, queue, pool, clef, turn, lastShown);
+      currentBatch = result.batch;
+      currentRetryCount = result.retryCount;
+      delayedRetryFallbacks += result.fallbackHits;
       currentIndex = 0;
-      prepareNextTurn(lastShown);
     }
   }
 
@@ -356,6 +551,9 @@ export function simulateGame(cfg: SimConfig): SimResult {
     noteMissFreq,
     delayedRetryFallbacks,
     events,
+    finalRetryEntered,
+    finalRetryStartCount,
+    finalRetryStartTurn,
   };
 }
 
