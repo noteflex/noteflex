@@ -177,3 +177,50 @@ describe("§0.1 Simulator — 정량 통계 보고서", () => {
     expect(stats.totalConsecutiveViolations).toBe(0);
   });
 });
+
+describe("§4 — markMissed due 보존 (timeout heavy 회귀 검증)", () => {
+  // §4 fix: markMissed가 reschedule된 due를 덮어쓰지 않음.
+  // 회귀 시나리오: 정답률 30% (timeout 70%) — markMissed가 빈번히 호출되는 환경.
+
+  it("Lv1 sub1 random 30% × 1000 games — violation 0, queue 영구 잔존 없음", () => {
+    const { stats } = runMany(
+      { level: 1, sublevel: 1, scenario: "random", correctRate: 0.3 },
+      1000,
+      4001,
+    );
+    expect(stats.totalConsecutiveViolations).toBe(0);
+    expect(stats.gameCount).toBe(1000);
+  });
+
+  it("Lv2 sub2 random 30% × 1000 games — violation 0", () => {
+    const { stats } = runMany(
+      { level: 2, sublevel: 2, scenario: "random", correctRate: 0.3 },
+      1000,
+      4002,
+    );
+    expect(stats.totalConsecutiveViolations).toBe(0);
+  });
+
+  it("Lv3 sub3 random 30% × 1000 games — violation 0 (Sub3=3초 타이트 환경)", () => {
+    const { stats } = runMany(
+      { level: 3, sublevel: 3, scenario: "random", correctRate: 0.3 },
+      1000,
+      4003,
+    );
+    expect(stats.totalConsecutiveViolations).toBe(0);
+  });
+
+  it("Lv1 sub1 게임오버율 통계 (random 30% × 1000g) — §4 fix 후 정상 분포", () => {
+    const { stats } = runMany(
+      { level: 1, sublevel: 1, scenario: "random", correctRate: 0.3 },
+      1000,
+      4004,
+    );
+    // eslint-disable-next-line no-console
+    console.log(
+      `\n=== §4 Lv1 sub1 random 30% × 1000g endReasons ===\n  success: ${stats.endReasons.success}, gameover: ${stats.endReasons.gameover}, max-turns: ${stats.endReasons["max-turns"]}\n  totalCorrect: ${stats.totalCorrect}, totalMiss: ${stats.totalMiss}`,
+    );
+    // 30% 정답률이면 lives 5에서 대부분 게임오버 예상되지만 max-turns로 빠지면 § 4 버그 회귀 의심.
+    expect(stats.endReasons["max-turns"]).toBe(0);
+  });
+});

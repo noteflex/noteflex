@@ -471,4 +471,147 @@ describe("useRetryQueue", () => {
       expect(popped).toEqual(noteGsharp4);
     });
   });
+
+  describe("§4: markMissed가 reschedule된 due 보존", () => {
+    it("timeout 3회 → markMissed 누적, 정답 → reschedule 정확 (turn+2)", () => {
+      const { result } = renderHook(() => useRetryQueue());
+
+      // turn 0: timeout 1, 2, 3 (markMissed 3번 = miss count 누적, due=MAX)
+      act(() => {
+        result.current.markMissed(noteG4);
+        result.current.markMissed(noteG4);
+        result.current.markMissed(noteG4);
+      });
+
+      expect(result.current.size).toBe(1);
+      const beforeReschedule = result.current.snapshot[0];
+      expect(beforeReschedule.scheduledAtTurn).toBe(Number.MAX_SAFE_INTEGER);
+      expect(beforeReschedule.missCount).toBe(3);
+
+      // turn 0: 정답 → rescheduleAfterCorrect → due=2
+      act(() => {
+        result.current.rescheduleAfterCorrect(noteG4, 0);
+      });
+
+      const afterReschedule = result.current.snapshot[0];
+      expect(afterReschedule.scheduledAtTurn).toBe(2);
+      expect(afterReschedule.missCount).toBe(3);
+    });
+
+    it("retry pop 후 timeout → markMissed가 큐 due 보존 X (큐에서 사라졌으므로 새 entry는 MAX)", () => {
+      // 회귀 검증: retry pop 후 큐 비워진 상태에서의 markMissed는 새 entry라 due=MAX 정상.
+      const { result } = renderHook(() => useRetryQueue());
+
+      act(() => {
+        result.current.markMissed(noteG4);
+      });
+      act(() => {
+        result.current.rescheduleAfterCorrect(noteG4, 0);
+      });
+      // turn 2: pop
+      act(() => {
+        result.current.popDueOrNull(2);
+      });
+      expect(result.current.size).toBe(0);
+
+      // pop 후 timeout (큐에 entry 없음)
+      act(() => {
+        result.current.markMissed(noteG4);
+      });
+
+      const entry = result.current.snapshot[0];
+      expect(entry.scheduledAtTurn).toBe(Number.MAX_SAFE_INTEGER); // 새 entry라 MAX
+      expect(entry.missCount).toBe(2); // 누적 (resolve 안 했으므로)
+    });
+
+    it("§4 핵심: reschedule된 entry에 markMissed 추가 호출 시 due 보존 (덮어쓰기 방지)", () => {
+      const { result } = renderHook(() => useRetryQueue());
+
+      // turn 0: timeout 2번, 정답으로 reschedule → due=2
+      act(() => {
+        result.current.markMissed(noteG4);
+        result.current.markMissed(noteG4);
+      });
+      act(() => {
+        result.current.rescheduleAfterCorrect(noteG4, 0);
+      });
+
+      const afterReschedule = result.current.snapshot[0];
+      expect(afterReschedule.scheduledAtTurn).toBe(2);
+
+      // turn 1: 같은 음표가 아직 큐에 due=2로 있는데, 또 markMissed (다른 시나리오)
+      act(() => {
+        result.current.markMissed(noteG4);
+      });
+
+      // §4 fix 핵심: due=2 보존, MAX로 덮어쓰지 않음
+      const afterMissed = result.current.snapshot[0];
+      expect(afterMissed.scheduledAtTurn).toBe(2); // 보존
+      expect(afterMissed.missCount).toBe(3); // 누적
+    });
+
+    it("retry pop 후 timeout 후 정답 → 다음 N+2에 재등장", () => {
+      const { result } = renderHook(() => useRetryQueue());
+
+      // turn 0: 첫 timeout, 정답 → due=2
+      act(() => {
+        result.current.markMissed(noteG4);
+      });
+      act(() => {
+        result.current.rescheduleAfterCorrect(noteG4, 0);
+      });
+
+      // turn 2: pop (retry 등장)
+      let popped: ReturnType<typeof result.current.popDueOrNull> = null;
+      act(() => {
+        popped = result.current.popDueOrNull(2);
+      });
+      expect(popped).toEqual(noteG4);
+      expect(result.current.size).toBe(0);
+
+      // turn 2: retry 음표 timeout → markMissed (새 entry, due=MAX)
+      act(() => {
+        result.current.markMissed(noteG4);
+      });
+      expect(result.current.snapshot[0].scheduledAtTurn).toBe(Number.MAX_SAFE_INTEGER);
+
+      // turn 2: 정답 → reschedule → due=4
+      act(() => {
+        result.current.rescheduleAfterCorrect(noteG4, 2);
+      });
+      expect(result.current.snapshot[0].scheduledAtTurn).toBe(4);
+
+      // turn 4: pop (재등장)
+      let popped2: ReturnType<typeof result.current.popDueOrNull> = null;
+      act(() => {
+        popped2 = result.current.popDueOrNull(4);
+      });
+      expect(popped2).toEqual(noteG4);
+    });
+
+    it("queue 영구 잔존 entry 0건 — resolve 후 큐 비워짐", () => {
+      const { result } = renderHook(() => useRetryQueue());
+
+      // timeout heavy 후 resolve
+      act(() => {
+        result.current.markMissed(noteG4);
+        result.current.markMissed(noteG4);
+        result.current.markMissed(noteG4);
+      });
+      act(() => {
+        result.current.rescheduleAfterCorrect(noteG4, 0);
+      });
+      act(() => {
+        result.current.markMissed(noteG4); // 추가 timeout (§4 fix: due 보존)
+      });
+
+      // wasRetry 정답 → resolve
+      act(() => {
+        result.current.resolve(noteG4);
+      });
+
+      expect(result.current.size).toBe(0);
+      expect(result.current.has(noteG4)).toBe(false);
+    });
+  });
 });
