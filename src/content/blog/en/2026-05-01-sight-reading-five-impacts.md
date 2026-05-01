@@ -8,6 +8,9 @@ category: "Sight-Reading Lab"
 day: 2
 ---
 
+![Chopin Prelude Op. 28 No. 7 sheet music](https://upload.wikimedia.org/wikipedia/commons/2/2a/Chopin_Preludium_op._28_nr_7.jpg)
+*Figure 1: Chopin Prelude Op. 28 No. 7 score — reading unfamiliar notation in real time is the core challenge in sight-reading. Source: Wikimedia Commons / Public Domain*
+
 When people explain why they practice sight-reading, the most common reason is that it helps them learn new pieces more quickly. That is accurate, but it understates the range of musical activity that sight-reading ability actually touches.
 
 Music education researchers Lehmann and McArthur (2002) describe sight-reading not simply as a notation-decoding skill but as a complex ability that combines musical pattern recognition with real-time decision-making. That compound nature is why improvements in sight-reading tend to produce effects across multiple areas of musical life.

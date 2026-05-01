@@ -8,6 +8,9 @@ category: "초견의 정석"
 day: 2
 ---
 
+![쇼팽 전주곡 Op. 28 No. 7 악보](https://upload.wikimedia.org/wikipedia/commons/2/2a/Chopin_Preludium_op._28_nr_7.jpg)
+*그림 1: 쇼팽 전주곡 Op. 28 No. 7 악보. 초견 연습에서 처음 보는 악보를 실시간으로 읽는 능력이 핵심이다. 출처: Wikimedia Commons / Public Domain*
+
 초견(sight-reading)을 따로 연습하는 이유를 묻는다면, 가장 흔한 대답은 "새 곡을 빨리 익히기 위해서"다. 틀린 말은 아니지만, 초견 능력이 실제로 영향을 미치는 범위는 그보다 넓다.
 
 음악 교육 연구자 Lehmann과 McArthur(2002)는 초견을 단순한 악보 해독 기술이 아닌, 음악적 맥락 인식과 실시간 의사결정 능력이 결합된 복합 기술로 설명한다. 이 복합적인 성격 때문에 초견 능력이 향상되면 여러 음악 활동에 연쇄적인 영향이 나타난다.

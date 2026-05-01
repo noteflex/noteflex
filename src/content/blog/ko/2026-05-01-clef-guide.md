@@ -10,8 +10,8 @@ day: 2
 
 악보를 처음 배울 때 음자리표(clef)가 헷갈리는 이유는 대부분 외워야 할 것이 많아 보이기 때문이다. 하지만 음자리표의 핵심은 단순하다. 오선지 위 특정 줄이 어떤 음인지 기준음 하나를 알려주는 것이 음자리표의 역할이다.
 
-![높은음자리표와 낮은음자리표 도해](treble-bass-clef-notation.svg)
-*그림 1: 높은음자리표(왼쪽)와 낮은음자리표(오른쪽). 출처: Wikimedia Commons / Public Domain*
+![높은음자리표와 낮은음자리표 도해](https://upload.wikimedia.org/wikipedia/commons/d/d3/Bass_and_Treble_clef.svg)
+*그림 1: 높은음자리표(오른쪽)와 낮은음자리표(왼쪽), 음이름 표기 포함. 출처: Wikimedia Commons, 작성: Lthown / CC BY 3.0*
 
 ## 높은음자리표 (G clef, Treble Clef)
 

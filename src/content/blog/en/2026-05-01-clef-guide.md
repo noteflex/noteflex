@@ -10,8 +10,8 @@ day: 2
 
 Most people learning to read music find clefs confusing because they seem to require memorizing a long list of facts. The underlying logic, though, is minimal: a clef defines one reference pitch on the staff, and everything else follows from counting up or down.
 
-![Treble clef and bass clef notation diagram](treble-bass-clef-notation.svg)
-*Figure 1: Treble clef (left) and bass clef (right). Source: Wikimedia Commons / Public Domain*
+![Treble clef and bass clef notation diagram with note labels](https://upload.wikimedia.org/wikipedia/commons/d/d3/Bass_and_Treble_clef.svg)
+*Figure 1: Bass clef (left) and treble clef (right) with note letter labels. Source: Wikimedia Commons, author: Lthown / CC BY 3.0*
 
 ## The Treble Clef (G Clef)
 
