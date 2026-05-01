@@ -679,7 +679,11 @@ useEffect(() => {
       const nextSet = currentSetNum + 1;
       setCurrentSet(nextSet);
       setSetProgress(0);
-      setAnsweredNotes([]);
+      // §0.4.1: batchSize=1 stage는 history 누적 유지 (정답 처리에서 7개 도달 시 자체 리셋).
+      // batchSize > 1 stage는 매 set 전환 시 batch 갈이 → history 클리어.
+      if (stageConfig.batchSize > 1) {
+        setAnsweredNotes([]);
+      }
 
       const result = generateNewBatch(stageConfig.batchSize, false, lastShownNote);
       setBatchAndKey(result);
@@ -787,15 +791,24 @@ useEffect(() => {
     };
 
     if (answer === correctAnswer) {
-      setAnsweredNotes(prev => [
-        ...prev.slice(-(TOTAL_SLOTS - 2)),
-        {
-          id: Date.now(),
-          note: `${currentTarget.key}${currentTarget.octave}`,
-          accidental: currentTarget.accidental,
-          clef: clefForLog,
-        },
-      ]);
+      const stageBatchSize = currentStageConfig.batchSize;
+      const newEntry = {
+        id: Date.now(),
+        note: `${currentTarget.key}${currentTarget.octave}`,
+        accidental: currentTarget.accidental,
+        clef: clefForLog,
+      };
+      setAnsweredNotes(prev => {
+        if (stageBatchSize === 1) {
+          // §0.4.1: batchSize=1 — 답한 음표 회색으로 누적, MAX_HISTORY(7) 도달 시 화면 리셋.
+          if (prev.length >= TOTAL_SLOTS - 1) {
+            return [];
+          }
+          return [...prev, newEntry];
+        }
+        // batchSize > 1 (batch mode) — set 전환 시 클리어되므로 안전망으로만 capping.
+        return [...prev.slice(-(TOTAL_SLOTS - 2)), newEntry];
+      });
 
       logNote({
         note_key: correctAnswer,
