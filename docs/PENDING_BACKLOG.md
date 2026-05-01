@@ -81,11 +81,12 @@
 - 패널 게이트 `SHOW_RETRY_DEBUG_FOR_ADMIN_OR_DEV && isAdminOrDev` → `SHOW_RETRY_DEBUG`(false) 원복 또는 패널 전체 제거
 - 검증 가이드: 사용자가 dev server에서 Lv1 Stage1 → 첫 음표 2번 틀린 후 정답 → 콘솔 로그로 `markMissed` ×2 → `markJustAnswered` → `prepareNextTurn(qsize=1)` → batch[0] != 직전 음표 확인 → 2턴 후 retry로 다시 등장 확인.
 
-### 0.2 Lv5+ 조표 음표 비율 부족 🐛
+### ✅ 0.2 Lv5+ 조표 음표 비율 부족 (완료 2026-04-30, commit bb062c3)
 **사용자 검증**: "조표 붙은 음표가 안 나와 swipe 검증 자체 막힘."
 
-- 사용자 의도 (설계 §3.3.아): 6:4 / 4:6 / 7:3 / 3:7 비율로 자연음 vs 조표 + treble/bass 골고루
-- 수정 위치: `src/components/NoteGame.tsx` `generateKeyBatch()` `pickBalancedCount`/`accSlots`
+- batchSize 기반 조표 비율 — 1→30%, 3→40%, 5→60%, 7→70% (`getAccidentalRatio`)
+- treble/bass 50:50 + 한 batch 내 두 자리표 무조건 등장 보장 (`pickBalancedCount`)
+- 14개 신규 fuzz 테스트 (10,000 반복 ±5% 허용), 325/325 PASS
 
 ### ✅ 0.3 카운트다운 후 첫 음표 버퍼링 (완료 2026-05-01, commit eac606a)
 **설계 §3.3.나 + 메모리**: "카운트다운 끝남 = 음표 표시 + 사운드 동시. 버퍼링 없어야 함. Lv7-3 3초 제한에서 답 시간 부족."
@@ -531,9 +532,12 @@ Public domain 클래식 곡별 레벨
 
 ## 10. 콘텐츠 + 마케팅
 
-### 10.1 약관 4종 본문 🔴 (1~2주차)
+### 10.1 약관 4종 본문 🔴 (1~2주차, 사용자 결정 2026-04-30)
 - 서비스 이용약관, 개인정보처리방침, 환불정책, 쿠키 정책
-- 변호사 자문 후 작성
+- **변호사 자문 X** — 분쟁 발생 시 추가 검토
+- **Termly 또는 iubenda 자동 생성 서비스** ($10~30/월) — GDPR·CCPA·PIPA 자동 준수
+- Claude로 영어→한국어 번역, 사용자 검수 후 게시
+- **사업자등록 직후 즉시 게시**
 - **Paddle Vendor 심사 + AdSense 심사의 핵심 의존성**
 
 ### 10.2 ⏳ 블로그 글 작성 (사용자 직접, 출시 전부터 지속)
@@ -592,7 +596,40 @@ Claude가 출시 임박 시 자동 고지.
 
 ## 13. 결정 보류 항목
 
-### 13.1 §0-1 정책 결정 ✅ 완료 (2026-04-29 사용자 결정)
+### 13.1 글로벌 다국어 출시 전략 (사용자 결정 2026-04-30)
+
+- **5/31 출시**: 한국어 + 영어 2개 언어 동시 출시
+- **출시 후 1~4주**: 일본어 추가 (1~2주), 중국어 추가 (2~4주) 점진 확장
+- **블로그**: 5/1부터 한+영 동시 작성 (4/30 글은 5/1에 영어 버전 추가)
+- **게임 UI i18n**: Week 3 도입 (react-i18next, Sonnet 1~2일)
+- **음표 라벨 토글**: Week 2 (한국식·영문식·솔페주, 1~2시간)
+- **URL 구조**: `/ko/*`, `/en/*` 언어 코드 포함
+- **블로그 폴더**: `src/content/blog/ko/`, `src/content/blog/en/`
+- **카테고리 영문 매핑**: 초견의 정석 = Sight-Reading Lab, 실전 연습 가이드 = Practice Hub, 음악 이론 & 화성학 = Theory & Harmony, 뮤직 테크 & 미래 = Music Tech
+- **Paddle 글로벌 결제** 자동 활성화
+- 상세 전략: `docs/i18n/STRATEGY.md`
+
+### 13.2 라우팅 보호 + PWA 등록 (사용자 결정 2026-04-30, Week 3~4)
+
+**목적**: "앱같은 UX" — URL 직접 접근 차단, 네비게이션 버튼으로만 화면 전환
+
+**공개 라우트** (URL 직접 접근 OK, SEO):
+`/`, `/blog/*`, `/about`, `/contact`, `/terms`, `/privacy`, `/cookies`, `/refund`, `/login`, `/signup`
+
+**보호 라우트** (URL 직접 접근 차단, 네비게이션만):
+`/play`, `/levels`, `/dashboard`, `/settings`, `/billing`, `/admin/*`
+
+**구현**:
+- React Router `NavOnlyRoute` 가드 (`location.state.fromNav` 체크)
+- 게임 진행 상태 localStorage 저장 (새로고침 대응)
+- PWA: `manifest.json` + `vite-plugin-pwa` + Service Worker
+- 모바일 첫 진입 시 "홈 화면에 추가" 팝업 (3초 후 1회, "다음에" → 7일 cooldown, "설치" → 영구 안 보여줌)
+  - iOS: 수동 안내 + 단계 설명 (공유 → 홈 화면에 추가)
+  - Android: `beforeinstallprompt` 자동
+- 아이콘: 192·512·180 + maskable
+- **작업 시간**: Week 4~5 (Sonnet 7~8시간 + 사용자 아이콘 제작 30분)
+
+### 13.3 §0-1 정책 결정 ✅ 완료 (2026-04-29 사용자 결정)
 - [x] 단계 Clear 기준 — 정답률 85% / 반응속도 평균 35% / 수행 10회 / 최대 연속 5회
 - [x] Sublevel 3 stage 수 — 3 통일
 - [x] 미가입자 권한 — Lv 1만
@@ -626,55 +663,62 @@ Claude가 출시 임박 시 자동 고지.
 ### Week 1 (4/29 ~ 5/5): 버그 + 정책 코드 적용 + Calibration + 사업자 시작
 - [x] §0.1 N+2 즉시 등장 버그 ✅ (commit 4e2b6ef, 2026-04-29)
 - [x] §0-1.1~0-1.6 정책 결정 ✅ (사용자, 2026-04-29)
-- [ ] §0.4 UI 음표 history·크기·색깔·잘림 방지 (사용자 발견 + 설계 §3.3.라 위반) ⭐
-- [x] §0.2 Lv5+ 조표 비율 (6:4 / 4:6 / 7:3 / 3:7) ✅ (2026-04-30, commit bb062c3)
-- [x] §0.3 카운트다운 후 첫 음표 버퍼링 (Lv 7-3 1.05초 부담 완화) ✅ (2026-05-01, commit eac606a)
-- [x] §0-1.1 코드 적용: PASS_CRITERIA 갱신 (정답률 85% / 반응속도 평균 35% / 수행 10회 / 최대 연속 5회) ✅ (2026-04-30)
-- [x] §0-1.2 코드 적용: SUBLEVEL_CONFIGS 갱신 (Sub 3 = 3 stage) ✅ (2026-04-30)
-- [x] §0-1.4 코드 적용: 음표 배치 + set 반복 횟수 갱신 ✅ (2026-04-30)
-- [x] §0-1.5 코드 적용: 재도전 배지 삭제 (10분) ✅ (2026-04-30)
-- [x] §0-1.6 코드 적용: 같은 조표 연속 학습 구현 ✅ (2026-04-30)
+- [x] §0-1.5 코드 적용: 재도전 배지 삭제 ✅ (2026-04-30)
+- [x] §0-1 정책 코드 전체 적용: PASS_CRITERIA + SUBLEVEL_CONFIGS + avg_reaction_time + §0-1.6 ✅ (2026-04-30)
+- [x] §0.2 Lv5+ 조표 비율 (batchSize 기반 30/40/60/70%) ✅ (2026-04-30, commit bb062c3)
+- [x] §0-1.4 Lv 5~7 SUBLEVEL_CONFIGS (batchSize 3·5·7 전용) ✅ (2026-04-30, commit 818ae2f)
+- [x] §0.3 카운트다운 + Sub3 즉시 타임아웃 fix ✅ (2026-05-01, commit eac606a)
+- [x] §0.4 UI 음표 history·크기·색깔 분석 완료 ✅ (2026-05-01, Opus 4 step 계획)
+- 🟡 §0.4 본격 구현 (내일 시작 — Step 1 색상→ Step 2 history→ Step 3 크기)
 - [ ] **§7.3 Calibration 구현 (사용자 명시 — 정체성)** ⭐
 - [ ] §4.4 힌트 시스템 결정
 - [ ] §5.3 닉네임 중복 검증
 - [ ] §9.1 도메인 이메일 시작
 - [ ] §9.2 ⏳ 사업자 등록 시작 (Leo Republic)
 - [ ] §10.3 SNS 핸들 선점
-- [ ] §0.1-cleanup 출시 전 후속으로 처리 (디버그 instrumentation 제거)
+- [ ] §0.1-cleanup 출시 전 후속으로 처리 (Week 5)
 - [ ] **사용자 작업**: 블로그 글 1~3편 작성 시작 (4/30 1일차부터)
 
-### Week 2 (5/3 ~ 5/9): 인프라 + 결제 시스템 + 약관
+### Week 2 (5/6 ~ 5/12): §0.4 마무리 + Calibration + i18n 준비
+- [ ] §0.4 UI 음표 history·크기·색깔·잘림 구현 마무리
+- [ ] **§7.3 Calibration** 마무리
+- [ ] §3.5 약점 음표 표시 (Fail 시)
+- [ ] §4.5 음표 라벨 토글 한+영+솔페주 (1~2시간)
 - [ ] §0-2.1 스키마 표류 정리
 - [ ] §0-2.2 Supabase 키 하드코딩 제거
 - [ ] §0-2.3 Edge Function 구현 (payment-webhook)
 - [ ] §7.1 performance.now() 전환
-- [ ] §7.10 음표-사운드 Sync 검증
-- [ ] §10.1 약관 4종 본문 (변호사 자문 시작)
 - [ ] §1.2 Paddle Production 상품 등록 (연간 $24.99)
-- [ ] **사용자 작업**: 블로그 글 추가
+- [ ] **사용자 작업**: 블로그 글 추가 (한+영 동시)
 
-### Week 3 (5/10 ~ 5/16): 비즈니스 모델 + UI 정비
+### Week 3 (5/13 ~ 5/19): i18n + 라우팅 보호 + 비즈니스 모델
+- [ ] 게임 UI i18n 도입 (react-i18next, locales/ko·en.json, Sonnet 1~2일)
+- [ ] 4/30·5/1~ 블로그 글 영어 번역 누적 (영어 폴더 분기)
+- [ ] §13.2 라우팅 보호 (NavOnlyRoute) 도입
 - [ ] §1.1 회원 등급 차등화 적용
 - [ ] §1.3 결제 후킹 메시지
-- [ ] §3.5 약점 음표 표시 (Fail 시)
-- [ ] §4.5 정답 버튼 세계화
 - [ ] §5.2 회원관리 페이지
 - [ ] §5.4 가입자 대시보드 잠금
-- [ ] §6.1 UI 버그 정비
+- [ ] §10.1 약관 4종 Termly/iubenda 생성 → 번역·검수
 - [ ] §10.1 약관 완성 → ⏳ Paddle Vendor 심사 신청
 - [ ] **사용자 작업**: 블로그 글 누적 10개 이상
 
-### Week 4 (5/17 ~ 5/23): 마무리 + 검증
+### Week 4 (5/20 ~ 5/26): PWA + 마무리
+- [ ] §13.2 PWA 등록 (manifest.json + Service Worker + 설치 유도 팝업)
+- [ ] About / Contact 페이지 작성
+- [ ] 다차원 시뮬레이션 검증 (Opus, 1~2일)
 - [ ] §3.2 머니 스위치 구현
 - [ ] §6 UI/UX 정비 마무리
 - [ ] §12.1 Sentry 도입
-- [ ] §12.5 Lv7-3 3초 제한 결정·적용
 - [ ] §7.9 피아노 사운드 조정
+- [ ] §7.10 음표-사운드 Sync 검증
 - [ ] **사용자 작업**: 블로그 글 누적 15~20개 → ⏳ AdSense 심사 신청
 - [ ] 사용자 검증 라운드 1
 
-### Week 5 (5/24 ~ 5/31): 최종 + 출시
+### Week 5 (5/27 ~ 5/31): 최종 + 출시
+- [ ] §0.1-cleanup 디버그 instrumentation 제거
 - [ ] §11 환경변수 production 전환
+- [ ] Termly 약관 4종 게시 (사업자등록 직후)
 - [ ] 사용자 검증 라운드 2
 - [ ] 출시 전 최종 점검
 - [ ] **5/31 출시** 🚀
@@ -686,10 +730,11 @@ Claude가 출시 임박 시 자동 고지.
 - [ ] §0-2.4 GitHub Actions CI/CD
 - [ ] §12.2 E2E 테스트
 - [ ] §5.1 기록 비교 피드백
+- [ ] 일본어 추가 (1~2주)
+- [ ] 중국어 추가 (2~4주)
 
 ### 7월 ~ 9월: 출시 후 분기별 (Phase 7-B)
 - [ ] §2 배치고사 + 랭크 시스템 전체
-- [ ] §7.3 Calibration
 - [ ] §7.5 Effective Precision SLA
 - [ ] §4.2 사용자화 레벨
 - [ ] §6.2~6.3 디자인 컨셉 + 티어 카드 SNS
@@ -725,6 +770,15 @@ Claude가 출시 임박 시 자동 고지.
 
 **2026-04-30**:
 - ✅ §0.1 전역 dedup 확장 (`4e2b6ef`) — popDueOrNull(turn, lastShown?) 시그니처 확장 + `lastShownNoteRef` 4개 호출 지점 적용 + wasRetry 사각지대 fix (retry == currentBatch[currentIndex] 시 일반 advance) + N+2 정확화 (rescheduleAfterCorrect를 advance 전 호출, 기존 advance 후라 due=N+3이었음) + simulator (1만 게임 fuzz) + 19개 신규 테스트 (304/304 PASS).
+- ✅ §0-1.5 재도전 배지 삭제 (`f09919c`) — NoteGame.tsx 🔁 재출제 배지 제거
+- ✅ §0-1 정책 코드 전체 적용 — PASS_CRITERIA (정답률 85%·반응속도 35%·수행 10회·연속 5회) + SUBLEVEL_CONFIGS 3 stage 통일 + avg_reaction_time 필드 + §0-1.6 같은 조표 연속 학습 구현 + 333/333 PASS
+- ✅ §0.2 Lv5+ 조표 비율 (`bb062c3`) — batchSize 기반 30/40/60/70% 조표 비율 + treble/bass 50:50 + 두 자리표 보장 + 14개 fuzz 테스트 325/325 PASS
+- ✅ §0-1.4 Lv5~7 SUBLEVEL_CONFIGS (`818ae2f`) — batchSize 1·2 stage 제거, Sub1·2: 3·5·7 batchSize 51음표, Sub3: 5·7·7 batchSize 57음표, LV5_SUBLEVEL_STAGES 신규, getStagesFor(sublevel, isCustom, level) level 파라미터 추가 + 333/333 PASS
+
+**2026-05-01**:
+- ✅ §0.3 카운트다운 후 첫 음표 300ms 안정화 + Sub3 즉시 타임아웃 fix (`eac606a`) — FIRST_NOTE_GRACE_MS=300, handleCountdownComplete에 setTimeout 래퍼, setTimerKey(prev+1) grace 내부로 이동, noteStartTime.current grace 내부에서 설정 — 4개 TDD 테스트 (vi.useFakeTimers), 337/337 PASS
+- ✅ §0.4 분석 완료 (Opus 보고서) — GrandStaffPractice.tsx 556줄 전체 분석, 갭 3개 식별, 4 step 구현 계획 수립 (Step 1 색상 30분 → Step 2 history 2~3시간 → Step 3 크기 1~2시간 → Step 4 클리핑 30분, 총 4~6시간)
+- ✅ 문서 갱신 v7 — §13.1 글로벌 다국어 출시 전략 + §13.2 라우팅 보호·PWA + §14 Week 일정 갱신 (Week 2~5 재편) + §10.1 약관 Termly/iubenda 결정 + docs/i18n/STRATEGY.md 신규
 
 ---
 
@@ -749,3 +803,4 @@ Claude가 출시 임박 시 자동 고지.
 - 2026-04-28 (저녁): **출시 일정 확정 (5/31)** + **Week 1~5 일정 박힘** + **자동 갱신 시스템 도입** + **AdSense·Paddle 병렬 심사 반영** + 우선순위 5/31 기준 재분류 (🔴 출시 전 / 🟢 출시 후 1개월 / 🟡 분기별 / ⏳ 심사 대기) + §15 완료 이력 신설
 - 2026-04-29 (밤): §0-1 정책 결정 9개 모두 확정 + §0.1 ✅ 완료 (commit 4e2b6ef) + §0.4 신규 (UI 음표 history·크기·색깔·잘림 방지) + §7.3 Calibration 출시 전 필수로 격상 (사용자 명시 — 정체성 결정)
 - 2026-04-30 (밤): §0-1 코드 적용 완료 — §0-1.1~0-1.6 모두 구현 (commit 6c1a7e8) + §0.2 Lv5+ 조표 비율 수정 (commit bb062c3) + 블로그 1일차 2편 작성 완료 (sight-reading-basics, musical-staff-principle)
+- 2026-05-01: §0.3 카운트다운 grace buffer + Sub3 즉시 타임아웃 fix (eac606a) + §0.4 GrandStaffPractice 분석 (Opus 보고서, 3갭 4 step) + 문서 갱신 v7 (§10.1 Termly 결정, §13.1 글로벌 다국어, §13.2 라우팅·PWA, §14 Week 재편, docs/i18n/STRATEGY.md 신규)
