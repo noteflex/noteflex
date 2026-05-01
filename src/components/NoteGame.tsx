@@ -457,8 +457,11 @@ export default function NoteGame({
   // wasRetry 판단은 currentIndex < batchAndKey.retryCount.
 
   const currentStageConfig = stages[stageIdx];
-  // §4: final-retry phase는 batchSize=1 history mode 강제.
-  const isBatchDisplay = phase !== "final-retry" && currentStageConfig.batchSize > 1;
+  // §4: final-retry phase도 batch mode (batchSize 동적 3·5·7).
+  // currentBatch 길이 기준으로 판단 — final-retry는 currentStageConfig 무관.
+  const isBatchDisplay = phase === "final-retry"
+    ? currentBatch.length > 1
+    : currentStageConfig.batchSize > 1;
 
   const currentTarget = currentBatch[currentIndex] ?? null;
 
@@ -531,7 +534,7 @@ export default function NoteGame({
       : undefined;
 
   const stageLabel = phase === "final-retry"
-    ? `마무리 단계 — 못 푼 음표 다시 (${missedNotes.size}개 남음)`
+    ? `마무리 단계 — ${missedNotes.size}개 남음`
     : `Stage ${currentStageConfig.stage}: ${
         currentStageConfig.batchSize === 1
           ? `음표 ${currentStageConfig.notesPerSet}개 순차`
@@ -639,6 +642,18 @@ useEffect(() => {
   }, [NOTES, isCustom, customNotes, level, customClef, masteryMap, currentKeySignature]);
 
   /**
+   * §4 (2026-05-01) — final-retry phase 배치 크기 동적 결정.
+   *  - missedCount 1~2 → batchSize 3
+   *  - missedCount 3~4 → batchSize 5
+   *  - missedCount 5+  → batchSize 7
+   */
+  const getFinalRetryBatchSize = useCallback((missedCount: number): number => {
+    if (missedCount <= 2) return 3;
+    if (missedCount <= 4) return 5;
+    return 7;
+  }, []);
+
+  /**
    * §4 (2026-05-01) — Batch 구성 공식:
    *   (stage batchSize) - (retry 큐 pop 수) = 새 음표 수
    *
@@ -697,6 +712,43 @@ useEffect(() => {
   }, [generateNewBatch, retryQueue, isCustom, customClef, level, currentKeySignature]);
 
   /**
+   * §4 (2026-05-01) — final-retry phase batch 구성:
+   *  1. missedNotes Map에서 가능한 만큼 retry 음표 가져옴 (max getFinalRetryBatchSize)
+   *  2. 부족분 = batchSize - retryCount, 새 음표 generateNewBatch (학습 보조)
+   *  3. retry 음표 idx<retryCount, 새 음표 idx>=retryCount
+   *
+   * 큐(useRetryQueue)는 사용 X — final-retry는 N+2 알고리즘 외부.
+   * missedMap을 인자로 받아 stale state 회피.
+   */
+  const composeFinalRetryBatch = useCallback((
+    missedMap: Map<string, NoteType>,
+    lastShownNote?: NoteType | null,
+  ): {
+    batch: NoteType[];
+    keySig: KeySignatureType;
+    retryCount: number;
+  } | null => {
+    const missedArray = Array.from(missedMap.values());
+    if (missedArray.length === 0) return null;
+
+    const targetBatchSize = getFinalRetryBatchSize(missedArray.length);
+    const retryCount = Math.min(missedArray.length, targetBatchSize);
+    const retryNotes = missedArray.slice(0, retryCount);
+
+    const newCount = targetBatchSize - retryCount;
+    if (newCount === 0) {
+      return { batch: retryNotes, keySig: currentKeySignature, retryCount };
+    }
+    const lastShown = retryNotes[retryNotes.length - 1] ?? lastShownNote ?? null;
+    const newResult = generateNewBatch(newCount, false, lastShown);
+    return {
+      batch: [...retryNotes, ...newResult.batch],
+      keySig: newResult.keySig,
+      retryCount,
+    };
+  }, [getFinalRetryBatchSize, generateNewBatch, currentKeySignature]);
+
+  /**
    * §4 (2026-05-01) — 단순화: turnCounter += 1만.
    * retry pop은 composeBatch가 새 batch 생성 시 한 번에 처리.
    * batch 내 다음 음표 갈 때(같은 batch 안)도 turnCounter는 +1.
@@ -717,17 +769,20 @@ useEffect(() => {
       const nextStageIdx = currentStageIdx + 1;
       if (nextStageIdx >= stagesRef.length) {
         // §4 (2026-05-01): 모든 stage 끝 — missedNotes 남으면 final-retry phase 진입.
+        // batchSize 동적 (3·5·7), batch mode 유지 (history mode X).
         if (missedNotes.size > 0) {
-          const firstMissed = Array.from(missedNotes.values())[0];
-          setPhase("final-retry");
-          setBatchAndKey({ batch: [firstMissed], keySig: currentKeySignature, retryCount: 0 });
-          setCurrentIndex(0);
-          setDisabledNotes(new Set());
-          setAnsweredNotes([]);
-          setTimerKey(prev => prev + 1);
-          noteStartTime.current = Date.now();
-          playNote(getSoundKey(firstMissed));
-          return;
+          const result = composeFinalRetryBatch(missedNotes, lastShownNote ?? null);
+          if (result) {
+            setPhase("final-retry");
+            setBatchAndKey(result);
+            setCurrentIndex(0);
+            setDisabledNotes(new Set());
+            setAnsweredNotes([]);
+            setTimerKey(prev => prev + 1);
+            noteStartTime.current = Date.now();
+            playNote(getSoundKey(result.batch[0]));
+            return;
+          }
         }
         setPhase("success");
         return;
@@ -773,7 +828,7 @@ useEffect(() => {
 
       playNote(getSoundKey(result.batch[0]));
     }
-  }, [composeBatch, stages, prepareNextTurn, level, retryQueue, missedNotes, currentKeySignature]);
+  }, [composeBatch, stages, prepareNextTurn, level, retryQueue, missedNotes, composeFinalRetryBatch]);
 
   /**
    * §4 (2026-05-01) — wasRetry 인자 제거.
@@ -834,29 +889,62 @@ useEffect(() => {
   }, [currentBatch]);
 
   /**
-   * §4 (2026-05-01): final-retry phase 다음 음표 진행.
-   * 현재 음표를 missedNotes에서 제거 → 남은 음표 있으면 첫 번째 표시, 없으면 success.
+   * §4 (2026-05-01) — final-retry phase 다음 음표 진행.
+   *  - wasRetryNote=true 시 missedNotes에서 제거 (학습 완료/포기)
+   *  - 같은 batch 내 다음 음표 있으면 진행 (currentIndex+1)
+   *  - batch 끝나면 missedNotes 남았는지 확인 → 다음 batch (batchSize 동적 재계산) 또는 success
    */
-  const advanceFinalRetry = useCallback((currentMissedId: string) => {
-    setMissedNotes(prev => {
-      const next = new Map(prev);
-      next.delete(currentMissedId);
-      const remaining = Array.from(next.values());
-      if (remaining.length === 0) {
-        setPhase("success");
-        return next;
+  const advanceFinalRetry = useCallback((
+    wasRetryNote: boolean,
+    currentMissedId: string | null,
+  ) => {
+    const nextIndex = currentIndex + 1;
+    const lastShownNote = currentBatch[currentIndex] ?? null;
+
+    if (nextIndex < currentBatch.length) {
+      // 같은 batch 내 다음 음표
+      if (wasRetryNote && currentMissedId) {
+        setMissedNotes(prev => {
+          if (!prev.has(currentMissedId)) return prev;
+          const next = new Map(prev);
+          next.delete(currentMissedId);
+          return next;
+        });
       }
-      // 다음 음표 표시
-      const nextNote = remaining[0];
-      setBatchAndKey({ batch: [nextNote], keySig: currentKeySignature, retryCount: 0 });
-      setCurrentIndex(0);
+      setCurrentIndex(nextIndex);
       setDisabledNotes(new Set());
       setTimerKey(prevKey => prevKey + 1);
       noteStartTime.current = Date.now();
-      playNote(getSoundKey(nextNote));
+      playNote(getSoundKey(currentBatch[nextIndex]));
+      return;
+    }
+
+    // batch 끝 — missedNotes 갱신 + 다음 batch 또는 success
+    setMissedNotes(prev => {
+      const next = new Map(prev);
+      if (wasRetryNote && currentMissedId) next.delete(currentMissedId);
+
+      if (next.size === 0) {
+        setPhase("success");
+        return next;
+      }
+
+      const result = composeFinalRetryBatch(next, lastShownNote);
+      if (result) {
+        setBatchAndKey(result);
+        setCurrentIndex(0);
+        setDisabledNotes(new Set());
+        // §0.4.1: final-retry 새 batch — batchSize > 1이면 history 클리어.
+        if (result.batch.length > 1) {
+          setAnsweredNotes([]);
+        }
+        setTimerKey(prevKey => prevKey + 1);
+        noteStartTime.current = Date.now();
+        playNote(getSoundKey(result.batch[0]));
+      }
       return next;
     });
-  }, [currentKeySignature]);
+  }, [currentIndex, currentBatch, composeFinalRetryBatch]);
 
   const handleAnswer = useCallback((answer: string) => {
     if ((phase !== "playing" && phase !== "final-retry") || !currentTarget) return;
@@ -937,10 +1025,13 @@ useEffect(() => {
         setIndividualStreak(0);
       }
 
-      // §4 (2026-05-01): final-retry phase 정답 → 음표 제거 + 다음 음표 (큐·missedSet 처리 분리).
+      // §4 (2026-05-01): final-retry phase 정답.
+      //  - retry 음표(idx<retryCount): missedNotes에서 제거 + advance
+      //  - 새 음표(idx>=retryCount): missedNotes 변동 X + advance (학습 보조)
       if (phase === "final-retry") {
-        const id = missedNoteIdOf(currentTarget, clefForLog);
-        advanceFinalRetry(id);
+        const wasRetryNote = currentIndex < batchAndKey.retryCount;
+        const id = wasRetryNote ? missedNoteIdOf(currentTarget, clefForLog) : null;
+        advanceFinalRetry(wasRetryNote, id);
         return;
       }
 
@@ -1003,10 +1094,13 @@ useEffect(() => {
         return;
       }
 
-      // §4: final-retry phase 오답·timeout — 음표 제거 + 다음 음표 (lives 차감 + 큐 추가 X).
+      // §4: final-retry phase 오답 — lives 차감 + advance.
+      //  - retry 음표: missedNotes 제거 (학습 포기, 큐 X)
+      //  - 새 음표: missedNotes 변동 X (학습 보조용)
       if (phase === "final-retry") {
-        const id = missedNoteIdOf(currentTarget, clefForLog);
-        advanceFinalRetry(id);
+        const wasRetryNote = currentIndex < batchAndKey.retryCount;
+        const id = wasRetryNote ? missedNoteIdOf(currentTarget, clefForLog) : null;
+        advanceFinalRetry(wasRetryNote, id);
         return;
       }
 
@@ -1070,17 +1164,18 @@ useEffect(() => {
       return;
     }
 
-    // §4: final-retry phase timeout — 음표 제거 + 다음 음표.
+    // §4: final-retry phase timeout — lives 차감 + advance.
     if (phase === "final-retry") {
-      const id = missedNoteIdOf(currentTarget, clefForLog);
-      advanceFinalRetry(id);
+      const wasRetryNote = currentIndex < batchAndKey.retryCount;
+      const id = wasRetryNote ? missedNoteIdOf(currentTarget, clefForLog) : null;
+      advanceFinalRetry(wasRetryNote, id);
       return;
     }
 
     // 타이머만 리셋해서 사용자가 같은 음표를 다시 풀 시간 확보.
     setTimerKey(prev => prev + 1);
     noteStartTime.current = Date.now();
-  }, [phase, lives, currentTarget, logNote, recorder, level, isCustom, customClef, retryQueue, addMissedNote, missedNoteIdOf, advanceFinalRetry]);
+  }, [phase, lives, currentTarget, currentIndex, batchAndKey.retryCount, logNote, recorder, level, isCustom, customClef, retryQueue, addMissedNote, missedNoteIdOf, advanceFinalRetry]);
 
   const handleReplay = () => {
     setLives(MAX_LIVES);
