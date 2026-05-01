@@ -48,6 +48,9 @@ vi.mock("@/hooks/useUserMastery", () => ({
 vi.mock("@/lib/sound", () => ({
   playNote: vi.fn(),
   playWrong: vi.fn(),
+  isSamplerReady: () => true,
+  initSound: vi.fn().mockResolvedValue(undefined),
+  ensureAudioReady: vi.fn().mockResolvedValue(undefined),
 }));
 
 vi.mock("@/contexts/AuthContext", () => ({

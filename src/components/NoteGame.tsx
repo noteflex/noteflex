@@ -6,7 +6,7 @@ import CountdownTimer from "./CountdownTimer";
 import CountdownOverlay from "./CountdownOverlay";
 import AccidentalSwipeTutorial from "./AccidentalSwipeTutorial";
 import { useAuth } from "@/contexts/AuthContext";
-import { playNote, playWrong, isSamplerReady, initSound } from "@/lib/sound";
+import { playNote, playWrong, isSamplerReady, initSound, ensureAudioReady } from "@/lib/sound";
 import { useNoteLogger } from "@/hooks/useNoteLogger";
 import { useSessionRecorder } from "@/hooks/useSessionRecorder";
 import { useRetryQueue } from "@/hooks/useRetryQueue";
@@ -555,6 +555,17 @@ export default function NoteGame({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // §1 (2026-05-01): mount 시 sampler 백그라운드 로딩 + audio context 활성화.
+  // 카운트다운 3초 동안 로딩 → handleCountdownComplete 시점엔 거의 항상 준비 완료.
+  useEffect(() => {
+    if (!isSamplerReady()) {
+      initSound().catch((err) => {
+        // eslint-disable-next-line no-console
+        console.warn("[§1] initSound failed:", err);
+      });
+    }
+  }, []);
+
   useEffect(() => {
     if (phase === "success" || phase === "gameover") {
       const reason     = phase === "success" ? "completed" : "gameover";
@@ -877,15 +888,18 @@ useEffect(() => {
     setShowCountdown(false);
     setTimerKey(prev => prev + 1);
     noteStartTime.current = Date.now();
-    if (currentBatch.length > 0) {
-      if (isSamplerReady()) {
-        playNote(getSoundKey(currentBatch[0]));
-      } else {
-        initSound().then(() => {
-          playNote(getSoundKey(currentBatch[0]));
-        });
-      }
-    }
+    if (currentBatch.length === 0) return;
+    // §1 (2026-05-01): audio context 활성화 보장 후 playNote.
+    //  - sampler 미준비 시 initSound 완료 대기
+    //  - audio context suspended 시 명시적 resume (다른 탭 갔다 온 케이스)
+    ensureAudioReady().then(() => {
+      playNote(getSoundKey(currentBatch[0]));
+    }).catch((err) => {
+      // eslint-disable-next-line no-console
+      console.warn("[§1] ensureAudioReady failed:", err);
+      // fallback — synth로라도 시도
+      playNote(getSoundKey(currentBatch[0]));
+    });
   }, [currentBatch]);
 
   /**

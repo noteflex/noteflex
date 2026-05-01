@@ -22,6 +22,23 @@ export function isSamplerReady() {
   return _samplerReady;
 }
 
+/**
+ * §1 (2026-05-01) — 카운트다운 후 첫 음표 사운드 보장.
+ *  1. sampler 미준비 시 initSound() 호출 (audio context resume + sampler 로딩)
+ *  2. audio context가 suspended 상태면 명시적 resume (다른 탭 갔다 온 케이스)
+ *
+ * mount 시 initSound() 백그라운드 호출과 함께 사용해 99% 케이스 커버.
+ */
+export async function ensureAudioReady(): Promise<void> {
+  if (!_samplerReady) {
+    await initSound();
+  }
+  // audio context가 suspended이면 resume (사용자 인터랙션 후 호출 시 자동 resume).
+  if (Tone.getContext().state === "suspended") {
+    await Tone.getContext().resume();
+  }
+}
+
 export async function initSound(): Promise<void> {
   if (initialized) return;
   await Tone.start();

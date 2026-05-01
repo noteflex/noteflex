@@ -15,8 +15,10 @@ import NoteGame from "./NoteGame";
 // ──────────────────────────────────────────────────
 // vi.hoisted — vi.mock 호이스트에 안전한 참조
 // ──────────────────────────────────────────────────
-const { mockPlayWrong } = vi.hoisted(() => ({
+const { mockPlayWrong, mockPlayNote, mockEnsureAudioReady } = vi.hoisted(() => ({
   mockPlayWrong: vi.fn(),
+  mockPlayNote: vi.fn(),
+  mockEnsureAudioReady: vi.fn().mockResolvedValue(undefined),
 }));
 
 // ──────────────────────────────────────────────────
@@ -45,10 +47,11 @@ vi.mock("@/hooks/useUserMastery", () => ({
 }));
 
 vi.mock("@/lib/sound", () => ({
-  playNote: vi.fn(),
+  playNote: mockPlayNote,
   playWrong: mockPlayWrong,
   isSamplerReady: () => true,
   initSound: vi.fn().mockResolvedValue(undefined),
+  ensureAudioReady: mockEnsureAudioReady,
 }));
 
 vi.mock("@/contexts/AuthContext", () => ({
@@ -106,6 +109,8 @@ describe("§0.3 countdown → first note (grace 제거 후, 2026-05-01 개정)",
   beforeEach(() => {
     vi.useFakeTimers();
     mockPlayWrong.mockClear();
+    mockPlayNote.mockClear();
+    mockEnsureAudioReady.mockClear();
     localStorage.setItem("noteflex.solfege_system", "en");
   });
 
@@ -150,6 +155,21 @@ describe("§0.3 countdown → first note (grace 제거 후, 2026-05-01 개정)",
     act(() => { vi.advanceTimersByTime(50); });
 
     expect(mockPlayWrong).not.toHaveBeenCalled();
+  });
+
+  it("§1: 카운트다운 후 ensureAudioReady() 호출 + playNote (사운드 보장)", async () => {
+    render(<NoteGame level={1} sublevel={1} />);
+
+    advanceThroughCountdown(); // count 3→2→1→0, onComplete 동기 실행
+
+    // ensureAudioReady가 호출됐어야 함
+    expect(mockEnsureAudioReady).toHaveBeenCalledTimes(1);
+
+    // .then() 콜백 처리 — vi.useFakeTimers 환경에서 microtask flush
+    await vi.runAllTimersAsync();
+
+    // playNote가 호출됐어야 함 (첫 음표 사운드 재생 보장)
+    expect(mockPlayNote).toHaveBeenCalled();
   });
 
   it("§2: 카운트다운 진행 중 음표 숨김 (targetNote=null, batchNotes 비움)", () => {
