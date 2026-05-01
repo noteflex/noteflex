@@ -133,10 +133,13 @@ export function useRetryQueue(): UseRetryQueueReturn {
       const newMissCount = prevMissCount + 1;
       missCountRef.current.set(id, newMissCount);
 
+      // §4 fix (2026-05-01): 큐에 이미 reschedule된 entry가 있으면 그 due 보존.
+      // 기존 동작: 매 호출마다 due=MAX로 덮어쓰기 → retry pop 후 timeout 시 reschedule된 due가 사라짐.
+      const existing = queueRef.current.get(id);
       const entry: RetryEntry = {
         id,
         note,
-        scheduledAtTurn: Number.MAX_SAFE_INTEGER,
+        scheduledAtTurn: existing?.scheduledAtTurn ?? Number.MAX_SAFE_INTEGER,
         missCount: newMissCount,
       };
       queueRef.current.set(id, entry);
