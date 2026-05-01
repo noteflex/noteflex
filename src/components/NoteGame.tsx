@@ -1130,6 +1130,7 @@ useEffect(() => {
             batchIndex={isBatchDisplay ? currentIndex : undefined}
             clef={currentClef}
             level={level}
+            batchSize={currentStageConfig.batchSize}
             keySignature={currentKeySignature.abcKey}
             keySharps={needsKeySig ? currentKeySignature.sharps : undefined}
             keyFlats={needsKeySig ? currentKeySignature.flats : undefined}

@@ -35,6 +35,8 @@ type Props = {
   // ── 공통 ──
   clef?: "treble" | "bass";
   level?: number;
+  /** §0.4.2: 현재 stage의 batchSize. 음표 크기·간격 동적 조정에 사용. */
+  batchSize?: number;
   keySignature?: string;
   keySharps?: string[];
   keyFlats?: string[];
@@ -144,9 +146,36 @@ const LEVEL_STYLES: Record<number, LevelStyle> = {
 
 type ResolvedStyle = Required<LevelStyle>;
 
-function resolveStyle(level: number, keySigCount: number): ResolvedStyle {
+/**
+ * §0.4.2 batchSize별 음표 크기 scale (사용자 명세 2026-05-01).
+ *  - batchSize >= 7 → 0.70 (조표 공간 확보 + 잘림 방지)
+ *  - batchSize >= 5 → 0.80
+ *  - 그 외 (1·3) → 1.0 표준 크기
+ */
+function getNoteScale(batchSize: number | undefined): number {
+  if (batchSize === undefined) return 1.0;
+  if (batchSize >= 7) return 0.70;
+  if (batchSize >= 5) return 0.80;
+  return 1.0;
+}
+
+function resolveStyle(
+  level: number,
+  keySigCount: number,
+  batchSize?: number,
+): ResolvedStyle {
   const raw = LEVEL_STYLES[level] ?? LEVEL_STYLES[1];
   const merged = { ...DEFAULT_STYLE, ...raw } as ResolvedStyle;
+
+  // §0.4.2: batchSize별 음표·조표 크기 scale.
+  const scale = getNoteScale(batchSize);
+  if (scale !== 1.0) {
+    merged.noteheadRX = merged.noteheadRX * scale;
+    merged.noteheadRY = merged.noteheadRY * scale;
+    merged.stemLen = merged.stemLen * scale;
+    merged.ledgerHalf = merged.ledgerHalf * scale;
+    merged.accidentalFontSize = merged.accidentalFontSize * scale;
+  }
 
   if (keySigCount > 0) {
     const keySigEndX = STAFF_X1 + merged.keySigStartX + keySigCount * merged.keySigSpacing;
@@ -418,6 +447,7 @@ export function GrandStaffPractice({
   batchIndex,
   clef = "treble",
   level = 1,
+  batchSize,
   keySignature: _keySignature,
   keySharps,
   keyFlats,
@@ -427,7 +457,7 @@ export function GrandStaffPractice({
 
   const keySigCount = (keySharps?.length ?? 0) + (keyFlats?.length ?? 0);
   const hasKeySignature = keySigCount > 0;
-  const style = resolveStyle(level, keySigCount);
+  const style = resolveStyle(level, keySigCount, batchSize);
 
   // batch 모드 판별: batchNotes 배열 있고 길이 > 0이면 batch 모드
   const isBatchMode = !!batchNotes && batchNotes.length > 0;
