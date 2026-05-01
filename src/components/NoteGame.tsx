@@ -424,7 +424,9 @@ export default function NoteGame({
   const [batchAndKey, setBatchAndKey] = useState<{
     batch: NoteType[];
     keySig: KeySignatureType;
-  }>({ batch: initResult.notes, keySig: initResult.keySig });
+    /** §4 (2026-05-01): batch[0..retryCount-1]은 retry 큐에서 pop된 음표. */
+    retryCount: number;
+  }>({ batch: initResult.notes, keySig: initResult.keySig, retryCount: 0 });
 
   const currentBatch        = batchAndKey.batch;
   const currentKeySignature = batchAndKey.keySig;
@@ -444,12 +446,13 @@ export default function NoteGame({
   const [currentSet, setCurrentSet] = useState(1);
   const [setProgress,setSetProgress]= useState(0);
 
-  const [retryOverride, setRetryOverride] = useState<NoteType | null>(null);
+  // §4 (2026-05-01): retryOverride state 제거 — retry 음표가 batch 안에 통합됨.
+  // wasRetry 판단은 currentIndex < batchAndKey.retryCount.
 
   const currentStageConfig = stages[stageIdx];
   const isBatchDisplay = currentStageConfig.batchSize > 1;
 
-  const currentTarget = retryOverride ?? currentBatch[currentIndex] ?? null;
+  const currentTarget = currentBatch[currentIndex] ?? null;
 
   const currentClef: "treble" | "bass" =
     currentTarget?.clef ??
@@ -484,7 +487,7 @@ export default function NoteGame({
 
 
   const batchNotesForDisplay: BatchNoteEntry[] | undefined =
-    isBatchDisplay && !retryOverride
+    isBatchDisplay
       ? currentBatch.map(n => ({
           note: `${n.key}${n.octave}`,
           accidental: n.accidental,
@@ -598,22 +601,38 @@ useEffect(() => {
     };
   }, [NOTES, isCustom, customNotes, level, customClef, masteryMap, currentKeySignature]);
 
-  const prepareNextTurn = useCallback((lastShownNote?: NoteType | null) => {
-    turnCounterRef.current += 1;
-    // [§0.1 DEBUG] — pop 직전 queue size 캡처
-    const qsizeBefore = retryQueue.size;
-    // §0.1 전역 dedup: lastShownNote 인자 우선, 없으면 ref 폴백 (handleAnswer에서 갱신됨).
-    const lastShown = lastShownNote ?? lastShownNoteRef.current;
-    const lastShownKey = lastShown
-      ? {
-          key: lastShown.key,
-          octave: lastShown.octave,
-          accidental: lastShown.accidental,
-          clef: lastShown.clef ?? (isCustom ? customClef : getClefForLevel(level)),
-        }
-      : null;
-    const due = retryQueue.popDueOrNull(turnCounterRef.current, lastShownKey);
-    if (due) {
+  /**
+   * §4 (2026-05-01) — Batch 구성 공식:
+   *   (stage batchSize) - (retry 큐 pop 수) = 새 음표 수
+   *
+   * 1. retry 큐에서 due 도달한 음표 pop (max batchSize까지, §0.1 인접 dedup 적용)
+   * 2. 부족분 = batchSize - retryNotes.length, 새 음표 generateNewBatch
+   * 3. batch = [retry 음표..., 새 음표...] 합성
+   * 4. retryCount = retry 음표 개수 → handleAnswer wasRetry 판단에 사용
+   */
+  const composeBatch = useCallback((
+    batchSize: number,
+    forceNewKeySig: boolean = false,
+    lastShownNote?: NoteType | null,
+  ): {
+    batch: NoteType[];
+    keySig: KeySignatureType;
+    retryCount: number;
+  } => {
+    const retryNotes: NoteType[] = [];
+    let prev: NoteType | null = lastShownNote ?? null;
+
+    while (retryNotes.length < batchSize) {
+      const lastShownKey = prev
+        ? {
+            key: prev.key,
+            octave: prev.octave,
+            accidental: prev.accidental,
+            clef: prev.clef ?? (isCustom ? customClef : getClefForLevel(level)),
+          }
+        : null;
+      const due = retryQueue.popDueOrNull(turnCounterRef.current, lastShownKey);
+      if (!due) break;
       const retryNote: NoteType = {
         name: due.key,
         key: due.key,
@@ -622,18 +641,32 @@ useEffect(() => {
         accidental: due.accidental,
         clef: due.clef,
       };
-      setRetryOverride(retryNote);
-      // [§0.1 DEBUG]
-      logPrepareNextTurn(turnCounterRef.current, qsizeBefore, due, retryNote, null);
-      // [§0.1 DEBUG] — 마지막 pop 추적
-      lastRetryPopRef.current = { note: retryNote, turn: turnCounterRef.current };
-      return retryNote;
+      retryNotes.push(retryNote);
+      prev = retryNote;
     }
-    setRetryOverride(null);
-    // [§0.1 DEBUG] — fallback은 caller가 결정하므로 displayed=null로 로깅
-    logPrepareNextTurn(turnCounterRef.current, qsizeBefore, null, null, null);
-    return null;
-  }, [retryQueue, isCustom, customClef, level]);
+
+    const newCount = batchSize - retryNotes.length;
+    if (newCount === 0) {
+      // batch 전체가 retry — keySig은 현재 유지.
+      return { batch: retryNotes, keySig: currentKeySignature, retryCount: retryNotes.length };
+    }
+
+    const newResult = generateNewBatch(newCount, forceNewKeySig, prev);
+    return {
+      batch: [...retryNotes, ...newResult.batch],
+      keySig: newResult.keySig,
+      retryCount: retryNotes.length,
+    };
+  }, [generateNewBatch, retryQueue, isCustom, customClef, level, currentKeySignature]);
+
+  /**
+   * §4 (2026-05-01) — 단순화: turnCounter += 1만.
+   * retry pop은 composeBatch가 새 batch 생성 시 한 번에 처리.
+   * batch 내 다음 음표 갈 때(같은 batch 안)도 turnCounter는 +1.
+   */
+  const prepareNextTurn = useCallback(() => {
+    turnCounterRef.current += 1;
+  }, []);
 
   const handleSetComplete = useCallback((
     currentStageIdx: number,
@@ -646,6 +679,7 @@ useEffect(() => {
     if (currentSetNum >= stageConfig.totalSets) {
       const nextStageIdx = currentStageIdx + 1;
       if (nextStageIdx >= stagesRef.length) {
+        // §4: 모든 stage 끝 — final-retry phase 처리는 phase 2 commit에서 추가.
         setPhase("success");
         return;
       }
@@ -657,63 +691,51 @@ useEffect(() => {
 
       // §0-1.6: Lv5+에서 미답 retry ≥2이면 다음 stage도 같은 조표 유지
       const keepKeySig = level >= 5 && retryQueue.size >= 2;
-      const result = generateNewBatch(nextStage.batchSize, !keepKeySig, lastShownNote);
-      setBatchAndKey(result);
-      const notes = result.batch;
-      setCurrentIndex(0);
-      setDisabledNotes(new Set());
-      setTimerKey(prev => prev + 1);
-
       // 조표가 바뀌면 이전 retry는 의미 없음 → 큐 초기화 (Lv5+)
       if (level >= 5 && !keepKeySig) {
         retryQueue.reset();
       }
 
-      const retryNote = prepareNextTurn(lastShownNote);
-      const toPlay = retryNote ?? notes[0];
-      playNote(getSoundKey(toPlay));
+      // §4 (2026-05-01): composeBatch가 retry 큐 통합 batch 생성.
+      prepareNextTurn();
+      const result = composeBatch(nextStage.batchSize, !keepKeySig, lastShownNote);
+      setBatchAndKey(result);
+      setCurrentIndex(0);
+      setDisabledNotes(new Set());
+      setTimerKey(prev => prev + 1);
+
+      playNote(getSoundKey(result.batch[0]));
     } else {
       const nextSet = currentSetNum + 1;
       setCurrentSet(nextSet);
       setSetProgress(0);
       // §0.4.1: batchSize=1 stage는 history 누적 유지 (정답 처리에서 7개 도달 시 자체 리셋).
-      // batchSize > 1 stage는 매 set 전환 시 batch 갈이 → history 클리어.
       if (stageConfig.batchSize > 1) {
         setAnsweredNotes([]);
       }
 
-      const result = generateNewBatch(stageConfig.batchSize, false, lastShownNote);
+      // §4 (2026-05-01): composeBatch — retry 큐 통합.
+      prepareNextTurn();
+      const result = composeBatch(stageConfig.batchSize, false, lastShownNote);
       setBatchAndKey(result);
-      const notes = result.batch;
       setCurrentIndex(0);
       setDisabledNotes(new Set());
       setTimerKey(prev => prev + 1);
 
-      // 같은 stage 내 set 전환은 retry queue 유지 (사용자 지시).
-      const retryNote = prepareNextTurn(lastShownNote);
-      const toPlay = retryNote ?? notes[0];
-      playNote(getSoundKey(toPlay));
+      playNote(getSoundKey(result.batch[0]));
     }
-  }, [generateNewBatch, stages, prepareNextTurn, level, retryQueue]);
+  }, [composeBatch, stages, prepareNextTurn, level, retryQueue]);
 
-  const advanceToNextTurn = useCallback((wasRetry: boolean) => {
+  /**
+   * §4 (2026-05-01) — wasRetry 인자 제거.
+   * retry 음표가 batch 안에 통합돼서 일반 advance와 동일 흐름.
+   * resolve/reschedule 처리는 handleAnswer에서.
+   */
+  const advanceToNextTurn = useCallback(() => {
     const stagesRef = stages;
     const stageConfig = stagesRef[stageIdx];
 
-    if (wasRetry) {
-      // wasRetry: 직전 표시 = retryOverride 음표 (lastShownNoteRef에서 가져옴).
-      // markJustAnswered가 이미 그 ID skip하므로 이중 안전장치.
-      const retryNote = prepareNextTurn(lastShownNoteRef.current);
-      if (retryNote) {
-        playNote(getSoundKey(retryNote));
-      } else if (currentBatch[currentIndex]) {
-        playNote(getSoundKey(currentBatch[currentIndex]));
-      }
-      return;
-    }
-
     const nextIndex = currentIndex + 1;
-    // 옵션 D: 직전에 화면에 떠 있던 음표 (cross-batch dedup용)
     const lastShownNote = currentBatch[currentIndex] ?? null;
 
     if (nextIndex >= currentBatch.length) {
@@ -723,18 +745,15 @@ useEffect(() => {
         handleSetComplete(stageIdx, currentSet, lastShownNote);
       } else {
         setSetProgress(newProgress);
-        const result = generateNewBatch(stageConfig.batchSize, false, lastShownNote);
+        prepareNextTurn();
+        const result = composeBatch(stageConfig.batchSize, false, lastShownNote);
         setBatchAndKey(result);
-        const notes = result.batch;
         setCurrentIndex(0);
         setDisabledNotes(new Set());
         setTimerKey(prev => prev + 1);
         noteStartTime.current = Date.now();
 
-        // 같은 set 안 batch 갈이는 retry queue 유지 (사용자 지시).
-        const retryNote = prepareNextTurn(lastShownNote);
-        const toPlay = retryNote ?? notes[0];
-        playNote(getSoundKey(toPlay));
+        playNote(getSoundKey(result.batch[0]));
       }
     } else {
       setCurrentIndex(nextIndex);
@@ -742,11 +761,10 @@ useEffect(() => {
       setTimerKey(prev => prev + 1);
       noteStartTime.current = Date.now();
 
-      const retryNote = prepareNextTurn(lastShownNote);
-      const toPlay = retryNote ?? currentBatch[nextIndex];
-      playNote(getSoundKey(toPlay));
+      prepareNextTurn();
+      playNote(getSoundKey(currentBatch[nextIndex]));
     }
-  }, [stages, stageIdx, currentIndex, currentBatch, setProgress, currentSet, generateNewBatch, handleSetComplete, prepareNextTurn, level, retryQueue]);
+  }, [stages, stageIdx, currentIndex, currentBatch, setProgress, currentSet, composeBatch, handleSetComplete, prepareNextTurn]);
   
   const [showCountdown, setShowCountdown] = useState(!skipCountdown);
 
@@ -777,7 +795,6 @@ useEffect(() => {
     const responseTimeMs = Date.now() - noteStartTime.current;
     const responseTime   = +(responseTimeMs / 1000).toFixed(2);
     const clefForLog = currentTarget.clef ?? (isCustom ? customClef : getClefForLevel(level));
-    const wasRetry = retryOverride !== null;
 
     const retryKey = {
       key: currentTarget.key,
@@ -846,38 +863,21 @@ useEffect(() => {
         setIndividualStreak(0);
       }
 
-      // 신규 정책: 재출제(wasRetry) 정답 → 영구 제거 (12=P).
-      // 일반 정답 → 진행 후 큐 마커 있던 경우만 N+2 후 재출제로 갱신 (11=X, 마커 없으면 no-op).
-      // 옵션 B: advance 직전에 markJustAnswered → 그 안의 popDueOrNull(N+1)이 같은 음표를 안 뽑음.
+      // §4 (2026-05-01): wasRetry = 답한 음표가 batch 안 retry 음표였는지.
+      // batch[0..retryCount-1]은 retry 음표, batch[retryCount..]은 새 음표.
+      const wasRetry = currentIndex < batchAndKey.retryCount;
+
       retryQueue.markJustAnswered(retryKey, turnCounterRef.current);
       logMarkJustAnswered(turnCounterRef.current, retryKey); // [§0.1 DEBUG]
       if (wasRetry) {
+        // retry 음표 정답 → 영구 제거.
         retryQueue.resolve(retryKey);
         logResolveRetry(turnCounterRef.current, retryKey); // [§0.1 DEBUG]
-        // §0.1 사각지대: retry 답한 음표가 currentBatch[currentIndex]와 같으면
-        // 그 batch 음표는 이미 retry로 답한 셈 → 일반 advance로 진행 (batch 1음표 자동 통과).
-        // 이렇게 하지 않으면 retry 직후 같은 음표가 또 화면에 떠 사용자가 같은 음표 두 번 본다.
-        const cur = currentBatch[currentIndex];
-        const sameAsBatchCurrent =
-          cur != null &&
-          cur.key === retryKey.key &&
-          cur.octave === retryKey.octave &&
-          (cur.accidental ?? null) === (retryKey.accidental ?? null) &&
-          (cur.clef ?? clefForLog) === retryKey.clef;
-        advanceToNextTurn(sameAsBatchCurrent ? false : true);
       } else {
-        // §0.1 N+2 정책: due = 정답turn + 2가 되도록 advance 전에 reschedule.
-        // 순서가 반대면 advance 안에서 turnCounterRef +1 → due = (정답turn+1)+2 = N+3 발생.
+        // 일반 음표 정답 → 큐 마커 있던 경우만 N+2 후 재출제로 갱신 (마커 없으면 no-op).
         retryQueue.rescheduleAfterCorrect(retryKey, turnCounterRef.current);
-        // [§0.1 DEBUG] — rescheduleAfterCorrect의 결과 due 값을 snapshot에서 찾기
-        {
-          const updated = retryQueue.snapshot.find((e) => e.id === `${retryKey.clef}:${retryKey.key}${retryKey.accidental ?? ""}${retryKey.octave}`);
-          if (updated) {
-            logRescheduleAfterCorrect(turnCounterRef.current, retryKey, updated.scheduledAtTurn, retryQueue.snapshot);
-          }
-        }
-        advanceToNextTurn(false);
       }
+      advanceToNextTurn();
     } else {
       logNote({
         note_key: getNoteAnswer(currentTarget),
@@ -922,7 +922,7 @@ useEffect(() => {
       setTimerKey(prev => prev + 1);
       noteStartTime.current = Date.now();
     }
-  }, [phase, currentTarget, retryOverride, lives, individualStreak, logNote, recorder, level, isCustom, customClef, retryQueue, advanceToNextTurn]);
+  }, [phase, currentTarget, currentIndex, batchAndKey.retryCount, currentStageConfig.batchSize, lives, individualStreak, logNote, recorder, level, isCustom, customClef, retryQueue, advanceToNextTurn]);
 
   const handleTimerExpire = useCallback(() => {
     if (phase !== "playing" || !currentTarget) return;
@@ -996,7 +996,6 @@ useEffect(() => {
     setCurrentSet(1);
     setSetProgress(0);
     setSessionResult(null);
-    setRetryOverride(null);
 
     retryQueue.reset();
     turnCounterRef.current  = 0;
@@ -1010,8 +1009,8 @@ useEffect(() => {
     recorder.startSession(level, sessionType);
 
     const firstStage = stages[0];
-    // 리플레이는 새 게임 시작이므로 Lv5+ 새 keySig 생성
-    const result = generateNewBatch(firstStage.batchSize, true);
+    // 리플레이는 새 게임 시작 — 큐 reset된 상태이므로 retry 0개. composeBatch=새 batch.
+    const result = composeBatch(firstStage.batchSize, true);
     setBatchAndKey(result);
     const notes = result.batch;
 
