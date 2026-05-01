@@ -33,6 +33,10 @@ export default function BlogPost() {
   }, [lang, slug]);
 
   const backLabel = lang === "en" ? "← Blog" : "← 블로그 목록";
+  const postCategory = post?.meta.category || "";
+  const backUrl = postCategory
+    ? `/blog?category=${encodeURIComponent(postCategory)}`
+    : "/blog";
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -42,7 +46,7 @@ export default function BlogPost() {
             <span className="text-xl">🎼</span> Noteflex
           </Link>
           <Link
-            to="/blog"
+            to={backUrl}
             className="text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
             {backLabel}
@@ -65,7 +69,7 @@ export default function BlogPost() {
                 ? "The requested post does not exist."
                 : "요청하신 글이 존재하지 않습니다."}
             </p>
-            <Link to="/blog" className="text-primary underline">
+            <Link to={backUrl} className="text-primary underline">
               {lang === "en" ? "Back to blog" : "블로그 목록으로 돌아가기"}
             </Link>
           </div>

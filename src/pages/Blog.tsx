@@ -1,6 +1,6 @@
 // src/pages/Blog.tsx
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import Footer from "@/components/Footer";
 import { listBlogPosts } from "@/lib/markdownLoader";
 
@@ -30,7 +30,8 @@ export default function Blog() {
   const [lang, setLang] = useState<"ko" | "en">(() => {
     return (localStorage.getItem("noteflex.blog_lang") as "ko" | "en") || "ko";
   });
-  const [category, setCategory] = useState<string>("all");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const category = searchParams.get("category") || "all";
 
   const t = UI[lang];
   const allPosts = listBlogPosts(lang);
@@ -39,8 +40,16 @@ export default function Blog() {
 
   function handleLangChange(newLang: "ko" | "en") {
     setLang(newLang);
-    setCategory("all");
+    setSearchParams({});
     localStorage.setItem("noteflex.blog_lang", newLang);
+  }
+
+  function handleCategoryChange(cat: string) {
+    if (cat === "all") {
+      setSearchParams({});
+    } else {
+      setSearchParams({ category: cat });
+    }
   }
 
   return (
@@ -92,7 +101,7 @@ export default function Blog() {
           {CATEGORIES[lang].map((cat) => (
             <button
               key={cat}
-              onClick={() => setCategory(cat)}
+              onClick={() => handleCategoryChange(cat)}
               className={`text-xs px-3 py-1 rounded-full border transition-colors ${
                 category === cat
                   ? "bg-foreground text-background border-foreground"
