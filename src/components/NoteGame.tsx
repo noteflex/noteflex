@@ -1319,11 +1319,12 @@ useEffect(() => {
 
         <div className="w-full max-w-[490px] mx-auto">
           <GrandStaffPractice
-            targetNote={targetNoteStr}
-            targetAccidental={targetAccidental}
-            noteHistory={answeredNotes}
-            batchNotes={batchNotesForDisplay}
-            batchIndex={isBatchDisplay ? currentIndex : undefined}
+            // §2 (2026-05-01): 카운트다운 중 음표 숨김 (clef·keySig·오선만 표시).
+            targetNote={showCountdown ? null : targetNoteStr}
+            targetAccidental={showCountdown ? null : targetAccidental}
+            noteHistory={showCountdown ? [] : answeredNotes}
+            batchNotes={showCountdown ? undefined : batchNotesForDisplay}
+            batchIndex={!showCountdown && isBatchDisplay ? currentIndex : undefined}
             clef={currentClef}
             level={level}
             batchSize={currentStageConfig.batchSize}
