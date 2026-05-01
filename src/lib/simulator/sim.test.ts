@@ -224,3 +224,66 @@ describe("§4 — markMissed due 보존 (timeout heavy 회귀 검증)", () => {
     expect(stats.endReasons["max-turns"]).toBe(0);
   });
 });
+
+describe("§4 — composeFinalRetryBatch dedup 회귀 (옵션 5+7 fix)", () => {
+  it("Lv1 sub1 random 70% × 500 games — final-retry phase violation 0", () => {
+    let totalViolations = 0;
+    let finalRetryViolations = 0;
+    for (let seed = 1; seed <= 500; seed++) {
+      const r = simulateGame({
+        level: 1,
+        sublevel: 1,
+        scenario: "random",
+        correctRate: 0.7,
+        seed,
+      });
+      totalViolations += r.consecutiveViolations;
+      // final-retry phase 위반 카운트
+      for (const e of r.events) {
+        if (e.consecutiveViolation && e.phase === "final-retry") {
+          finalRetryViolations += 1;
+        }
+      }
+    }
+    expect(totalViolations).toBe(0);
+    expect(finalRetryViolations).toBe(0);
+  });
+
+  it("Lv2 sub2 random 60% × 300 games — final-retry phase violation 0", () => {
+    let finalRetryViolations = 0;
+    for (let seed = 1; seed <= 300; seed++) {
+      const r = simulateGame({
+        level: 2,
+        sublevel: 2,
+        scenario: "random",
+        correctRate: 0.6,
+        seed,
+      });
+      for (const e of r.events) {
+        if (e.consecutiveViolation && e.phase === "final-retry") {
+          finalRetryViolations += 1;
+        }
+      }
+    }
+    expect(finalRetryViolations).toBe(0);
+  });
+
+  it("Lv3 sub3 random 80% × 300 games — final-retry phase violation 0", () => {
+    let finalRetryViolations = 0;
+    for (let seed = 1; seed <= 300; seed++) {
+      const r = simulateGame({
+        level: 3,
+        sublevel: 3,
+        scenario: "random",
+        correctRate: 0.8,
+        seed,
+      });
+      for (const e of r.events) {
+        if (e.consecutiveViolation && e.phase === "final-retry") {
+          finalRetryViolations += 1;
+        }
+      }
+    }
+    expect(finalRetryViolations).toBe(0);
+  });
+});
