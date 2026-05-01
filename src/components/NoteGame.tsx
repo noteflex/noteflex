@@ -433,7 +433,14 @@ export default function NoteGame({
 
   const [currentIndex,        setCurrentIndex]        = useState(0);
   const [lives,               setLives]               = useState(MAX_LIVES);
-  const [phase,               setPhase]               = useState<"playing" | "gameover" | "success">("playing");
+  const [phase,               setPhase]               = useState<"playing" | "final-retry" | "gameover" | "success">("playing");
+  /**
+   * §4 (2026-05-01) — sublevel 전체에서 끝까지 못 푼 음표.
+   * markMissed 호출 시마다 추가 (중복 자동 제거 — Map by composeId).
+   * retry 정답 시 제거 (학습 완료, 옵션 2).
+   * 모든 stage 끝났을 때 size > 0 이면 final-retry phase 진입.
+   */
+  const [missedNotes, setMissedNotes] = useState<Map<string, NoteType>>(new Map());
   const [disabledNotes,       setDisabledNotes]       = useState<Set<string>>(new Set());
   const [timerKey,            setTimerKey]            = useState(0);
   const [individualStreak,    setIndividualStreak]    = useState(0);
@@ -450,9 +457,37 @@ export default function NoteGame({
   // wasRetry 판단은 currentIndex < batchAndKey.retryCount.
 
   const currentStageConfig = stages[stageIdx];
-  const isBatchDisplay = currentStageConfig.batchSize > 1;
+  // §4: final-retry phase는 batchSize=1 history mode 강제.
+  const isBatchDisplay = phase !== "final-retry" && currentStageConfig.batchSize > 1;
 
   const currentTarget = currentBatch[currentIndex] ?? null;
+
+  // §4: missedNotes 헬퍼.
+  const missedNoteIdOf = useCallback((note: NoteType, clefForLog: "treble" | "bass"): string => {
+    const acc = note.accidental ?? "";
+    const c = note.clef ?? clefForLog;
+    return `${c}:${note.key}${acc}${note.octave}`;
+  }, []);
+
+  const addMissedNote = useCallback((note: NoteType, clefForLog: "treble" | "bass") => {
+    const id = missedNoteIdOf(note, clefForLog);
+    setMissedNotes(prev => {
+      if (prev.has(id)) return prev;
+      const next = new Map(prev);
+      next.set(id, { ...note, clef: note.clef ?? clefForLog });
+      return next;
+    });
+  }, [missedNoteIdOf]);
+
+  const removeMissedNote = useCallback((note: NoteType, clefForLog: "treble" | "bass") => {
+    const id = missedNoteIdOf(note, clefForLog);
+    setMissedNotes(prev => {
+      if (!prev.has(id)) return prev;
+      const next = new Map(prev);
+      next.delete(id);
+      return next;
+    });
+  }, [missedNoteIdOf]);
 
   const currentClef: "treble" | "bass" =
     currentTarget?.clef ??
@@ -495,11 +530,13 @@ export default function NoteGame({
         }))
       : undefined;
 
-  const stageLabel = `Stage ${currentStageConfig.stage}: ${
-    currentStageConfig.batchSize === 1
-      ? `음표 ${currentStageConfig.notesPerSet}개 순차`
-      : `음표 ${currentStageConfig.batchSize}개 동시`
-  } (${currentSet}/${currentStageConfig.totalSets} 세트)`;
+  const stageLabel = phase === "final-retry"
+    ? `마무리 단계 — 못 푼 음표 다시 (${missedNotes.size}개 남음)`
+    : `Stage ${currentStageConfig.stage}: ${
+        currentStageConfig.batchSize === 1
+          ? `음표 ${currentStageConfig.notesPerSet}개 순차`
+          : `음표 ${currentStageConfig.batchSize}개 동시`
+      } (${currentSet}/${currentStageConfig.totalSets} 세트)`;
 
   useEffect(() => {
     const sessionType: "regular" | "custom_score" = isCustom ? "custom_score" : "regular";
@@ -679,7 +716,19 @@ useEffect(() => {
     if (currentSetNum >= stageConfig.totalSets) {
       const nextStageIdx = currentStageIdx + 1;
       if (nextStageIdx >= stagesRef.length) {
-        // §4: 모든 stage 끝 — final-retry phase 처리는 phase 2 commit에서 추가.
+        // §4 (2026-05-01): 모든 stage 끝 — missedNotes 남으면 final-retry phase 진입.
+        if (missedNotes.size > 0) {
+          const firstMissed = Array.from(missedNotes.values())[0];
+          setPhase("final-retry");
+          setBatchAndKey({ batch: [firstMissed], keySig: currentKeySignature, retryCount: 0 });
+          setCurrentIndex(0);
+          setDisabledNotes(new Set());
+          setAnsweredNotes([]);
+          setTimerKey(prev => prev + 1);
+          noteStartTime.current = Date.now();
+          playNote(getSoundKey(firstMissed));
+          return;
+        }
         setPhase("success");
         return;
       }
@@ -724,7 +773,7 @@ useEffect(() => {
 
       playNote(getSoundKey(result.batch[0]));
     }
-  }, [composeBatch, stages, prepareNextTurn, level, retryQueue]);
+  }, [composeBatch, stages, prepareNextTurn, level, retryQueue, missedNotes, currentKeySignature]);
 
   /**
    * §4 (2026-05-01) — wasRetry 인자 제거.
@@ -784,8 +833,33 @@ useEffect(() => {
     }
   }, [currentBatch]);
 
+  /**
+   * §4 (2026-05-01): final-retry phase 다음 음표 진행.
+   * 현재 음표를 missedNotes에서 제거 → 남은 음표 있으면 첫 번째 표시, 없으면 success.
+   */
+  const advanceFinalRetry = useCallback((currentMissedId: string) => {
+    setMissedNotes(prev => {
+      const next = new Map(prev);
+      next.delete(currentMissedId);
+      const remaining = Array.from(next.values());
+      if (remaining.length === 0) {
+        setPhase("success");
+        return next;
+      }
+      // 다음 음표 표시
+      const nextNote = remaining[0];
+      setBatchAndKey({ batch: [nextNote], keySig: currentKeySignature, retryCount: 0 });
+      setCurrentIndex(0);
+      setDisabledNotes(new Set());
+      setTimerKey(prevKey => prevKey + 1);
+      noteStartTime.current = Date.now();
+      playNote(getSoundKey(nextNote));
+      return next;
+    });
+  }, [currentKeySignature]);
+
   const handleAnswer = useCallback((answer: string) => {
-    if (phase !== "playing" || !currentTarget) return;
+    if ((phase !== "playing" && phase !== "final-retry") || !currentTarget) return;
 
     // §0.1 전역 dedup: 직전 표시 음표 추적 (정답·오답 모두 갱신).
     // popDueOrNull에 전달되어 같은 ID retry pop을 1턴 지연시킨다.
@@ -863,6 +937,13 @@ useEffect(() => {
         setIndividualStreak(0);
       }
 
+      // §4 (2026-05-01): final-retry phase 정답 → 음표 제거 + 다음 음표 (큐·missedSet 처리 분리).
+      if (phase === "final-retry") {
+        const id = missedNoteIdOf(currentTarget, clefForLog);
+        advanceFinalRetry(id);
+        return;
+      }
+
       // §4 (2026-05-01): wasRetry = 답한 음표가 batch 안 retry 음표였는지.
       // batch[0..retryCount-1]은 retry 음표, batch[retryCount..]은 새 음표.
       const wasRetry = currentIndex < batchAndKey.retryCount;
@@ -870,8 +951,9 @@ useEffect(() => {
       retryQueue.markJustAnswered(retryKey, turnCounterRef.current);
       logMarkJustAnswered(turnCounterRef.current, retryKey); // [§0.1 DEBUG]
       if (wasRetry) {
-        // retry 음표 정답 → 영구 제거.
+        // retry 음표 정답 → 영구 제거 (큐 + missedNotes 모두).
         retryQueue.resolve(retryKey);
+        removeMissedNote(currentTarget, clefForLog);
         logResolveRetry(turnCounterRef.current, retryKey); // [§0.1 DEBUG]
       } else {
         // 일반 음표 정답 → 큐 마커 있던 경우만 N+2 후 재출제로 갱신 (마커 없으면 no-op).
@@ -899,10 +981,13 @@ useEffect(() => {
                   : null,
       });
 
-      // 신규 정책: 오답 시 같은 자리 유지 (currentIndex/turn 변동 X).
-      // 큐에는 마커만 등록 (해석 10=A, due=MAX → 정답 시 갱신).
-      retryQueue.markMissed(retryKey);
-      logMarkMissed(turnCounterRef.current, retryKey, retryQueue.snapshot); // [§0.1 DEBUG]
+      // §4 (2026-05-01): markMissed → missedNotes에도 add (final-retry phase에서 사용).
+      // 단 final-retry phase에서는 큐에 등록 X (이미 마지막 단계).
+      if (phase !== "final-retry") {
+        retryQueue.markMissed(retryKey);
+        logMarkMissed(turnCounterRef.current, retryKey, retryQueue.snapshot); // [§0.1 DEBUG]
+        addMissedNote(currentTarget, clefForLog);
+      }
 
       playWrong();
       setIndividualStreak(0);
@@ -918,14 +1003,21 @@ useEffect(() => {
         return;
       }
 
+      // §4: final-retry phase 오답·timeout — 음표 제거 + 다음 음표 (lives 차감 + 큐 추가 X).
+      if (phase === "final-retry") {
+        const id = missedNoteIdOf(currentTarget, clefForLog);
+        advanceFinalRetry(id);
+        return;
+      }
+
       // 같은 자리 유지하되 사용자가 다시 풀 시간을 줘야 하므로 타이머만 리셋.
       setTimerKey(prev => prev + 1);
       noteStartTime.current = Date.now();
     }
-  }, [phase, currentTarget, currentIndex, batchAndKey.retryCount, currentStageConfig.batchSize, lives, individualStreak, logNote, recorder, level, isCustom, customClef, retryQueue, advanceToNextTurn]);
+  }, [phase, currentTarget, currentIndex, batchAndKey.retryCount, currentStageConfig.batchSize, lives, individualStreak, logNote, recorder, level, isCustom, customClef, retryQueue, advanceToNextTurn, addMissedNote, removeMissedNote, missedNoteIdOf, advanceFinalRetry]);
 
   const handleTimerExpire = useCallback(() => {
-    if (phase !== "playing" || !currentTarget) return;
+    if ((phase !== "playing" && phase !== "final-retry") || !currentTarget) return;
 
     // §0.1 전역 dedup: 타이머 만료도 직전 표시 음표 갱신 (오답과 동일 처리).
     lastShownNoteRef.current = currentTarget;
@@ -951,8 +1043,8 @@ useEffect(() => {
                 : null,
     });
 
-    // 신규 정책: 타이머 만료 = 오답과 동일 처리. 같은 자리 유지 + 마커 등록.
-    {
+    // §4 (2026-05-01): 타이머 만료 = 오답과 동일. final-retry phase에선 큐 등록 X.
+    if (phase !== "final-retry") {
       const timeoutKey = {
         key: currentTarget.key,
         octave: currentTarget.octave,
@@ -961,6 +1053,7 @@ useEffect(() => {
       };
       retryQueue.markMissed(timeoutKey);
       logMarkMissed(turnCounterRef.current, timeoutKey, retryQueue.snapshot); // [§0.1 DEBUG] (timeout)
+      addMissedNote(currentTarget, clefForLog);
     }
 
     playWrong();
@@ -977,10 +1070,17 @@ useEffect(() => {
       return;
     }
 
+    // §4: final-retry phase timeout — 음표 제거 + 다음 음표.
+    if (phase === "final-retry") {
+      const id = missedNoteIdOf(currentTarget, clefForLog);
+      advanceFinalRetry(id);
+      return;
+    }
+
     // 타이머만 리셋해서 사용자가 같은 음표를 다시 풀 시간 확보.
     setTimerKey(prev => prev + 1);
     noteStartTime.current = Date.now();
-  }, [phase, lives, currentTarget, logNote, recorder, level, isCustom, customClef, retryQueue]);
+  }, [phase, lives, currentTarget, logNote, recorder, level, isCustom, customClef, retryQueue, addMissedNote, missedNoteIdOf, advanceFinalRetry]);
 
   const handleReplay = () => {
     setLives(MAX_LIVES);
@@ -996,6 +1096,7 @@ useEffect(() => {
     setCurrentSet(1);
     setSetProgress(0);
     setSessionResult(null);
+    setMissedNotes(new Map());
 
     retryQueue.reset();
     turnCounterRef.current  = 0;
@@ -1117,7 +1218,7 @@ useEffect(() => {
             duration={TIMER_SECONDS}
             resetKey={timerKey}
             onExpire={handleTimerExpire}
-            paused={phase !== "playing" || showCountdown}
+            paused={(phase !== "playing" && phase !== "final-retry") || showCountdown}
           />
         </div>
 
@@ -1168,7 +1269,7 @@ useEffect(() => {
 
           <NoteButtons
             onNoteClick={handleAnswer}
-            disabled={phase !== "playing" || showCountdown}
+            disabled={(phase !== "playing" && phase !== "final-retry") || showCountdown}
             disabledNotes={disabledNotes}
             keySharps={needsKeySig ? currentKeySignature.sharps : undefined}
             keyFlats={needsKeySig ? currentKeySignature.flats : undefined}
