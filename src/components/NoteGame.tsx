@@ -1376,8 +1376,8 @@ useEffect(() => {
 
         <div className="w-full max-w-[612px] mx-auto">
           <GrandStaffPractice
-            // §2 (2026-05-01): 카운트다운 중 음표 숨김 (clef·keySig·오선만 표시).
-            // §swipe-modal-perf (2026-05-02): swipe 모달 동안에도 동일하게 음표 숨김.
+            // §2 (2026-05-01): 카운트다운 중 음표·조표 숨김 (clef·오선만 표시).
+            // §swipe-modal-perf (2026-05-02): swipe 모달 동안에도 동일하게 음표·조표 숨김.
             targetNote={(showCountdown || showSwipeTutorial) ? null : targetNoteStr}
             targetAccidental={(showCountdown || showSwipeTutorial) ? null : targetAccidental}
             noteHistory={(showCountdown || showSwipeTutorial) ? [] : answeredNotes}
@@ -1387,8 +1387,8 @@ useEffect(() => {
             level={level}
             batchSize={currentStageConfig.batchSize}
             keySignature={currentKeySignature.abcKey}
-            keySharps={needsKeySig ? currentKeySignature.sharps : undefined}
-            keyFlats={needsKeySig ? currentKeySignature.flats : undefined}
+            keySharps={needsKeySig && !(showCountdown || showSwipeTutorial) ? currentKeySignature.sharps : undefined}
+            keyFlats={needsKeySig && !(showCountdown || showSwipeTutorial) ? currentKeySignature.flats : undefined}
           />
         </div>
 
