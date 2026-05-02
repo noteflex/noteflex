@@ -1,11 +1,6 @@
 // src/components/AccidentalSwipeTutorial.tsx
-import { useEffect, useState } from "react";
-
-interface Props {
-  level: number;
-  /** Lv5+ 진입 시 부모가 true로 트리거 */
-  triggerOpen: boolean;
-}
+// 5/2 (2026-05-02): controlled 변경 — NoteGame이 isOpen·onClose 직접 제어.
+// 사용자 정책 (메모리 #18): 모달 → 카운트다운 → 첫 음표 순서 보장.
 
 const STORAGE_KEY_PREFIX = "noteflex.swipe_tutorial_seen.lv";
 
@@ -13,7 +8,7 @@ function getStorageKey(level: number) {
   return `${STORAGE_KEY_PREFIX}${level}`;
 }
 
-function hasSeen(level: number): boolean {
+export function hasSeenSwipeTutorial(level: number): boolean {
   try {
     return localStorage.getItem(getStorageKey(level)) === "true";
   } catch {
@@ -21,7 +16,7 @@ function hasSeen(level: number): boolean {
   }
 }
 
-function markSeen(level: number) {
+export function markSwipeTutorialSeen(level: number) {
   try {
     localStorage.setItem(getStorageKey(level), "true");
   } catch {
@@ -29,26 +24,14 @@ function markSeen(level: number) {
   }
 }
 
-export default function AccidentalSwipeTutorial({ level, triggerOpen }: Props) {
-  const [open, setOpen] = useState(false);
+interface Props {
+  isOpen: boolean;
+  /** markAsSeen=true면 localStorage에 "본 적 있음" 기록 (다음부터 모달 X) */
+  onClose: (markAsSeen: boolean) => void;
+}
 
-  useEffect(() => {
-    if (!triggerOpen) return;
-    if (level < 5) return;
-    if (hasSeen(level)) return;
-    setOpen(true);
-  }, [triggerOpen, level]);
-
-  if (!open) return null;
-
-  const handleClose = () => {
-    setOpen(false);
-  };
-
-  const handleDontShowAgain = () => {
-    markSeen(level);
-    setOpen(false);
-  };
+export default function AccidentalSwipeTutorial({ isOpen, onClose }: Props) {
+  if (!isOpen) return null;
 
   return (
     <div
@@ -90,13 +73,13 @@ export default function AccidentalSwipeTutorial({ level, triggerOpen }: Props) {
 
         <div className="flex flex-col gap-2">
           <button
-            onClick={handleClose}
+            onClick={() => onClose(false)}
             className="w-full px-6 py-3 rounded-xl bg-primary text-primary-foreground font-semibold hover:bg-primary/90 transition-colors active:scale-[0.98]"
           >
             확인했습니다
           </button>
           <button
-            onClick={handleDontShowAgain}
+            onClick={() => onClose(true)}
             className="w-full px-6 py-2 text-xs text-muted-foreground hover:text-foreground transition-colors"
           >
             앞으로 더 이상 보지 않기

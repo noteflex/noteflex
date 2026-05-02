@@ -212,3 +212,86 @@ describe("§0.3 countdown → first note (grace 제거 후, 2026-05-01 개정)",
     expect(mockPlayWrong).toHaveBeenCalledTimes(1);
   });
 });
+
+describe("§swipe-modal — Lv5+ 첫 진입 시 모달 → 카운트다운 → 첫 음표 (2026-05-02)", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    mockPlayWrong.mockClear();
+    mockPlayNote.mockClear();
+    mockEnsureAudioReady.mockClear();
+    localStorage.clear();
+    localStorage.setItem("noteflex.solfege_system", "en");
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("Lv5 첫 진입 (hasSeen=false) → 모달 등장 + 카운트다운 X", () => {
+    render(<NoteGame level={5} sublevel={1} />);
+
+    // 모달 렌더 검증 (role=dialog 또는 텍스트)
+    expect(screen.getByRole("dialog", { name: /조표 입력 사용법/ })).toBeInTheDocument();
+
+    // 카운트다운 진행되지 않음 (1초·2초·3초 advance해도 onComplete 호출 X)
+    act(() => { vi.advanceTimersByTime(3000); });
+
+    // 모달 여전히 표시 (카운트다운 진행 X로 닫히지 않음)
+    expect(screen.queryByRole("dialog", { name: /조표 입력 사용법/ })).toBeInTheDocument();
+  });
+
+  it("모달 '확인' → 카운트다운 시작 → 끝 → 첫 음표", () => {
+    render(<NoteGame level={5} sublevel={1} />);
+
+    // "확인했습니다" 클릭 → 모달 닫힘 + 카운트다운 시작
+    const confirmBtn = screen.getByRole("button", { name: /확인했습니다/ });
+    act(() => { confirmBtn.click(); });
+
+    // 모달 사라짐
+    expect(screen.queryByRole("dialog", { name: /조표 입력 사용법/ })).not.toBeInTheDocument();
+
+    // 카운트다운 진행 (3 → 2 → 1 → 0)
+    advanceThroughCountdown();
+
+    // ensureAudioReady 호출 (5/1 §1 회귀 검증)
+    expect(mockEnsureAudioReady).toHaveBeenCalledTimes(1);
+  });
+
+  it("Lv1 진입 → 모달 X, 카운트다운 즉시 시작 (회귀)", () => {
+    render(<NoteGame level={1} sublevel={1} />);
+
+    // 모달 X
+    expect(screen.queryByRole("dialog", { name: /조표 입력 사용법/ })).not.toBeInTheDocument();
+
+    // 카운트다운 즉시 시작 (advance 후 onComplete 호출)
+    advanceThroughCountdown();
+    expect(mockEnsureAudioReady).toHaveBeenCalledTimes(1);
+  });
+
+  it("Lv5 hasSeen=true (markSeen 후) → 모달 X, 카운트다운 즉시", () => {
+    localStorage.setItem("noteflex.swipe_tutorial_seen.lv5", "true");
+    render(<NoteGame level={5} sublevel={1} />);
+
+    // 모달 X
+    expect(screen.queryByRole("dialog", { name: /조표 입력 사용법/ })).not.toBeInTheDocument();
+
+    // 카운트다운 즉시 시작
+    advanceThroughCountdown();
+    expect(mockEnsureAudioReady).toHaveBeenCalledTimes(1);
+  });
+
+  it("Lv5 첫 진입 + skipCountdown=true → 모달 등장, 카운트다운 X, 모달 닫혀도 카운트다운 X", () => {
+    render(<NoteGame level={5} sublevel={1} skipCountdown />);
+
+    // 모달 등장
+    expect(screen.getByRole("dialog", { name: /조표 입력 사용법/ })).toBeInTheDocument();
+
+    // 모달 닫힘
+    const confirmBtn = screen.getByRole("button", { name: /확인했습니다/ });
+    act(() => { confirmBtn.click(); });
+
+    // skipCountdown=true이므로 카운트다운 안 시작 — handleCountdownComplete 호출 X
+    // ensureAudioReady도 호출 X (handleCountdownComplete 안에서만 호출)
+    expect(mockEnsureAudioReady).not.toHaveBeenCalled();
+  });
+});

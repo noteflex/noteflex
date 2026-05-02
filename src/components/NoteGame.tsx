@@ -4,7 +4,10 @@ import NoteButtons from "./NoteButtons";
 import MissionSuccessModal from "./MissionSuccessModal";
 import CountdownTimer from "./CountdownTimer";
 import CountdownOverlay from "./CountdownOverlay";
-import AccidentalSwipeTutorial from "./AccidentalSwipeTutorial";
+import AccidentalSwipeTutorial, {
+  hasSeenSwipeTutorial,
+  markSwipeTutorialSeen,
+} from "./AccidentalSwipeTutorial";
 import { useAuth } from "@/contexts/AuthContext";
 import { playNote, playWrong, isSamplerReady, initSound, ensureAudioReady } from "@/lib/sound";
 import { useNoteLogger } from "@/hooks/useNoteLogger";
@@ -906,7 +909,20 @@ useEffect(() => {
     }
   }, [stages, stageIdx, currentIndex, currentBatch, setProgress, currentSet, composeBatch, handleSetComplete, prepareNextTurn]);
   
-  const [showCountdown, setShowCountdown] = useState(!skipCountdown);
+  // §swipe-modal (2026-05-02): Lv5+ 첫 진입 시 swipe 모달 먼저 표시 → 닫힘 후 카운트다운.
+  // 사용자 정책 (메모리 #18): 모달 → 카운트다운 → 첫 음표 순서 보장.
+  const [showSwipeTutorial, setShowSwipeTutorial] = useState(
+    () => level >= 5 && !hasSeenSwipeTutorial(level)
+  );
+  const [showCountdown, setShowCountdown] = useState(
+    !skipCountdown && !(level >= 5 && !hasSeenSwipeTutorial(level))
+  );
+
+  const handleSwipeTutorialClose = useCallback((markAsSeen: boolean) => {
+    if (markAsSeen) markSwipeTutorialSeen(level);
+    setShowSwipeTutorial(false);
+    if (!skipCountdown) setShowCountdown(true);
+  }, [level, skipCountdown]);
 
   const handleCountdownComplete = useCallback(() => {
     // §0.3 (개정 2026-05-01): grace setTimeout 제거 — setTimerKey가 startRef를 동기 리셋해 Sub3 안전 보장.
@@ -1249,6 +1265,8 @@ useEffect(() => {
     setBatchAndKey(result);
     const notes = result.batch;
 
+    // §swipe-modal (2026-05-02): replay 시에는 swipe 모달 X (이미 한 판 진행했으므로).
+    setShowSwipeTutorial(false);
     setShowCountdown(!skipCountdown);
     if (skipCountdown) {
       if (isSamplerReady()) {
@@ -1292,7 +1310,7 @@ useEffect(() => {
         <CountdownOverlay seconds={3} onComplete={handleCountdownComplete} />
       )}
 
-      <AccidentalSwipeTutorial level={level} triggerOpen={!showCountdown} />
+      <AccidentalSwipeTutorial isOpen={showSwipeTutorial} onClose={handleSwipeTutorialClose} />
 
       <span className="sr-only">
         현재 정답: {targetNoteStr ?? "(없음)"}
