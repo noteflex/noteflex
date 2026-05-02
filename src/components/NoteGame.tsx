@@ -1392,7 +1392,7 @@ useEffect(() => {
           />
         </div>
 
-        <div className="w-full mt-1">
+        <div className={`w-full mt-1 ${(showCountdown || showSwipeTutorial) ? "invisible" : ""}`}>
           <p className="text-center text-sm text-muted-foreground mb-3">
             {isBatchDisplay
               ? `${currentIndex + 1}/${currentBatch.length}번째 음표의 이름은?`
