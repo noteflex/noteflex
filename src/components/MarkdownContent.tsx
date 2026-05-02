@@ -64,6 +64,15 @@ export default function MarkdownContent({ children }: Props) {
           pre: ({ children }) => (
             <pre className="my-4 p-4 rounded-lg bg-muted overflow-x-auto text-sm">{children}</pre>
           ),
+          img: ({ src, alt }) => (
+            <img
+              src={src}
+              alt={alt ?? ""}
+              className="block mx-auto my-6 rounded-lg"
+              style={{ maxWidth: "min(100%, 600px)", height: "auto" }}
+              loading="lazy"
+            />
+          ),
         }}
       >
         {children}
