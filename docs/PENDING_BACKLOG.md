@@ -504,6 +504,59 @@ Public domain 클래식 곡별 레벨
 - `src/components/NoteGame.tsx` 또는 `App.tsx` 첫 진입 시 calibration 체크
 - `src/hooks/useNoteLogger.ts`, `src/hooks/useSessionRecorder.ts` reactionMs 계산에 offset 적용
 
+---
+
+#### 7.3-A 작업 분할 (4 sub-step) — Opus 분석 2026-05-02
+
+| 단계 | 범위 | 시간 | 사용량 | 모델 | 의존성 |
+|---|---|---|---|---|---|
+| §7.3.1 | 명세 박기 + 사용자 결정 (11 Q 결정 시트) + 데이터 모델·skip·재측정·DB 컬럼 확정 | 1~2시간 | 25~30% | Sonnet | — |
+| §7.3.2 | 코어 lib + 영속화 (`userEnvironmentOffset.ts`, profile sync, 마이그레이션 SQL, 단위 테스트) | 3~4시간 | 25~30% | Sonnet | §7.3.1 |
+| §7.3.3 | Calibration UI + 측정 (`CalibrationModal.tsx`, 자극 송출, outlier reject·평균, 결과 표시·저장, 첫 진입 가드) | 6~8시간 | 35~45% | Sonnet | §7.3.2, `sound.ts` (`ensureAudioReady`) |
+| §7.3.4 | reactionMs 보정 적용 (boundary 1지점 전략 — `useSessionRecorder.recordNote` 진입 시 offset 차감, NoteGame 3사이트 손대지 X, clamp 0, speed threshold 의미 재정의, 회귀 테스트) | 3~4시간 | 20~25% | Sonnet | §7.3.2 |
+
+**총합**: ~13~18시간 (≈2일). 단계별 독립 commit, 각 단계 Sonnet 1세션 충분.
+
+**시뮬레이터 (Step B) 통합 제외**: 현재 시뮬레이터(`src/lib/simulator/game.ts`)는 reactionMs 모델링 X (dedup invariants 전용). 통합 가치 < 비용.
+
+#### 7.3-B 사용자 결정 시트 (11 Q — §7.3.1에서 박을 것)
+
+| # | 결정 항목 | 옵션 |
+|---|---|---|
+| Q-A | **자극 모드** | (a) 시각+사운드 동시 (스펙) / (b) 사운드만 / (c) 양쪽 분리 측정 |
+| Q-B | **offset 의미** | (a) 출력 장치 레이턴시만 / (b) 출력 + 사용자 신경근 반응 baseline 합산 — (b)면 reactionMs 0 근처 수렴, 의미 재해석 필요 |
+| Q-C | **측정 횟수 + 이상치** | 3·5·7회, 단순 평균 / median / 최악 1개 제거 후 평균 |
+| Q-D | **저장 위치** | (a) localStorage만 / (b) profiles 테이블 컬럼 추가 (마이그레이션 1개) |
+| Q-E | **첫 진입 정책** | (a) skip 불가 / (b) 1회 skip 허용 (이후 강제) / (c) 무제한 skip (배지로만 표시) |
+| Q-F | **재측정 트리거** | (a) 수동만 / (b) UA 변경 감지 / (c) audioContext output device 변경 감지 |
+| Q-G | **§7.1과의 순서** | (a) §7.1 (Date→perf) 먼저 → §7.3 / (b) §7.3 먼저 → §7.1 통합 — **(a) 권장** (정밀도 일관성) |
+| Q-H | **속도 보너스 thresholds** (`useSessionRecorder.ts:56~62`) | offset 적용 후 기준 변경 / 그대로 유지 / 별도 레벨별 재튜닝 |
+| Q-I | **기존 세션 데이터** | (a) 그대로 raw 유지 (호환) / (b) offset 컬럼 별도 보관 / (c) 일괄 변환 (지양) |
+| Q-J | **avg_reaction_ms 표기** | Home/Admin 표시: raw 값 / offset 적용값 / 둘 다 |
+| Q-K | **음수 reactionMs** | clamp 0 / 통계에서 제외 / "예외 제스처"로 별도 카운트 |
+
+#### 7.3-C 결합 영역 (Opus 분석 2026-05-02)
+
+- **§7.10 (음표-사운드 sync 검증)**: sync 측정 없이 calibration 만들면 측정값 신뢰도 X. **순서: §7.10 → §7.3 또는 동시 진행**.
+- **§7.1 (Date.now → performance.now)**: §7.1 먼저 → §7.3 권장 (정밀도 일관성). §7.3 먼저 진행 시 §7.1 통합 시 calibration 측정 코드도 함께 전환 부담.
+- **§0.4 (GrandStaffPractice)**: 직교 영역 — 충돌 없음.
+
+#### 7.3-D 코드 영향 범위 (실측, Opus 2026-05-02)
+
+- 신규: `src/lib/userEnvironmentOffset.ts`, `src/components/CalibrationModal.tsx`
+- 변경 후보 (boundary 1지점 전략 채택 시 useSessionRecorder만 변경 → NoteGame 3사이트 손대지 X):
+  - `src/hooks/useSessionRecorder.ts:32, 250, 278, 304` (recordNote 진입 시 offset 차감)
+  - `src/hooks/useNoteLogger.ts:23` (response_time 초 단위)
+  - `src/hooks/useSessionRecorder.ts:56~62, 98~102` (속도 보너스 thresholds — Q-H 결정 따라)
+  - 노출 통계 (Home/Admin/BatchAnalysis): Q-J 결정 따라
+- DB: `supabase/migrations/` 신규 (Q-D = (b) 시) — `profiles.user_env_offset_ms INT`
+
+#### 7.3-E 위험 요소 (Opus 2026-05-02)
+
+- **`noteStartTime` 정밀도 한계**: `NoteGame.tsx:928`은 응답 시각 - 직전 setter 시각 기준. 실제 visual paint·audio playback과 미세 어긋남 존재 — 보정 정밀도 한계.
+- **Q-B 영향이 큼**: offset에 신경근 반응(150~250ms) 포함 시 raw reactionMs ≈ 200ms → 보정 후 ≈ 0. 기존 분석/표시/XP 보너스 의미 전부 재정의 필요.
+- **§7.10 audio sync 결합**: 위 §7.3-C 참조.
+
 ### 7.4 Fixed-point Arithmetic 🟢 (출시 후 1~2주)
 **Green Billion §2.4**
 - 신규 유틸: `src/lib/preciseTime.ts`
@@ -729,13 +782,18 @@ Claude가 출시 임박 시 자동 고지.
 
 ### Week 2 (5/6 ~ 5/12): §0.4 마무리 + Calibration + i18n 준비
 - [ ] §0.4 UI 음표 history·크기·색깔·잘림 구현 마무리
-- [ ] **§7.3 Calibration** 마무리
+- [ ] **§7.3 Calibration 4 단계 진행** (Opus 분석 2026-05-02 — §7.3-A 표 참조)
+  - [ ] §7.3.1 결정 시트 (11 Q 사용자 답변, Sonnet 1~2시간) — §7.3-B 표
+  - [ ] §7.3.2 코어 lib + 영속화 (Sonnet 3~4시간)
+  - [ ] §7.3.3 UI + 측정 (Sonnet 6~8시간)
+  - [ ] §7.3.4 reactionMs 보정 적용 (Sonnet 3~4시간)
+- [ ] **§7.10 음표-사운드 Sync 검증** (§7.3 결합 — sync 측정 없이 calibration 신뢰도 X, **§7.10 → §7.3 또는 동시 진행 권장**)
+- [ ] **§7.1 performance.now() 전환** (§7.3 결합 — Opus 권장: §7.1 먼저 → §7.3, 정밀도 일관성)
 - [ ] §3.5 약점 음표 표시 (Fail 시)
 - [ ] §4.5 음표 라벨 토글 한+영+솔페주 (1~2시간)
 - [ ] §0-2.1 스키마 표류 정리
 - [ ] §0-2.2 Supabase 키 하드코딩 제거
 - [ ] §0-2.3 Edge Function 구현 (payment-webhook)
-- [ ] §7.1 performance.now() 전환
 - [ ] §1.2 Paddle Production 상품 등록 (연간 $24.99)
 - [ ] **사용자 작업**: 블로그 글 추가 (한+영 동시)
 
@@ -759,7 +817,7 @@ Claude가 출시 임박 시 자동 고지.
 - [ ] §6 UI/UX 정비 마무리
 - [ ] §12.1 Sentry 도입
 - [ ] §7.9 피아노 사운드 조정
-- [ ] §7.10 음표-사운드 Sync 검증
+- [ ] §7.10 음표-사운드 Sync 검증 (Week 2 §7.3과 결합 진행 시 여기 ✅ 처리)
 - [ ] **사용자 작업**: 블로그 글 누적 15~20개 → ⏳ AdSense 심사 신청
 - [ ] 사용자 검증 라운드 1
 
@@ -867,4 +925,5 @@ Claude가 출시 임박 시 자동 고지.
 - 2026-04-30 (밤): §0-1 코드 적용 완료 — §0-1.1~0-1.6 모두 구현 (commit 6c1a7e8) + §0.2 Lv5+ 조표 비율 수정 (commit bb062c3) + 블로그 1일차 2편 작성 완료 (sight-reading-basics, musical-staff-principle)
 - 2026-05-01: §0.3 카운트다운 grace buffer + Sub3 즉시 타임아웃 fix (eac606a) + §0.4 GrandStaffPractice 분석 (Opus 보고서, 3갭 4 step) + 문서 갱신 v7 (§10.1 Termly 결정, §13.1 글로벌 다국어, §13.2 라우팅·PWA, §14 Week 재편, docs/i18n/STRATEGY.md 신규)
 - 2026-05-01 (밤): §4 retry 시스템 통합 재정의 — composeBatch (retry 큐 통합), missedNotes Map, final-retry phase 동적 batchSize (3·5·7) — commits 5e37084, 7338406, eb8b5e2. §1 사운드 동기 (5f62244), §2 카운트다운 음표 숨김 (58c4aab). 시뮬레이터 §4 parity (1215178) + final-retry dedup fix (옵션 5+7) + 신규 invariant 테스트. **§0.1 dedup 정책 — 모든 batch 생성 경로 적용**: composeBatch (popDueOrNull lastShown skip + generateBatch prev), composeFinalRetryBatch (옵션 5 sort + 옵션 7 retry skip 예외), generateBatch (내부 prev). 향후 batch 생성 경로 신규 추가 시 위 dedup 정책 명시 적용 필수 — §0.1 회귀 방지.
+- 2026-05-02 (Opus 4.7 분석): **§7.3 Calibration 작업 분할 + 결정 시트 + 위험 분석 박힘** — §7.3-A (4 sub-step, 총 13~18시간), §7.3-B (11 Q 결정 시트), §7.3-C (§7.10·§7.1 결합), §7.3-D (코드 영향 boundary 1지점 전략), §7.3-E (위험 요소). Week 2 일정에 §7.3.1~§7.3.4 + §7.10 + §7.1 결합 진행 박음. 코드 변경 0건.
 - 2026-05-02: §3 batchSize=3 균등 분포 + batchSize=7 잘림 X 보장 (commit 87f3aaf) + 카운트다운 애니메이션 1s 동기화·fade-out (commit 6283ad9) + swipe 모달 controlled 상태 머신 modal→countdown→note (commit 941b04f) + swipe 모달 회귀 fix (commit 6f5290f) + 모달·카운트다운 중 음표·NoteButtons·정답 라벨·조표 가드 (commits c1b9d7c·717797e) + Lv 1~4 batchSize=1 stage 정책 갱신 Sub1=33음표·Sub2=42음표·Sub3=52음표 (commit 400dca2) + 블로그 3일차 6편 한+영 (commit 7a1ebdd) + 블로그 이미지 CSS 제한 (commit 8091e8e). 373/373 PASS.

@@ -402,6 +402,17 @@ commits 941b04f·6f5290f·c1b9d7c·717797e. 373/373 PASS.
 
 설계 PDF 외 첨부된 "앱 성능 극한 최적화 가이드" 0.00000001초 단위 정밀도 요구. `performance.now()`, useRef, requestAnimationFrame, Web Worker 등 권장 — 모두 미적용.
 
+### 7.3 §7.3 Calibration ❌ → 분할 진행 박힘 (Opus 분석 2026-05-02)
+
+| 항목 | 상태 |
+|---|---|
+| 사양 | `PENDING_BACKLOG.md §7.3-A~E` 박힘 (4 sub-step + 11 Q 결정 시트 + 결합 영역 + 코드 영향 + 위험) |
+| 구현 | 코드 0건 — `userEnvironmentOffset` 관련 파일·DB 컬럼 모두 부재 (실측: `grep -rn "userEnvOffset\|user_env_offset" src/` → 0건) |
+| 진행 흐름 | §7.10 (audio sync 검증) → §7.1 (Date→perf) → §7.3.1 결정 → §7.3.2~§7.3.4 — 결합 순서 권장 (정밀도·신뢰도 일관성) |
+| 결합 위험 | §7.10 sync 검증 없이 calibration 측정 시 stimulus 시점 어긋남 → 측정값 신뢰도 X |
+
+→ **다음 세션 진입 흐름**: §7.10·§7.1 영역 확인 → 우선순위 결정 → §7.3.1 결정 시트 (11 Q)
+
 ---
 
 ## 8. 화면 로드 / 초기 음표 표시 ⚠️
@@ -501,10 +512,12 @@ commits 941b04f·6f5290f·c1b9d7c·717797e. 373/373 PASS.
 ### Week 2 우선순위 (다음 작업)
 
 1. **🔴 §0.4 GrandStaffPractice 구현** (§3.11 4 step, 4~6시간) — Step 1 색깔 → Step 2 history → Step 3 크기 → Step 4 잘림 방지
-2. **🔴 §7.3 Calibration** (사용자 명시 — 정체성) ⭐
-3. §4 retry 잔여 작업 (Step B 자동 로그, Step C 디버그 정리, Step D 명세)
-4. §13.1 다국어 (KR+EN, 도메인·라우팅·콘텐츠 분리)
-5. §13.2 라우팅 보호 + PWA 등록
+2. **🔴 §7.10 음표-사운드 sync 검증** — §7.3 calibration 결합 (sync 없이 calibration 신뢰도 X)
+3. **🔴 §7.1 performance.now() 전환** — §7.3 calibration 결합 (Opus 권장 순서: §7.1 → §7.3, 정밀도 일관성)
+4. **🔴 §7.3 Calibration 4 단계** (Opus 2026-05-02 분할, 총 13~18시간) — §7.3.1 결정 시트 (11 Q) → §7.3.2 코어 lib → §7.3.3 UI + 측정 → §7.3.4 reactionMs 보정 적용
+5. §4 retry 잔여 작업 (Step B 자동 로그, Step C 디버그 정리, Step D 명세)
+6. §13.1 다국어 (KR+EN, 도메인·라우팅·콘텐츠 분리)
+7. §13.2 라우팅 보호 + PWA 등록
 
 ### Week 2~3 (인프라 + 결제 + 비즈니스)
 
@@ -548,6 +561,7 @@ commits 941b04f·6f5290f·c1b9d7c·717797e. 373/373 PASS.
 
 - 2026-04-28: 초안 작성 (설계 PDF vs Claude Code 8개 분석 문서 비교)
 - 2026-04-29: 사용자 결정 9개 + §0.1 완료 (commit 4e2b6ef) + §7.3 Calibration 출시 전 필수 격상 + §10/§11 갱신 (결정 완료 반영) + §2.4/§2.6/§5 평가 마크 ✅ 업데이트
+- 2026-05-02 (Opus 4.7 분석): §7.3 Calibration 영역 분할 + 결합 위험 박힘 (§7.3 신규 표 + §11 Week 2 우선순위 §7.10·§7.1·§7.3 결합 순서). 코드 변경 0건.
 - 2026-04-30: §0-1 코드 적용 완료 — §0-1.1~0-1.6 모두 구현 (commits f09919c, 6c1a7e8) + §2.6 PASS_CRITERIA 테이블 ✅ 갱신 + §2.6 같은조표연속학습 ✅ + §9.1 재도전마크 ✅ + §3.8 조표 비율 + treble/bass ✅ (commit bb062c3)
 - 2026-05-01: §3.11 §0.4 GrandStaffPractice 분석 추가 (Opus 보고서, 3갭 4 step 계획) + §3.12 §0.3 ✅ 추가 (commit eac606a) + §10/§11 갱신 (Week 1 완료 현황, Week 2 우선순위)
 - 2026-05-02: §2.1 stage 수 ⚠️ (Lv1~4 batchSize=1 확장 반영) + §2.4 음표 배치 테이블 ✅ + §3.2 버퍼링 방지 ✅ + 카운트다운 조표 숨김 ✅ + §3.13 §4 retry 시스템 신규 + §3.14 swipe 모달 신규 + §3.15 batchSize 렌더링 fix 신규 + §10 버그 5번 추가 + §11 Week 1 완료 12개·Week 2 §4 잔여 추가 + §13 변경 이력
