@@ -14,7 +14,10 @@
     "cap:sync": "npm run build && npx cap sync",
     "cap:open:android": "npx cap open android",
     "cap:open:ios": "npx cap open ios",
-    "iap:test": "bash -lc 'set -a; source .env.local.test; set +a; ./scripts/test-iap-verification.sh'"
+    "iap:test": "bash -lc 'set -a; source .env.local.test; set +a; ./scripts/test-iap-verification.sh'",
+    "sim:run": "vite-node scripts/run-simulation.ts",
+    "sim:analyze": "vite-node scripts/analyze-sim-logs.ts",
+    "sim:test": "npm run sim:run && npm run sim:analyze"
   },
   "dependencies": {
     "@capacitor/android": "^8.3.0",
