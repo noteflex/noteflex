@@ -81,6 +81,14 @@
 - 패널 게이트 `SHOW_RETRY_DEBUG_FOR_ADMIN_OR_DEV && isAdminOrDev` → `SHOW_RETRY_DEBUG`(false) 원복 또는 패널 전체 제거
 - 검증 가이드: 사용자가 dev server에서 Lv1 Stage1 → 첫 음표 2번 틀린 후 정답 → 콘솔 로그로 `markMissed` ×2 → `markJustAnswered` → `prepareNextTurn(qsize=1)` → batch[0] != 직전 음표 확인 → 2턴 후 retry로 다시 등장 확인.
 
+### §4 retry 잔여 작업 🔴 (Week 2 — 출시 전)
+
+§4 retry 시스템 핵심 구현 완료 (2026-05-01 밤). 다음 세션에서 처리할 잔여:
+
+- **Step B**: 자동 로그 + 분석 시스템 — simLogger + analyze script + 자동 보고서 (delayedFallback 정확한 비율 측정, retry 간격 분포 집계)
+- **Step C**: 디버그 트레이스 정리 — `retryQueueDebug.ts` cleanup, `[§4 BUG TRACE]` 마커 제거 (§0.1-cleanup과 병행)
+- **Step D**: 명세 박기 — `docs/04_RETRY_SYSTEM.md` 신규 (state machine 다이어그램 + composeBatch/composeFinalRetryBatch 함수 명세 + dedup 정책 표)
+
 ### ✅ 0.2 Lv5+ 조표 음표 비율 부족 (완료 2026-04-30, commit bb062c3)
 **사용자 검증**: "조표 붙은 음표가 안 나와 swipe 검증 자체 막힘."
 
@@ -175,21 +183,26 @@ batchSize=3+ stage (Sub 1 stage 3, Sub 2 stage 2·3, Sub 3 모든 stage):
 
 **Lv 1만** (현재 코드 그대로 유지). 빠른 결제 전환 우선.
 
-### 0-1.4 음표 배치 + Stage Set 반복 ✅
+### 0-1.4 음표 배치 + Stage Set 반복 ✅ (2026-04-29 결정 → 2026-05-02 갱신)
 
-| Sublevel | Stage 1 | Stage 2 | Stage 3 |
-|---|---|---|---|
-| Sub 1 | 1×6 = 6 음표 | 1×7 = 7 음표 | 3×5 = 15 음표 |
-| Sub 2 | 1×6 = 6 음표 | 3×3 = 9 음표 | 5×3 = 15 음표 |
-| Sub 3 | 3×3 = 9 음표 | 5×3 = 15 음표 | 7×3 = 21 음표 |
+**Lv 1~4 전용 (2026-05-02 갱신, commit 400dca2)**:
+| Sublevel | Stage 1 | Stage 2 | Stage 3 | Stage 4 | Stage 5 |
+|---|---|---|---|---|---|
+| Sub 1 | 1×5 = 5 | 1×6 = 6 | 1×7 = 7 | 3×5 = 15 | — |
+| Sub 2 | 1×5 = 5 | 1×6 = 6 | 1×7 = 7 | 3×3 = 9 | 5×3 = 15 |
+| Sub 3 | 1×7 = 7 | 3×3 = 9 | 5×3 = 15 | 7×3 = 21 | — |
 
 총 음표 수:
-- Sub 1: 28개 → 정답률 100% 시 ~2:06 / 정답률 80% 시 ~2:30
-- Sub 2: 30개 → 정답률 100% 시 ~2:00 / 정답률 80% 시 ~2:20
-- Sub 3: 45개 → 정답률 100% 시 ~2:15 / 정답률 80% 시 ~2:40
+- Sub 1: 33개 (4 stages) — batchSize=1 준비 3단계 + batchSize=3
+- Sub 2: 42개 (5 stages) — batchSize=1 준비 3단계 + batchSize=3·5
+- Sub 3: 52개 (4 stages) — batchSize=1 준비 1단계 + batchSize=3·5·7
 
-**기준 시간 (정답률 100%)**: 약 **2:10**.
-**실제 시간 (정답률 80%, retry 추가)**: 약 **2:20~2:40** (설계 §3.3.가 1:30~3:00 범위 안).
+**Lv 5~7 전용 (2026-04-30, commit 818ae2f)**: batchSize=1 stage 없음 (조표 시스템 특성).
+| Sublevel | Stage 1 | Stage 2 | Stage 3 |
+|---|---|---|---|
+| Sub 1 | 3×5 = 15 | 5×3 = 15 | 7×3 = 21 |
+| Sub 2 | 3×5 = 15 | 5×3 = 15 | 7×3 = 21 |
+| Sub 3 | 5×3 = 15 | 7×3 = 21 | 7×3 = 21 |
 
 **코드 영향**:
 - `src/lib/levelSystem.ts` `SUBLEVEL_CONFIGS` 수정 (notesPerSet, totalSets, batchSize 갱신)
@@ -686,7 +699,16 @@ Claude가 출시 임박 시 자동 고지.
 - [x] §0-1.4 Lv 5~7 SUBLEVEL_CONFIGS (batchSize 3·5·7 전용) ✅ (2026-04-30, commit 818ae2f)
 - [x] §0.3 카운트다운 + Sub3 즉시 타임아웃 fix ✅ (2026-05-01, commit eac606a)
 - [x] §0.4 UI 음표 history·크기·색깔 분석 완료 ✅ (2026-05-01, Opus 4 step 계획)
-- 🟡 §0.4 본격 구현 (내일 시작 — Step 1 색상→ Step 2 history→ Step 3 크기)
+- [x] §4 retry 시스템 통합 (composeBatch + final-retry phase + 동적 batchSize 3·5·7) ✅ (2026-05-01 밤, commits 5e37084·7338406·eb8b5e2)
+- [x] §4 시뮬레이터 parity (composeFinalRetryBatch dedup fix) ✅ (2026-05-01 밤, commits 1215178·509eb37)
+- [x] §1 사운드 동기화 (audio context ensureAudioReady) ✅ (2026-05-01, commit 5f62244)
+- [x] §2 카운트다운 중 음표 숨김 ✅ (2026-05-01, commit 58c4aab)
+- [x] §3 batchSize=3 균등 분포 + batchSize=7 잘림 X 보장 ✅ (2026-05-02, commit 87f3aaf)
+- [x] 카운트다운 애니메이션 1s 동기화 + fade-out ✅ (2026-05-02, commit 6283ad9)
+- [x] swipe 모달 controlled 상태 머신 (modal → countdown → note 흐름) ✅ (2026-05-02, commit 941b04f)
+- [x] swipe 모달 회귀 fix (paused·disabled gate) ✅ (2026-05-02, commit 6f5290f)
+- [x] 모달·카운트다운 중 음표·NoteButtons·정답 라벨·조표 가드 ✅ (2026-05-02, commits c1b9d7c·717797e)
+- [x] Lv 1~4 batchSize=1 stage 정책 갱신 (Sub1: 4 stages 33음표, Sub2: 5 stages 42음표, Sub3: 4 stages 52음표) ✅ (2026-05-02, commit 400dca2)
 - [ ] **§7.3 Calibration 구현 (사용자 명시 — 정체성)** ⭐
 - [ ] §4.4 힌트 시스템 결정
 - [ ] §5.3 닉네임 중복 검증
@@ -797,6 +819,20 @@ Claude가 출시 임박 시 자동 고지.
 - ✅ §0.4 분석 완료 (Opus 보고서) — GrandStaffPractice.tsx 556줄 전체 분석, 갭 3개 식별, 4 step 구현 계획 수립 (Step 1 색상 30분 → Step 2 history 2~3시간 → Step 3 크기 1~2시간 → Step 4 클리핑 30분, 총 4~6시간)
 - ✅ 문서 갱신 v7 — §13.1 글로벌 다국어 출시 전략 + §13.2 라우팅 보호·PWA + §14 Week 일정 갱신 (Week 2~5 재편) + §10.1 약관 Termly/iubenda 결정 + docs/i18n/STRATEGY.md 신규
 
+**2026-05-01 (밤)**:
+- ✅ §4 retry 시스템 통합 재정의 — composeBatch (retry 큐 통합 + lastShownNote dedup), missedNotes Map, final-retry phase 동적 batchSize (3·5·7), composeFinalRetryBatch dedup (옵션 5 sort + 옵션 7 retry skip) — commits 5e37084·7338406·eb8b5e2·1215178·509eb37
+- ✅ §1 사운드 동기화 (ensureAudioReady → playNote 순서 보장) — commit 5f62244
+- ✅ §2 카운트다운 중 음표 숨김 (showCountdown guard) — commit 58c4aab
+- ✅ §0.1 dedup 정책 모든 batch 생성 경로 명세 박힘 — commit cf384ef
+
+**2026-05-02**:
+- ✅ §3 GrandStaffPractice batchSize=3 균등 분포 + batchSize=7 잘림 X 보장 — commit 87f3aaf
+- ✅ 카운트다운 애니메이션 1s 동기화 + fade-out — commit 6283ad9
+- ✅ swipe 모달 controlled 상태 머신 (showSwipeTutorial → showCountdown → playing 순서 강제) — commit 941b04f · 회귀 fix commit 6f5290f
+- ✅ 모달·카운트다운 중 음표·NoteButtons·정답 라벨·조표(keySharps·keyFlats) 가드 — commits c1b9d7c·717797e · 368/368 → 373/373 PASS
+- ✅ Lv 1~4 batchSize=1 stage 정책 갱신 (Sub1: 4 stages 33음표, Sub2: 5 stages 42음표, Sub3: 4 stages 52음표) — commit 400dca2 · 373/373 PASS
+- ✅ 블로그 3일차 6편 한+영 (누적 14편) — commit 7a1ebdd · 블로그 이미지 CSS 제한 — commit 8091e8e
+
 ---
 
 ## 16. 메모 · 추후 보강
@@ -822,3 +858,4 @@ Claude가 출시 임박 시 자동 고지.
 - 2026-04-30 (밤): §0-1 코드 적용 완료 — §0-1.1~0-1.6 모두 구현 (commit 6c1a7e8) + §0.2 Lv5+ 조표 비율 수정 (commit bb062c3) + 블로그 1일차 2편 작성 완료 (sight-reading-basics, musical-staff-principle)
 - 2026-05-01: §0.3 카운트다운 grace buffer + Sub3 즉시 타임아웃 fix (eac606a) + §0.4 GrandStaffPractice 분석 (Opus 보고서, 3갭 4 step) + 문서 갱신 v7 (§10.1 Termly 결정, §13.1 글로벌 다국어, §13.2 라우팅·PWA, §14 Week 재편, docs/i18n/STRATEGY.md 신규)
 - 2026-05-01 (밤): §4 retry 시스템 통합 재정의 — composeBatch (retry 큐 통합), missedNotes Map, final-retry phase 동적 batchSize (3·5·7) — commits 5e37084, 7338406, eb8b5e2. §1 사운드 동기 (5f62244), §2 카운트다운 음표 숨김 (58c4aab). 시뮬레이터 §4 parity (1215178) + final-retry dedup fix (옵션 5+7) + 신규 invariant 테스트. **§0.1 dedup 정책 — 모든 batch 생성 경로 적용**: composeBatch (popDueOrNull lastShown skip + generateBatch prev), composeFinalRetryBatch (옵션 5 sort + 옵션 7 retry skip 예외), generateBatch (내부 prev). 향후 batch 생성 경로 신규 추가 시 위 dedup 정책 명시 적용 필수 — §0.1 회귀 방지.
+- 2026-05-02: §3 batchSize=3 균등 분포 + batchSize=7 잘림 X 보장 (commit 87f3aaf) + 카운트다운 애니메이션 1s 동기화·fade-out (commit 6283ad9) + swipe 모달 controlled 상태 머신 modal→countdown→note (commit 941b04f) + swipe 모달 회귀 fix (commit 6f5290f) + 모달·카운트다운 중 음표·NoteButtons·정답 라벨·조표 가드 (commits c1b9d7c·717797e) + Lv 1~4 batchSize=1 stage 정책 갱신 Sub1=33음표·Sub2=42음표·Sub3=52음표 (commit 400dca2) + 블로그 3일차 6편 한+영 (commit 7a1ebdd) + 블로그 이미지 CSS 제한 (commit 8091e8e). 373/373 PASS.

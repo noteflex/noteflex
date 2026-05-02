@@ -57,14 +57,15 @@
 | 항목 | 설계 (§3.2.가, 사) | 구현 | 평가 |
 |---|---|---|---|
 | 7 레벨 × 3 서브레벨 | "총 7레벨로 구성, 각 레벨 당 3단계 포함, 총 21개의 단계" | `MAX_LEVEL=7, MAX_SUBLEVEL=3, TOTAL_SUBLEVELS=21` | ✅ |
-| 한 게임 세션 = 3 STAGE | "한 게임 세션에는 3개의 STAGE가 있다" | ⚠️ Sublevel 1=3 stage, 2=3 stage, 3=**4 stage** | ❌ |
+| 한 게임 세션 = 3 STAGE | "한 게임 세션에는 3개의 STAGE가 있다" | ✅ Lv5~7: Sub1·2·3 = 3 stage / Lv1~4: Sub1=4, Sub2=5, Sub3=4 stage (batchSize=1 워밍업 단계 추가 — 2026-05-02 사용자 결정) | ⚠️ |
 
-**불일치 발견**: Sublevel 3은 4 stage입니다 (3+5+7+7).
+**설계 변경 (의도적)**: Lv1~4 서브레벨에 batchSize=1 워밍업 stage 추가 (2026-05-02, commit 400dca2).
+- Sub 1: 3→4 stages (batchSize=1 × 3개 + batchSize=3)
+- Sub 2: 3→5 stages (batchSize=1 × 3개 + batchSize=3·5)
+- Sub 3: 3→4 stages (batchSize=1 × 1개 + batchSize=3·5·7)
+- Lv5~7: 변경 없음 (batchSize=3~7 전용, 조표 시스템 특성)
 
-설계 문서: 한 세션 = 3 STAGE
-실제 코드: Sublevel 1·2 = 3 stage / Sublevel 3 = 4 stage
-
-→ **결정 필요**: 의도된 설계 변경인지, 코드를 3 stage로 통일할지
+→ **결정 완료**: 의도된 설계 확장. 설계 §3.2.가 "3 STAGE" 원칙은 Lv5~7에서 유지.
 
 ### 2.2 레벨별 음역대 ✅
 
@@ -93,10 +94,9 @@
 
 | 항목 | 설계 (§3.2.다) | 구현 | 평가 |
 |---|---|---|---|
-| 음표 배치 단위 | 1 / 3 / 5 / 7개 STAGE | Sublevel별로 다름:<br>Sub1: 1·1·3<br>Sub2: 1·3·5<br>Sub3: 3·5·7·7 | ⚠️ 부분 일치 |
-| 한 STAGE 단일 음표 → 3개 또는 5개로 수정? | "음표가 하나 씩 3개가 배치되는 STAGE는 오선지 범위를 고려하여 3 → 5개로 수정하는 것이 나은지 판단 필요" | 현재 코드: 1개씩 순차 표시 + setProgress로 3·5개씩 누적 | ⚠️ 결정 보류 사항 |
-
-→ **결정 필요**: 음표 1개씩 표시 구조를 3개 또는 5개씩 화면에 동시 표시로 바꿀지
+| 음표 배치 단위 | 1 / 3 / 5 / 7개 STAGE | ✅ Lv1~4: Sub1=1·1·1·3 (4st), Sub2=1·1·1·3·5 (5st), Sub3=1·3·5·7 (4st) — 2026-05-02 확정 | ✅ |
+| batchSize=1 stage 워밍업 추가 | (설계엔 없음) | 💡 Lv1~4에 batchSize=1 단계 추가 (Sub1·2: totalSets 5·6·7, Sub3: totalSets 7만) | 💡 추가 구현 |
+| 한 STAGE 동시 표시 수 | "음표가 하나 씩 3개가 배치되는 STAGE는..." | ✅ batchSize=1이면 1개씩 순차, batchSize=3이면 3개 동시 (batch mode) — 2026-04-30 구현 | ✅ |
 
 ### 2.5 SUCCESS / FAIL 메시지 ⚠️
 
@@ -143,7 +143,8 @@
 |---|---|---|---|
 | 3-2-1 카운트다운 | "3-2-1 카운트 다운을 보여준 후" | `CountdownOverlay` ✅ | ✅ |
 | 카운트다운 끝남 = 음표 표시 + 사운드 | "카운트가 끝남과 동시에 바로 음표가 보여지고 해당 음표의 소리가 나온다" | handleCountdownComplete에서 첫 음표 표시 + playNote | ✅ |
-| 버퍼링 방지 | "카운트다운 소리와 겹치거나 버퍼링 등의 문제가 있을 수 있으므로 해당 문제가 발생하지 않도록 해야 한다" | 🔴 명시적 버퍼링 처리 없음 — Lv7-3 3초 제한 시 문제 발생 가능 | 🔴 |
+| 버퍼링 방지 | "카운트다운 소리와 겹치거나 버퍼링 등의 문제가 있을 수 있으므로 해당 문제가 발생하지 않도록 해야 한다" | ✅ ensureAudioReady() → playNote() 순서 보장 (5f62244) + FIRST_NOTE_GRACE_MS=300 (§3.12 참조) | ✅ |
+| 카운트다운 중 음표·조표 숨김 | (설계 의도 포함) | ✅ showCountdown guard — targetNote·batchNotes·keySharps·keyFlats 모두 null/undefined (commits 58c4aab·c1b9d7c·717797e) | ✅ |
 | 빨간색 표시 | "정답을 맞춰야 하는 음표이므로 빨간색으로 바로 표시" | `targetNote`에 빨강 적용 (코드 확인 필요) | ⚠️ |
 
 ### 3.3 음표 색깔 구분 ✅
@@ -273,6 +274,40 @@
 4. Sub3: grace 후 full 3초 타이머 — 2.9초 미만료, 3.05초 만료
 
 337/337 PASS.
+
+### 3.13 §4 Retry 시스템 (final-retry phase + composeBatch) ✅ (2026-05-01 밤)
+
+설계 §3.3.바에 N+2 로직이 명시돼 있으나 final-retry phase(배치 완료 후 잔여 retry 처리)는 설계엔 없음. 필요성이 구현 중 발견되어 추가.
+
+| 항목 | 구현 | 평가 |
+|---|---|---|
+| composeBatch (retry 큐 통합) | retry queue popDueOrNull + generateBatch 조합, lastShownNote dedup 전 경로 적용 | 💡 설계 확장 |
+| missedNotes Map | 음표별 오답 횟수 추적 → final-retry batch 크기 결정 (3·5·7) | 💡 설계 확장 |
+| final-retry phase | 배치 완료 + missedNotes 비어있지 않으면 진입, 동적 batchSize (3·5·7) | 💡 설계 확장 |
+| 시뮬레이터 parity | composeFinalRetryBatch dedup (옵션 5 sort + 옵션 7 retry skip) — commits 1215178·509eb37 | 💡 |
+
+commits 5e37084·7338406·eb8b5e2·1215178·509eb37. 373/373 PASS.
+
+### 3.14 Swipe 모달 Controlled 상태 머신 ✅ (2026-05-02)
+
+Lv5+ 첫 진입 시 "조표 입력 사용법" 모달 → 카운트다운 → 첫 음표 순서 보장.
+
+| 항목 | 구현 | 평가 |
+|---|---|---|
+| showSwipeTutorial → showCountdown 순서 | hasSeen=false면 모달 먼저, 닫은 후 카운트다운 시작 | 💡 설계 확장 |
+| 모달 중 timer paused | showSwipeTutorial guard — timer/NoteButtons/정답 라벨/음표/조표 모두 비활성 | ✅ |
+| 모달·카운트다운 중 조표 숨김 | keySharps·keyFlats props에 !(showCountdown || showSwipeTutorial) guard 추가 — commit 717797e | ✅ |
+| 모달·카운트다운 중 lives 보호 | timer paused + disabled → 시간 경과로 인한 오답 처리 X | ✅ |
+
+commits 941b04f·6f5290f·c1b9d7c·717797e. 373/373 PASS.
+
+### 3.15 GrandStaffPractice batchSize 렌더링 fix ✅ (2026-05-02, commit 87f3aaf)
+
+| 항목 | 이전 | 이후 | 평가 |
+|---|---|---|---|
+| batchSize=3 균등 분포 | gap=batchSize+1=4 일치 X 케이스 존재 | gap=batchSize+1=4 정확 (첫 음표 spacing 내부 기준) | ✅ |
+| batchSize=7 잘림 방지 | 잘림 발생 가능 | no-clip 보장 | ✅ |
+| 세부 시각 조정 | — | 출시 전 UI 작업 시점 펜딩 (PENDING_BACKLOG §6.4) | 🟡 |
 
 ---
 
@@ -425,6 +460,7 @@
 2. **Lv5+ 조표 음표 비율 부족** ✅ 완료 (commit bb062c3, 2026-04-30) — batchSize별 30%/40%/60%/70% 조표 비율 + treble/bass 50:50 + 두 자리표 보장
 3. **첫 음표 버퍼링 + Sub3 즉시 타임아웃** ✅ 완료 (commit eac606a, 2026-05-01) — FIRST_NOTE_GRACE_MS=300, setTimerKey 리셋, 4개 TDD 테스트
 4. **UI 음표 잘림·색깔·history 누적 X** 🆕 — 분석 완료 (§3.11, 4 step 계획 수립), 구현 예정 (§0.4)
+5. **batchSize=3 균등 분포 + batchSize=7 잘림** ✅ 완료 (commit 87f3aaf, 2026-05-02)
 
 ### 🔴 출시 후 펜딩 (이미 PENDING_BACKLOG.md에 박힘)
 
@@ -447,7 +483,7 @@
 
 ## 11. 다음 세션 작업 우선순위 (2026-05-01 갱신)
 
-### Week 1 완료 현황
+### Week 1 완료 현황 (2026-04-29 ~ 2026-05-02)
 
 1. ✅ §0.1 N+2 즉시 등장 버그 수정 (commit 4e2b6ef, 2026-04-29)
 2. ✅ §0.2 Lv5+ 조표 비율 수정 (commit bb062c3, 2026-04-30)
@@ -455,13 +491,20 @@
 4. ✅ §0.4 분석 완료 — 4 step 계획 수립 (§3.11, 2026-05-01 Opus)
 5. ✅ §0-1.5 재도전 배지 삭제 (commit f09919c)
 6. ✅ §0-1.1~§0-1.6 코드 전체 적용 (commit 6c1a7e8)
+7. ✅ §4 retry 시스템 통합 + 시뮬레이터 parity (commits 5e37084·7338406·eb8b5e2·1215178·509eb37, 2026-05-01 밤)
+8. ✅ §1 사운드 동기화 + §2 카운트다운 음표 숨김 (commits 5f62244·58c4aab, 2026-05-01 밤)
+9. ✅ §3 batchSize=3 균등 분포 + batchSize=7 잘림 X (commit 87f3aaf, 2026-05-02)
+10. ✅ 카운트다운 애니메이션 1s 동기화 (commit 6283ad9, 2026-05-02)
+11. ✅ swipe 모달 controlled + 조표·음표·NoteButtons·정답 라벨 가드 (commits 941b04f·6f5290f·c1b9d7c·717797e, 2026-05-02)
+12. ✅ Lv1~4 batchSize=1 stage 정책 갱신 (commit 400dca2, 2026-05-02)
 
 ### Week 2 우선순위 (다음 작업)
 
 1. **🔴 §0.4 GrandStaffPractice 구현** (§3.11 4 step, 4~6시간) — Step 1 색깔 → Step 2 history → Step 3 크기 → Step 4 잘림 방지
 2. **🔴 §7.3 Calibration** (사용자 명시 — 정체성) ⭐
-3. §13.1 다국어 (KR+EN, 도메인·라우팅·콘텐츠 분리)
-4. §13.2 라우팅 보호 + PWA 등록
+3. §4 retry 잔여 작업 (Step B 자동 로그, Step C 디버그 정리, Step D 명세)
+4. §13.1 다국어 (KR+EN, 도메인·라우팅·콘텐츠 분리)
+5. §13.2 라우팅 보호 + PWA 등록
 
 ### Week 2~3 (인프라 + 결제 + 비즈니스)
 
@@ -476,7 +519,7 @@
 
 ### Week 4~5 (마무리)
 
-1. §6 UI/UX 정비 마무리
+1. §6 UI/UX 정비 마무리 (§6.4 GrandStaffPractice 세부 시각 조정 포함)
 2. §3.5 약점 음표 표시 (Fail 시)
 3. §12.1 Sentry 도입
 4. §0.1-cleanup 디버그 코드 제거
@@ -507,3 +550,4 @@
 - 2026-04-29: 사용자 결정 9개 + §0.1 완료 (commit 4e2b6ef) + §7.3 Calibration 출시 전 필수 격상 + §10/§11 갱신 (결정 완료 반영) + §2.4/§2.6/§5 평가 마크 ✅ 업데이트
 - 2026-04-30: §0-1 코드 적용 완료 — §0-1.1~0-1.6 모두 구현 (commits f09919c, 6c1a7e8) + §2.6 PASS_CRITERIA 테이블 ✅ 갱신 + §2.6 같은조표연속학습 ✅ + §9.1 재도전마크 ✅ + §3.8 조표 비율 + treble/bass ✅ (commit bb062c3)
 - 2026-05-01: §3.11 §0.4 GrandStaffPractice 분석 추가 (Opus 보고서, 3갭 4 step 계획) + §3.12 §0.3 ✅ 추가 (commit eac606a) + §10/§11 갱신 (Week 1 완료 현황, Week 2 우선순위)
+- 2026-05-02: §2.1 stage 수 ⚠️ (Lv1~4 batchSize=1 확장 반영) + §2.4 음표 배치 테이블 ✅ + §3.2 버퍼링 방지 ✅ + 카운트다운 조표 숨김 ✅ + §3.13 §4 retry 시스템 신규 + §3.14 swipe 모달 신규 + §3.15 batchSize 렌더링 fix 신규 + §10 버그 5번 추가 + §11 Week 1 완료 12개·Week 2 §4 잔여 추가 + §13 변경 이력
