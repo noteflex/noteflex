@@ -13,14 +13,6 @@ import { playNote, playWrong, isSamplerReady, initSound, ensureAudioReady } from
 import { useNoteLogger } from "@/hooks/useNoteLogger";
 import { useSessionRecorder } from "@/hooks/useSessionRecorder";
 import { useRetryQueue } from "@/hooks/useRetryQueue";
-// [§0.1 DEBUG] — 출시 전 제거. PENDING_BACKLOG §0.1 cleanup.
-import {
-  logMarkMissed,
-  logMarkJustAnswered,
-  logRescheduleAfterCorrect,
-  logResolveRetry,
-  logPrepareNextTurn,
-} from "@/lib/retryQueueDebug";
 import { useUserMastery, type MasteryMap } from "@/hooks/useUserMastery";
 import { getNoteWeight, weightedPickIndex } from "@/lib/noteWeighting";
 import {
@@ -253,30 +245,6 @@ export function generateKeyBatch(
 
     const acc = getAccidental(picked.key);
 
-    // [TEMP DEBUG] computedAcc=undefined인 모순 케이스만 출력
-    const sharpsHas = keySig.sharps ? keySig.sharps.includes(picked.key) : false;
-    const flatsHas = keySig.flats ? keySig.flats.includes(picked.key) : false;
-    const expectedAcc = sharpsHas ? "#" : flatsHas ? "b" : undefined;
-    if (acc !== expectedAcc) {
-      console.log("[KEYBATCH MISMATCH]", {
-        pickedKey: picked.key,
-        keySigKey: keySig.key,
-        sharps: keySig.sharps,
-        flats: keySig.flats,
-        sharpsIncludes: sharpsHas,
-        flatsIncludes: flatsHas,
-        getAccidentalReturned: acc,
-        expectedAcc,
-      });
-    } else if (acc === undefined && (sharpsHas || flatsHas)) {
-      console.log("[KEYBATCH BUG]", {
-        pickedKey: picked.key,
-        keySigKey: keySig.key,
-        sharps: keySig.sharps,
-        flats: keySig.flats,
-      });
-    }
-
     batch.push({
       ...picked,
       accidental: acc,
@@ -334,9 +302,6 @@ function getSoundKey(note: NoteType): string {
   return `${note.key}${note.octave}`;
 }
 
-// [§0.1 DEBUG] — admin/dev에서만 retry queue 패널 노출. 출시 전 false로 원복 (또는 panel 전체 제거).
-const SHOW_RETRY_DEBUG_FOR_ADMIN_OR_DEV = true;
-
 interface NoteGameProps {
   onReset?: () => void;
   onLevelSelect?: () => void;
@@ -382,8 +347,6 @@ export default function NoteGame({
   const isAdminOrDev  = profile?.role === "admin" || import.meta.env.DEV;
   const noteStartTime = useRef<number>(Date.now());
   const turnCounterRef = useRef<number>(0);
-  // [§0.1 DEBUG] — 마지막 retry pop 추적 (admin/dev 패널 표시용). 출시 전 제거.
-  const lastRetryPopRef = useRef<{ note: NoteType; turn: number } | null>(null);
   // §0.1 전역 dedup — 직전에 화면에 떠 있던 음표 (정답·오답 모두 갱신).
   // popDueOrNull에 전달해 같은 ID retry pop을 1턴 지연시킨다.
   const lastShownNoteRef = useRef<NoteType | null>(null);
@@ -502,31 +465,6 @@ export default function NoteGame({
   const targetNoteStr    = currentTarget ? `${currentTarget.key}${currentTarget.octave}` : null;
   const targetAccidental = currentTarget?.accidental ?? null;
 
-  // [TEMP DEBUG] 매 렌더마다 batch ↔ keySig 정합성 캡처
-  if (level >= 5 && currentBatch.length > 0) {
-    const keyLetters = new Set([
-      ...(currentKeySignature.sharps || []),
-      ...(currentKeySignature.flats || []),
-    ]);
-    for (const note of currentBatch) {
-      if (keyLetters.has(note.key) && note.accidental === undefined) {
-        console.log("[RENDER MISMATCH]", {
-          renderTime: Date.now(),
-          batchNotes: currentBatch.map(n => `${n.key}${n.octave}${n.accidental ?? ""}`),
-          keySigKey: currentKeySignature.key,
-          sharps: currentKeySignature.sharps,
-          flats: currentKeySignature.flats,
-          stageIdx,
-          currentSet,
-          turnCounter: turnCounterRef.current,
-        });
-        break;
-      }
-    }
-  }
-
-
-
   const batchNotesForDisplay: BatchNoteEntry[] | undefined =
     isBatchDisplay
       ? currentBatch.map(n => ({
@@ -601,28 +539,6 @@ export default function NoteGame({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase]);
-
-// [TEMP DEBUG] keySig + currentBatch 일관성 체크
-useEffect(() => {
-  if (level >= 5 && currentBatch.length > 0) {
-    const keyLetters = new Set([
-      ...(currentKeySignature.sharps || []),
-      ...(currentKeySignature.flats || []),
-    ]);
-    for (const note of currentBatch) {
-      const letterInKey = keyLetters.has(note.key);
-      if (letterInKey && note.accidental === undefined) {
-        console.log("[INCONSISTENCY]", {
-          note: `${note.key}${note.octave}`,
-          accidental: note.accidental,
-          keySigKey: currentKeySignature.key,
-          keySharps: currentKeySignature.sharps,
-          keyFlats: currentKeySignature.flats,
-        });
-      }
-    }
-  }
-}, [currentBatch, currentKeySignature, level]);
 
   // forceNewKeySig=true이면 Lv5+에서 새 keySig 생성 (stage 전환·리플레이 시).
   // false(기본)면 currentKeySignature 재사용 → 같은 stage 안에서 키사인 고정 유지.
@@ -1095,12 +1011,10 @@ useEffect(() => {
       const wasRetry = currentIndex < batchAndKey.retryCount;
 
       retryQueue.markJustAnswered(retryKey, turnCounterRef.current);
-      logMarkJustAnswered(turnCounterRef.current, retryKey); // [§0.1 DEBUG]
       if (wasRetry) {
         // retry 음표 정답 → 영구 제거 (큐 + missedNotes 모두).
         retryQueue.resolve(retryKey);
         removeMissedNote(currentTarget, clefForLog);
-        logResolveRetry(turnCounterRef.current, retryKey); // [§0.1 DEBUG]
       } else {
         // 일반 음표 정답 → 큐 마커 있던 경우만 N+2 후 재출제로 갱신 (마커 없으면 no-op).
         retryQueue.rescheduleAfterCorrect(retryKey, turnCounterRef.current);
@@ -1131,7 +1045,6 @@ useEffect(() => {
       // 단 final-retry phase에서는 큐에 등록 X (이미 마지막 단계).
       if (phase !== "final-retry") {
         retryQueue.markMissed(retryKey);
-        logMarkMissed(turnCounterRef.current, retryKey, retryQueue.snapshot); // [§0.1 DEBUG]
         addMissedNote(currentTarget, clefForLog);
       }
 
@@ -1201,7 +1114,6 @@ useEffect(() => {
         clef: clefForLog,
       };
       retryQueue.markMissed(timeoutKey);
-      logMarkMissed(turnCounterRef.current, timeoutKey, retryQueue.snapshot); // [§0.1 DEBUG] (timeout)
       addMissedNote(currentTarget, clefForLog);
     }
 
@@ -1335,13 +1247,6 @@ useEffect(() => {
           <div className="w-full flex justify-center mt-1">
             <div className="px-4 py-1.5 rounded-lg bg-yellow-100 border border-yellow-300 text-yellow-900 text-sm font-mono font-bold shadow-sm">
               💡 정답: {getNoteAnswer(currentTarget)}
-              {/* [§0.1 DEBUG] — turn/queue 요약 인라인 표시. 출시 전 제거. */}
-              <span className="ml-3 text-xs font-sans font-normal text-yellow-800">
-                · turn {turnCounterRef.current} · queue {retryQueue.size}
-                {lastRetryPopRef.current && (
-                  <> · last retry: {lastRetryPopRef.current.note.key}{lastRetryPopRef.current.note.accidental ?? ""}{lastRetryPopRef.current.note.octave} @ turn {lastRetryPopRef.current.turn}</>
-                )}
-              </span>
               <span className="ml-2 text-xs font-sans font-normal text-yellow-700">
                 (admin/dev only)
               </span>
@@ -1399,28 +1304,6 @@ useEffect(() => {
               : `${currentIndex + 1}번째 음표의 이름은?`}
           </p>
 
-          {(() => {
-            if (level >= 5 && currentBatch.length > 0 && currentTarget) {
-              const sharpsToButton = needsKeySig ? currentKeySignature.sharps : undefined;
-              const flatsToButton = needsKeySig ? currentKeySignature.flats : undefined;
-              const keyLetters = new Set([
-                ...(sharpsToButton || []),
-                ...(flatsToButton || []),
-              ]);
-              if (keyLetters.has(currentTarget.key) && currentTarget.accidental === undefined) {
-                console.log("[BUTTON-NOTE MISMATCH]", {
-                  noteKey: currentTarget.key,
-                  noteAccidental: currentTarget.accidental,
-                  buttonSharps: sharpsToButton,
-                  buttonFlats: flatsToButton,
-                  batchAndKeySigKey: currentKeySignature.key,
-                  batchNotes: currentBatch.map(n => `${n.key}${n.octave}${n.accidental ?? ""}`),
-                });
-              }
-            }
-            return null;
-          })()}
-
           <NoteButtons
             onNoteClick={handleAnswer}
             disabled={(phase !== "playing" && phase !== "final-retry") || showCountdown || showSwipeTutorial}
@@ -1440,37 +1323,6 @@ useEffect(() => {
       >
         🔊 다시 듣기
       </button>
-
-      <span className="sr-only">
-        turn: {turnCounterRef.current} · size: {retryQueue.size}
-      </span>
-
-      {SHOW_RETRY_DEBUG_FOR_ADMIN_OR_DEV && isAdminOrDev && (
-        <div className="mt-4 w-full max-w-[612px] rounded-lg border border-dashed border-amber-500/40 bg-amber-500/5 px-3 py-2 text-xs">
-          <div className="flex items-center justify-between mb-1">
-            <span className="font-semibold text-amber-700">
-              🔧 Retry Queue 디버그
-            </span>
-          </div>
-          {retryQueue.snapshot.length === 0 ? (
-            <p className="text-[10px] text-muted-foreground">(비어있음)</p>
-          ) : (
-            <ul className="space-y-0.5">
-              {retryQueue.snapshot.map((e) => (
-                <li key={e.id} className="text-[10px] font-mono">
-                  <span className="text-amber-700">{e.id}</span>
-                  <span className="text-muted-foreground">
-                    {" "}· miss×{e.missCount} · due@turn {e.scheduledAtTurn}
-                    {e.scheduledAtTurn <= turnCounterRef.current ? (
-                      <span className="ml-1 text-red-600 font-bold">DUE</span>
-                    ) : null}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-      )}
 
       <MissionSuccessModal
         open={phase === "success" && !useExternalDialogs}
@@ -1497,6 +1349,9 @@ useEffect(() => {
           </button>
         </div>
       )}
+      <span className="sr-only" data-testid="game-debug-state">
+        turn: {turnCounterRef.current} size: {retryQueue.size}
+      </span>
     </div>
   );
 }
