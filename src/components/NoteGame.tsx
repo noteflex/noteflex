@@ -1370,18 +1370,19 @@ useEffect(() => {
             duration={TIMER_SECONDS}
             resetKey={timerKey}
             onExpire={handleTimerExpire}
-            paused={(phase !== "playing" && phase !== "final-retry") || showCountdown}
+            paused={(phase !== "playing" && phase !== "final-retry") || showCountdown || showSwipeTutorial}
           />
         </div>
 
         <div className="w-full max-w-[612px] mx-auto">
           <GrandStaffPractice
             // §2 (2026-05-01): 카운트다운 중 음표 숨김 (clef·keySig·오선만 표시).
-            targetNote={showCountdown ? null : targetNoteStr}
-            targetAccidental={showCountdown ? null : targetAccidental}
-            noteHistory={showCountdown ? [] : answeredNotes}
-            batchNotes={showCountdown ? undefined : batchNotesForDisplay}
-            batchIndex={!showCountdown && isBatchDisplay ? currentIndex : undefined}
+            // §swipe-modal-perf (2026-05-02): swipe 모달 동안에도 동일하게 음표 숨김.
+            targetNote={(showCountdown || showSwipeTutorial) ? null : targetNoteStr}
+            targetAccidental={(showCountdown || showSwipeTutorial) ? null : targetAccidental}
+            noteHistory={(showCountdown || showSwipeTutorial) ? [] : answeredNotes}
+            batchNotes={(showCountdown || showSwipeTutorial) ? undefined : batchNotesForDisplay}
+            batchIndex={!showCountdown && !showSwipeTutorial && isBatchDisplay ? currentIndex : undefined}
             clef={currentClef}
             level={level}
             batchSize={currentStageConfig.batchSize}
@@ -1422,7 +1423,7 @@ useEffect(() => {
 
           <NoteButtons
             onNoteClick={handleAnswer}
-            disabled={(phase !== "playing" && phase !== "final-retry") || showCountdown}
+            disabled={(phase !== "playing" && phase !== "final-retry") || showCountdown || showSwipeTutorial}
             disabledNotes={disabledNotes}
             keySharps={needsKeySig ? currentKeySignature.sharps : undefined}
             keyFlats={needsKeySig ? currentKeySignature.flats : undefined}

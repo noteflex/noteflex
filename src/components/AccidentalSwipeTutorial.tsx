@@ -35,7 +35,7 @@ export default function AccidentalSwipeTutorial({ isOpen, onClose }: Props) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/50 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/60"
       role="dialog"
       aria-modal="true"
       aria-label="조표 입력 사용법"

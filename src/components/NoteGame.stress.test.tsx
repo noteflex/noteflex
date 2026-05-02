@@ -273,6 +273,10 @@ describe("NoteGame Stress Test - 각 레벨 자동 플레이", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     localStorage.setItem("noteflex.solfege_system", "en");
+    // §swipe-modal-perf (2026-05-02): Lv5+ 자동 플레이는 swipe 모달이 막으므로 미리 본 것으로 처리.
+    for (let lv = 5; lv <= 7; lv++) {
+      localStorage.setItem(`noteflex.swipe_tutorial_seen.lv${lv}`, "true");
+    }
   });
 
   describe.each(ALL_LEVELS)("Level %d", (level) => {
@@ -339,6 +343,10 @@ describe("NoteGame Stress Test - 데이터 일관성", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     localStorage.setItem("noteflex.solfege_system", "en");
+    // §swipe-modal-perf (2026-05-02): Lv5+ 자동 플레이는 swipe 모달이 막으므로 미리 본 것으로 처리.
+    for (let lv = 5; lv <= 7; lv++) {
+      localStorage.setItem(`noteflex.swipe_tutorial_seen.lv${lv}`, "true");
+    }
   });
 
   it("정답 수와 recordNote(correct=true) 호출 수 일치", async () => {
