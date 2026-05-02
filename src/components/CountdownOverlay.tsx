@@ -30,7 +30,7 @@ export default function CountdownOverlay({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-background/85 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-background/95"
       aria-live="polite"
       aria-label={`${count}초 뒤 시작`}
     >
@@ -46,16 +46,17 @@ export default function CountdownOverlay({
         </span>
       </div>
 
-      {/* 애니메이션 keyframes (Tailwind config에 없어도 inline 동작) */}
+      {/* 5/2 fix: animation 1s 동기화 (setTimeout 1000ms와 일치) + fade-out 끝 frame.
+          기존 0.9s ease-out + scale 0.95/opacity 0.9 (정지 100ms) → 1s cubic-bezier + scale 0.85/opacity 0 (자연 fade-out). */}
       <style>{`
         @keyframes countdown-pop {
-          0% { transform: scale(0.6); opacity: 0; }
-          30% { transform: scale(1.1); opacity: 1; }
-          60% { transform: scale(1); opacity: 1; }
-          100% { transform: scale(0.95); opacity: 0.9; }
+          0%   { transform: scale(0.6); opacity: 0; }
+          20%  { transform: scale(1.1); opacity: 1; }
+          50%  { transform: scale(1); opacity: 1; }
+          100% { transform: scale(0.85); opacity: 0; }
         }
         .animate-countdown-pop {
-          animation: countdown-pop 0.9s ease-out;
+          animation: countdown-pop 1s cubic-bezier(0.4, 0, 0.2, 1);
         }
       `}</style>
     </div>
