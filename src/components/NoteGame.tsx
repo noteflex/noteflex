@@ -1300,7 +1300,7 @@ useEffect(() => {
       </span>
 
 
-      <div className="w-full max-w-[490px] flex flex-col gap-3">
+      <div className="w-full max-w-[612px] flex flex-col gap-3">
 
         {onLevelSelect && (
           <div className="w-full flex justify-start">
@@ -1356,7 +1356,7 @@ useEffect(() => {
           />
         </div>
 
-        <div className="w-full max-w-[490px] mx-auto">
+        <div className="w-full max-w-[612px] mx-auto">
           <GrandStaffPractice
             // §2 (2026-05-01): 카운트다운 중 음표 숨김 (clef·keySig·오선만 표시).
             targetNote={showCountdown ? null : targetNoteStr}
@@ -1427,7 +1427,7 @@ useEffect(() => {
       </span>
 
       {SHOW_RETRY_DEBUG_FOR_ADMIN_OR_DEV && isAdminOrDev && (
-        <div className="mt-4 w-full max-w-[490px] rounded-lg border border-dashed border-amber-500/40 bg-amber-500/5 px-3 py-2 text-xs">
+        <div className="mt-4 w-full max-w-[612px] rounded-lg border border-dashed border-amber-500/40 bg-amber-500/5 px-3 py-2 text-xs">
           <div className="flex items-center justify-between mb-1">
             <span className="font-semibold text-amber-700">
               🔧 Retry Queue 디버그
