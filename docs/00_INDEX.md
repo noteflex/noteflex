@@ -14,9 +14,12 @@
 | 02 | [02_ARCHITECTURE.md](./02_ARCHITECTURE.md) | Provider 트리, 라우팅, 컴포넌트·hook 의존성 그래프, 데이터 흐름 시나리오 — **시스템 구조** |
 | 03 | [03_GAME_LOGIC.md](./03_GAME_LOGIC.md) | 21단계, retry queue, 가중치 출제, 키사인, 스와이프, 라이프, XP — **게임 도메인 로직** |
 | 04 | [04_DB_SCHEMA.md](./04_DB_SCHEMA.md) | 테이블·컬럼·RLS·SQL 함수·트리거·Edge Function — **Supabase 데이터 모델** |
+| 04 | [04_RETRY_SYSTEM.md](./04_RETRY_SYSTEM.md) | RetryQueue 상태 머신, composeBatch/composeFinalRetryBatch, §0.1 dedup, lives, parity, 자동 검증 시스템 (Step B) — **§4 retry 명세** |
 | 05 | [05_FEATURES.md](./05_FEATURES.md) | 인증·게임·분석·결제·관리자·법적·콘텐츠 카테고리별 기능 — **사용자 관점 카탈로그** |
 | 06 | [06_TESTING.md](./06_TESTING.md) | 18개 테스트 파일, 통과 현황, 갭 분석, E2E 부재, CI/CD — **테스트 + 품질** |
 | 07 | [07_DEPLOYMENT.md](./07_DEPLOYMENT.md) | Vercel·Porkbun·Supabase·Paddle·환경변수·출시 절차 — **배포 + 인프라** |
+
+> **04 prefix 공존**: `04_DB_SCHEMA.md` (Supabase 스키마)와 `04_RETRY_SYSTEM.md` (§4 retry 명세)는 서로 다른 도메인. 파일명 충돌 없음 (Q-B4 결정 2026-05-02).
 
 ---
 

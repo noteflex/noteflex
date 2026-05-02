@@ -85,9 +85,18 @@
 
 §4 retry 시스템 핵심 구현 완료 (2026-05-01 밤). 다음 세션에서 처리할 잔여:
 
-- **Step B**: 자동 로그 + 분석 시스템 — simLogger + analyze script + 자동 보고서 (delayedFallback 정확한 비율 측정, retry 간격 분포 집계)
+- ✅ **Step B** (완료 2026-05-02): 자동 로그 + 분석 시스템 — `src/lib/simulator/simLogger.ts` (`MemorySimLogger`/`FileSimLogger`, JSONL append, 14 이벤트 종류), `scripts/run-simulation.ts` (Lv1~4 × Sub1~3 × correctRate {0.3·0.5·0.7·0.9} 매트릭스, 9984 게임 ~3s), `scripts/analyze-sim-logs.ts` (9 invariants 검출 + markdown 자동 보고서), `npm run sim:test` 파이프라인. 9984 game × 790,212 events 위반 0건 검증.
 - ✅ **Step C** (완료 2026-05-02, commit `c77492f`): 디버그 트레이스 정리 — `retryQueueDebug.ts` 삭제, `[§0.1 DEBUG]`/`[§4 BUG TRACE]` 마커 제거, sr-only 테스트 인프라 span만 보존 (373/373 PASS).
 - ✅ **Step D** (완료 2026-05-02): 명세 박기 — `docs/04_RETRY_SYSTEM.md` 신규 (RetryQueue 상태 머신 + composeBatch/composeFinalRetryBatch 함수 명세 + §0.1 dedup 세 경로 + parity 표 + 테스트 invariant + lives 정책).
+
+#### Step B 부수 펜딩: NoteGame 통합 테스트 (queueRef stale read 검증) 🟡
+
+**범위**: simulator는 React-free → `queueRef` 비동기 stale read 검출 불가 (Q-B2 결정 2026-05-02). production `NoteGame.tsx` 환경에서만 발견되는 버그 클래스 별도 § 필요.
+- queueRef 비동기 stale read 검출
+- React 환경 시뮬레이션 (React Testing Library)
+- 도구: Sonnet 또는 Opus (분석 후 결정)
+- 작업 시간: 1~2시간
+- 우선순위: 출시 전 펜딩 (sim invariant 9개로 retry 시스템 sim-side 회귀는 보호됨)
 
 ### ✅ 0.2 Lv5+ 조표 음표 비율 부족 (완료 2026-04-30, commit bb062c3)
 **사용자 검증**: "조표 붙은 음표가 안 나와 swipe 검증 자체 막힘."

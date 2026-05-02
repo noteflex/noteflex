@@ -431,14 +431,49 @@ if (result):
 
 ---
 
-## §11. 향후 작업 (Step B)
+## §11. 자동 검증 시스템 (Step B 구축됨, 2026-05-02)
 
-자동 로그 + 분석 시스템 (PENDING_BACKLOG.md §4):
+### §11.1 구성
 
-- **simLogger 모듈 신규**: `src/lib/simulator/simLogger.ts` — 1만 게임 fuzz 결과를 구조화 로그로 저장.
-- **분석 스크립트**: `scripts/analyze-sim-logs.ts` — log 집계 → markdown 보고서 자동 생성.
-- **자동 보고서**: `delayedFallback` 정확한 비율, retry 간격 분포, missedNotes lifecycle, final-retry phase entry rate 등.
-- **목표**: 사용자 검증 부담 0 — `npm run sim:report` 한 줄로 최신 invariant 보고서 갱신.
+| 파일 | 역할 |
+|---|---|
+| `src/lib/simulator/simLogger.ts` | `SimLogger` 인터페이스 + `MemorySimLogger` (테스트) + `FileSimLogger` (대용량 fuzz JSONL append). 14가지 이벤트 종류. |
+| `scripts/run-simulation.ts` | Lv1~4 × Sub1~3 × correctRate {0.3·0.5·0.7·0.9} 매트릭스 fuzz. `--games <N>` (default 10000). `tmp/sim-logs/{timestamp}.jsonl` 출력. |
+| `scripts/analyze-sim-logs.ts` | JSONL streaming 파싱 → 9 invariant 검출 → `tmp/sim-logs/analysis-report-{timestamp}.md` 자동 생성. |
+| `scripts/_polyfills.ts` | vite-node localStorage 폴리필 (NoteGame.tsx 트리에 supabase client.ts 포함). |
+| `package.json` | `npm run sim:run` / `sim:analyze` / `sim:test`. |
+
+### §11.2 9 Invariants
+
+| # | 검증 | 위치 |
+|---|---|---|
+| 1 | due=MAX 영구 잔존 (success 종료 시) | session-end + queue snapshot |
+| 2 | composeBatch retryCount + newCount = batchSize | compose-batch payload |
+| 3 | retry 음표 위치 = 첫 자리 (idx<retryCount ⇔ isRetry) | note-shown payload |
+| 4 | final-retry batchSize = expected (1~2→3, 3~4→5, 5+→7) | compose-final-retry-batch payload |
+| 5 | lives 차감 일관성 (wrong=-1, 3-streak=+1) | lives-change payload |
+| 6 | missedNotes 추가·제거 일관성 | mark-missed/resolve 추적 |
+| 7 | phase 전환 일관성 (playing→final-retry only) | phase-transition payload |
+| 8 | final-retry retry vs 새 음표 처리 분리 | answer-correct phase=final-retry |
+| 9 | §0.1 dedup (인접 음표 같지 않음) | note-shown.consecutiveViolation |
+
+> **Invariant 10 (queueRef 비동기 stale read)** — sim 환경 검출 불가 (React-only). NoteGame 통합 테스트 별도 § 펜딩 (`PENDING_BACKLOG.md §4 Step B 부수`).
+
+### §11.3 사용
+
+```bash
+npm run sim:test          # 1만 게임 fuzz + 분석 + markdown 보고서 (≈5초)
+npm run sim:run -- --games 5000   # 게임 수 지정
+npm run sim:analyze -- --logs tmp/sim-logs/<file>.jsonl
+```
+
+retry 시스템 변경 시 `npm run sim:test` 한 줄로 9 invariants 회귀 자동 검증.
+
+### §11.4 검증 결과 (구축 직후)
+
+- 9984 game × 790,212 events × 9 invariants → 위반 0건.
+- JSONL 파일 ~129 MB / 분석 ~1.8s.
+- final-retry 진입 1035/9984 (10.4%), gameover 7707, success 2277.
 
 ---
 
@@ -461,3 +496,4 @@ if (result):
   - batchSize=1 stage 정책 (Lv 1~4) (commit `87f3aaf`).
   - **§4 Step C — debug trace cleanup** (commit `c77492f`): `retryQueueDebug.ts` 삭제, `[§0.1 DEBUG]`/`[§4 BUG TRACE]` 마커 제거, sr-only 테스트 인프라 span만 보존.
   - **§4 Step D — 본 명세 박힘**.
+  - **§4 Step B — 자동 검증 시스템 구축**: `simLogger.ts` + `scripts/run-simulation.ts` + `scripts/analyze-sim-logs.ts` + 9 invariants + `npm run sim:test` 파이프라인. 9984 game × 790,212 events 위반 0건 검증.
