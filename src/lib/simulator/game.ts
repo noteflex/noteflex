@@ -19,6 +19,7 @@ import {
 import type { NoteType } from "@/lib/noteTypes";
 import { getStagesFor, type Sublevel } from "@/lib/levelSystem";
 import { SimRetryQueue, type RetryNoteKey } from "./retryQueue";
+import type { SimLogger } from "./simLogger";
 
 export type Scenario = "all-correct" | "all-wrong" | "random" | "mastery-bias";
 
@@ -34,6 +35,10 @@ export interface SimConfig {
   seed: number;
   /** 무한 루프 안전장치. default 5000. */
   maxTurns?: number;
+  /** §4 Step B (2026-05-02): 이벤트 로거. 미지정 시 로깅 X (기존 호환). */
+  logger?: SimLogger | null;
+  /** §4 Step B: runMany에서 게임 식별자 주입용 — 미지정 시 0. */
+  session?: number;
 }
 
 export interface SimEvent {
@@ -168,6 +173,8 @@ function composeBatch(
   clef: "treble" | "bass",
   turn: number,
   lastShown: NoteType | null,
+  logger: SimLogger | null,
+  session: number,
 ): { batch: NoteType[]; retryCount: number; fallbackHits: number } {
   const retryNotes: NoteType[] = [];
   let prev: NoteType | null = lastShown;
@@ -187,11 +194,21 @@ function composeBatch(
   const newCount = batchSize - retryNotes.length;
   const newNotes =
     newCount > 0 ? generateBatch(pool, newCount, clef, new Map(), prev) : [];
-  return {
-    batch: [...retryNotes, ...newNotes],
-    retryCount: retryNotes.length,
-    fallbackHits,
-  };
+  const batch = [...retryNotes, ...newNotes];
+  logger?.log({
+    kind: "compose-batch",
+    turn,
+    session,
+    payload: {
+      batchSize,
+      retryCount: retryNotes.length,
+      newCount,
+      fallbackHits,
+      lastShownId: lastShown ? noteId(lastShown, clef) : null,
+      batchIds: batch.map((n) => noteId(n, clef)),
+    },
+  });
+  return { batch, retryCount: retryNotes.length, fallbackHits };
 }
 
 /**
@@ -207,6 +224,9 @@ function composeFinalRetryBatch(
   pool: NoteType[],
   clef: "treble" | "bass",
   lastShown: NoteType | null,
+  logger: SimLogger | null,
+  session: number,
+  turn: number,
 ): { batch: NoteType[]; retryCount: number } | null {
   const missedArray = Array.from(missedMap.values());
   if (missedArray.length === 0) return null;
@@ -232,20 +252,60 @@ function composeFinalRetryBatch(
     noteId(retryNotes[0], clef) === lastShownId
   ) {
     const newNotes = generateBatch(pool, targetBatchSize, clef, new Map(), lastShown);
+    logger?.log({
+      kind: "compose-final-retry-batch",
+      turn,
+      session,
+      payload: {
+        missedCount: missedArray.length,
+        targetBatchSize,
+        retryCount: 0,
+        newCount: targetBatchSize,
+        dedupOpt7: true,
+        lastShownId,
+        batchIds: newNotes.map((n) => noteId(n, clef)),
+      },
+    });
     return { batch: newNotes, retryCount: 0 };
   }
 
   const newCount = targetBatchSize - retryCount;
   if (newCount === 0) {
+    logger?.log({
+      kind: "compose-final-retry-batch",
+      turn,
+      session,
+      payload: {
+        missedCount: missedArray.length,
+        targetBatchSize,
+        retryCount,
+        newCount: 0,
+        dedupOpt7: false,
+        lastShownId,
+        batchIds: retryNotes.map((n) => noteId(n, clef)),
+      },
+    });
     return { batch: retryNotes, retryCount };
   }
   const lastShownForNew =
     retryNotes[retryNotes.length - 1] ?? lastShown ?? null;
   const newNotes = generateBatch(pool, newCount, clef, new Map(), lastShownForNew);
-  return {
-    batch: [...retryNotes, ...newNotes],
-    retryCount,
-  };
+  const batch = [...retryNotes, ...newNotes];
+  logger?.log({
+    kind: "compose-final-retry-batch",
+    turn,
+    session,
+    payload: {
+      missedCount: missedArray.length,
+      targetBatchSize,
+      retryCount,
+      newCount,
+      dedupOpt7: false,
+      lastShownId,
+      batchIds: batch.map((n) => noteId(n, clef)),
+    },
+  });
+  return { batch, retryCount };
 }
 
 // ─────────────────────────────────────────────
@@ -256,6 +316,8 @@ export function simulateGame(cfg: SimConfig): SimResult {
   const maxTurns = cfg.maxTurns ?? 5000;
   const correctRate = cfg.correctRate ?? 0.7;
   const rng = new SeededRng(cfg.seed);
+  const logger = cfg.logger ?? null;
+  const session = cfg.session ?? 0;
 
   if (cfg.level >= 5) {
     throw new Error(
@@ -276,14 +338,23 @@ export function simulateGame(cfg: SimConfig): SimResult {
   let lives = sublevelLives;
   let individualStreak = 0; // §4-Q3 lives 회복용 (3연속 정답 시 +1)
 
-  const queue = new SimRetryQueue();
+  const queue = new SimRetryQueue({ logger, session });
   let stageIdx = 0;
   let currentSet = 1;
   let setProgress = 0;
   let turn = 0;
 
+  logger?.startSession({
+    session,
+    level: cfg.level,
+    sublevel: cfg.sublevel,
+    scenario: cfg.scenario,
+    correctRate: cfg.correctRate,
+    seed: cfg.seed,
+  });
+
   // §4 — 첫 batch는 큐 비어있음 → composeBatch = 새 음표만, retryCount=0.
-  const initial = composeBatch(stages[0].batchSize, queue, pool, clef, turn, null);
+  const initial = composeBatch(stages[0].batchSize, queue, pool, clef, turn, null, logger, session);
   let currentBatch: NoteType[] = initial.batch;
   let currentRetryCount = initial.retryCount;
   let currentIndex = 0;
@@ -370,23 +441,62 @@ export function simulateGame(cfg: SimConfig): SimResult {
       batchSize: currentBatch.length,
     });
 
+    logger?.log({
+      kind: "note-shown",
+      turn,
+      session,
+      payload: {
+        targetId,
+        isRetry: isRetryTurn,
+        phase,
+        batchIndex: currentIndex,
+        batchSize: currentBatch.length,
+        retryCount: currentRetryCount,
+        missedSize: missedNotes.size,
+        lives,
+        consecutiveViolation: violation,
+      },
+    });
+
     if (correct) {
       correctCount += 1;
       individualStreak += 1;
 
       // §4-Q3 (B): 3연속 정답 시 lives +1 (NoteGame.tsx parity).
+      let livesBefore = lives;
       if (individualStreak >= 3) {
         if (lives < MAX_LIVES) {
           lives += 1;
         }
         individualStreak = 0;
       }
+      if (lives !== livesBefore) {
+        logger?.log({
+          kind: "lives-change",
+          turn,
+          session,
+          payload: { from: livesBefore, to: lives, reason: "3-streak-recovery" },
+        });
+      }
 
       queue.markJustAnswered(retryKey, turn);
 
+      logger?.log({
+        kind: "answer-correct",
+        turn,
+        session,
+        payload: {
+          targetId,
+          isRetry: isRetryTurn,
+          phase,
+          lives,
+          missedSize: missedNotes.size,
+        },
+      });
+
       if (phase === "playing") {
         if (isRetryTurn) {
-          queue.resolve(retryKey);
+          queue.resolve(retryKey, turn, "main");
           missedNotes.delete(missedId);
         } else {
           queue.rescheduleAfterCorrect(retryKey, turn);
@@ -403,13 +513,32 @@ export function simulateGame(cfg: SimConfig): SimResult {
       missCount += 1;
       noteMissFreq[targetId] = (noteMissFreq[targetId] ?? 0) + 1;
       individualStreak = 0;
+      const livesBefore = lives;
 
       if (phase === "playing") {
         // 메인 phase: markMissed + missedNotes.add + lives -1 + 같은 자리 유지.
-        queue.markMissed(retryKey);
+        queue.markMissed(retryKey, turn);
         missedNotes.set(missedId, currentTarget);
         if (!missedTurnMap.has(targetId)) missedTurnMap.set(targetId, turn);
         lives -= 1;
+        logger?.log({
+          kind: "answer-wrong",
+          turn,
+          session,
+          payload: {
+            targetId,
+            phase,
+            lives,
+            missedSize: missedNotes.size,
+            markMissed: true,
+          },
+        });
+        logger?.log({
+          kind: "lives-change",
+          turn,
+          session,
+          payload: { from: livesBefore, to: lives, reason: "wrong-answer" },
+        });
         if (lives <= 0) {
           endReason = "gameover";
           break;
@@ -418,6 +547,24 @@ export function simulateGame(cfg: SimConfig): SimResult {
       } else {
         // final-retry phase: 큐·missedNotes 추가 X. retry 음표면 missedNotes에서 제거.
         lives -= 1;
+        logger?.log({
+          kind: "answer-wrong",
+          turn,
+          session,
+          payload: {
+            targetId,
+            phase,
+            lives,
+            missedSize: missedNotes.size,
+            markMissed: false,
+          },
+        });
+        logger?.log({
+          kind: "lives-change",
+          turn,
+          session,
+          payload: { from: livesBefore, to: lives, reason: "wrong-answer-final-retry" },
+        });
         if (lives <= 0) {
           endReason = "gameover";
           break;
@@ -451,7 +598,7 @@ export function simulateGame(cfg: SimConfig): SimResult {
       } else {
         setProgress = newProgress;
         prepareNextTurn();
-        const result = composeBatch(stageConfig.batchSize, queue, pool, clef, turn, lastShown);
+        const result = composeBatch(stageConfig.batchSize, queue, pool, clef, turn, lastShown, logger, session);
         currentBatch = result.batch;
         currentRetryCount = result.retryCount;
         delayedRetryFallbacks += result.fallbackHits;
@@ -478,7 +625,7 @@ export function simulateGame(cfg: SimConfig): SimResult {
       endReason = "success";
       return;
     }
-    const result = composeFinalRetryBatch(missedNotes, pool, clef, lastShown);
+    const result = composeFinalRetryBatch(missedNotes, pool, clef, lastShown, logger, session, turn);
     if (!result) {
       endReason = "success";
       return;
@@ -500,12 +647,23 @@ export function simulateGame(cfg: SimConfig): SimResult {
       if (nextStageIdx >= stages.length) {
         // §4: 모든 stage 끝 — missedNotes 남으면 final-retry phase 진입.
         if (missedNotes.size > 0) {
-          const result = composeFinalRetryBatch(missedNotes, pool, clef, lastShown);
+          const result = composeFinalRetryBatch(missedNotes, pool, clef, lastShown, logger, session, turn);
           if (result) {
             phase = "final-retry";
             finalRetryEntered = true;
             finalRetryStartCount = missedNotes.size;
             finalRetryStartTurn = turn;
+            logger?.log({
+              kind: "phase-transition",
+              turn,
+              session,
+              payload: {
+                from: "playing",
+                to: "final-retry",
+                reason: "all-stages-done-with-missed",
+                missedCount: missedNotes.size,
+              },
+            });
             prepareNextTurn();
             currentBatch = result.batch;
             currentRetryCount = result.retryCount;
@@ -520,8 +678,19 @@ export function simulateGame(cfg: SimConfig): SimResult {
       stageIdx = nextStageIdx;
       currentSet = 1;
       setProgress = 0;
+      logger?.log({
+        kind: "stage-transition",
+        turn,
+        session,
+        payload: {
+          from: curStageIdx,
+          to: nextStageIdx,
+          reason: "stage-complete",
+          batchSize: nextStage.batchSize,
+        },
+      });
       prepareNextTurn();
-      const result = composeBatch(nextStage.batchSize, queue, pool, clef, turn, lastShown);
+      const result = composeBatch(nextStage.batchSize, queue, pool, clef, turn, lastShown, logger, session);
       currentBatch = result.batch;
       currentRetryCount = result.retryCount;
       delayedRetryFallbacks += result.fallbackHits;
@@ -530,13 +699,19 @@ export function simulateGame(cfg: SimConfig): SimResult {
       currentSet = curSetNum + 1;
       setProgress = 0;
       prepareNextTurn();
-      const result = composeBatch(stageConfig.batchSize, queue, pool, clef, turn, lastShown);
+      const result = composeBatch(stageConfig.batchSize, queue, pool, clef, turn, lastShown, logger, session);
       currentBatch = result.batch;
       currentRetryCount = result.retryCount;
       delayedRetryFallbacks += result.fallbackHits;
       currentIndex = 0;
     }
   }
+
+  logger?.endSession(session, turn, {
+    endReason,
+    lives,
+    missedRemaining: missedNotes.size,
+  });
 
   return {
     config: cfg,
@@ -581,6 +756,7 @@ export function runMany(
   baseCfg: Omit<SimConfig, "seed">,
   count: number,
   seedStart: number = 1,
+  sessionStart: number = 0,
 ): { stats: AggregateStats; firstViolations: SimResult[] } {
   const stats: AggregateStats = {
     gameCount: 0,
@@ -598,7 +774,11 @@ export function runMany(
   const firstViolations: SimResult[] = [];
 
   for (let i = 0; i < count; i++) {
-    const result = simulateGame({ ...baseCfg, seed: seedStart + i });
+    const result = simulateGame({
+      ...baseCfg,
+      seed: seedStart + i,
+      session: (baseCfg.session ?? sessionStart) + i,
+    });
     stats.gameCount += 1;
     stats.totalTurns += result.totalTurns;
     stats.totalCorrect += result.correctCount;
