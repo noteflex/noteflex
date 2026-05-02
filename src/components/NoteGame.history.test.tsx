@@ -215,8 +215,8 @@ describe("§0.4.1 batchSize=1 history 누적 + 화면 리셋", () => {
     render(<NoteGame level={1} sublevel={1} skipCountdown />);
     await settle();
 
-    // stage1 = 6 sets × 1 note = 6 답. 6번째 답 시 stage 전환.
-    for (let i = 0; i < 6; i++) {
+    // stage1 = 5 sets × 1 note = 5 답. 5번째 답 시 stage 전환.
+    for (let i = 0; i < 5; i++) {
       const q = getCurrentQuestion();
       if (!q) break;
       await answerCorrect(user, q!);
@@ -232,15 +232,15 @@ describe("§0.4.1 batchSize=1 history 누적 + 화면 리셋", () => {
     render(<NoteGame level={1} sublevel={1} skipCountdown />);
     await settle();
 
-    // stage1 (6) + stage2 (7) = 13개 답 후 stage3 진입.
-    for (let i = 0; i < 13; i++) {
+    // stage1 (5) + stage2 (6) + stage3 (7) = 18개 답 후 stage4 진입.
+    for (let i = 0; i < 18; i++) {
       const q = getCurrentQuestion();
       if (!q) break;
       await answerCorrect(user, q!);
       await settle();
     }
 
-    // stage3 = batchSize=3 → batchNotes 사용
+    // stage4 = batchSize=3 → batchNotes 사용
     expect(capturedProps.current.batchNotes.length).toBe(3);
   });
 });

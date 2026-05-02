@@ -9,9 +9,9 @@
  *   서브레벨 3: 3초 / 목숨 3 (마스터)
  *
  * 단계별 stage 구성 (NoteGame이 사용):
- *   [Lv 1~4] 서브레벨 1: 28노트 / 3 stages (정확성 + 흐름 맛보기)
- *   [Lv 1~4] 서브레벨 2: 30노트 / 3 stages (흐름 + 시야 확장)
- *   [Lv 1~4] 서브레벨 3: 45노트 / 3 stages (시야 + 지구력)
+ *   [Lv 1~4] 서브레벨 1: 33노트 / 4 stages (batchSize=1 × 3 + batchSize=3)
+ *   [Lv 1~4] 서브레벨 2: 42노트 / 5 stages (batchSize=1 × 3 + batchSize=3·5)
+ *   [Lv 1~4] 서브레벨 3: 52노트 / 4 stages (batchSize=1 × 1 + batchSize=3·5·7)
  *   [Lv 5~7] 서브레벨 1: 51노트 / 3 stages (batchSize 3·5·7, 조표 본격 도입)
  *   [Lv 5~7] 서브레벨 2: 51노트 / 3 stages (batchSize 3·5·7)
  *   [Lv 5~7] 서브레벨 3: 57노트 / 3 stages (batchSize 5·7·7)
@@ -98,33 +98,37 @@ export const SUBLEVEL_CONFIGS: Record<Sublevel, SublevelConfig> = {
     timeLimit: 7,
     lives: 5,
     label: "입문",
-    // 28노트 — 정확성 + 흐름 맛보기
+    // 33노트 — batchSize=1 준비 3단계 + batchSize=3 진입
     stages: [
-      { stage: 1, batchSize: 1, totalSets: 6, notesPerSet: 1 }, //  6
-      { stage: 2, batchSize: 1, totalSets: 7, notesPerSet: 1 }, //  7
-      { stage: 3, batchSize: 3, totalSets: 5, notesPerSet: 3 }, // 15
+      { stage: 1, batchSize: 1, totalSets: 5, notesPerSet: 1 }, //  5
+      { stage: 2, batchSize: 1, totalSets: 6, notesPerSet: 1 }, //  6
+      { stage: 3, batchSize: 1, totalSets: 7, notesPerSet: 1 }, //  7
+      { stage: 4, batchSize: 3, totalSets: 5, notesPerSet: 3 }, // 15
     ],
   },
   2: {
     timeLimit: 5,
     lives: 4,
     label: "숙련",
-    // 30노트 — 흐름 + 시야 확장
+    // 42노트 — batchSize=1 준비 3단계 + batchSize=3·5
     stages: [
-      { stage: 1, batchSize: 1, totalSets: 6, notesPerSet: 1 }, //  6
-      { stage: 2, batchSize: 3, totalSets: 3, notesPerSet: 3 }, //  9
-      { stage: 3, batchSize: 5, totalSets: 3, notesPerSet: 5 }, // 15
+      { stage: 1, batchSize: 1, totalSets: 5, notesPerSet: 1 }, //  5
+      { stage: 2, batchSize: 1, totalSets: 6, notesPerSet: 1 }, //  6
+      { stage: 3, batchSize: 1, totalSets: 7, notesPerSet: 1 }, //  7
+      { stage: 4, batchSize: 3, totalSets: 3, notesPerSet: 3 }, //  9
+      { stage: 5, batchSize: 5, totalSets: 3, notesPerSet: 5 }, // 15
     ],
   },
   3: {
     timeLimit: 3,
     lives: 3,
     label: "마스터",
-    // 45노트 — 시야 + 지구력
+    // 52노트 — batchSize=1 준비 1단계 + batchSize=3·5·7
     stages: [
-      { stage: 1, batchSize: 3, totalSets: 3, notesPerSet: 3 }, //  9
-      { stage: 2, batchSize: 5, totalSets: 3, notesPerSet: 5 }, // 15
-      { stage: 3, batchSize: 7, totalSets: 3, notesPerSet: 7 }, // 21
+      { stage: 1, batchSize: 1, totalSets: 7, notesPerSet: 1 }, //  7
+      { stage: 2, batchSize: 3, totalSets: 3, notesPerSet: 3 }, //  9
+      { stage: 3, batchSize: 5, totalSets: 3, notesPerSet: 5 }, // 15
+      { stage: 4, batchSize: 7, totalSets: 3, notesPerSet: 7 }, // 21
     ],
   },
 };
