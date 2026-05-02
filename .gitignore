@@ -67,3 +67,6 @@ coverage/
 .parcel-cache/
 .turbo/
 .tmp/
+
+# ── Simulator logs (§4 Step B) ──────────────────────
+tmp/sim-logs/
