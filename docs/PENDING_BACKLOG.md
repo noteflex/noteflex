@@ -86,8 +86,8 @@
 §4 retry 시스템 핵심 구현 완료 (2026-05-01 밤). 다음 세션에서 처리할 잔여:
 
 - **Step B**: 자동 로그 + 분석 시스템 — simLogger + analyze script + 자동 보고서 (delayedFallback 정확한 비율 측정, retry 간격 분포 집계)
-- **Step C**: 디버그 트레이스 정리 — `retryQueueDebug.ts` cleanup, `[§4 BUG TRACE]` 마커 제거 (§0.1-cleanup과 병행)
-- **Step D**: 명세 박기 — `docs/04_RETRY_SYSTEM.md` 신규 (state machine 다이어그램 + composeBatch/composeFinalRetryBatch 함수 명세 + dedup 정책 표)
+- ✅ **Step C** (완료 2026-05-02, commit `c77492f`): 디버그 트레이스 정리 — `retryQueueDebug.ts` 삭제, `[§0.1 DEBUG]`/`[§4 BUG TRACE]` 마커 제거, sr-only 테스트 인프라 span만 보존 (373/373 PASS).
+- ✅ **Step D** (완료 2026-05-02): 명세 박기 — `docs/04_RETRY_SYSTEM.md` 신규 (RetryQueue 상태 머신 + composeBatch/composeFinalRetryBatch 함수 명세 + §0.1 dedup 세 경로 + parity 표 + 테스트 invariant + lives 정책).
 
 ### ✅ 0.2 Lv5+ 조표 음표 비율 부족 (완료 2026-04-30, commit bb062c3)
 **사용자 검증**: "조표 붙은 음표가 안 나와 swipe 검증 자체 막힘."
