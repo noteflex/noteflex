@@ -401,6 +401,23 @@ Public domain 클래식 곡별 레벨
 - 재도전 배지 삭제 (§0-1.5)
 - 게임 화면 단순화 (설계 §3.3.자)
 
+### 6.4 §3 GrandStaffPractice UI 세부 조정 (출시 전 UI 작업 시점) 🟡
+
+2026-05-02 사용자 결정으로 핵심 fix만 적용 (batchSize=3 균등 분포 + batchSize=7 잘림 X 보장). 세부 시각 조정은 출시 전 UI 작업 시점에 일괄 처리.
+
+**작업 항목**:
+- **/admin/staff-preview 어드민 페이지 신규**: 모든 Lv·Sub·stage·batchSize·keySig 조합을 한 화면에 격자 비교
+- 음표 시각 크기·spacing·자리표 영역·키사인 영역 세부 비례 조정
+- 모든 케이스 검증: batchSize 1~7 × keySig 0~7 × Lv 1~7
+- 모바일·다크모드·어드민 가드 적용
+- 도구: Sonnet, 작업 시간 1~2시간
+
+**현 상태 (2026-05-02 기준)**:
+- max-w 612 (NoteGame 게임 영역, commit 6bcd719)
+- batchSize=3 균등 분포 적용 (gap = batchSize+1 = 4, 첫 음표 spacing 안쪽으로)
+- batchSize=5·7 변경 X (현재 잘림 X 가정)
+- 음표 viewBox 좌표·크기 그대로 (1.25배 비례 조정 X — 시각 변동 없으므로 의미 X로 분석)
+
 ### 6.2 디자인 컨셉 통일 🟢 (출시 후 점진)
 - "Midnight Grand" — 다크 + 골드
 - 티어별 디자인 차별화 (§2와 함께 출시 후)

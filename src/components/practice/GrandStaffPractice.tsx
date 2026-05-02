@@ -186,17 +186,27 @@ function resolveStyle(
   if (merged.noteSpacing === 0) {
     // §0.4.4 (2026-05-01): batchSize 기반 동적 간격 — 오선지 전체 너비를 균등 분할.
     //  - batchSize=1 (history 누적 모드): TOTAL_SLOTS-1 = 7 gap (최대 8개 음표)
-    //  - batchSize>1: batchSize-1 gap (음표가 좌·중·우 균등 분포)
+    //  - batchSize=3 (§3 2026-05-02): batchSize+1 = 4 gap, 첫 음표를 spacing만큼 안쪽으로
+    //                                    → 좌·중·우 균등 분포 (3등분 배치)
+    //  - batchSize>1 (3 외): batchSize-1 gap
     //  - batchSize 미지정: 기존 level 기반 fallback
     let gapCount: number;
     if (batchSize === undefined) {
       gapCount = level >= 5 ? 6 : 4;
     } else if (batchSize <= 1) {
       gapCount = TOTAL_SLOTS - 1;
+    } else if (batchSize === 3) {
+      gapCount = batchSize + 1;
     } else {
       gapCount = batchSize - 1;
     }
     merged.noteSpacing = (SVG_W - merged.noteStartX - 50) / gapCount;
+
+    // §3 (2026-05-02): batchSize=3 균등 분포 — 첫 음표를 spacing만큼 안쪽으로 옮김
+    // (좌·우 여백을 spacing 단위로 두어 좌·중·우 균등 시각).
+    if (batchSize === 3) {
+      merged.noteStartX = merged.noteStartX + merged.noteSpacing;
+    }
   }
   return merged;
 }
