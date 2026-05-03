@@ -7,6 +7,10 @@ import AuthModal from "@/components/AuthModal";
 import Footer from "@/components/Footer";
 import { useAuth } from "@/contexts/AuthContext";
 import { GAME_ENABLED } from "@/lib/featureFlags";
+import { AdBanner } from "@/components/AdBanner";
+import { AdInterstitialModal } from "@/components/AdInterstitialModal";
+import { onAdGameEnd } from "@/lib/adInterstitial";
+import { getSlot } from "@/lib/adsense";
 import {
   type Sublevel,
   getNextSublevel,
@@ -89,6 +93,7 @@ export default function Index() {
   const [gameOverOpen, setGameOverOpen] = useState(false);
   const [passedDialogOpen, setPassedDialogOpen] = useState(false);
   const [replayCounter, setReplayCounter] = useState(0); // NoteGame 리마운트 트리거
+  const [interstitialOpen, setInterstitialOpen] = useState(false);
   const [lastResult, setLastResult] = useState<{
     level: number;
     sublevel: Sublevel;
@@ -111,6 +116,10 @@ export default function Index() {
     gameStatus: "success" | "gameover";
   }) => {
     setLastResult(result);
+    if (onAdGameEnd(result.just_passed)) {
+      setInterstitialOpen(true);
+      return; // 전면 광고 닫힌 후 결과 모달 진입
+    }
     if (result.gameStatus === "gameover") {
       setGameOverOpen(true);
     } else {
@@ -157,6 +166,16 @@ export default function Index() {
     setGameOverOpen(false);
     setPassedDialogOpen(false);
     setScreen("levelSelect");
+  };
+
+  const handleInterstitialClose = () => {
+    setInterstitialOpen(false);
+    if (!lastResult) return;
+    if (lastResult.gameStatus === "gameover") {
+      setGameOverOpen(true);
+    } else {
+      setPassedDialogOpen(true);
+    }
   };
 
   // /play 진입 시 사운드 preload 보장
@@ -303,6 +322,13 @@ export default function Index() {
           )}
         </div>
 
+        {/* 랜딩 페이지 하단 배너 (게임 페이지가 아닌 "/" 라우트) */}
+        <AdBanner
+          slot={getSlot("BANNER")}
+          format="horizontal"
+          className="w-full px-4 pb-4"
+        />
+
         <Footer />
       </div>
     );
@@ -401,6 +427,12 @@ export default function Index() {
             />
           </>
         )}
+
+        {/* 전면 광고 — 3게임마다 + 잠금 해제 시점 */}
+        <AdInterstitialModal
+          open={interstitialOpen}
+          onClose={handleInterstitialClose}
+        />
       </div>
     </>
   );

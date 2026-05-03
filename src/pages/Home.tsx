@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, Navigate, useSearchParams } from "react-router-dom";
 import { BookOpen, RefreshCw } from "lucide-react";
+import { AdBanner } from "@/components/AdBanner";
+import { getSlot } from "@/lib/adsense";
 import { formatDistanceToNow } from "date-fns";
 import { ko } from "date-fns/locale";
 import {
@@ -559,6 +561,13 @@ export default function Home() {
           ) : null}
         </section>
 
+        {/* In-feed 광고 (통계 카드와 탭 사이) */}
+        <AdBanner
+          slot={getSlot("INFEED")}
+          format="rectangle"
+          className="w-full"
+        />
+
         {/* 탭 네비게이션: 학습 리듬 / 실력 진단 / 활동 기록 */}
         <Tabs
           value={currentTab}
@@ -823,6 +832,13 @@ export default function Home() {
             </Card>
           </TabsContent>
         </Tabs>
+
+        {/* 하단 배너 광고 */}
+        <AdBanner
+          slot={getSlot("BANNER")}
+          format="horizontal"
+          className="w-full"
+        />
       </main>
     </div>
   );

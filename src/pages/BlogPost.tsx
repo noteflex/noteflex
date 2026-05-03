@@ -4,6 +4,8 @@ import { Link, useParams } from "react-router-dom";
 import Footer from "@/components/Footer";
 import MarkdownContent from "@/components/MarkdownContent";
 import { loadBlogPost, type BlogPost as BlogPostType } from "@/lib/markdownLoader";
+import { AdBanner } from "@/components/AdBanner";
+import { getSlot, isAdsEnabled } from "@/lib/adsense";
 
 export default function BlogPost() {
   const { lang, slug } = useParams<{ lang: string; slug: string }>();
@@ -38,6 +40,8 @@ export default function BlogPost() {
     ? `/blog?category=${encodeURIComponent(postCategory)}`
     : "/blog";
 
+  const adsOn = isAdsEnabled();
+
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <header className="border-b border-border bg-background/95 backdrop-blur-sm sticky top-0 z-10">
@@ -54,40 +58,62 @@ export default function BlogPost() {
         </div>
       </header>
 
-      <main className="flex-1 max-w-3xl mx-auto px-4 py-10 w-full">
-        {loading ? (
-          <p className="text-muted-foreground">
-            {lang === "en" ? "Loading..." : "불러오는 중..."}
-          </p>
-        ) : notFound || !post ? (
-          <div className="py-12 text-center">
-            <h1 className="text-2xl font-bold mb-2">
-              {lang === "en" ? "Post not found" : "글을 찾을 수 없습니다"}
-            </h1>
-            <p className="text-muted-foreground mb-6">
-              {lang === "en"
-                ? "The requested post does not exist."
-                : "요청하신 글이 존재하지 않습니다."}
-            </p>
-            <Link to={backUrl} className="text-primary underline">
-              {lang === "en" ? "Back to blog" : "블로그 목록으로 돌아가기"}
-            </Link>
-          </div>
-        ) : (
-          <>
-            {post.meta.category && (
-              <p className="text-xs text-muted-foreground mb-2">{post.meta.category}</p>
-            )}
-            <h1 className="text-3xl font-bold mb-2 text-foreground">
-              {post.meta.title || post.slug}
-            </h1>
-            {post.meta.date && (
-              <p className="text-sm text-muted-foreground mb-10">{post.meta.date}</p>
-            )}
-            <MarkdownContent>{post.content}</MarkdownContent>
-          </>
+      {/* 데스크톱: 좌/우 사이드바 광고 | 모바일: 없음 (하단 배너로 대체) */}
+      <div className="flex-1 flex justify-center">
+        {adsOn && (
+          <aside className="hidden lg:flex flex-col items-end pt-10 pr-4 w-40 shrink-0">
+            <AdBanner slot={getSlot("SIDEBAR_LEFT")} format="vertical" />
+          </aside>
         )}
-      </main>
+
+        <main className="flex-1 max-w-3xl min-w-0 px-4 py-10">
+          {loading ? (
+            <p className="text-muted-foreground">
+              {lang === "en" ? "Loading..." : "불러오는 중..."}
+            </p>
+          ) : notFound || !post ? (
+            <div className="py-12 text-center">
+              <h1 className="text-2xl font-bold mb-2">
+                {lang === "en" ? "Post not found" : "글을 찾을 수 없습니다"}
+              </h1>
+              <p className="text-muted-foreground mb-6">
+                {lang === "en"
+                  ? "The requested post does not exist."
+                  : "요청하신 글이 존재하지 않습니다."}
+              </p>
+              <Link to={backUrl} className="text-primary underline">
+                {lang === "en" ? "Back to blog" : "블로그 목록으로 돌아가기"}
+              </Link>
+            </div>
+          ) : (
+            <>
+              {post.meta.category && (
+                <p className="text-xs text-muted-foreground mb-2">{post.meta.category}</p>
+              )}
+              <h1 className="text-3xl font-bold mb-2 text-foreground">
+                {post.meta.title || post.slug}
+              </h1>
+              {post.meta.date && (
+                <p className="text-sm text-muted-foreground mb-10">{post.meta.date}</p>
+              )}
+              <MarkdownContent>{post.content}</MarkdownContent>
+            </>
+          )}
+        </main>
+
+        {adsOn && (
+          <aside className="hidden lg:flex flex-col items-start pt-10 pl-4 w-40 shrink-0">
+            <AdBanner slot={getSlot("SIDEBAR_RIGHT")} format="vertical" />
+          </aside>
+        )}
+      </div>
+
+      {/* 모바일 하단 배너 (데스크톱에서는 사이드바가 대신함) */}
+      <AdBanner
+        slot={getSlot("BANNER")}
+        format="horizontal"
+        className="lg:hidden max-w-3xl mx-auto w-full px-4 py-4"
+      />
 
       <Footer />
     </div>

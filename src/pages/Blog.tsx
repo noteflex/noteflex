@@ -3,6 +3,8 @@ import { useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import Footer from "@/components/Footer";
 import { listBlogPosts } from "@/lib/markdownLoader";
+import { AdBanner } from "@/components/AdBanner";
+import { getSlot } from "@/lib/adsense";
 
 const CATEGORIES: Record<"ko" | "en", string[]> = {
   ko: ["all", "초견의 정석", "실전 연습 가이드", "음악 이론 & 화성학", "뮤직 테크 & 미래"],
@@ -146,6 +148,11 @@ export default function Blog() {
         )}
       </main>
 
+      <AdBanner
+        slot={getSlot("BANNER")}
+        format="horizontal"
+        className="max-w-3xl mx-auto w-full px-4 py-4"
+      />
       <Footer />
     </div>
   );
