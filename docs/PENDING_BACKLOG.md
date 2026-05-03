@@ -365,12 +365,16 @@ CREATE TABLE tier_history (...)
 ### 3.4 광고 SDK 성능 격리 ✅
 동적 스크립트 로드 (document.head.appendChild) — 게임 루프와 격리
 
-### 3.5 Premium 배지 (헤더) ✅ (2026-05-03)
-- YouTube 패턴 — amber gradient (amber-400→orange-400) + Sparkles 아이콘
-- Blog·BlogPost: `🎼 Noteflex` 로고 우측 옆 배지
-- Home 대시보드: `플레이그라운드` 타이틀 우측 옆 배지
-- Index AuthBar: 이메일 우측 옆 배지
-- Premium 사용자만 노출 (`getUserTier === "pro"`), 무료/게스트 자연스러운 UI
+### 3.5 Header 통합 + Premium 배지 ✅ (2026-05-03~04)
+- `PremiumBadge` 컴포넌트 추출 (amber gradient + Sparkles, useAuth 자체 조회)
+- `Header` 컴포넌트: 좌측 `🎼 Noteflex` 로고 링크 + PremiumBadge 자동 표시
+  - props: `right`, `below`, `title`, `subtitle`, `headerClassName`, `containerClassName`
+- **모든 비게임 페이지 Header 통합** (2026-05-04 완료):
+  - Blog, BlogPost, Home, Index(landing+levelSelect), LegalPage(4종)
+  - Pricing, ProfilePage, CheckoutFailed, CheckoutSuccess, NotFound
+  - AdminLayout: `containerClassName="max-w-6xl"`, right 슬롯에 "관리자 콘솔" + ADMIN 배지
+- 게임 화면: Header X (AuthBar 유지, 스펙 그대로)
+- Premium 사용자만 배지 노출 (`getUserTier === "pro"`), 무료/게스트 자연스러운 UI
 
 ### 3.6 출시 직전 적용 (⚠️ 미적용)
 ```
