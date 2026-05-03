@@ -407,11 +407,11 @@ commits 941b04f·6f5290f·c1b9d7c·717797e. 373/373 PASS.
 | 항목 | 상태 |
 |---|---|
 | 사양 | `PENDING_BACKLOG.md §7.3-A~E` 박힘 (4 sub-step + 11 Q 결정 시트 + 결합 영역 + 코드 영향 + 위험) |
-| 구현 | **§7.3.2 ✅ 2026-05-03 완료** — `src/lib/userEnvironmentOffset.ts`, `src/hooks/useUserEnvOffset.ts`, `supabase/migrations/20260503_add_user_env_offset.sql`. 미완: CalibrationModal (§7.3.3), reactionMs 보정 적용 (§7.3.4) |
-| 진행 흐름 | ~~§7.10~~ ✅ §7.10.1 결정 완료 → ~~§7.1~~ ✅ 완료 → ~~§7.3.1~~ ✅ 완료 → ~~§7.3.2~~ ✅ 완료 → §7.3.3 (CalibrationModal + §7.10.2) → §7.3.4 |
-| 결합 위험 | §7.10 sync 검증 없이 calibration 측정 시 stimulus 시점 어긋남 → 측정값 신뢰도 X. §7.10.2는 §7.3.3에 통합 예정 |
+| 구현 | **§7.3.2 ✅ 2026-05-03 완료** — `src/lib/userEnvironmentOffset.ts`, `src/hooks/useUserEnvOffset.ts`, `supabase/migrations/20260503_add_user_env_offset.sql`. **§7.3.3 ✅ 2026-05-03 완료** — `src/components/CalibrationModal.tsx`, `src/lib/audioVisualSync.ts`, `src/lib/calibrationMeasurement.ts`, NoteGame.tsx 통합. 미완: reactionMs 보정 적용 (§7.3.4) |
+| 진행 흐름 | ~~§7.10~~ ✅ §7.10.1 결정 완료 → ~~§7.1~~ ✅ 완료 → ~~§7.3.1~~ ✅ 완료 → ~~§7.3.2~~ ✅ 완료 → ~~§7.3.3 (CalibrationModal + §7.10.2)~~ ✅ 완료 → §7.3.4 |
+| 결합 위험 | ~~§7.10 sync 검증 없이 calibration 측정 시 stimulus 시점 어긋남 → 측정값 신뢰도 X.~~ §7.10.2 §7.3.3에 통합 완료. |
 
-→ **다음 진입점**: §7.3.3 CalibrationModal + §7.10.2 sync 측정 통합
+→ **다음 진입점**: §7.3.4 reactionMs 보정 적용
 
 ---
 

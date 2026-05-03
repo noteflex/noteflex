@@ -533,7 +533,7 @@ Public domain 클래식 곡별 레벨
 |---|---|---|---|---|---|
 | §7.3.1 | 명세 박기 + 사용자 결정 (11 Q 결정 시트) + 데이터 모델·skip·재측정·DB 컬럼 확정 | 1~2시간 | 25~30% | Sonnet | — |
 | §7.3.2 | ~~코어 lib + 영속화 (`userEnvironmentOffset.ts`, profile sync, 마이그레이션 SQL, 단위 테스트)~~ ✅ 완료 (2026-05-03) | — | — | — | §7.3.1 ✅ |
-| §7.3.3 | Calibration UI + 측정 (`CalibrationModal.tsx`, 자극 송출, outlier reject·평균, 결과 표시·저장, 첫 진입 가드) **+ §7.10.2 sync 측정 통합** (CalibrationModal 2단계: 1단계 sync 3회 평균 / 2단계 env offset 5회 절사 평균, Q-C 결정) | 7~10시간 | 40~50% | Sonnet | §7.3.2, `sound.ts` (`ensureAudioReady`), §7.10.1 ✅ |
+| §7.3.3 | ~~Calibration UI + 측정 (`CalibrationModal.tsx`, 자극 송출, outlier reject·평균, 결과 표시·저장, 첫 진입 가드) **+ §7.10.2 sync 측정 통합** (CalibrationModal 2단계: 1단계 sync 3회 평균 / 2단계 env offset 5회 절사 평균, Q-C 결정)~~ ✅ 완료 (2026-05-03) | — | — | — | §7.3.2, §7.10.1 ✅ |
 | §7.3.4 | reactionMs 보정 적용 (boundary 1지점 전략 — `useSessionRecorder.recordNote` 진입 시 offset 차감, NoteGame 3사이트 손대지 X, clamp 0, speed threshold 의미 재정의, 회귀 테스트) | 3~4시간 | 20~25% | Sonnet | §7.3.2 |
 
 **총합**: ~13~18시간 (≈2일). 단계별 독립 commit, 각 단계 Sonnet 1세션 충분.
@@ -624,7 +624,7 @@ Public domain 클래식 곡별 레벨
 | 단계 | 범위 | 시간 | 사용량 | 모델 | 의존성 |
 |---|---|---|---|---|---|
 | §7.10.1 | ~~명세 박기 + 사용자 결정 (Q-시트 6 Q, 측정 방식·도구·시점·기준 확정)~~ ✅ 완료 (2026-05-03) | — | — | — | — |
-| §7.10.2 | 측정 로직 구현 — rAF+perf.now() vs AudioContext.currentTime, PerformanceObserver + AudioContext. **§7.3.3 CalibrationModal 안 통합** (Q-C 결정: calibration 모달 2단계 — 1단계 sync 측정 / 2단계 env offset 측정). 브라우저·디바이스 매트릭스 실측 | 3~5시간 | 25~30% | Sonnet | §7.10.1 ✅, §7.1 ✅ |
+| §7.10.2 | ~~측정 로직 구현 — rAF+perf.now() vs AudioContext.currentTime, PerformanceObserver + AudioContext. **§7.3.3 CalibrationModal 안 통합** (Q-C 결정: calibration 모달 2단계 — 1단계 sync 측정 / 2단계 env offset 측정). 브라우저·디바이스 매트릭스 실측~~ ✅ 완료 (2026-05-03, §7.3.3 통합) | — | — | — | §7.10.1 ✅, §7.1 ✅ |
 | §7.10.3 | 보정 적용 — **±10ms 초과 시 audio 송출 시점 조정만** (Q-D·Q-E 결정). **Q-F: sync gap > ±20ms → calibration 해당 회차 outlier 제외**. 회귀 테스트. §7.3.4와 결합 가능 | 2~4시간 | 20~25% | Sonnet | §7.10.2 |
 
 **총합**: ~5~9시간 (§7.10.1 완료 제외). 단계별 독립 commit. **§7.10.2는 §7.3.3 작업 세션에 통합 진행** (별도 세션 불필요).
@@ -864,7 +864,7 @@ Claude가 출시 임박 시 자동 고지.
 - [ ] **§7.3 Calibration 4 단계 진행** (Opus 분석 2026-05-02 — §7.3-A 표 참조)
   - [ ] §7.3.1 결정 시트 (11 Q 사용자 답변, Sonnet 1~2시간) — §7.3-B 표
   - [ ] §7.3.2 코어 lib + 영속화 (Sonnet 3~4시간)
-  - [ ] §7.3.3 UI + 측정 (Sonnet 6~8시간)
+  - [x] §7.3.3 UI + 측정 (§7.10.2 통합) ✅ 2026-05-03
   - [ ] §7.3.4 reactionMs 보정 적용 (Sonnet 3~4시간)
 - [ ] **§7.10 음표-사운드 Sync 검증** (§7.3 결합 — sync 측정 없이 calibration 신뢰도 X, **§7.10 → §7.3 또는 동시 진행 권장**)
 - [x] **§7.1 performance.now() 전환** ✅ 완료 (2026-05-03, 15 사이트: NoteGame 12 + CountdownTimer 3)
@@ -1009,3 +1009,4 @@ Claude가 출시 임박 시 자동 고지.
 - 2026-05-03 (Opus 4.7): **§7.10 sub-step 3개 + §7.1 실측 17 사이트 + §7.3.1 결정 시트 완료** — §7.10-A (3 sub-step), §7.10-B (6 Q 결정 시트 완료), §7.3-B (11 Q 결정 시트 완료). 코드 변경 0건. (commit 6080e0a)
 - 2026-05-03 (Sonnet 4.6): **§7.1 코드 완료** (commit 42a4b68) + **§7.10.1 결정 완료** — §7.10-B 6 Q 결정값 박힘 (Q-A:a·Q-B:a·Q-C:c·Q-D:c·Q-E:a·Q-F:c). §7.3-C 결합 정책 확정: §7.10.2 측정 로직 §7.3.3 CalibrationModal 안 통합, §7.3.3 추정 7~10시간으로 상향. §7.3.3 의존성에 §7.10.1 추가. docs 갱신 (commits 4d73b69, 65d005f).
 - 2026-05-03 (Sonnet 4.6): **§7.3.2 코어 lib 완료** — `src/lib/userEnvironmentOffset.ts` (localStorage r/w, DB sync, clamp, device change, skip), `src/hooks/useUserEnvOffset.ts` (needsCalibration·canSkip·deviceChanged), `supabase/migrations/20260503_add_user_env_offset.sql`. 단위 테스트 23건 신규. vitest 396/396 PASS.
+- 2026-05-03 (Opus 4.7): **§7.3.3 + §7.10.2 완료** — `src/components/CalibrationModal.tsx` (4단계 상태 머신: intro→sync-measure→env-measure→complete), `src/lib/audioVisualSync.ts` (rAF+perf.now() vs AudioContext.currentTime, measureSyncGapAverage), `src/lib/calibrationMeasurement.ts` (trimmedMean·clampOffset·isSyncOutlier). NoteGame.tsx 통합 (showCalibration gate, memory #18 순서 보장). 단위 테스트 23건 신규 (audioVisualSync 7 + calibrationMeasurement 16). vitest 419/419 PASS. sim:test 9984 games 0 violations.
