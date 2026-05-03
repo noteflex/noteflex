@@ -21,6 +21,7 @@
 import { useRef, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { getUserEnvOffset, clampReactionMs } from "@/lib/userEnvironmentOffset";
 
 // ═══════════════════════════════════════════════════════════════
 // 타입 정의
@@ -30,6 +31,7 @@ export interface NoteAttempt {
   note: string;
   correct: boolean;
   reactionMs: number;
+  reactionMsRaw?: number;
   clef: "treble" | "bass";
   accidental?: "sharp" | "flat" | "natural" | null;
 }
@@ -206,7 +208,13 @@ export function useSessionRecorder() {
       console.warn("[SessionRecorder] 세션이 시작되지 않음. recordNote 무시.");
       return;
     }
-    stateRef.current.attempts.push(attempt);
+    const offsetMs = getUserEnvOffset();
+    const corrected = clampReactionMs(attempt.reactionMs, offsetMs);
+    stateRef.current.attempts.push({
+      ...attempt,
+      reactionMsRaw: attempt.reactionMs,
+      reactionMs: corrected,
+    });
   }, []);
 
   const endSession = useCallback(
@@ -276,9 +284,20 @@ export function useSessionRecorder() {
           note: a.note,
           correct: a.correct,
           reaction_ms: a.reactionMs,
+          reaction_ms_raw: a.reactionMsRaw ?? a.reactionMs,
           clef: a.clef,
           accidental: a.accidental ?? null,
         }));
+
+        const avgReactionMsRaw =
+          totalNotes > 0
+            ? Math.round(
+                state.attempts.reduce(
+                  (sum, a) => sum + (a.reactionMsRaw ?? a.reactionMs),
+                  0,
+                ) / totalNotes,
+              )
+            : 0;
 
         const summary = {
           weak_notes: weakNotes.map((n) => n.note),
@@ -288,6 +307,8 @@ export function useSessionRecorder() {
           perfect: correctNotes === totalNotes && endReason === "completed",
           end_reason: endReason,
           xp_breakdown: xpBreakdown,
+          avg_reaction_ms_raw: avgReactionMsRaw,
+          offset_ms_applied: getUserEnvOffset(),
         };
 
         const { data, error } = await supabase
