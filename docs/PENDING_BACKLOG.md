@@ -365,10 +365,23 @@ CREATE TABLE tier_history (...)
 ### 3.4 광고 SDK 성능 격리 ✅
 동적 스크립트 로드 (document.head.appendChild) — 게임 루프와 격리
 
-### 3.5 Premium 배지 (헤더) 🔴 PENDING 사용자 OK
-- YouTube 패턴 (로고·이름 옆 배지)
-- 아이콘: Sparkles 또는 Crown 사용자 결정 대기
-- 출시 직전: `.env` VITE_ADSENSE_PUBLISHER_ID + VITE_ADSENSE_SLOT_* + VITE_ADS_ENABLED=true 교체
+### 3.5 Premium 배지 (헤더) ✅ (2026-05-03)
+- YouTube 패턴 — amber gradient (amber-400→orange-400) + Sparkles 아이콘
+- Blog·BlogPost: `🎼 Noteflex` 로고 우측 옆 배지
+- Home 대시보드: `플레이그라운드` 타이틀 우측 옆 배지
+- Index AuthBar: 이메일 우측 옆 배지
+- Premium 사용자만 노출 (`getUserTier === "pro"`), 무료/게스트 자연스러운 UI
+
+### 3.6 출시 직전 적용 (⚠️ 미적용)
+```
+VITE_ADS_ENABLED=false → true
+VITE_ADSENSE_PUBLISHER_ID=ca-pub-XXXX (AdSense 승인 후 발급)
+VITE_ADSENSE_SLOT_BANNER=실제ID
+VITE_ADSENSE_SLOT_SIDEBAR_LEFT=실제ID
+VITE_ADSENSE_SLOT_SIDEBAR_RIGHT=실제ID
+VITE_ADSENSE_SLOT_INFEED=실제ID
+VITE_ADSENSE_SLOT_INTERSTITIAL=실제ID
+```
 
 ### 3.5 약점 음표 표시 (Fail 시) 🔴
 **설계 §5.나**: Fail 시 약점 음표 + 광고 시청으로 잠금 해제
