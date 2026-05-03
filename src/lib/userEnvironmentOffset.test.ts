@@ -9,6 +9,9 @@ import {
   setCalibrationSkippedOnce,
   syncOffsetToProfile,
   loadOffsetFromProfile,
+  onDeviceChange,
+  logDeviceChangeEvent,
+  updateDeviceChangeEvent,
   DEFAULT_OFFSET_MS,
 } from "./userEnvironmentOffset";
 
@@ -233,5 +236,187 @@ describe("loadOffsetFromProfile", () => {
     const result = await loadOffsetFromProfile("user-1");
     expect(result).toBeNull();
     expect(consoleSpy).toHaveBeenCalled();
+  });
+});
+
+// ─── logDeviceChangeEvent (A2) ───────────────────────────────
+
+describe("logDeviceChangeEvent", () => {
+  it("supabase insert 호출 후 eventId 반환", async () => {
+    const mockSingleDCE = vi.fn().mockResolvedValue({
+      data: { id: "event-uuid-1" },
+      error: null,
+    });
+    const mockInsertDCE = vi.fn().mockReturnValue({
+      select: vi.fn().mockReturnValue({ single: mockSingleDCE }),
+    });
+    mockFrom.mockImplementation((table: string) => {
+      if (table === "device_change_events") return { insert: mockInsertDCE };
+      return { update: mockUpdate, select: mockSelect };
+    });
+
+    const id = await logDeviceChangeEvent({
+      userId: "user-1",
+      deviceKinds: ["audiooutput", "audioinput"],
+      previousOffsetMs: 150,
+      triggeredRecalibration: true,
+    });
+
+    expect(mockFrom).toHaveBeenCalledWith("device_change_events");
+    expect(mockInsertDCE).toHaveBeenCalledWith(
+      expect.objectContaining({
+        user_id: "user-1",
+        device_kinds: ["audiooutput", "audioinput"],
+        previous_offset_ms: 150,
+        triggered_recalibration: true,
+      })
+    );
+    expect(id).toBe("event-uuid-1");
+  });
+
+  it("previousOffsetMs null 허용", async () => {
+    const mockInsertDCE = vi.fn().mockReturnValue({
+      select: vi.fn().mockReturnValue({
+        single: vi.fn().mockResolvedValue({ data: { id: "event-uuid-2" }, error: null }),
+      }),
+    });
+    mockFrom.mockImplementation((table: string) => {
+      if (table === "device_change_events") return { insert: mockInsertDCE };
+      return { update: mockUpdate, select: mockSelect };
+    });
+
+    const id = await logDeviceChangeEvent({
+      userId: "user-1",
+      deviceKinds: [],
+      previousOffsetMs: null,
+      triggeredRecalibration: true,
+    });
+    expect(id).toBe("event-uuid-2");
+    expect(mockInsertDCE).toHaveBeenCalledWith(
+      expect.objectContaining({ previous_offset_ms: null })
+    );
+  });
+
+  it("supabase error 시 null 반환 (throw X)", async () => {
+    const consoleSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+    mockFrom.mockImplementation((table: string) => {
+      if (table === "device_change_events")
+        return {
+          insert: vi.fn().mockReturnValue({
+            select: vi.fn().mockReturnValue({
+              single: vi.fn().mockResolvedValue({ data: null, error: { message: "err" } }),
+            }),
+          }),
+        };
+      return { update: mockUpdate, select: mockSelect };
+    });
+
+    const id = await logDeviceChangeEvent({
+      userId: "user-1", deviceKinds: [], previousOffsetMs: null, triggeredRecalibration: false,
+    });
+    expect(id).toBeNull();
+    expect(consoleSpy).toHaveBeenCalled();
+  });
+});
+
+// ─── updateDeviceChangeEvent (A2) ─────────────────────────────
+
+describe("updateDeviceChangeEvent", () => {
+  it("supabase update.eq 호출", async () => {
+    const mockEqDCE = vi.fn().mockResolvedValue({ data: null, error: null });
+    const mockUpdateDCE = vi.fn().mockReturnValue({ eq: mockEqDCE });
+    mockFrom.mockImplementation((table: string) => {
+      if (table === "device_change_events") return { update: mockUpdateDCE };
+      return { update: mockUpdate, select: mockSelect };
+    });
+
+    await updateDeviceChangeEvent("event-uuid-1", 200);
+
+    expect(mockFrom).toHaveBeenCalledWith("device_change_events");
+    expect(mockUpdateDCE).toHaveBeenCalledWith({ new_offset_ms: 200 });
+    expect(mockEqDCE).toHaveBeenCalledWith("id", "event-uuid-1");
+  });
+
+  it("supabase error 시 console.warn (throw X)", async () => {
+    const consoleSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+    mockFrom.mockImplementation((table: string) => {
+      if (table === "device_change_events")
+        return { update: vi.fn().mockReturnValue({ eq: vi.fn().mockResolvedValue({ data: null, error: { message: "err" } }) }) };
+      return { update: mockUpdate, select: mockSelect };
+    });
+
+    await expect(updateDeviceChangeEvent("event-uuid-1", 200)).resolves.toBeUndefined();
+    expect(consoleSpy).toHaveBeenCalled();
+  });
+});
+
+// ─── onDeviceChange ───────────────────────────────────────────
+
+describe("onDeviceChange", () => {
+  let registeredHandlers: Map<string, () => void>;
+  let mockAddEventListener: ReturnType<typeof vi.fn>;
+  let mockRemoveEventListener: ReturnType<typeof vi.fn>;
+  let mockEnumerateDevices: ReturnType<typeof vi.fn>;
+
+  beforeEach(() => {
+    registeredHandlers = new Map();
+    mockAddEventListener = vi.fn((type: string, fn: () => void) => {
+      registeredHandlers.set(type, fn);
+    });
+    mockRemoveEventListener = vi.fn();
+    mockEnumerateDevices = vi.fn().mockResolvedValue([
+      { kind: "audiooutput", deviceId: "1", label: "", groupId: "" },
+      { kind: "audioinput", deviceId: "2", label: "", groupId: "" },
+    ]);
+    Object.defineProperty(navigator, "mediaDevices", {
+      writable: true,
+      configurable: true,
+      value: {
+        addEventListener: mockAddEventListener,
+        removeEventListener: mockRemoveEventListener,
+        enumerateDevices: mockEnumerateDevices,
+      },
+    });
+  });
+
+  afterEach(() => {
+    Object.defineProperty(navigator, "mediaDevices", {
+      writable: true,
+      configurable: true,
+      value: undefined,
+    });
+  });
+
+  it("devicechange 이벤트 발화 시 callback에 kinds 전달", async () => {
+    const callback = vi.fn();
+    onDeviceChange(callback);
+
+    const handler = registeredHandlers.get("devicechange")!;
+    expect(handler).toBeDefined();
+    handler();
+
+    await vi.waitFor(() => expect(callback).toHaveBeenCalled());
+    expect(callback).toHaveBeenCalledWith({
+      kinds: expect.arrayContaining(["audiooutput", "audioinput"]),
+    });
+  });
+
+  it("cleanup 함수가 removeEventListener 호출", () => {
+    const cleanup = onDeviceChange(vi.fn());
+    cleanup();
+    expect(mockRemoveEventListener).toHaveBeenCalledWith(
+      "devicechange",
+      expect.any(Function)
+    );
+  });
+
+  it("navigator.mediaDevices 없으면 noop 반환 (throw X)", () => {
+    Object.defineProperty(navigator, "mediaDevices", {
+      writable: true,
+      configurable: true,
+      value: undefined,
+    });
+    const cleanup = onDeviceChange(vi.fn());
+    expect(() => cleanup()).not.toThrow();
   });
 });
