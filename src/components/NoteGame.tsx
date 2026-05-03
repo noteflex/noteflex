@@ -348,6 +348,7 @@ export default function NoteGame({
   const { profile }   = useAuth();
   const {
     needsCalibration,
+    isLoading: calibrationLoading,
     canSkip: calibrationCanSkip,
     setOffset: setCalibrationOffset,
     skipCalibration,
@@ -833,18 +834,30 @@ export default function NoteGame({
     }
   }, [stages, stageIdx, currentIndex, currentBatch, setProgress, currentSet, composeBatch, handleSetComplete, prepareNextTurn]);
   
-  // §calibration + §swipe-modal (2026-05-02/05-03): 모달 순서 보장.
-  // 사용자 정책 (메모리 #18 확장): calibration → swipe → 카운트다운 → 첫 음표.
-  const [showCalibration, setShowCalibration] = useState(() => needsCalibration);
-  const [showSwipeTutorial, setShowSwipeTutorial] = useState(
-    () => level >= 5 && !hasSeenSwipeTutorial(level) && !needsCalibration
-  );
-  const [showCountdown, setShowCountdown] = useState(
-    !skipCountdown && !needsCalibration && !(level >= 5 && !hasSeenSwipeTutorial(level))
-  );
+  // §calibration + §swipe-modal (메모리 #18): calibration → swipe → 카운트다운 → 첫 음표.
+  // isLoading 중 모달 X (메모리 #19 깜박임 방지 — Option A race condition fix 2026-05-04).
+  const [showCalibration, setShowCalibration] = useState(false);
+  const [showSwipeTutorial, setShowSwipeTutorial] = useState(false);
+  const [showCountdown, setShowCountdown] = useState(false);
 
-  // DB 로드 후 needsCalibration이 false로 바뀌면 캘리브레이션 모달 자동 닫기
+  // 1회 초기화 guard — isLoading 완료 후 modal 흐름 결정
+  const calibrationInitRef = useRef(false);
+
   useEffect(() => {
+    if (calibrationLoading || calibrationInitRef.current) return;
+    calibrationInitRef.current = true;
+    if (needsCalibration) {
+      setShowCalibration(true);
+    } else if (level >= 5 && !hasSeenSwipeTutorial(level)) {
+      setShowSwipeTutorial(true);
+    } else if (!skipCountdown) {
+      setShowCountdown(true);
+    }
+  }, [calibrationLoading, needsCalibration, level, skipCountdown]);
+
+  // 안전망: 로드 완료 후 needsCalibration이 false로 바뀌면 모달 닫기
+  useEffect(() => {
+    if (calibrationLoading) return;
     if (!needsCalibration && showCalibration) {
       setShowCalibration(false);
       if (level >= 5 && !hasSeenSwipeTutorial(level)) {
@@ -853,7 +866,7 @@ export default function NoteGame({
         setShowCountdown(true);
       }
     }
-  }, [needsCalibration, showCalibration, level, skipCountdown]);
+  }, [calibrationLoading, needsCalibration, showCalibration, level, skipCountdown]);
 
   const handleCalibrationComplete = useCallback(async (offsetMs: number) => {
     await setCalibrationOffset(offsetMs);

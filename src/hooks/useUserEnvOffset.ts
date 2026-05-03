@@ -19,7 +19,9 @@ export interface UseUserEnvOffsetReturn {
   offsetMs: number | null;
   /** calibration 완료 여부 */
   isCalibrated: boolean;
-  /** calibration이 필요한가 (미완료 시 항상 true) */
+  /** localStorage·DB 초기 로드 중 — true인 동안 UI 결정 보류 (race condition 방지) */
+  isLoading: boolean;
+  /** calibration이 필요한가 (!isLoading && !isCalibrated) */
   needsCalibration: boolean;
   /** skip 버튼 노출 여부 (Q-E: 1회만 허용) */
   canSkip: boolean;
@@ -39,6 +41,7 @@ export function useUserEnvOffset(): UseUserEnvOffsetReturn {
   const { user } = useAuth();
   const [offsetMs, setOffsetMs] = useState<number | null>(null);
   const [isCalibrated, setIsCalibrated] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [canSkip, setCanSkip] = useState(!getCalibrationSkippedOnce());
   const [deviceChanged, setDeviceChanged] = useState(false);
 
@@ -48,6 +51,7 @@ export function useUserEnvOffset(): UseUserEnvOffsetReturn {
 
   // 초기 로드: localStorage → DB (로그인 시 DB 우선)
   useEffect(() => {
+    setIsLoading(true);
     setCanSkip(!getCalibrationSkippedOnce());
 
     if (!user) {
@@ -58,6 +62,7 @@ export function useUserEnvOffset(): UseUserEnvOffsetReturn {
         setOffsetMs(null);
         setIsCalibrated(false);
       }
+      setIsLoading(false);
       return;
     }
 
@@ -74,6 +79,7 @@ export function useUserEnvOffset(): UseUserEnvOffsetReturn {
         setOffsetMs(null);
         setIsCalibrated(false);
       }
+      setIsLoading(false);
     })();
   }, [user]);
 
@@ -136,7 +142,8 @@ export function useUserEnvOffset(): UseUserEnvOffsetReturn {
   return {
     offsetMs,
     isCalibrated,
-    needsCalibration: !isCalibrated,
+    isLoading,
+    needsCalibration: !isLoading && !isCalibrated,
     canSkip,
     deviceChanged,
     setOffset,

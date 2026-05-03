@@ -80,6 +80,7 @@ vi.mock("@/hooks/useUserEnvOffset", () => ({
     offsetMs: 0,
     isCalibrated: true,
     needsCalibration: false,
+    isLoading: false,
     canSkip: true,
     deviceChanged: false,
     setOffset: vi.fn().mockResolvedValue(undefined),
