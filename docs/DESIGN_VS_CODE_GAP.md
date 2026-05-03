@@ -407,7 +407,7 @@ commits 941b04f·6f5290f·c1b9d7c·717797e. 373/373 PASS.
 | 항목 | 상태 |
 |---|---|
 | 사양 | `PENDING_BACKLOG.md §7.3-A~E` 박힘 (4 sub-step + 11 Q 결정 시트 + 결합 영역 + 코드 영향 + 위험) |
-| 구현 | **§7.3.2~§7.3.5 ✅** + UX fix (5초, 버튼 primary) + device 자동 재측정 ✅ + A2 이벤트 로깅 ✅. PENDING: speed bonus 재튜닝 (출시 후), false positive 분석 (출시 후) |
+| 구현 | **§7.3.2~§7.3.5 ✅** + UX fix (5초, 버튼 primary) + device 자동 재측정 ✅ + A2 이벤트 로깅 ✅. PENDING: speed bonus 재튜닝 (출시 후), false positive 분석 (출시 후), §8.1 통합 분석 대시보드 (출시 후 Phase 7-A) |
 | 진행 흐름 | ~~§7.1~~ ✅ → ~~§7.3.1~~ ✅ → ~~§7.3.2~~ ✅ → ~~§7.3.3+§7.10.2~~ ✅ → ~~§7.3.4~~ ✅ → ~~§7.3.5~~ ✅ → ~~device 감지 fix~~ ✅ → §3.5 약점 음표 또는 §7.10.3 |
 | 결합 위험 | §7.3 완료. |
 
@@ -448,6 +448,12 @@ commits 941b04f·6f5290f·c1b9d7c·717797e. 373/373 PASS.
 **설계**: "화면 UI는 최대한 집중할 수 있는 색과 크기로 구성"
 
 **현재 상태**: 정비 필요 (PENDING_BACKLOG.md §6, §8 — UI/UX 미친듯이 수정)
+
+### 9.3 Navigation 정리 🔴 (Week 3 — PENDING_BACKLOG.md §13.2)
+
+**범위**: header/sidebar 일관성, 페이지별 nav 상태 리뷰, 불필요한 진입점 제거.
+**원칙**: memory #19 (사용자 행위 전가 X) + memory #14 (NavOnlyRoute, PWA).
+**의존성**: NavOnlyRoute 가드 전제 조건으로 전체 네비게이션 흐름 점검 필요.
 
 ---
 

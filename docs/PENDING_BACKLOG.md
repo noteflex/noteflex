@@ -681,6 +681,21 @@ Public domain 클래식 곡별 레벨
 - 광고 실적 (AdSense 승인 후)
 - 콘텐츠 관리, 배치고사 모니터링
 
+### 8.1 §7.3 통합 분석 대시보드 🟢 (출시 후 — Phase 7-A)
+
+Calibration 사용 패턴 + 환경 분석을 위한 관리자 전용 뷰.
+
+**데이터 소스**:
+- `calibration_results` 테이블 (별도 마이그레이션 필요 — 현재 미존재)
+- `device_change_events` 테이블 (✅ 마이그레이션 완료 2026-05-03)
+- `profiles.user_env_offset_ms` (✅)
+
+**화면 구성**:
+- offset 분포 히스토그램 (0~200ms 구간별 사용자 수)
+- device 변경 이벤트 목록 + 재측정 전후 offset 비교
+- 환경별 분석 (user_agent 기반 브라우저·OS 분포)
+- false positive 분석 (audio output-only 변경 vs 실제 I/O 변경 비율)
+
 ---
 
 ## 9. 도메인 + 사업자 🔴⭐ + ⏳ 심사 (1주차 시작)
@@ -780,7 +795,7 @@ Claude가 출시 임박 시 자동 고지.
 - **Paddle 글로벌 결제** 자동 활성화
 - 상세 전략: `docs/i18n/STRATEGY.md`
 
-### 13.2 라우팅 보호 + PWA 등록 (사용자 결정 2026-04-30, Week 3~4)
+### 13.2 라우팅 보호 + Navigation 정리 + PWA 등록 (사용자 결정 2026-04-30, Week 3~4)
 
 **목적**: "앱같은 UX" — URL 직접 접근 차단, 네비게이션 버튼으로만 화면 전환
 
@@ -790,6 +805,12 @@ Claude가 출시 임박 시 자동 고지.
 **보호 라우트** (URL 직접 접근 차단, 네비게이션만):
 `/play`, `/levels`, `/dashboard`, `/settings`, `/billing`, `/admin/*`
 
+**Navigation 정리 범위** (memory #14 + memory #19):
+- header/sidebar 일관성 점검 — 페이지별 nav 상태 리뷰
+- 불필요한 토글·중복 진입점 제거 (memory #19: 사용자 행위 전가 X 원칙 적용)
+- `NavOnlyRoute` 가드 전제 조건으로 전체 페이지 네비게이션 흐름 검토
+- Admin·Dashboard·Settings 등 보호 라우트 진입 경로 통일
+
 **구현**:
 - React Router `NavOnlyRoute` 가드 (`location.state.fromNav` 체크)
 - 게임 진행 상태 localStorage 저장 (새로고침 대응)
@@ -798,7 +819,7 @@ Claude가 출시 임박 시 자동 고지.
   - iOS: 수동 안내 + 단계 설명 (공유 → 홈 화면에 추가)
   - Android: `beforeinstallprompt` 자동
 - 아이콘: 192·512·180 + maskable
-- **작업 시간**: Week 4~5 (Sonnet 7~8시간 + 사용자 아이콘 제작 30분)
+- **작업 시간**: Week 3 Navigation 정리 (Sonnet 1~2시간) + Week 4 PWA (Sonnet 7~8시간 + 사용자 아이콘 제작 30분)
 
 ### 13.3 §0-1 정책 결정 ✅ 완료 (2026-04-29 사용자 결정)
 - [x] 단계 Clear 기준 — 정답률 85% / 반응속도 평균 35% / 수행 10회 / 최대 연속 5회
@@ -826,6 +847,37 @@ Claude가 출시 임박 시 자동 고지.
 ### 13.4 광고 (출시 후)
 - [ ] 미가입자 vs 가입자 광고 차이
 - [ ] 노출 빈도
+
+---
+
+## 🏆 우선순위 정리 (2026-05-03 갱신)
+
+### 출시 전 필수 (5/31까지) — 순서별
+
+| # | 항목 | 상태 | 예정 Week |
+|---|---|---|---|
+| 1 | §7.3 Calibration 전체 | ✅ 완료 (2026-05-03) | — |
+| 2 | §7.1 performance.now() 전환 | ✅ 완료 (2026-05-03) | — |
+| 3 | §0.4 UI 음표 history·크기·색깔·잘림 | 🔴 미완 | Week 2 |
+| 4 | §7.10 음표-사운드 Sync 검증 | 🔴 미완 | Week 2~4 |
+| 5 | §13.2 라우팅 보호 (NavOnlyRoute) + Navigation 정리 | 🔴 미완 | Week 3 |
+| 6 | §1 결제·회원 등급 완성 (회원관리·대시보드 잠금·후킹) | 🔴 미완 | Week 3 |
+| 7 | §10.1 약관 4종 + ⏳ Paddle Vendor 심사 신청 | 🔴 미완 | Week 3 |
+| 8 | §13.2 PWA 등록 + §12.1 Sentry 도입 | 🔴 미완 | Week 4 |
+
+### 출시 후 (6월~)
+
+| 항목 | Phase |
+|---|---|
+| §8.1 §7.3 통합 분석 대시보드 | Phase 7-A (6월) |
+| §3 광고 시스템 (AdSense 승인 후) | Phase 7-A (6월) |
+| §7.2 Web Workers + §7.4 Fixed-point | Phase 7-A (6월) |
+| §5.1 기록 비교 피드백 | Phase 7-A (6월) |
+| §12.2 E2E 테스트 (Playwright) | Phase 7-A (6월) |
+| §7.5 Effective Precision SLA | Phase 7-B (7~9월) |
+| §2 배치고사 + 랭크 시스템 | Phase 7-B (7~9월) |
+| §4.2 사용자화 레벨 | Phase 7-B (7~9월) |
+| §6.2~6.3 디자인 컨셉 + 티어 카드 SNS | Phase 7-B (7~9월) |
 
 ---
 
@@ -876,10 +928,11 @@ Claude가 출시 임박 시 자동 고지.
 - [ ] §1.2 Paddle Production 상품 등록 (연간 $24.99)
 - [ ] **사용자 작업**: 블로그 글 추가 (한+영 동시)
 
-### Week 3 (5/13 ~ 5/19): i18n + 라우팅 보호 + 비즈니스 모델
+### Week 3 (5/13 ~ 5/19): i18n + 라우팅 보호 + Navigation 정리 + 비즈니스 모델
 - [ ] 게임 UI i18n 도입 (react-i18next, locales/ko·en.json, Sonnet 1~2일)
 - [ ] 4/30·5/1~ 블로그 글 영어 번역 누적 (영어 폴더 분기)
 - [ ] §13.2 라우팅 보호 (NavOnlyRoute) 도입
+- [ ] §13.2 Navigation 정리 (header/sidebar 일관성, memory #14 NavOnlyRoute, memory #19 UX)
 - [ ] §1.1 회원 등급 차등화 적용
 - [ ] §1.3 결제 후킹 메시지
 - [ ] §5.2 회원관리 페이지
@@ -915,6 +968,7 @@ Claude가 출시 임박 시 자동 고지.
 - [ ] §0-2.4 GitHub Actions CI/CD
 - [ ] §12.2 E2E 테스트
 - [ ] §5.1 기록 비교 피드백
+- [ ] §8.1 §7.3 통합 분석 대시보드 (calibration_results 마이그레이션 + admin 히스토그램·device_change_events 뷰)
 - [ ] 일본어 추가 (1~2주)
 - [ ] 중국어 추가 (2~4주)
 
