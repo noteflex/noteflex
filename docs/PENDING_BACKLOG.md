@@ -555,7 +555,7 @@ Public domain 클래식 곡별 레벨
 | Q-G | **§7.1과의 순서** | (a) §7.1 (Date→perf) 먼저 → §7.3 / (b) §7.3 먼저 → §7.1 통합 — **(a) 권장** (정밀도 일관성) | **(a) §7.1 먼저** — 옵션 B 흐름과 일치, perf.now() 기반 후 calibration |
 | Q-H | **속도 보너스 thresholds** (`useSessionRecorder.ts:56~62`) | offset 적용 후 기준 변경 / 그대로 유지 / 별도 레벨별 재튜닝 | **1차 그대로 유지** + 출시 후 데이터 기반 재튜닝 (출시 전 회귀 위험 회피) |
 | Q-I | **기존 세션 데이터** | (a) 그대로 raw 유지 (호환) / (b) offset 컬럼 별도 보관 / (c) 일괄 변환 (지양) | **(b) offset 컬럼 별도 보관** — raw + offset 동시 보관, 호환 + 추적 가능 |
-| Q-J | **avg_reaction_ms 표기** | Home/Admin 표시: raw 값 / offset 적용값 / 둘 다 | **둘 다** — Home: 보정값 우선·raw 토글 / Admin: raw 우선·보정 동시 / 진단·랭킹·XP는 보정값 |
+| Q-J | **avg_reaction_ms 표기** | Home/Admin 표시: raw 값 / offset 적용값 / 둘 다 | **정정 (2026-05-03)** — Home: 보정값만 (raw 토글 영구 제거, 메모리 #19 사용자 행위 전가 X) / Admin: 보정값 + raw + offset 동시 노출 (관리자 디버깅 전용, ✅ §7.3.5 완료) / 진단·랭킹·XP: 보정값 |
 | Q-K | **음수 reactionMs** | clamp 0 / 통계에서 제외 / "예외 제스처"로 별도 카운트 | **clamp 0** — 음수는 자극 도래 전 응답(예측·우연), 0으로 단순 처리 |
 
 **§7.3.1 진입 시 적용 사항** (위 결정 그대로 명세에 반영):
@@ -565,7 +565,7 @@ Public domain 클래식 곡별 레벨
 - skip 정책 (Q-E): 첫 진입 시 1회 skip 허용 플래그 (`profiles.calibration_skipped_once BOOLEAN` 또는 localStorage)
 - 재측정 (Q-F): 설정 페이지 수동 버튼 + AudioContext `devicechange` 이벤트 리스너
 - 데이터 정책 (Q-I): 기존 세션 raw 유지, 신규 세션부터 offset 컬럼 추가 보관
-- 표시 정책 (Q-J): Home은 보정값 default + raw 토글, Admin은 raw default + 보정 동시
+- 표시 정책 (Q-J): Home 보정값만 (raw 토글 영구 제거), Admin 보정+raw+offset 동시 (§7.3.5 ✅ 완료)
 - thresholds (Q-H): `useSessionRecorder.ts:56~62` 1차 그대로 유지 — 출시 후 1~2주 데이터 누적 후 재튜닝
 
 #### 7.3-C 결합 영역 (Opus 분석 2026-05-02, 갱신 2026-05-03)
@@ -1011,3 +1011,4 @@ Claude가 출시 임박 시 자동 고지.
 - 2026-05-03 (Sonnet 4.6): **§7.3.2 코어 lib 완료** — `src/lib/userEnvironmentOffset.ts` (localStorage r/w, DB sync, clamp, device change, skip), `src/hooks/useUserEnvOffset.ts` (needsCalibration·canSkip·deviceChanged), `supabase/migrations/20260503_add_user_env_offset.sql`. 단위 테스트 23건 신규. vitest 396/396 PASS.
 - 2026-05-03 (Opus 4.7): **§7.3.3 + §7.10.2 완료** — `src/components/CalibrationModal.tsx` (4단계 상태 머신: intro→sync-measure→env-measure→complete), `src/lib/audioVisualSync.ts` (rAF+perf.now() vs AudioContext.currentTime, measureSyncGapAverage), `src/lib/calibrationMeasurement.ts` (trimmedMean·clampOffset·isSyncOutlier). NoteGame.tsx 통합 (showCalibration gate, memory #18 순서 보장). 단위 테스트 23건 신규 (audioVisualSync 7 + calibrationMeasurement 16). vitest 419/419 PASS. sim:test 9984 games 0 violations.
 - 2026-05-03 (Sonnet 4.6): **§7.3.4 완료 — §7.3 코어 완료** — `useSessionRecorder.recordNote` boundary offset 차감 (DB 방식 C: JSONB `reaction_ms_raw` + `summary.avg_reaction_ms_raw` + `summary.offset_ms_applied`). NoteGame 3사이트 손대지 않음. speed bonus thresholds 값 유지 (corrected reactionMs 기준). 단위 테스트 6건 신규. vitest 425/425 PASS. sim:test 0 violations. PENDING: §7.3.5 Stats display (raw/corrected), speed bonus 재튜닝 (출시 후).
+- 2026-05-03 (Sonnet 4.6): **§7.3 UX fix + §7.3.5 완료** — CalibrationModal 측정 시간 30초→5초 (딜레이 200-500ms, 인터벌 100ms), 측정 시작 버튼 primary 색상. §7.3.5 Admin 동시 노출 완료: `useAdminUserDetail` summary select 추가, `AdminUserDetail.tsx` 보정값+raw+offset 동시 표시. Q-J 정책 정정 (Home raw 토글 영구 제거, 메모리 #19). device 감지 fix 대기 중 (작업 1, 사용자 OK 후 진행).

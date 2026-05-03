@@ -407,11 +407,11 @@ commits 941b04f·6f5290f·c1b9d7c·717797e. 373/373 PASS.
 | 항목 | 상태 |
 |---|---|
 | 사양 | `PENDING_BACKLOG.md §7.3-A~E` 박힘 (4 sub-step + 11 Q 결정 시트 + 결합 영역 + 코드 영향 + 위험) |
-| 구현 | **§7.3.2 ✅** `userEnvironmentOffset.ts` / `useUserEnvOffset.ts` / migration. **§7.3.3 ✅** `CalibrationModal.tsx` / `audioVisualSync.ts` / `calibrationMeasurement.ts` / NoteGame gate. **§7.3.4 ✅** `useSessionRecorder.recordNote` boundary offset 차감 (JSONB raw 보관). PENDING: §7.3.5 Stats display |
-| 진행 흐름 | ~~§7.1~~ ✅ → ~~§7.3.1~~ ✅ → ~~§7.3.2~~ ✅ → ~~§7.3.3+§7.10.2~~ ✅ → ~~§7.3.4~~ ✅ → §7.3.5 (Stats raw/corrected, 출시 전·후 결정 필요) |
-| 결합 위험 | ~~§7.10 sync 검증 없이 calibration 측정 시 stimulus 시점 어긋남.~~ §7.10.2 §7.3.3에 통합 완료. §7.3 코어 완료. |
+| 구현 | **§7.3.2 ✅** → **§7.3.3 ✅** → **§7.3.4 ✅** → **§7.3.5 ✅** Admin 동시 노출 완료. UX fix: 측정 5초, 버튼 primary. PENDING: device 감지 fix (작업 1), speed bonus 재튜닝 (출시 후) |
+| 진행 흐름 | ~~§7.1~~ ✅ → ~~§7.3.1~~ ✅ → ~~§7.3.2~~ ✅ → ~~§7.3.3+§7.10.2~~ ✅ → ~~§7.3.4~~ ✅ → ~~§7.3.5~~ ✅ → device 감지 fix (OK 대기) |
+| 결합 위험 | §7.3 완료. Home raw 토글 영구 제거 (메모리 #19). |
 
-→ **다음 진입점**: §7.3.5 Stats display (raw/corrected, Q-J 출시 전·후 분류 사용자 결정 필요)
+→ **다음 진입점**: device 감지 fix (사용자 OK 후) → §3.5 약점 음표 또는 §7.10.3
 
 ---
 
