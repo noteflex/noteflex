@@ -14,15 +14,29 @@ export function AdBanner({ slot, format = "auto", className }: AdBannerProps): J
   const pushed = useRef(false);
 
   const isPro = getUserTier(user, profile) === "pro";
-  const enabled = isAdsEnabled() && !isPro;
+  const adsEnabled = isAdsEnabled();
+  const showReal = adsEnabled && !isPro;
+  const showPlaceholder = !adsEnabled && import.meta.env.DEV && !isPro;
 
   useEffect(() => {
-    if (!enabled || pushed.current) return;
+    if (!showReal || pushed.current) return;
     pushed.current = true;
     pushAd();
-  }, [enabled]);
+  }, [showReal]);
 
-  if (!enabled) return null;
+  if (showPlaceholder) {
+    return (
+      <div
+        className={`flex items-center justify-center border border-dashed border-muted-foreground/30 bg-muted/20 text-xs text-muted-foreground rounded ${className ?? ""}`}
+        style={{ minHeight: 60 }}
+        data-ad-slot={slot}
+      >
+        광고 영역
+      </div>
+    );
+  }
+
+  if (!showReal) return null;
 
   return (
     <div className={className}>

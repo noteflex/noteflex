@@ -24,11 +24,15 @@ import { getUserTier } from "@/lib/subscriptionTier";
 import { useAuth } from "@/contexts/AuthContext";
 
 describe("AdBanner", () => {
-  it("isAdsEnabled=false → null 반환", () => {
+  it("isAdsEnabled=false + DEV → 플레이스홀더 렌더링 (실제 광고 태그 없음)", () => {
+    // 테스트 환경은 DEV=true — ads 비활성화 시 placeholder가 표시됨
     vi.mocked(isAdsEnabled).mockReturnValue(false);
     vi.mocked(getUserTier).mockReturnValue("free");
     const { container } = render(<AdBanner slot="0000000000" />);
-    expect(container.firstChild).toBeNull();
+    const placeholder = container.querySelector('[data-ad-slot="0000000000"]');
+    expect(placeholder).not.toBeNull();
+    expect(placeholder?.textContent?.trim()).toBe("광고 영역");
+    expect(container.querySelector("ins.adsbygoogle")).toBeNull();
   });
 
   it("Premium 사용자 (pro) → null 반환", () => {
