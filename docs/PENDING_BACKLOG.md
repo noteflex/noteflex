@@ -456,9 +456,29 @@ Public domain 클래식 곡별 레벨
 
 ### 7.1 고해상도 타임스탬프 🔴 (2주차)
 **Green Billion §2.1**
-- `Date.now()` → `performance.now()` 전면 전환
-- 위치: NoteGame, CountdownTimer, useNoteLogger, useSessionRecorder
-- 검증: `grep -rn "Date.now()" src/` → 0건
+
+- `Date.now()` → `performance.now()` 전면 전환 (**정밀도 영향 사이트만**)
+- 작업 분량: **2~3시간** (Sonnet 1세션, 사용량 ~15%)
+- 어제 백로그 명시 위치(`useNoteLogger.ts`, `useSessionRecorder.ts`)는 grep 0건 — 코드 변경됨, 아래 실측이 정정 사양
+
+**실측 17 사이트** (grep 2026-05-03):
+
+| 파일 | 사이트 | 라인 | 정밀도 영향 | 전환 |
+|---|---|---|---|---|
+| `src/components/NoteGame.tsx` | 12 | 348·737·813·821·847·888·913·928·942·1077·1144·1187 | 핵심 (reactionMs 측정) | ✅ perf.now() |
+| `src/components/CountdownTimer.tsx` | 3 | 12·17·25 | 카운트다운 타이밍 | ✅ perf.now() |
+| `src/components/home/DiagnosisTab.tsx` | 1 | 53 | 절대 시간 (`now - created` 기간 필터, log.created_at은 DB ISO timestamp) | ❌ Date.now() 유지 |
+| `src/components/admin/PremiumDialog.tsx` | 1 | 113 | 절대 시간 (`untilDate.getTime() > Date.now()` 구독 만료일 비교) | ❌ Date.now() 유지 |
+
+**결정**:
+- 전환 대상: NoteGame 12 + CountdownTimer 3 = **15 사이트**
+- 절대 시간이라 유지: DiagnosisTab 1 + PremiumDialog 1 = **2 사이트**
+- `NoteGame.tsx:942` `id: Date.now()`: React key 용도. perf.now()도 단조 증가 + 소수점 부동점 → 호환 OK, 전환 ✅
+
+**검증** (2주차 작업 완료 시):
+- `grep -rn "Date.now()" src/` → 결과 **2건만 남음** (DiagnosisTab·PremiumDialog 절대 시간 사이트)
+- 게임 reactionMs 회귀 테스트 (수동 + 시뮬레이터)
+- 카운트다운 정상 작동 확인
 
 ### 7.2 Web Workers 분리 🟢 (출시 후 1~2주)
 **Green Billion §2.2**
@@ -519,21 +539,33 @@ Public domain 클래식 곡별 레벨
 
 **시뮬레이터 (Step B) 통합 제외**: 현재 시뮬레이터(`src/lib/simulator/game.ts`)는 reactionMs 모델링 X (dedup invariants 전용). 통합 가치 < 비용.
 
-#### 7.3-B 사용자 결정 시트 (11 Q — §7.3.1에서 박을 것)
+#### 7.3-B 사용자 결정 시트 (11 Q — 2026-05-03 결정 완료)
 
-| # | 결정 항목 | 옵션 |
-|---|---|---|
-| Q-A | **자극 모드** | (a) 시각+사운드 동시 (스펙) / (b) 사운드만 / (c) 양쪽 분리 측정 |
-| Q-B | **offset 의미** | (a) 출력 장치 레이턴시만 / (b) 출력 + 사용자 신경근 반응 baseline 합산 — (b)면 reactionMs 0 근처 수렴, 의미 재해석 필요 |
-| Q-C | **측정 횟수 + 이상치** | 3·5·7회, 단순 평균 / median / 최악 1개 제거 후 평균 |
-| Q-D | **저장 위치** | (a) localStorage만 / (b) profiles 테이블 컬럼 추가 (마이그레이션 1개) |
-| Q-E | **첫 진입 정책** | (a) skip 불가 / (b) 1회 skip 허용 (이후 강제) / (c) 무제한 skip (배지로만 표시) |
-| Q-F | **재측정 트리거** | (a) 수동만 / (b) UA 변경 감지 / (c) audioContext output device 변경 감지 |
-| Q-G | **§7.1과의 순서** | (a) §7.1 (Date→perf) 먼저 → §7.3 / (b) §7.3 먼저 → §7.1 통합 — **(a) 권장** (정밀도 일관성) |
-| Q-H | **속도 보너스 thresholds** (`useSessionRecorder.ts:56~62`) | offset 적용 후 기준 변경 / 그대로 유지 / 별도 레벨별 재튜닝 |
-| Q-I | **기존 세션 데이터** | (a) 그대로 raw 유지 (호환) / (b) offset 컬럼 별도 보관 / (c) 일괄 변환 (지양) |
-| Q-J | **avg_reaction_ms 표기** | Home/Admin 표시: raw 값 / offset 적용값 / 둘 다 |
-| Q-K | **음수 reactionMs** | clamp 0 / 통계에서 제외 / "예외 제스처"로 별도 카운트 |
+> 사용자 결정 (2026-05-03): CTO 권장 그대로 일괄 OK. §7.3.1 작업 시 아래 결정값 그대로 명세에 박을 것.
+
+| # | 결정 항목 | 옵션 | **결정 (2026-05-03)** |
+|---|---|---|---|
+| Q-A | **자극 모드** | (a) 시각+사운드 동시 (스펙) / (b) 사운드만 / (c) 양쪽 분리 측정 | **(a) 시각+사운드 동시** — 게임 환경과 자극 형식 일치 |
+| Q-B | **offset 의미** ⚠️ | (a) 출력 장치 레이턴시만 / (b) 출력 + 사용자 신경근 반응 baseline 합산 — (b)면 reactionMs 0 근처 수렴, 의미 재해석 필요 | **(a) 출력 장치 레이턴시만** — 기존 통계·XP·진단 의미 유지, Bluetooth/스피커 차이만 보정 |
+| Q-C | **측정 횟수 + 이상치** | 3·5·7회, 단순 평균 / median / 최악 1개 제거 후 평균 | **5회 + 절사 평균** (최고/최저 1개씩 제거 후 평균) |
+| Q-D | **저장 위치** | (a) localStorage만 / (b) profiles 테이블 컬럼 추가 (마이그레이션 1개) | **(b) profiles 테이블 컬럼** — `user_env_offset_ms INT` 마이그레이션 1개 + 다중 디바이스 동기화 |
+| Q-E | **첫 진입 정책** | (a) skip 불가 / (b) 1회 skip 허용 (이후 강제) / (c) 무제한 skip (배지로만 표시) | **(b) 1회 skip 허용 (이후 강제)** — 신규 가입 친화도 + 정확도 균형 |
+| Q-F | **재측정 트리거** | (a) 수동만 / (b) UA 변경 감지 / (c) audioContext output device 변경 감지 | **(c) device 변경 감지 + (a) 수동** (둘 다) — 이어폰↔스피커 자동 + 사용자 설정 메뉴 |
+| Q-G | **§7.1과의 순서** | (a) §7.1 (Date→perf) 먼저 → §7.3 / (b) §7.3 먼저 → §7.1 통합 — **(a) 권장** (정밀도 일관성) | **(a) §7.1 먼저** — 옵션 B 흐름과 일치, perf.now() 기반 후 calibration |
+| Q-H | **속도 보너스 thresholds** (`useSessionRecorder.ts:56~62`) | offset 적용 후 기준 변경 / 그대로 유지 / 별도 레벨별 재튜닝 | **1차 그대로 유지** + 출시 후 데이터 기반 재튜닝 (출시 전 회귀 위험 회피) |
+| Q-I | **기존 세션 데이터** | (a) 그대로 raw 유지 (호환) / (b) offset 컬럼 별도 보관 / (c) 일괄 변환 (지양) | **(b) offset 컬럼 별도 보관** — raw + offset 동시 보관, 호환 + 추적 가능 |
+| Q-J | **avg_reaction_ms 표기** | Home/Admin 표시: raw 값 / offset 적용값 / 둘 다 | **둘 다** — Home: 보정값 우선·raw 토글 / Admin: raw 우선·보정 동시 / 진단·랭킹·XP는 보정값 |
+| Q-K | **음수 reactionMs** | clamp 0 / 통계에서 제외 / "예외 제스처"로 별도 카운트 | **clamp 0** — 음수는 자극 도래 전 응답(예측·우연), 0으로 단순 처리 |
+
+**§7.3.1 진입 시 적용 사항** (위 결정 그대로 명세에 반영):
+- DB 마이그레이션 1개 (Q-D): `profiles.user_env_offset_ms INT` (default null)
+- 측정 절차 (Q-A·Q-C): 시각+사운드 동시 자극 5회, 절사 평균(최고·최저 제외 3회 평균)
+- offset 의미 (Q-B): 출력 장치 레이턴시만 — 음수 사용자 응답은 clamp 0 (Q-K)
+- skip 정책 (Q-E): 첫 진입 시 1회 skip 허용 플래그 (`profiles.calibration_skipped_once BOOLEAN` 또는 localStorage)
+- 재측정 (Q-F): 설정 페이지 수동 버튼 + AudioContext `devicechange` 이벤트 리스너
+- 데이터 정책 (Q-I): 기존 세션 raw 유지, 신규 세션부터 offset 컬럼 추가 보관
+- 표시 정책 (Q-J): Home은 보정값 default + raw 토글, Admin은 raw default + 보정 동시
+- thresholds (Q-H): `useSessionRecorder.ts:56~62` 1차 그대로 유지 — 출시 후 1~2주 데이터 누적 후 재튜닝
 
 #### 7.3-C 결합 영역 (Opus 분석 2026-05-02)
 
@@ -583,7 +615,43 @@ Public domain 클래식 곡별 레벨
 
 ### 7.10 음표-사운드 Sync 검증 🔴 (2주차)
 **설계 §3.3.마**
+
 - 현재 sync 측정 → ±5ms 이내 확인
+
+#### 7.10-A 작업 분할 (3 sub-step) — Opus 분석 2026-05-03
+
+| 단계 | 범위 | 시간 | 사용량 | 모델 | 의존성 |
+|---|---|---|---|---|---|
+| §7.10.1 | 명세 박기 + 사용자 결정 (Q-시트 6 Q, 측정 방식·도구·시점·기준 확정) | 1~2시간 | 15~20% | Sonnet | — |
+| §7.10.2 | 측정 도구 + 실측 (visual paint vs audio start 시점차 측정, 브라우저·디바이스 매트릭스) | 3~5시간 | 25~30% | Sonnet | §7.10.1, §7.1 (`perf.now()` 적용 후 측정 정밀) |
+| §7.10.3 | 보정 적용 (±5ms 초과 시 audio 송출 시점 또는 시각 paint 조정), 회귀 테스트 | 2~4시간 | 20~25% | Sonnet | §7.10.2 |
+
+**총합**: ~6~11시간 (≈1~1.5일). 단계별 독립 commit, 각 단계 Sonnet 1세션 충분.
+
+#### 7.10-B 사용자 결정 시트 (6 Q — §7.10.1에서 박을 것)
+
+| # | 결정 항목 | 옵션 |
+|---|---|---|
+| Q-A | **측정 방식** | (a) visual paint timestamp(`requestAnimationFrame` 후 `perf.now()`) vs audio start timestamp(`AudioContext.currentTime`) 비교 / (b) Performance API `paint` entry 활용 / (c) 외부 카메라+마이크 측정 (정밀도 ↑↑) |
+| Q-B | **측정 도구** | (a) 브라우저 내장 (PerformanceObserver + AudioContext) / (b) Audio Worklet 정밀 측정 / (c) 외부 도구 (예: 화면+오디오 동시 녹음 후 분석) |
+| Q-C | **측정 시점** | (a) `handleCountdownComplete` (게임 시작 시 1회) / (b) 음표 송출 매 시점 (지속 측정) / (c) 자동 calibration 모달 안 별도 측정 |
+| Q-D | **±5ms 기준** | (a) 그대로 / (b) 더 엄격(±3ms) / (c) 더 느슨(±10ms) — 브라우저별·디바이스별 정밀도 한계 고려 |
+| Q-E | **보정 방식** | (a) audio 송출 시점 조정만 / (b) 시각 paint 조정만 / (c) 둘 다 (방향 따라) |
+| Q-F | **§7.3 결합** | (a) §7.10 sync 측정값 → calibration baseline 영향 0 (독립) / (b) sync offset도 calibration offset에 포함 (합산) / (c) sync는 calibration 측정 outlier 검출 기준 |
+
+#### 7.10-C 코드 영향 범위 (Opus 2026-05-03)
+
+- `src/lib/sound.ts` — 5/1 §1 fix 적용 영역 (`ensureAudioReady`), audio context resume 시점이 sync 측정의 출발점
+- `src/components/NoteGame.tsx` — `handleCountdownComplete` 등 시각·사운드 동시 송출 시점 (Q-C 결정 후 정밀 위치 박을 것)
+- 5/2 swipe 모달 fix 영역 (메모리 #18 동기화 정책) — 영향 범위 추가 검증 필요
+- 신규 후보: `src/lib/audioVisualSync.ts` (측정 + 보정 로직)
+
+#### 7.10-D 위험 요소 (Opus 2026-05-03)
+
+- **브라우저별 audio·visual 정밀도 차이**: Chromium·WebKit·Firefox 각각 `requestAnimationFrame`·`AudioContext.currentTime` 정밀도 다름. 단일 기준 ±5ms 충족 어려울 수 있음 (Q-D 재검토 후보).
+- **사용자 환경 차이**: 블루투스 헤드폰(100~300ms 출력 지연)·외장 스피커·내장 스피커별 측정값 변동 큼. **§7.3 calibration이 환경 offset 흡수 가정** (Q-F 결정 따라).
+- **§7.3 calibration과 결합 (이중 보정 위험)**: sync offset과 user environment offset의 의미 분리 불명확 시 calibration 결과 오염. Q-F 결정으로 사전 차단.
+- **§7.1 perf.now() 정밀도 의존**: §7.1 적용 후 §7.10 측정해야 정밀. 옵션 B 진행 시 §7.1 같은 세션 내 끝낸 후 §7.10.2 진입.
 
 ### 7.11 검증 체크리스트 (출시 전 + 출시 후)
 - [ ] §7.1: Date.now() 0건 (5/31 이전)
