@@ -44,6 +44,10 @@ export interface AdminUserSession {
   avg_reaction_ms: number | null;
   xp_earned: number;
   session_type: string | null;
+  summary: {
+    avg_reaction_ms_raw?: number;
+    offset_ms_applied?: number;
+  } | null;
 }
 
 export interface AdminUserDailyStat {
@@ -107,7 +111,7 @@ export function useAdminUserDetail(userId: string | undefined): AdminUserDetail 
       const { data: s, error: se } = await supabase
         .from("user_sessions")
         .select(
-          "id, level, started_at, ended_at, duration_seconds, total_notes, correct_notes, accuracy, avg_reaction_ms, xp_earned, session_type"
+          "id, level, started_at, ended_at, duration_seconds, total_notes, correct_notes, accuracy, avg_reaction_ms, xp_earned, session_type, summary"
         )
         .eq("user_id", userId)
         .order("started_at", { ascending: false })

@@ -354,7 +354,7 @@ export default function AdminUserDetail() {
                     </th>
                     <th className="px-4 py-2 font-medium text-right">정확도</th>
                     <th className="px-4 py-2 font-medium text-right">
-                      평균 반응
+                      평균 반응 (보정/raw)
                     </th>
                     <th className="px-4 py-2 font-medium text-right">XP</th>
                     <th className="px-4 py-2 font-medium text-right">시간</th>
@@ -379,9 +379,22 @@ export default function AdminUserDetail() {
                           : "—"}
                       </td>
                       <td className="px-4 py-2 text-right text-xs text-muted-foreground">
-                        {s.avg_reaction_ms != null
-                          ? `${s.avg_reaction_ms}ms`
-                          : "—"}
+                        {s.avg_reaction_ms != null ? (
+                          <span>
+                            {s.avg_reaction_ms}ms
+                            {s.summary?.avg_reaction_ms_raw != null &&
+                              s.summary.avg_reaction_ms_raw !== s.avg_reaction_ms && (
+                                <span className="block text-[10px] text-muted-foreground/60">
+                                  raw {s.summary.avg_reaction_ms_raw}ms
+                                  {s.summary.offset_ms_applied
+                                    ? ` (−${s.summary.offset_ms_applied}ms)`
+                                    : ""}
+                                </span>
+                              )}
+                          </span>
+                        ) : (
+                          "—"
+                        )}
                       </td>
                       <td className="px-4 py-2 text-right font-medium">
                         {s.xp_earned}
