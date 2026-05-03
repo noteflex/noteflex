@@ -8,6 +8,8 @@ import AccidentalSwipeTutorial, {
   hasSeenSwipeTutorial,
   markSwipeTutorialSeen,
 } from "./AccidentalSwipeTutorial";
+import CalibrationModal from "./CalibrationModal";
+import { useUserEnvOffset } from "@/hooks/useUserEnvOffset";
 import { useAuth } from "@/contexts/AuthContext";
 import { playNote, playWrong, isSamplerReady, initSound, ensureAudioReady } from "@/lib/sound";
 import { useNoteLogger } from "@/hooks/useNoteLogger";
@@ -344,6 +346,12 @@ export default function NoteGame({
   const { masteryMap } = useUserMastery();
   const { recordAttempt } = useLevelProgress();
   const { profile }   = useAuth();
+  const {
+    needsCalibration,
+    canSkip: calibrationCanSkip,
+    setOffset: setCalibrationOffset,
+    skipCalibration,
+  } = useUserEnvOffset();
   const isAdminOrDev  = profile?.role === "admin" || import.meta.env.DEV;
   const noteStartTime = useRef<number>(performance.now());
   const turnCounterRef = useRef<number>(0);
@@ -825,14 +833,47 @@ export default function NoteGame({
     }
   }, [stages, stageIdx, currentIndex, currentBatch, setProgress, currentSet, composeBatch, handleSetComplete, prepareNextTurn]);
   
-  // §swipe-modal (2026-05-02): Lv5+ 첫 진입 시 swipe 모달 먼저 표시 → 닫힘 후 카운트다운.
-  // 사용자 정책 (메모리 #18): 모달 → 카운트다운 → 첫 음표 순서 보장.
+  // §calibration + §swipe-modal (2026-05-02/05-03): 모달 순서 보장.
+  // 사용자 정책 (메모리 #18 확장): calibration → swipe → 카운트다운 → 첫 음표.
+  const [showCalibration, setShowCalibration] = useState(() => needsCalibration);
   const [showSwipeTutorial, setShowSwipeTutorial] = useState(
-    () => level >= 5 && !hasSeenSwipeTutorial(level)
+    () => level >= 5 && !hasSeenSwipeTutorial(level) && !needsCalibration
   );
   const [showCountdown, setShowCountdown] = useState(
-    !skipCountdown && !(level >= 5 && !hasSeenSwipeTutorial(level))
+    !skipCountdown && !needsCalibration && !(level >= 5 && !hasSeenSwipeTutorial(level))
   );
+
+  // DB 로드 후 needsCalibration이 false로 바뀌면 캘리브레이션 모달 자동 닫기
+  useEffect(() => {
+    if (!needsCalibration && showCalibration) {
+      setShowCalibration(false);
+      if (level >= 5 && !hasSeenSwipeTutorial(level)) {
+        setShowSwipeTutorial(true);
+      } else if (!skipCountdown) {
+        setShowCountdown(true);
+      }
+    }
+  }, [needsCalibration, showCalibration, level, skipCountdown]);
+
+  const handleCalibrationComplete = useCallback(async (offsetMs: number) => {
+    await setCalibrationOffset(offsetMs);
+    setShowCalibration(false);
+    if (level >= 5 && !hasSeenSwipeTutorial(level)) {
+      setShowSwipeTutorial(true);
+    } else if (!skipCountdown) {
+      setShowCountdown(true);
+    }
+  }, [level, skipCountdown, setCalibrationOffset]);
+
+  const handleCalibrationSkip = useCallback(() => {
+    skipCalibration();
+    setShowCalibration(false);
+    if (level >= 5 && !hasSeenSwipeTutorial(level)) {
+      setShowSwipeTutorial(true);
+    } else if (!skipCountdown) {
+      setShowCountdown(true);
+    }
+  }, [level, skipCountdown, skipCalibration]);
 
   const handleSwipeTutorialClose = useCallback((markAsSeen: boolean) => {
     if (markAsSeen) markSwipeTutorialSeen(level);
@@ -1222,6 +1263,12 @@ export default function NoteGame({
         <CountdownOverlay seconds={3} onComplete={handleCountdownComplete} />
       )}
 
+      <CalibrationModal
+        isOpen={showCalibration}
+        canSkip={calibrationCanSkip}
+        onComplete={handleCalibrationComplete}
+        onSkip={handleCalibrationSkip}
+      />
       <AccidentalSwipeTutorial isOpen={showSwipeTutorial} onClose={handleSwipeTutorialClose} />
 
       <span className="sr-only">
@@ -1275,7 +1322,7 @@ export default function NoteGame({
             duration={TIMER_SECONDS}
             resetKey={timerKey}
             onExpire={handleTimerExpire}
-            paused={(phase !== "playing" && phase !== "final-retry") || showCountdown || showSwipeTutorial}
+            paused={(phase !== "playing" && phase !== "final-retry") || showCountdown || showSwipeTutorial || showCalibration}
           />
         </div>
 
@@ -1283,21 +1330,21 @@ export default function NoteGame({
           <GrandStaffPractice
             // §2 (2026-05-01): 카운트다운 중 음표·조표 숨김 (clef·오선만 표시).
             // §swipe-modal-perf (2026-05-02): swipe 모달 동안에도 동일하게 음표·조표 숨김.
-            targetNote={(showCountdown || showSwipeTutorial) ? null : targetNoteStr}
-            targetAccidental={(showCountdown || showSwipeTutorial) ? null : targetAccidental}
-            noteHistory={(showCountdown || showSwipeTutorial) ? [] : answeredNotes}
-            batchNotes={(showCountdown || showSwipeTutorial) ? undefined : batchNotesForDisplay}
-            batchIndex={!showCountdown && !showSwipeTutorial && isBatchDisplay ? currentIndex : undefined}
+            targetNote={(showCountdown || showSwipeTutorial || showCalibration) ? null : targetNoteStr}
+            targetAccidental={(showCountdown || showSwipeTutorial || showCalibration) ? null : targetAccidental}
+            noteHistory={(showCountdown || showSwipeTutorial || showCalibration) ? [] : answeredNotes}
+            batchNotes={(showCountdown || showSwipeTutorial || showCalibration) ? undefined : batchNotesForDisplay}
+            batchIndex={!showCountdown && !showSwipeTutorial && !showCalibration && isBatchDisplay ? currentIndex : undefined}
             clef={currentClef}
             level={level}
             batchSize={currentStageConfig.batchSize}
             keySignature={currentKeySignature.abcKey}
-            keySharps={needsKeySig && !(showCountdown || showSwipeTutorial) ? currentKeySignature.sharps : undefined}
-            keyFlats={needsKeySig && !(showCountdown || showSwipeTutorial) ? currentKeySignature.flats : undefined}
+            keySharps={needsKeySig && !(showCountdown || showSwipeTutorial || showCalibration) ? currentKeySignature.sharps : undefined}
+            keyFlats={needsKeySig && !(showCountdown || showSwipeTutorial || showCalibration) ? currentKeySignature.flats : undefined}
           />
         </div>
 
-        <div className={`w-full mt-1 ${(showCountdown || showSwipeTutorial) ? "invisible" : ""}`}>
+        <div className={`w-full mt-1 ${(showCountdown || showSwipeTutorial || showCalibration) ? "invisible" : ""}`}>
           <p className="text-center text-sm text-muted-foreground mb-3">
             {isBatchDisplay
               ? `${currentIndex + 1}/${currentBatch.length}번째 음표의 이름은?`
@@ -1306,7 +1353,7 @@ export default function NoteGame({
 
           <NoteButtons
             onNoteClick={handleAnswer}
-            disabled={(phase !== "playing" && phase !== "final-retry") || showCountdown || showSwipeTutorial}
+            disabled={(phase !== "playing" && phase !== "final-retry") || showCountdown || showSwipeTutorial || showCalibration}
             disabledNotes={disabledNotes}
             keySharps={needsKeySig ? currentKeySignature.sharps : undefined}
             keyFlats={needsKeySig ? currentKeySignature.flats : undefined}
