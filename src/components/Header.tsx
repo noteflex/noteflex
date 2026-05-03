@@ -18,6 +18,8 @@ interface HeaderProps {
   subtitle?: string;
   /** Additional Tailwind classes for the outer <header> element. */
   headerClassName?: string;
+  /** Max-width class for the inner container. Defaults to "max-w-3xl". */
+  containerClassName?: string;
 }
 
 export default function Header({
@@ -26,7 +28,9 @@ export default function Header({
   title,
   subtitle,
   headerClassName,
+  containerClassName,
 }: HeaderProps) {
+  const container = `${containerClassName ?? "max-w-3xl"} mx-auto px-4`;
   const left = title ? (
     <div className="min-w-0">
       <div className="flex items-center gap-2">
@@ -50,11 +54,11 @@ export default function Header({
     <header
       className={`border-b border-border bg-background/95 backdrop-blur-sm sticky top-0 z-10 ${headerClassName ?? ""}`}
     >
-      <div className="max-w-3xl mx-auto px-4 py-4 flex items-center justify-between gap-4">
+      <div className={`${container} py-4 flex items-center justify-between gap-4`}>
         {left}
         {right && <div className="shrink-0">{right}</div>}
       </div>
-      {below && <div className="max-w-3xl mx-auto px-4 pb-3">{below}</div>}
+      {below && <div className={`${container} pb-3`}>{below}</div>}
     </header>
   );
 }

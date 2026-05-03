@@ -494,8 +494,6 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-background">
       <Header
-        title={<h1 className="text-lg font-semibold tracking-tight">플레이그라운드</h1>}
-        subtitle="오늘의 연습과 진행 상황"
         right={homeNav}
         below={
           <LastUpdatedStrip
@@ -508,6 +506,12 @@ export default function Home() {
       />
 
       <main className="max-w-3xl mx-auto px-4 py-8 space-y-8">
+        {/* 페이지 제목 */}
+        <div>
+          <h1 className="text-lg font-semibold tracking-tight">플레이그라운드</h1>
+          <p className="text-xs text-muted-foreground">오늘의 연습과 진행 상황</p>
+        </div>
+
         {/* 상단 요약 */}
         <section className="space-y-4">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
