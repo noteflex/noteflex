@@ -233,7 +233,6 @@ export default function Index() {
           프로필
         </Link>
         <span className="text-xs text-muted-foreground truncate max-w-[150px]">{user.email}</span>
-        <PremiumBadge />
         <button
           onClick={handleSignOut}
           className="text-xs px-3 py-1.5 rounded-lg border border-border text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
@@ -265,13 +264,7 @@ export default function Index() {
 
         <div className="safe-area-page flex-1 flex flex-col items-center justify-center gap-8 px-4 pb-10">
           <div className="flex flex-col items-center gap-4 animate-fade-up">
-            <span className="text-7xl">🎼</span>
-            <h1
-              className="text-3xl sm:text-4xl font-bold text-foreground tracking-tight text-center"
-              style={{ textWrap: "balance" as any }}
-            >
-              Noteflex
-            </h1>
+            <span className="text-4xl">🎼</span>
             <p className="text-muted-foreground text-center max-w-md text-base leading-relaxed">
               오선지 위 음표를 즉시 읽어내는 능력, 독보(讀譜)를 게임처럼 훈련하는 웹앱.
               <br />
@@ -322,16 +315,6 @@ export default function Index() {
                 →
               </span>
             </Link>
-          )}
-
-          {GAME_ENABLED && user && profile?.is_premium && (
-            <div
-              className="flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-primary/10 to-accent/10 border border-primary/20 animate-fade-up"
-              style={{ animationDelay: "0.3s" }}
-            >
-              <span className="text-lg">✨</span>
-              <span className="text-sm font-semibold text-primary">Premium 이용 중</span>
-            </div>
           )}
 
           {/* Coming Soon 모드: 블로그·약관 안내 */}
