@@ -1,4 +1,5 @@
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import Header from "@/components/Header";
 
 export default function CheckoutFailed() {
   const navigate = useNavigate();
@@ -8,7 +9,15 @@ export default function CheckoutFailed() {
   const isCancelled = reason === "cancelled";
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center gap-6 px-4 bg-gradient-to-br from-muted/30 via-background to-muted/20">
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-muted/30 via-background to-muted/20">
+      <Header
+        right={
+          <Link to="/" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+            ← 홈으로
+          </Link>
+        }
+      />
+      <div className="flex-1 flex flex-col items-center justify-center gap-6 px-4">
       {/* 아이콘 */}
       <div className="flex flex-col items-center gap-2 animate-fade-up">
         <div className="w-20 h-20 rounded-full bg-orange-100 border-4 border-orange-400 flex items-center justify-center text-4xl">
@@ -94,6 +103,7 @@ export default function CheckoutFailed() {
         </a>
         으로 문의해주세요
       </p>
+      </div>
     </div>
   );
 }

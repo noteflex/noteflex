@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import Header from "@/components/Header";
 import { useAuth } from "@/contexts/AuthContext";
 import { openCheckout } from "@/lib/paddle";
 import { toast } from "@/hooks/use-toast";
@@ -58,18 +59,19 @@ export default function Pricing() {
 
   return (
     <div
-      className="min-h-screen px-4 py-12 sm:py-16"
+      className="min-h-screen flex flex-col"
       style={{ background: "radial-gradient(circle at top, #ffffff 0%, #f8f5e4 100%)" }}
     >
-      <div className="max-w-4xl mx-auto">
-        {/* 헤더 */}
-        <div className="flex flex-col items-center gap-3 mb-10 animate-fade-up">
-          <Link
-            to="/"
-            className="text-xs text-muted-foreground hover:text-foreground transition-colors mb-2"
-          >
+      <Header
+        right={
+          <Link to="/" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
             ← 홈으로
           </Link>
+        }
+      />
+      <div className="flex-1 px-4 py-10">
+      <div className="max-w-4xl mx-auto">
+        <div className="flex flex-col items-center gap-3 mb-10 animate-fade-up">
           <span className="text-5xl">🎹</span>
           <h1 className="text-3xl sm:text-4xl font-bold text-foreground tracking-tight text-center">
             Noteflex Premium
@@ -254,6 +256,7 @@ export default function Pricing() {
         >
           결제는 Paddle이 안전하게 처리합니다
         </p>
+      </div>
       </div>
     </div>
   );

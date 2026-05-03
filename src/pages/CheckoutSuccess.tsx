@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import Header from "@/components/Header";
 
 export default function CheckoutSuccess() {
   const navigate = useNavigate();
@@ -13,7 +14,15 @@ export default function CheckoutSuccess() {
   }, [navigate]);
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center gap-6 px-4 bg-gradient-to-br from-primary/10 via-background to-accent/10">
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-primary/10 via-background to-accent/10">
+      <Header
+        right={
+          <Link to="/" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+            ← 홈으로
+          </Link>
+        }
+      />
+      <div className="flex-1 flex flex-col items-center justify-center gap-6 px-4">
       {/* 성공 애니메이션 */}
       <div className="flex flex-col items-center gap-2 animate-fade-up">
         <div className="w-20 h-20 rounded-full bg-green-100 border-4 border-green-500 flex items-center justify-center text-4xl animate-bounce">
@@ -72,6 +81,7 @@ export default function CheckoutSuccess() {
       <p className="text-xs text-muted-foreground animate-fade-up" style={{ animationDelay: "0.8s" }}>
         5초 후 자동으로 홈으로 이동합니다
       </p>
+      </div>
     </div>
   );
 }

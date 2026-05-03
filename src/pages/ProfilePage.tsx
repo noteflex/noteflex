@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import Header from "@/components/Header";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useSolfegeSystem } from "@/hooks/useSolfegeSystem";
@@ -118,20 +119,20 @@ export default function ProfilePage() {
 
   return (
     <div
-      className="min-h-screen px-4 py-8"
+      className="min-h-screen flex flex-col"
       style={{ background: "radial-gradient(circle at top, #ffffff 0%, #f8f5e4 100%)" }}
     >
+      <Header
+        right={
+          <Link to="/" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+            ← 홈으로
+          </Link>
+        }
+      />
+      <div className="flex-1 px-4 py-8">
       <div className="max-w-lg mx-auto space-y-4">
 
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => navigate("/")}
-            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-          >
-            ← 홈으로
-          </button>
-          <h1 className="text-xl font-bold text-foreground">프로필 설정</h1>
-        </div>
+        <h1 className="text-xl font-bold text-foreground">프로필 설정</h1>
 
         {/* 닉네임 + 언어 — 저장 버튼 하나로 묶음 */}
         <Card>
@@ -288,6 +289,7 @@ export default function ProfilePage() {
           로그아웃
         </Button>
 
+      </div>
       </div>
     </div>
   );
