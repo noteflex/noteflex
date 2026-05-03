@@ -351,17 +351,24 @@ CREATE TABLE tier_history (...)
 - 5월 중 15~20개 도달 → 심사 신청
 - 심사 통과 후 광고 코드 활성화 (머니 스위치)
 
-### 3.2 머니 스위치 구현 🔴
-환경변수로 광고 슬롯 ON/OFF — 승인 전까지 DOM에서 완전 제거
+### 3.2 머니 스위치 구현 ✅ (2026-05-03)
+- `VITE_ADS_ENABLED=false` → AdBanner null 반환, DOM 완전 제거
+- `VITE_ADS_ENABLED=true` → AdSense script 동적 로드 + ins 태그 렌더링
+- Premium 사용자 자동 차단 (`getUserTier === "pro"` → null 반환)
 
-### 3.3 광고 배치 코드 🟢 (출시 후)
-- 배너: 메인 로비, 설정 화면 하단
-- 전면: 결과 화면 출력 직전
-- 데이터 기반: 상세 분석 리포트 열람 시
-- 보상형: 스트릭 유지권, 재도전권
+### 3.3 광고 배치 코드 ✅ (2026-05-03 — 사용자 결정 반영)
+- **배너**: Blog 하단 + BlogPost 데스크톱 좌/우 사이드바 + 모바일 하단 + Home 하단 + Index 랜딩 하단
+- **In-feed**: Home 대시보드 (통계 카드 ↔ 탭 사이)
+- **전면 (AdInterstitialModal)**: 3게임마다 + 잠금 해제 시점, 중복 시 1번만
+- **보상형**: 출시 후 PENDING
 
-### 3.4 광고 SDK 성능 격리 🟢
-0.0001초 정밀도 영향 안 주도록 비동기 처리
+### 3.4 광고 SDK 성능 격리 ✅
+동적 스크립트 로드 (document.head.appendChild) — 게임 루프와 격리
+
+### 3.5 Premium 배지 (헤더) 🔴 PENDING 사용자 OK
+- YouTube 패턴 (로고·이름 옆 배지)
+- 아이콘: Sparkles 또는 Crown 사용자 결정 대기
+- 출시 직전: `.env` VITE_ADSENSE_PUBLISHER_ID + VITE_ADSENSE_SLOT_* + VITE_ADS_ENABLED=true 교체
 
 ### 3.5 약점 음표 표시 (Fail 시) 🔴
 **설계 §5.나**: Fail 시 약점 음표 + 광고 시청으로 잠금 해제
