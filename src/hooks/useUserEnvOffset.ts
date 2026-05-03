@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   getUserEnvOffset,
@@ -10,6 +10,8 @@ import {
   getCalibrationSkippedOnce,
   setCalibrationSkippedOnce,
   onDeviceChange,
+  logDeviceChangeEvent,
+  updateDeviceChangeEvent,
 } from "@/lib/userEnvironmentOffset";
 
 export interface UseUserEnvOffsetReturn {
@@ -39,6 +41,10 @@ export function useUserEnvOffset(): UseUserEnvOffsetReturn {
   const [isCalibrated, setIsCalibrated] = useState(false);
   const [canSkip, setCanSkip] = useState(!getCalibrationSkippedOnce());
   const [deviceChanged, setDeviceChanged] = useState(false);
+
+  const userRef = useRef(user);
+  const pendingDeviceEventRef = useRef<string | null>(null);
+  useEffect(() => { userRef.current = user; }, [user]);
 
   // 초기 로드: localStorage → DB (로그인 시 DB 우선)
   useEffect(() => {
@@ -71,9 +77,22 @@ export function useUserEnvOffset(): UseUserEnvOffsetReturn {
     })();
   }, [user]);
 
-  // Q-F: device 변경 감지
+  // Q-F: device 변경 감지 → 자동 재측정 (메모리 #19) + A2 이벤트 로깅
   useEffect(() => {
-    return onDeviceChange(() => setDeviceChanged(true));
+    return onDeviceChange((event) => {
+      setDeviceChanged(true);
+      setIsCalibrated(false); // needsCalibration → true → 다음 게임 진입 시 자동 모달
+      if (userRef.current) {
+        void logDeviceChangeEvent({
+          userId: userRef.current.id,
+          deviceKinds: event.kinds,
+          previousOffsetMs: hasStoredOffset() ? getUserEnvOffset() : null,
+          triggeredRecalibration: true,
+        }).then((id) => {
+          if (id) pendingDeviceEventRef.current = id;
+        });
+      }
+    });
   }, []);
 
   const setOffset = useCallback(
@@ -83,6 +102,10 @@ export function useUserEnvOffset(): UseUserEnvOffsetReturn {
       setIsCalibrated(true);
       if (user) {
         await syncOffsetToProfile(user.id, ms);
+      }
+      if (pendingDeviceEventRef.current) {
+        await updateDeviceChangeEvent(pendingDeviceEventRef.current, ms);
+        pendingDeviceEventRef.current = null;
       }
     },
     [user]
