@@ -532,7 +532,7 @@ Public domain 클래식 곡별 레벨
 | 단계 | 범위 | 시간 | 사용량 | 모델 | 의존성 |
 |---|---|---|---|---|---|
 | §7.3.1 | 명세 박기 + 사용자 결정 (11 Q 결정 시트) + 데이터 모델·skip·재측정·DB 컬럼 확정 | 1~2시간 | 25~30% | Sonnet | — |
-| §7.3.2 | 코어 lib + 영속화 (`userEnvironmentOffset.ts`, profile sync, 마이그레이션 SQL, 단위 테스트) | 3~4시간 | 25~30% | Sonnet | §7.3.1 |
+| §7.3.2 | ~~코어 lib + 영속화 (`userEnvironmentOffset.ts`, profile sync, 마이그레이션 SQL, 단위 테스트)~~ ✅ 완료 (2026-05-03) | — | — | — | §7.3.1 ✅ |
 | §7.3.3 | Calibration UI + 측정 (`CalibrationModal.tsx`, 자극 송출, outlier reject·평균, 결과 표시·저장, 첫 진입 가드) **+ §7.10.2 sync 측정 통합** (CalibrationModal 2단계: 1단계 sync 3회 평균 / 2단계 env offset 5회 절사 평균, Q-C 결정) | 7~10시간 | 40~50% | Sonnet | §7.3.2, `sound.ts` (`ensureAudioReady`), §7.10.1 ✅ |
 | §7.3.4 | reactionMs 보정 적용 (boundary 1지점 전략 — `useSessionRecorder.recordNote` 진입 시 offset 차감, NoteGame 3사이트 손대지 X, clamp 0, speed threshold 의미 재정의, 회귀 테스트) | 3~4시간 | 20~25% | Sonnet | §7.3.2 |
 
@@ -1007,4 +1007,5 @@ Claude가 출시 임박 시 자동 고지.
 - 2026-05-02 (Opus 4.7 분석): **§7.3 Calibration 작업 분할 + 결정 시트 + 위험 분석 박힘** — §7.3-A (4 sub-step, 총 13~18시간), §7.3-B (11 Q 결정 시트), §7.3-C (§7.10·§7.1 결합), §7.3-D (코드 영향 boundary 1지점 전략), §7.3-E (위험 요소). Week 2 일정에 §7.3.1~§7.3.4 + §7.10 + §7.1 결합 진행 박음. 코드 변경 0건.
 - 2026-05-02: §3 batchSize=3 균등 분포 + batchSize=7 잘림 X 보장 (commit 87f3aaf) + 카운트다운 애니메이션 1s 동기화·fade-out (commit 6283ad9) + swipe 모달 controlled 상태 머신 modal→countdown→note (commit 941b04f) + swipe 모달 회귀 fix (commit 6f5290f) + 모달·카운트다운 중 음표·NoteButtons·정답 라벨·조표 가드 (commits c1b9d7c·717797e) + Lv 1~4 batchSize=1 stage 정책 갱신 Sub1=33음표·Sub2=42음표·Sub3=52음표 (commit 400dca2) + 블로그 3일차 6편 한+영 (commit 7a1ebdd) + 블로그 이미지 CSS 제한 (commit 8091e8e). 373/373 PASS.
 - 2026-05-03 (Opus 4.7): **§7.10 sub-step 3개 + §7.1 실측 17 사이트 + §7.3.1 결정 시트 완료** — §7.10-A (3 sub-step), §7.10-B (6 Q 결정 시트 완료), §7.3-B (11 Q 결정 시트 완료). 코드 변경 0건. (commit 6080e0a)
-- 2026-05-03 (Sonnet 4.6): **§7.1 코드 완료** (commit 42a4b68) + **§7.10.1 결정 완료** — §7.10-B 6 Q 결정값 박힘 (Q-A:a·Q-B:a·Q-C:c·Q-D:c·Q-E:a·Q-F:c). §7.3-C 결합 정책 확정: §7.10.2 측정 로직 §7.3.3 CalibrationModal 안 통합, §7.3.3 추정 7~10시간으로 상향. §7.3.3 의존성에 §7.10.1 추가. docs 갱신 (commits 4d73b69, 본 commit).
+- 2026-05-03 (Sonnet 4.6): **§7.1 코드 완료** (commit 42a4b68) + **§7.10.1 결정 완료** — §7.10-B 6 Q 결정값 박힘 (Q-A:a·Q-B:a·Q-C:c·Q-D:c·Q-E:a·Q-F:c). §7.3-C 결합 정책 확정: §7.10.2 측정 로직 §7.3.3 CalibrationModal 안 통합, §7.3.3 추정 7~10시간으로 상향. §7.3.3 의존성에 §7.10.1 추가. docs 갱신 (commits 4d73b69, 65d005f).
+- 2026-05-03 (Sonnet 4.6): **§7.3.2 코어 lib 완료** — `src/lib/userEnvironmentOffset.ts` (localStorage r/w, DB sync, clamp, device change, skip), `src/hooks/useUserEnvOffset.ts` (needsCalibration·canSkip·deviceChanged), `supabase/migrations/20260503_add_user_env_offset.sql`. 단위 테스트 23건 신규. vitest 396/396 PASS.
