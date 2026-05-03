@@ -454,12 +454,13 @@ Public domain 클래식 곡별 레벨
 > 5월 31일까지: §7.1 (performance.now) + §7.10 (sync 검증)만 출시 전
 > 나머지 (§7.2~§7.5)는 출시 직후 1개월 내 추가
 
-### 7.1 고해상도 타임스탬프 🔴 (2주차)
+### 7.1 고해상도 타임스탬프 ✅ 완료 (2026-05-03)
 **Green Billion §2.1**
 
 - `Date.now()` → `performance.now()` 전면 전환 (**정밀도 영향 사이트만**)
-- 작업 분량: **2~3시간** (Sonnet 1세션, 사용량 ~15%)
+- 작업 분량: **2~3시간** (Sonnet 1세션, 사용량 ~15%) → **실제 1세션 내 완료**
 - 어제 백로그 명시 위치(`useNoteLogger.ts`, `useSessionRecorder.ts`)는 grep 0건 — 코드 변경됨, 아래 실측이 정정 사양
+- **완료 결과** (2026-05-03): NoteGame 12 + CountdownTimer 3 = 15 사이트 perf.now() 전환. DiagnosisTab·PremiumDialog 2 사이트 Date.now() 유지 (절대 시간). vitest 373/373 PASS, sim:test 9 invariants 위반 0건 (9984 게임 / 790,301 이벤트).
 
 **실측 17 사이트** (grep 2026-05-03):
 
@@ -654,7 +655,7 @@ Public domain 클래식 곡별 레벨
 - **§7.1 perf.now() 정밀도 의존**: §7.1 적용 후 §7.10 측정해야 정밀. 옵션 B 진행 시 §7.1 같은 세션 내 끝낸 후 §7.10.2 진입.
 
 ### 7.11 검증 체크리스트 (출시 전 + 출시 후)
-- [ ] §7.1: Date.now() 0건 (5/31 이전)
+- [x] §7.1: Date.now() 2건만 남음 (DiagnosisTab·PremiumDialog 절대 시간 사이트, 2026-05-03 완료)
 - [ ] §7.10: Sync ±5ms (5/31 이전)
 - [ ] §7.2: Web Worker 작동 (출시 후)
 - [ ] §7.3: Calibration 작동 (출시 후)
@@ -856,7 +857,7 @@ Claude가 출시 임박 시 자동 고지.
   - [ ] §7.3.3 UI + 측정 (Sonnet 6~8시간)
   - [ ] §7.3.4 reactionMs 보정 적용 (Sonnet 3~4시간)
 - [ ] **§7.10 음표-사운드 Sync 검증** (§7.3 결합 — sync 측정 없이 calibration 신뢰도 X, **§7.10 → §7.3 또는 동시 진행 권장**)
-- [ ] **§7.1 performance.now() 전환** (§7.3 결합 — Opus 권장: §7.1 먼저 → §7.3, 정밀도 일관성)
+- [x] **§7.1 performance.now() 전환** ✅ 완료 (2026-05-03, 15 사이트: NoteGame 12 + CountdownTimer 3)
 - [ ] §3.5 약점 음표 표시 (Fail 시)
 - [ ] §4.5 음표 라벨 토글 한+영+솔페주 (1~2시간)
 - [ ] §0-2.1 스키마 표류 정리
