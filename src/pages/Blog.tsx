@@ -1,13 +1,11 @@
 // src/pages/Blog.tsx
 import { useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { Sparkles } from "lucide-react";
 import Footer from "@/components/Footer";
+import Header from "@/components/Header";
 import { listBlogPosts } from "@/lib/markdownLoader";
 import { AdBanner } from "@/components/AdBanner";
 import { getSlot } from "@/lib/adsense";
-import { useAuth } from "@/contexts/AuthContext";
-import { getUserTier } from "@/lib/subscriptionTier";
 
 const CATEGORIES: Record<"ko" | "en", string[]> = {
   ko: ["all", "초견의 정석", "실전 연습 가이드", "음악 이론 & 화성학", "뮤직 테크 & 미래"],
@@ -32,9 +30,6 @@ const UI: Record<"ko" | "en", { title: string; subtitle: string; home: string; a
 };
 
 export default function Blog() {
-  const { user, profile } = useAuth();
-  const isPremium = getUserTier(user, profile) === "pro";
-
   const [lang, setLang] = useState<"ko" | "en">(() => {
     return (localStorage.getItem("noteflex.blog_lang") as "ko" | "en") || "ko";
   });
@@ -60,53 +55,43 @@ export default function Blog() {
     }
   }
 
+  const blogRight = (
+    <div className="flex items-center gap-4">
+      <div className="flex items-center gap-2 text-sm">
+        <button
+          onClick={() => handleLangChange("ko")}
+          className={
+            lang === "ko"
+              ? "font-bold text-foreground"
+              : "text-muted-foreground hover:text-foreground transition-colors"
+          }
+        >
+          한국어
+        </button>
+        <span className="text-muted-foreground">·</span>
+        <button
+          onClick={() => handleLangChange("en")}
+          className={
+            lang === "en"
+              ? "font-bold text-foreground"
+              : "text-muted-foreground hover:text-foreground transition-colors"
+          }
+        >
+          English
+        </button>
+      </div>
+      <Link
+        to="/"
+        className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+      >
+        {t.home}
+      </Link>
+    </div>
+  );
+
   return (
     <div className="min-h-screen flex flex-col bg-background">
-      <header className="border-b border-border bg-background/95 backdrop-blur-sm sticky top-0 z-10">
-        <div className="max-w-3xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Link to="/" className="flex items-center gap-2 text-base font-bold">
-              <span className="text-xl">🎼</span> Noteflex
-            </Link>
-            {isPremium && (
-              <span className="flex items-center gap-0.5 text-[10px] font-semibold bg-gradient-to-r from-amber-400 to-orange-400 text-white px-1.5 py-0.5 rounded-full">
-                <Sparkles className="h-2.5 w-2.5" /> Premium
-              </span>
-            )}
-          </div>
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 text-sm">
-              <button
-                onClick={() => handleLangChange("ko")}
-                className={
-                  lang === "ko"
-                    ? "font-bold text-foreground"
-                    : "text-muted-foreground hover:text-foreground transition-colors"
-                }
-              >
-                한국어
-              </button>
-              <span className="text-muted-foreground">·</span>
-              <button
-                onClick={() => handleLangChange("en")}
-                className={
-                  lang === "en"
-                    ? "font-bold text-foreground"
-                    : "text-muted-foreground hover:text-foreground transition-colors"
-                }
-              >
-                English
-              </button>
-            </div>
-            <Link
-              to="/"
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-            >
-              {t.home}
-            </Link>
-          </div>
-        </div>
-      </header>
+      <Header right={blogRight} />
 
       <main className="flex-1 max-w-3xl mx-auto px-4 py-10 w-full">
         <h1 className="text-3xl font-bold mb-2 text-foreground">{t.title}</h1>

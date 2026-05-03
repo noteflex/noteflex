@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, Navigate, useSearchParams } from "react-router-dom";
-import { BookOpen, RefreshCw, Sparkles } from "lucide-react";
+import { BookOpen, RefreshCw } from "lucide-react";
+import Header from "@/components/Header";
 import { AdBanner } from "@/components/AdBanner";
 import { getSlot } from "@/lib/adsense";
 import { formatDistanceToNow } from "date-fns";
@@ -18,7 +19,7 @@ import {
 } from "recharts";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
-import { getUserTier } from "@/lib/subscriptionTier";
+
 import { useUserStats, type DailyStat } from "@/hooks/useUserStats";
 import { useMyStats } from "@/hooks/useMyStats";
 import { Button } from "@/components/ui/button";
@@ -414,7 +415,6 @@ export default function Home() {
   };
 
   const isAdmin = profile?.role === "admin";
-  const isPremium = getUserTier(user, profile) === "pro";
 
   // 실제 "마지막 연습 활동" 시각 계산
   //  - 최근 세션의 started_at (가장 정확)
@@ -472,51 +472,40 @@ export default function Home() {
 
   const practicedToday = isToday(stats.lastPracticeDate);
 
+  const homeNav = (
+    <nav className="flex items-center gap-2">
+      <Button variant="outline" size="sm" asChild>
+        <Link to="/">메인</Link>
+      </Button>
+      {isAdmin ? (
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={handleLibraryClick}
+          aria-label="내 악보 (관리자 프리뷰)"
+          title="내 악보 (관리자 전용 · 준비 중)"
+        >
+          <BookOpen className="h-5 w-5" />
+        </Button>
+      ) : null}
+    </nav>
+  );
+
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-10">
-        <div className="max-w-3xl mx-auto px-4 py-4 flex items-center justify-between gap-4">
-          <div className="min-w-0">
-            <div className="flex items-center gap-2">
-              <h1 className="text-lg font-semibold tracking-tight">
-                플레이그라운드
-              </h1>
-              {isPremium && (
-                <span className="flex items-center gap-0.5 text-[10px] font-semibold bg-gradient-to-r from-amber-400 to-orange-400 text-white px-1.5 py-0.5 rounded-full">
-                  <Sparkles className="h-2.5 w-2.5" /> Premium
-                </span>
-              )}
-            </div>
-            <p className="text-xs text-muted-foreground truncate">
-              오늘의 연습과 진행 상황
-            </p>
-          </div>
-          <nav className="flex items-center gap-2 shrink-0">
-            <Button variant="outline" size="sm" asChild>
-              <Link to="/">메인</Link>
-            </Button>
-            {isAdmin ? (
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={handleLibraryClick}
-                aria-label="내 악보 (관리자 프리뷰)"
-                title="내 악보 (관리자 전용 · 준비 중)"
-              >
-                <BookOpen className="h-5 w-5" />
-              </Button>
-            ) : null}
-          </nav>
-        </div>
-        {/* 최신 업데이트 스트립 (데이터 있을 때만) */}
-        <div className="max-w-3xl mx-auto px-4 pb-3">
+      <Header
+        title={<h1 className="text-lg font-semibold tracking-tight">플레이그라운드</h1>}
+        subtitle="오늘의 연습과 진행 상황"
+        right={homeNav}
+        below={
           <LastUpdatedStrip
             lastActivity={realLastActivity}
             loading={isRefreshing}
             onRefresh={handleRefreshAll}
           />
-        </div>
-      </header>
+        }
+        headerClassName="bg-card/50"
+      />
 
       <main className="max-w-3xl mx-auto px-4 py-8 space-y-8">
         {/* 상단 요약 */}
