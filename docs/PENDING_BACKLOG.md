@@ -563,7 +563,7 @@ Public domain 클래식 곡별 레벨
 - 측정 절차 (Q-A·Q-C): 시각+사운드 동시 자극 5회, 절사 평균(최고·최저 제외 3회 평균)
 - offset 의미 (Q-B): 출력 장치 레이턴시만 — 음수 사용자 응답은 clamp 0 (Q-K)
 - skip 정책 (Q-E): 첫 진입 시 1회 skip 허용 플래그 (`profiles.calibration_skipped_once BOOLEAN` 또는 localStorage)
-- 재측정 (Q-F): 설정 페이지 수동 버튼 + AudioContext `devicechange` 이벤트 리스너
+- 재측정 (Q-F): ✅ `devicechange` 이벤트 리스너 → 자동 재측정 (메모리 #19). `device_change_events` 테이블 로깅 (A2). PENDING: 출시 후 false positive 빈도 분석 → audio output 전용 감지 보강 결정
 - 데이터 정책 (Q-I): 기존 세션 raw 유지, 신규 세션부터 offset 컬럼 추가 보관
 - 표시 정책 (Q-J): Home 보정값만 (raw 토글 영구 제거), Admin 보정+raw+offset 동시 (§7.3.5 ✅ 완료)
 - thresholds (Q-H): `useSessionRecorder.ts:56~62` 1차 그대로 유지 — 출시 후 1~2주 데이터 누적 후 재튜닝
@@ -1011,4 +1011,5 @@ Claude가 출시 임박 시 자동 고지.
 - 2026-05-03 (Sonnet 4.6): **§7.3.2 코어 lib 완료** — `src/lib/userEnvironmentOffset.ts` (localStorage r/w, DB sync, clamp, device change, skip), `src/hooks/useUserEnvOffset.ts` (needsCalibration·canSkip·deviceChanged), `supabase/migrations/20260503_add_user_env_offset.sql`. 단위 테스트 23건 신규. vitest 396/396 PASS.
 - 2026-05-03 (Opus 4.7): **§7.3.3 + §7.10.2 완료** — `src/components/CalibrationModal.tsx` (4단계 상태 머신: intro→sync-measure→env-measure→complete), `src/lib/audioVisualSync.ts` (rAF+perf.now() vs AudioContext.currentTime, measureSyncGapAverage), `src/lib/calibrationMeasurement.ts` (trimmedMean·clampOffset·isSyncOutlier). NoteGame.tsx 통합 (showCalibration gate, memory #18 순서 보장). 단위 테스트 23건 신규 (audioVisualSync 7 + calibrationMeasurement 16). vitest 419/419 PASS. sim:test 9984 games 0 violations.
 - 2026-05-03 (Sonnet 4.6): **§7.3.4 완료 — §7.3 코어 완료** — `useSessionRecorder.recordNote` boundary offset 차감 (DB 방식 C: JSONB `reaction_ms_raw` + `summary.avg_reaction_ms_raw` + `summary.offset_ms_applied`). NoteGame 3사이트 손대지 않음. speed bonus thresholds 값 유지 (corrected reactionMs 기준). 단위 테스트 6건 신규. vitest 425/425 PASS. sim:test 0 violations. PENDING: §7.3.5 Stats display (raw/corrected), speed bonus 재튜닝 (출시 후).
-- 2026-05-03 (Sonnet 4.6): **§7.3 UX fix + §7.3.5 완료** — CalibrationModal 측정 시간 30초→5초 (딜레이 200-500ms, 인터벌 100ms), 측정 시작 버튼 primary 색상. §7.3.5 Admin 동시 노출 완료: `useAdminUserDetail` summary select 추가, `AdminUserDetail.tsx` 보정값+raw+offset 동시 표시. Q-J 정책 정정 (Home raw 토글 영구 제거, 메모리 #19). device 감지 fix 대기 중 (작업 1, 사용자 OK 후 진행).
+- 2026-05-03 (Sonnet 4.6): **§7.3 UX fix + §7.3.5 완료** — CalibrationModal 측정 시간 30초→5초, 측정 시작 버튼 primary 색상. §7.3.5 Admin 동시 노출 완료. Q-J 정책 정정 (Home raw 토글 영구 제거, 메모리 #19).
+- 2026-05-03 (Sonnet 4.6): **§7.3 device 변경 자동 재측정 + A2 이벤트 로깅** — `onDeviceChange` 시그니처 갱신 (kinds 전달), `setIsCalibrated(false)` → 다음 게임 자동 모달 (메모리 #19 옵션 C). `device_change_events` 테이블 + migration SQL. `logDeviceChangeEvent`·`updateDeviceChangeEvent` 신규. 단위 테스트 8건 신규. vitest 433/433 PASS. PENDING: 출시 후 false positive 분석 → audio output 전용 감지 보강.
