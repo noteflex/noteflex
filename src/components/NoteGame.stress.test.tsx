@@ -75,6 +75,20 @@ vi.mock("@/hooks/useLevelProgress", () => ({
   }),
 }));
 
+vi.mock("@/hooks/useUserEnvOffset", () => ({
+  useUserEnvOffset: () => ({
+    offsetMs: 0,
+    isCalibrated: true,
+    needsCalibration: false,
+    canSkip: true,
+    deviceChanged: false,
+    setOffset: vi.fn().mockResolvedValue(undefined),
+    clearOffset: vi.fn().mockResolvedValue(undefined),
+    skipCalibration: vi.fn(),
+    resetDeviceChanged: vi.fn(),
+  }),
+}));
+
 vi.mock("@/components/practice/GrandStaffPractice", () => ({
   TOTAL_SLOTS: 10,
   GrandStaffPractice: ({ targetNote }: { targetNote: string | null }) => (

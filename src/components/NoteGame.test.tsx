@@ -69,6 +69,20 @@ vi.mock("@/hooks/useLevelProgress", () => ({
   }),
 }));
 
+vi.mock("@/hooks/useUserEnvOffset", () => ({
+  useUserEnvOffset: () => ({
+    offsetMs: 0,
+    isCalibrated: true,
+    needsCalibration: false,
+    canSkip: true,
+    deviceChanged: false,
+    setOffset: vi.fn().mockResolvedValue(undefined),
+    clearOffset: vi.fn().mockResolvedValue(undefined),
+    skipCalibration: vi.fn(),
+    resetDeviceChanged: vi.fn(),
+  }),
+}));
+
 // GrandStaffPractice는 렌더링만 되면 되므로 단순화
 vi.mock("@/components/practice/GrandStaffPractice", () => ({
   TOTAL_SLOTS: 10,

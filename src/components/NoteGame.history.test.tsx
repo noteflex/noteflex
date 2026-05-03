@@ -80,6 +80,20 @@ vi.mock("@/hooks/useLevelProgress", () => ({
   }),
 }));
 
+vi.mock("@/hooks/useUserEnvOffset", () => ({
+  useUserEnvOffset: () => ({
+    offsetMs: 0,
+    isCalibrated: true,
+    needsCalibration: false,
+    canSkip: true,
+    deviceChanged: false,
+    setOffset: vi.fn().mockResolvedValue(undefined),
+    clearOffset: vi.fn().mockResolvedValue(undefined),
+    skipCalibration: vi.fn(),
+    resetDeviceChanged: vi.fn(),
+  }),
+}));
+
 interface CurrentQuestion {
   key: string;
   octave: string;
