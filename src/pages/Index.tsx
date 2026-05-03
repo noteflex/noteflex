@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import Header from "@/components/Header";
 import { PremiumBadge } from "@/components/PremiumBadge";
 import { initSound } from "@/lib/sound";
 import NoteGame from "@/components/NoteGame";
@@ -215,6 +216,41 @@ export default function Index() {
     navigate("/");
   };
 
+  // 랜딩 + 레벨 선택 화면 Header 우측 슬롯
+  const pageHeaderRight = GAME_ENABLED && !authLoading ? (
+    user ? (
+      <div className="flex items-center gap-3">
+        <Link
+          to="/home"
+          className="text-xs px-3 py-1.5 rounded-lg border border-border text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+        >
+          연습 대시보드
+        </Link>
+        <Link
+          to="/profile"
+          className="text-xs px-3 py-1.5 rounded-lg border border-border text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+        >
+          프로필
+        </Link>
+        <span className="text-xs text-muted-foreground truncate max-w-[150px]">{user.email}</span>
+        <PremiumBadge />
+        <button
+          onClick={handleSignOut}
+          className="text-xs px-3 py-1.5 rounded-lg border border-border text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+        >
+          로그아웃
+        </button>
+      </div>
+    ) : (
+      <button
+        onClick={() => setShowAuth(true)}
+        className="text-xs px-4 py-1.5 rounded-lg bg-primary text-primary-foreground font-semibold hover:bg-primary/90 transition-colors"
+      >
+        로그인 / 회원가입
+      </button>
+    )
+  ) : null;
+
   // ─────────────────────────────────────
   // 라우트: "/" → 메인 화면
   // ─────────────────────────────────────
@@ -224,16 +260,10 @@ export default function Index() {
         className="min-h-screen flex flex-col"
         style={{ background: "radial-gradient(circle at top, #ffffff 0%, #f8f5e4 100%)" }}
       >
-        <AuthBar
-          authLoading={authLoading}
-          user={user}
-
-          onSignOut={handleSignOut}
-          onLoginRequest={() => setShowAuth(true)}
-        />
+        <Header right={pageHeaderRight} />
         {showAuth && GAME_ENABLED && <AuthModal onClose={() => setShowAuth(false)} />}
 
-        <div className="safe-area-page flex-1 flex flex-col items-center justify-center gap-8 px-4 pt-14 pb-10">
+        <div className="safe-area-page flex-1 flex flex-col items-center justify-center gap-8 px-4 pb-10">
           <div className="flex flex-col items-center gap-4 animate-fade-up">
             <span className="text-7xl">🎼</span>
             <h1
@@ -357,16 +387,10 @@ export default function Index() {
 
   if (screen === "levelSelect") {
     return (
-      <>
-        <AuthBar
-          authLoading={authLoading}
-          user={user}
-
-          onSignOut={handleSignOut}
-          onLoginRequest={() => setShowAuth(true)}
-        />
+      <div className="flex flex-col min-h-screen">
+        <Header right={pageHeaderRight} />
         {showAuth && <AuthModal onClose={() => setShowAuth(false)} />}
-        <div className="safe-area-page flex flex-col items-center min-h-screen px-4 pt-14 overflow-y-auto">
+        <div className="safe-area-page flex-1 flex flex-col items-center px-4 overflow-y-auto">
           <LevelSelect
             onSelectSublevel={handleSelectSublevel}
             onBack={handleGoMain}
@@ -376,7 +400,7 @@ export default function Index() {
             <AdBanner slot={getSlot("BANNER")} format="horizontal" />
           </div>
         </div>
-      </>
+      </div>
     );
   }
 
