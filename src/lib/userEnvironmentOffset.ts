@@ -76,12 +76,65 @@ export async function loadOffsetFromProfile(
 
 // ─── device change listener (Q-F) ────────────────────────────
 
-export function onDeviceChange(callback: () => void): () => void {
+export function onDeviceChange(
+  callback: (event: { kinds: string[] }) => void
+): () => void {
   if (typeof navigator === "undefined" || !navigator.mediaDevices) {
     return () => {};
   }
-  navigator.mediaDevices.addEventListener("devicechange", callback);
-  return () => {
-    navigator.mediaDevices.removeEventListener("devicechange", callback);
+  const handler = () => {
+    navigator.mediaDevices
+      .enumerateDevices()
+      .then((devices) => {
+        const kinds = [...new Set(devices.map((d) => d.kind))];
+        callback({ kinds });
+      })
+      .catch(() => {
+        callback({ kinds: [] });
+      });
   };
+  navigator.mediaDevices.addEventListener("devicechange", handler);
+  return () => {
+    navigator.mediaDevices.removeEventListener("devicechange", handler);
+  };
+}
+
+// ─── device_change_events 로깅 (A2) ──────────────────────────
+
+export async function logDeviceChangeEvent(params: {
+  userId: string;
+  deviceKinds: string[];
+  previousOffsetMs: number | null;
+  triggeredRecalibration: boolean;
+}): Promise<string | null> {
+  const { data, error } = await supabase
+    .from("device_change_events")
+    .insert({
+      user_id: params.userId,
+      device_kinds: params.deviceKinds,
+      triggered_recalibration: params.triggeredRecalibration,
+      previous_offset_ms: params.previousOffsetMs,
+      user_agent:
+        typeof navigator !== "undefined" ? navigator.userAgent : null,
+    })
+    .select("id")
+    .single();
+  if (error) {
+    console.warn("[userEnvOffset] logDeviceChangeEvent error:", error);
+    return null;
+  }
+  return (data as { id: string }).id;
+}
+
+export async function updateDeviceChangeEvent(
+  eventId: string,
+  newOffsetMs: number
+): Promise<void> {
+  const { error } = await supabase
+    .from("device_change_events")
+    .update({ new_offset_ms: newOffsetMs })
+    .eq("id", eventId);
+  if (error) {
+    console.warn("[userEnvOffset] updateDeviceChangeEvent error:", error);
+  }
 }
