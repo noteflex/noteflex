@@ -9,12 +9,12 @@ interface CountdownTimerProps {
 
 export default function CountdownTimer({ duration, resetKey, onExpire, paused = false }: CountdownTimerProps) {
   const [remaining, setRemaining] = useState(duration * 1000);
-  const startRef = useRef(Date.now());
+  const startRef = useRef(performance.now());
   const expiredRef = useRef(false);
 
   useEffect(() => {
     setRemaining(duration * 1000);
-    startRef.current = Date.now();
+    startRef.current = performance.now();
     expiredRef.current = false;
   }, [resetKey, duration]);
 
@@ -22,7 +22,7 @@ export default function CountdownTimer({ duration, resetKey, onExpire, paused = 
     if (paused) return;
 
     const interval = setInterval(() => {
-      const elapsed = Date.now() - startRef.current;
+      const elapsed = performance.now() - startRef.current;
       const left = Math.max(0, duration * 1000 - elapsed);
       setRemaining(left);
 
