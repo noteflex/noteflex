@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Sparkles } from "lucide-react";
 import { initSound } from "@/lib/sound";
 import NoteGame from "@/components/NoteGame";
 import LevelSelect from "@/components/LevelSelect";
@@ -7,6 +8,7 @@ import AuthModal from "@/components/AuthModal";
 import Footer from "@/components/Footer";
 import { useAuth } from "@/contexts/AuthContext";
 import { GAME_ENABLED } from "@/lib/featureFlags";
+import { getUserTier } from "@/lib/subscriptionTier";
 import { AdBanner } from "@/components/AdBanner";
 import { AdInterstitialModal } from "@/components/AdInterstitialModal";
 import { onAdGameEnd } from "@/lib/adInterstitial";
@@ -24,10 +26,11 @@ type PlayScreen = "loading" | "levelSelect" | "game";
 interface AuthBarProps {
   authLoading: boolean;
   user: { email?: string } | null;
+  isPremium: boolean;
   onSignOut: () => void;
   onLoginRequest: () => void;
 }
-function AuthBar({ authLoading, user, onSignOut, onLoginRequest }: AuthBarProps) {
+function AuthBar({ authLoading, user, isPremium, onSignOut, onLoginRequest }: AuthBarProps) {
   // Coming Soon 모드: 로그인/계정 UI 전체 숨김 (관리자는 /admin 직접 접근)
   if (!GAME_ENABLED) {
     return (
@@ -58,6 +61,11 @@ function AuthBar({ authLoading, user, onSignOut, onLoginRequest }: AuthBarProps)
           <span className="text-xs text-muted-foreground truncate max-w-[150px]">
             {user.email}
           </span>
+          {isPremium && (
+            <span className="flex items-center gap-0.5 text-[10px] font-semibold bg-gradient-to-r from-amber-400 to-orange-400 text-white px-1.5 py-0.5 rounded-full">
+              <Sparkles className="h-2.5 w-2.5" /> Premium
+            </span>
+          )}
           <button
             onClick={onSignOut}
             className="text-xs px-3 py-1.5 rounded-lg border border-border text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
@@ -79,6 +87,7 @@ function AuthBar({ authLoading, user, onSignOut, onLoginRequest }: AuthBarProps)
 
 export default function Index() {
   const { user, profile, loading: authLoading, signOut } = useAuth();
+  const isPremium = getUserTier(user, profile) === "pro";
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -224,6 +233,7 @@ export default function Index() {
         <AuthBar
           authLoading={authLoading}
           user={user}
+          isPremium={isPremium}
           onSignOut={handleSignOut}
           onLoginRequest={() => setShowAuth(true)}
         />
@@ -357,6 +367,7 @@ export default function Index() {
         <AuthBar
           authLoading={authLoading}
           user={user}
+          isPremium={isPremium}
           onSignOut={handleSignOut}
           onLoginRequest={() => setShowAuth(true)}
         />

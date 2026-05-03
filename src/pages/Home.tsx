@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, Navigate, useSearchParams } from "react-router-dom";
-import { BookOpen, RefreshCw } from "lucide-react";
+import { BookOpen, RefreshCw, Sparkles } from "lucide-react";
 import { AdBanner } from "@/components/AdBanner";
 import { getSlot } from "@/lib/adsense";
 import { formatDistanceToNow } from "date-fns";
@@ -18,6 +18,7 @@ import {
 } from "recharts";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
+import { getUserTier } from "@/lib/subscriptionTier";
 import { useUserStats, type DailyStat } from "@/hooks/useUserStats";
 import { useMyStats } from "@/hooks/useMyStats";
 import { Button } from "@/components/ui/button";
@@ -413,6 +414,7 @@ export default function Home() {
   };
 
   const isAdmin = profile?.role === "admin";
+  const isPremium = getUserTier(user, profile) === "pro";
 
   // 실제 "마지막 연습 활동" 시각 계산
   //  - 최근 세션의 started_at (가장 정확)
@@ -475,9 +477,16 @@ export default function Home() {
       <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-10">
         <div className="max-w-3xl mx-auto px-4 py-4 flex items-center justify-between gap-4">
           <div className="min-w-0">
-            <h1 className="text-lg font-semibold tracking-tight">
-              플레이그라운드
-            </h1>
+            <div className="flex items-center gap-2">
+              <h1 className="text-lg font-semibold tracking-tight">
+                플레이그라운드
+              </h1>
+              {isPremium && (
+                <span className="flex items-center gap-0.5 text-[10px] font-semibold bg-gradient-to-r from-amber-400 to-orange-400 text-white px-1.5 py-0.5 rounded-full">
+                  <Sparkles className="h-2.5 w-2.5" /> Premium
+                </span>
+              )}
+            </div>
             <p className="text-xs text-muted-foreground truncate">
               오늘의 연습과 진행 상황
             </p>
