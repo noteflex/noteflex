@@ -533,7 +533,7 @@ Public domain 클래식 곡별 레벨
 |---|---|---|---|---|---|
 | §7.3.1 | 명세 박기 + 사용자 결정 (11 Q 결정 시트) + 데이터 모델·skip·재측정·DB 컬럼 확정 | 1~2시간 | 25~30% | Sonnet | — |
 | §7.3.2 | 코어 lib + 영속화 (`userEnvironmentOffset.ts`, profile sync, 마이그레이션 SQL, 단위 테스트) | 3~4시간 | 25~30% | Sonnet | §7.3.1 |
-| §7.3.3 | Calibration UI + 측정 (`CalibrationModal.tsx`, 자극 송출, outlier reject·평균, 결과 표시·저장, 첫 진입 가드) | 6~8시간 | 35~45% | Sonnet | §7.3.2, `sound.ts` (`ensureAudioReady`) |
+| §7.3.3 | Calibration UI + 측정 (`CalibrationModal.tsx`, 자극 송출, outlier reject·평균, 결과 표시·저장, 첫 진입 가드) **+ §7.10.2 sync 측정 통합** (CalibrationModal 2단계: 1단계 sync 3회 평균 / 2단계 env offset 5회 절사 평균, Q-C 결정) | 7~10시간 | 40~50% | Sonnet | §7.3.2, `sound.ts` (`ensureAudioReady`), §7.10.1 ✅ |
 | §7.3.4 | reactionMs 보정 적용 (boundary 1지점 전략 — `useSessionRecorder.recordNote` 진입 시 offset 차감, NoteGame 3사이트 손대지 X, clamp 0, speed threshold 의미 재정의, 회귀 테스트) | 3~4시간 | 20~25% | Sonnet | §7.3.2 |
 
 **총합**: ~13~18시간 (≈2일). 단계별 독립 commit, 각 단계 Sonnet 1세션 충분.
@@ -568,10 +568,10 @@ Public domain 클래식 곡별 레벨
 - 표시 정책 (Q-J): Home은 보정값 default + raw 토글, Admin은 raw default + 보정 동시
 - thresholds (Q-H): `useSessionRecorder.ts:56~62` 1차 그대로 유지 — 출시 후 1~2주 데이터 누적 후 재튜닝
 
-#### 7.3-C 결합 영역 (Opus 분석 2026-05-02)
+#### 7.3-C 결합 영역 (Opus 분석 2026-05-02, 갱신 2026-05-03)
 
-- **§7.10 (음표-사운드 sync 검증)**: sync 측정 없이 calibration 만들면 측정값 신뢰도 X. **순서: §7.10 → §7.3 또는 동시 진행**.
-- **§7.1 (Date.now → performance.now)**: §7.1 먼저 → §7.3 권장 (정밀도 일관성). §7.3 먼저 진행 시 §7.1 통합 시 calibration 측정 코드도 함께 전환 부담.
+- **§7.10 (음표-사운드 sync 검증)**: ~~sync 측정 없이 calibration 만들면 측정값 신뢰도 X. 순서: §7.10 → §7.3 또는 동시 진행.~~ → **Q-C 결정 (2026-05-03)으로 확정: §7.10.2 측정 로직을 §7.3.3 CalibrationModal 안 통합**. CalibrationModal 2단계 (1단계 sync / 2단계 env offset). 별도 §7.10 세션 불필요. §7.3.3 진입 시 §7.10.2 포함해서 작업.
+- **§7.1 (Date.now → performance.now)**: ✅ 2026-05-03 완료 (15 사이트). §7.3 calibration 측정 코드 전환 부담 없음.
 - **§0.4 (GrandStaffPractice)**: 직교 영역 — 충돌 없음.
 
 #### 7.3-D 코드 영향 범위 (실측, Opus 2026-05-02)
@@ -617,28 +617,38 @@ Public domain 클래식 곡별 레벨
 ### 7.10 음표-사운드 Sync 검증 🔴 (2주차)
 **설계 §3.3.마**
 
-- 현재 sync 측정 → ±5ms 이내 확인
+- 현재 sync 측정 → **±10ms 시작 → 실측 후 재조정** (Q-D 결정 2026-05-03: Safari rAF 정밀도 한계 + 인간 perception threshold ≈ 15~30ms)
 
 #### 7.10-A 작업 분할 (3 sub-step) — Opus 분석 2026-05-03
 
 | 단계 | 범위 | 시간 | 사용량 | 모델 | 의존성 |
 |---|---|---|---|---|---|
-| §7.10.1 | 명세 박기 + 사용자 결정 (Q-시트 6 Q, 측정 방식·도구·시점·기준 확정) | 1~2시간 | 15~20% | Sonnet | — |
-| §7.10.2 | 측정 도구 + 실측 (visual paint vs audio start 시점차 측정, 브라우저·디바이스 매트릭스) | 3~5시간 | 25~30% | Sonnet | §7.10.1, §7.1 (`perf.now()` 적용 후 측정 정밀) |
-| §7.10.3 | 보정 적용 (±5ms 초과 시 audio 송출 시점 또는 시각 paint 조정), 회귀 테스트 | 2~4시간 | 20~25% | Sonnet | §7.10.2 |
+| §7.10.1 | ~~명세 박기 + 사용자 결정 (Q-시트 6 Q, 측정 방식·도구·시점·기준 확정)~~ ✅ 완료 (2026-05-03) | — | — | — | — |
+| §7.10.2 | 측정 로직 구현 — rAF+perf.now() vs AudioContext.currentTime, PerformanceObserver + AudioContext. **§7.3.3 CalibrationModal 안 통합** (Q-C 결정: calibration 모달 2단계 — 1단계 sync 측정 / 2단계 env offset 측정). 브라우저·디바이스 매트릭스 실측 | 3~5시간 | 25~30% | Sonnet | §7.10.1 ✅, §7.1 ✅ |
+| §7.10.3 | 보정 적용 — **±10ms 초과 시 audio 송출 시점 조정만** (Q-D·Q-E 결정). **Q-F: sync gap > ±20ms → calibration 해당 회차 outlier 제외**. 회귀 테스트. §7.3.4와 결합 가능 | 2~4시간 | 20~25% | Sonnet | §7.10.2 |
 
-**총합**: ~6~11시간 (≈1~1.5일). 단계별 독립 commit, 각 단계 Sonnet 1세션 충분.
+**총합**: ~5~9시간 (§7.10.1 완료 제외). 단계별 독립 commit. **§7.10.2는 §7.3.3 작업 세션에 통합 진행** (별도 세션 불필요).
 
-#### 7.10-B 사용자 결정 시트 (6 Q — §7.10.1에서 박을 것)
+#### 7.10-B 사용자 결정 시트 (6 Q — §7.10.1 결정 완료 2026-05-03)
 
-| # | 결정 항목 | 옵션 |
-|---|---|---|
-| Q-A | **측정 방식** | (a) visual paint timestamp(`requestAnimationFrame` 후 `perf.now()`) vs audio start timestamp(`AudioContext.currentTime`) 비교 / (b) Performance API `paint` entry 활용 / (c) 외부 카메라+마이크 측정 (정밀도 ↑↑) |
-| Q-B | **측정 도구** | (a) 브라우저 내장 (PerformanceObserver + AudioContext) / (b) Audio Worklet 정밀 측정 / (c) 외부 도구 (예: 화면+오디오 동시 녹음 후 분석) |
-| Q-C | **측정 시점** | (a) `handleCountdownComplete` (게임 시작 시 1회) / (b) 음표 송출 매 시점 (지속 측정) / (c) 자동 calibration 모달 안 별도 측정 |
-| Q-D | **±5ms 기준** | (a) 그대로 / (b) 더 엄격(±3ms) / (c) 더 느슨(±10ms) — 브라우저별·디바이스별 정밀도 한계 고려 |
-| Q-E | **보정 방식** | (a) audio 송출 시점 조정만 / (b) 시각 paint 조정만 / (c) 둘 다 (방향 따라) |
-| Q-F | **§7.3 결합** | (a) §7.10 sync 측정값 → calibration baseline 영향 0 (독립) / (b) sync offset도 calibration offset에 포함 (합산) / (c) sync는 calibration 측정 outlier 검출 기준 |
+> 사용자 결정 (2026-05-03): CTO 권장 그대로 일괄 OK. §7.10.2~§7.10.3 작업 시 아래 결정값 그대로 구현에 박을 것.
+
+| # | 결정 항목 | 옵션 | **결정 (2026-05-03)** |
+|---|---|---|---|
+| Q-A | **측정 방식** | (a) visual paint timestamp(`requestAnimationFrame` 후 `perf.now()`) vs audio start timestamp(`AudioContext.currentTime`) 비교 / (b) Performance API `paint` entry 활용 / (c) 외부 카메라+마이크 측정 (정밀도 ↑↑) | **(a) rAF+perf.now() vs AudioContext.currentTime** — §7.1 완료로 perf.now() 이미 도입, 추가 API 0, AudioContext.currentTime이 가장 정밀한 audio 시계 (Chrome ≈ 0.02ms) |
+| Q-B | **측정 도구** | (a) 브라우저 내장 (PerformanceObserver + AudioContext) / (b) Audio Worklet 정밀 측정 / (c) 외부 도구 (예: 화면+오디오 동시 녹음 후 분석) | **(a) PerformanceObserver + AudioContext** — 기존 AudioContext 재사용, 최소 추가 코드. Audio Worklet은 §7.9와 출시 후 통합 |
+| Q-C | **측정 시점** | (a) `handleCountdownComplete` (게임 시작 시 1회) / (b) 음표 송출 매 시점 (지속 측정) / (c) 자동 calibration 모달 안 별도 측정 | **(c) calibration 모달 안 별도 단계** — §7.3 CalibrationModal 2단계 통합 (1단계 sync 3회 평균 / 2단계 env offset 5회 절사 평균), 사용자 마찰 최소화 |
+| Q-D | **±5ms 기준** | (a) 그대로 / (b) 더 엄격(±3ms) / (c) 더 느슨(±10ms) — 브라우저별·디바이스별 정밀도 한계 고려 | **(c) ±10ms 시작 → 실측 후 재조정** — Safari rAF 정밀도 한계 (cross-origin isolation 없으면 최대 20ms 오차), 인간 perception threshold ≈ 15~30ms |
+| Q-E | **보정 방식** | (a) audio 송출 시점 조정만 / (b) 시각 paint 조정만 / (c) 둘 다 (방향 따라) | **(a) audio 송출 시점 조정만** — 시각 조정은 reactionMs 측정 기준점 왜곡 위험. AudioContext 스케줄링 파라미터 1개만 변경, 코드 영향 최소 |
+| Q-F | **§7.3 결합** | (a) §7.10 sync 측정값 → calibration baseline 영향 0 (독립) / (b) sync offset도 calibration offset에 포함 (합산) / (c) sync는 calibration 측정 outlier 검출 기준 | **(c) sync = calibration outlier 검출 기준** — sync gap > ±20ms 회차는 calibration 측정에서 제외. §7.3 Q-C 절사 평균과 자연 통합, 역할 분리 명확 |
+
+**§7.10.2 진입 시 적용 사항** (위 결정 그대로 구현에 반영):
+- 측정 공식 (Q-A): `syncGap = audioContext.currentTime × 1000 - rafTimestamp` (ms)
+- 도구 (Q-B): PerformanceObserver + AudioContext — sound.ts `ensureAudioReady` 활용
+- 측정 위치 (Q-C): CalibrationModal 1단계, 3회 측정 → 평균
+- 기준 (Q-D): ±10ms pass/fail, §7.10.2 실측 후 재조정
+- 보정 (Q-E): `playNote` 호출 시 `AudioContext.currentTime + syncOffset` 적용
+- §7.3 결합 (Q-F): `syncGap > ±20ms` → 해당 calibration 회차 outlier 마킹 후 제외
 
 #### 7.10-C 코드 영향 범위 (Opus 2026-05-03)
 
@@ -656,7 +666,7 @@ Public domain 클래식 곡별 레벨
 
 ### 7.11 검증 체크리스트 (출시 전 + 출시 후)
 - [x] §7.1: Date.now() 2건만 남음 (DiagnosisTab·PremiumDialog 절대 시간 사이트, 2026-05-03 완료)
-- [ ] §7.10: Sync ±5ms (5/31 이전)
+- [ ] §7.10: Sync ±10ms (5/31 이전, Q-D 결정 반영 — 실측 후 재조정)
 - [ ] §7.2: Web Worker 작동 (출시 후)
 - [ ] §7.3: Calibration 작동 (출시 후)
 - [ ] §7.4: 부동소수점 0건 (출시 후)
@@ -996,3 +1006,5 @@ Claude가 출시 임박 시 자동 고지.
 - 2026-05-01 (밤): §4 retry 시스템 통합 재정의 — composeBatch (retry 큐 통합), missedNotes Map, final-retry phase 동적 batchSize (3·5·7) — commits 5e37084, 7338406, eb8b5e2. §1 사운드 동기 (5f62244), §2 카운트다운 음표 숨김 (58c4aab). 시뮬레이터 §4 parity (1215178) + final-retry dedup fix (옵션 5+7) + 신규 invariant 테스트. **§0.1 dedup 정책 — 모든 batch 생성 경로 적용**: composeBatch (popDueOrNull lastShown skip + generateBatch prev), composeFinalRetryBatch (옵션 5 sort + 옵션 7 retry skip 예외), generateBatch (내부 prev). 향후 batch 생성 경로 신규 추가 시 위 dedup 정책 명시 적용 필수 — §0.1 회귀 방지.
 - 2026-05-02 (Opus 4.7 분석): **§7.3 Calibration 작업 분할 + 결정 시트 + 위험 분석 박힘** — §7.3-A (4 sub-step, 총 13~18시간), §7.3-B (11 Q 결정 시트), §7.3-C (§7.10·§7.1 결합), §7.3-D (코드 영향 boundary 1지점 전략), §7.3-E (위험 요소). Week 2 일정에 §7.3.1~§7.3.4 + §7.10 + §7.1 결합 진행 박음. 코드 변경 0건.
 - 2026-05-02: §3 batchSize=3 균등 분포 + batchSize=7 잘림 X 보장 (commit 87f3aaf) + 카운트다운 애니메이션 1s 동기화·fade-out (commit 6283ad9) + swipe 모달 controlled 상태 머신 modal→countdown→note (commit 941b04f) + swipe 모달 회귀 fix (commit 6f5290f) + 모달·카운트다운 중 음표·NoteButtons·정답 라벨·조표 가드 (commits c1b9d7c·717797e) + Lv 1~4 batchSize=1 stage 정책 갱신 Sub1=33음표·Sub2=42음표·Sub3=52음표 (commit 400dca2) + 블로그 3일차 6편 한+영 (commit 7a1ebdd) + 블로그 이미지 CSS 제한 (commit 8091e8e). 373/373 PASS.
+- 2026-05-03 (Opus 4.7): **§7.10 sub-step 3개 + §7.1 실측 17 사이트 + §7.3.1 결정 시트 완료** — §7.10-A (3 sub-step), §7.10-B (6 Q 결정 시트 완료), §7.3-B (11 Q 결정 시트 완료). 코드 변경 0건. (commit 6080e0a)
+- 2026-05-03 (Sonnet 4.6): **§7.1 코드 완료** (commit 42a4b68) + **§7.10.1 결정 완료** — §7.10-B 6 Q 결정값 박힘 (Q-A:a·Q-B:a·Q-C:c·Q-D:c·Q-E:a·Q-F:c). §7.3-C 결합 정책 확정: §7.10.2 측정 로직 §7.3.3 CalibrationModal 안 통합, §7.3.3 추정 7~10시간으로 상향. §7.3.3 의존성에 §7.10.1 추가. docs 갱신 (commits 4d73b69, 본 commit).
