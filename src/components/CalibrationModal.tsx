@@ -79,7 +79,7 @@ export default function CalibrationModal({
 
   const scheduleStimulus = useCallback(() => {
     setEnvStep("ready");
-    const delay = 600 + Math.random() * 900; // 600~1500ms 랜덤 딜레이
+    const delay = 200 + Math.random() * 300; // 200~500ms 랜덤 딜레이
     stimulusTimerRef.current = setTimeout(() => {
       setEnvStep("stimulus");
       stimulusTimeRef.current = performance.now();
@@ -111,7 +111,7 @@ export default function CalibrationModal({
   // recorded → 다음 자극 준비
   useEffect(() => {
     if (envStep === "recorded" && phase === "env-measure") {
-      const t = setTimeout(() => scheduleStimulus(), 400);
+      const t = setTimeout(() => scheduleStimulus(), 100);
       return () => clearTimeout(t);
     }
   }, [envStep, phase, scheduleStimulus]);
@@ -151,7 +151,7 @@ export default function CalibrationModal({
                 onClick={runSyncMeasure}
                 className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-semibold text-sm active:scale-95 transition-transform"
               >
-                시작 (약 30초)
+                시작 (약 5초)
               </button>
               {canSkip && (
                 <button
@@ -218,7 +218,7 @@ export default function CalibrationModal({
             {envStep === "waiting" && (
               <button
                 onClick={scheduleStimulus}
-                className="mt-4 w-full py-3 rounded-xl bg-secondary text-secondary-foreground font-semibold text-sm active:scale-95 transition-transform"
+                className="mt-4 w-full py-3 rounded-xl bg-primary text-primary-foreground font-semibold text-sm active:scale-95 transition-transform"
               >
                 측정 시작
               </button>
