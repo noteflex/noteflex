@@ -6,7 +6,7 @@ import Header from "@/components/Header";
 import MarkdownContent from "@/components/MarkdownContent";
 import { loadBlogPost, type BlogPost as BlogPostType } from "@/lib/markdownLoader";
 import { AdBanner } from "@/components/AdBanner";
-import { getSlot, isAdsEnabled } from "@/lib/adsense";
+import { getSlot } from "@/lib/adsense";
 
 export default function BlogPost() {
   const { lang, slug } = useParams<{ lang: string; slug: string }>();
@@ -41,8 +41,6 @@ export default function BlogPost() {
     ? `/blog?category=${encodeURIComponent(postCategory)}`
     : "/blog";
 
-  const adsOn = isAdsEnabled();
-
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Header
@@ -58,11 +56,9 @@ export default function BlogPost() {
 
       {/* 데스크톱: 좌/우 사이드바 광고 | 모바일: 없음 (하단 배너로 대체) */}
       <div className="flex-1 flex justify-center">
-        {adsOn && (
-          <aside className="hidden lg:flex flex-col items-end pt-10 pr-4 w-40 shrink-0">
-            <AdBanner slot={getSlot("SIDEBAR_LEFT")} format="vertical" />
-          </aside>
-        )}
+        <aside className="hidden lg:flex flex-col items-end pt-10 pr-4 w-40 shrink-0">
+          <AdBanner slot={getSlot("SIDEBAR_LEFT")} format="vertical" />
+        </aside>
 
         <main className="flex-1 max-w-3xl min-w-0 px-4 py-10">
           {loading ? (
@@ -99,11 +95,9 @@ export default function BlogPost() {
           )}
         </main>
 
-        {adsOn && (
-          <aside className="hidden lg:flex flex-col items-start pt-10 pl-4 w-40 shrink-0">
-            <AdBanner slot={getSlot("SIDEBAR_RIGHT")} format="vertical" />
-          </aside>
-        )}
+        <aside className="hidden lg:flex flex-col items-start pt-10 pl-4 w-40 shrink-0">
+          <AdBanner slot={getSlot("SIDEBAR_RIGHT")} format="vertical" />
+        </aside>
       </div>
 
       {/* 모바일 하단 배너 (데스크톱에서는 사이드바가 대신함) */}
