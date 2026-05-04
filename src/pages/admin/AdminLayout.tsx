@@ -1,6 +1,5 @@
-import { Link, NavLink, Outlet } from "react-router-dom";
-import { Users, ScrollText, BarChart3, Home as HomeIcon } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { NavLink, Outlet } from "react-router-dom";
+import { Users, ScrollText, BarChart3 } from "lucide-react";
 import Header from "@/components/Header";
 import AdminGuard from "@/components/admin/AdminGuard";
 
@@ -18,19 +17,11 @@ export default function AdminLayout() {
           containerClassName="max-w-6xl"
           headerClassName="bg-card/50"
           right={
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-1.5">
-                <span className="text-sm font-semibold text-foreground">관리자 콘솔</span>
-                <span className="text-[10px] font-semibold bg-red-500/10 text-red-600 px-1.5 py-0.5 rounded">
-                  ADMIN
-                </span>
-              </div>
-              <Button variant="outline" size="sm" asChild>
-                <Link to="/home">
-                  <HomeIcon className="h-4 w-4 mr-1" />
-                  플레이그라운드
-                </Link>
-              </Button>
+            <div className="flex items-center gap-1.5">
+              <span className="text-sm font-semibold text-foreground">관리자 콘솔</span>
+              <span className="text-[10px] font-semibold bg-red-500/10 text-red-600 px-1.5 py-0.5 rounded">
+                ADMIN
+              </span>
             </div>
           }
           below={
