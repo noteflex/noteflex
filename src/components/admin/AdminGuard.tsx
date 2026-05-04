@@ -30,7 +30,7 @@ export default function AdminGuard({ children }: { children: ReactNode }) {
 
   // 프로필 왔는데 admin 아님
   if (profile.role !== "admin") {
-    return <Navigate to="/home" replace />;
+    return <Navigate to="/dashboard" replace />;
   }
 
   return <>{children}</>;

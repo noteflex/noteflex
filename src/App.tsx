@@ -5,7 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthContext";
 import Index from "./pages/Index.tsx";
-import Home from "./pages/Home.tsx";
+import Dashboard from "./pages/Dashboard.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import CheckoutSuccess from "./pages/CheckoutSuccess.tsx";
 import CheckoutFailed from "./pages/CheckoutFailed.tsx";
@@ -80,10 +80,10 @@ const App = () => (
               }
             />
             <Route
-              path="/home"
+              path="/dashboard"
               element={
                 <ComingSoonGate>
-                  <Home />
+                  <Dashboard />
                 </ComingSoonGate>
               }
             />
