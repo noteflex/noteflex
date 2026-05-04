@@ -5,7 +5,10 @@ import Footer from "@/components/Footer";
 import Header from "@/components/Header";
 import { listBlogPosts } from "@/lib/markdownLoader";
 import { AdBanner } from "@/components/AdBanner";
+import { InFeedAd } from "@/components/InFeedAd";
 import { getSlot } from "@/lib/adsense";
+
+const INFEED_AD_INTERVAL = 6;
 
 const CATEGORIES: Record<"ko" | "en", string[]> = {
   ko: ["all", "초견의 정석", "실전 연습 가이드", "음악 이론 & 화성학", "뮤직 테크 & 미래"],
@@ -123,31 +126,37 @@ export default function Blog() {
             <p className="text-muted-foreground py-12 text-center">{t.empty}</p>
           ) : (
             <ul className="space-y-6">
-              {posts.map((post) => (
-                <li
-                  key={post.slug}
-                  className="border-b border-border pb-6 last:border-b-0"
-                >
-                  <Link to={`/blog/${post.slug}`} className="block group">
-                    {post.category && (
-                      <span className="text-xs text-muted-foreground mb-1 block">
-                        {post.category}
-                      </span>
-                    )}
-                    <h2 className="text-xl font-bold text-foreground group-hover:text-primary transition-colors mb-1">
-                      {post.title}
-                    </h2>
-                    {post.date && (
-                      <p className="text-xs text-muted-foreground mb-2">{post.date}</p>
-                    )}
-                    {post.description && (
-                      <p className="text-sm text-foreground/80 leading-relaxed">
-                        {post.description}
-                      </p>
-                    )}
-                  </Link>
-                </li>
-              ))}
+              {posts.flatMap((post, idx) => {
+                const card = (
+                  <li
+                    key={post.slug}
+                    className="border-b border-border pb-6 last:border-b-0"
+                  >
+                    <Link to={`/blog/${post.slug}`} className="block group">
+                      {post.category && (
+                        <span className="text-xs text-muted-foreground mb-1 block">
+                          {post.category}
+                        </span>
+                      )}
+                      <h2 className="text-xl font-bold text-foreground group-hover:text-primary transition-colors mb-1">
+                        {post.title}
+                      </h2>
+                      {post.date && (
+                        <p className="text-xs text-muted-foreground mb-2">{post.date}</p>
+                      )}
+                      {post.description && (
+                        <p className="text-sm text-foreground/80 leading-relaxed">
+                          {post.description}
+                        </p>
+                      )}
+                    </Link>
+                  </li>
+                );
+                const showAdAfter = (idx + 1) % INFEED_AD_INTERVAL === 0;
+                return showAdAfter
+                  ? [card, <InFeedAd key={`infeed-${idx}`} lang={lang} />]
+                  : [card];
+              })}
             </ul>
           )}
         </main>
