@@ -356,11 +356,22 @@ CREATE TABLE tier_history (...)
 - `VITE_ADS_ENABLED=true` → AdSense script 동적 로드 + ins 태그 렌더링
 - Premium 사용자 자동 차단 (`getUserTier === "pro"` → null 반환)
 
-### 3.3 광고 배치 코드 ✅ (2026-05-03 — 사용자 결정 반영)
-- **배너**: Blog 하단 + BlogPost 데스크톱 좌/우 사이드바 + 모바일 하단 + Home 하단 + Index 랜딩 하단
-- **In-feed**: Home 대시보드 (통계 카드 ↔ 탭 사이)
+### 3.3 광고 배치 코드 ✅ (2026-05-03 초기 + 2026-05-04 보완)
+- **배너**: Blog 목록 모바일 하단 + Blog 글 모바일 하단 + Home 하단 + Index 랜딩 하단
+- **사이드바 sticky (lg+)**: Blog 목록 좌/우 ✅ + Blog 글 좌/우 ✅ (2026-05-04)
+- **In-feed**: Home 대시보드 (통계 카드 ↔ 탭 사이) + Blog 목록 6개마다 1개 ✅ (2026-05-04, `VITE_INFEED_ADS_ENABLED` 비상 스위치 박힘)
 - **전면 (AdInterstitialModal)**: 3게임마다 + 잠금 해제 시점, 중복 시 1번만
 - **보상형**: 출시 후 PENDING
+
+#### 3.3.1 모바일 검증 ⏸️ 보류 (2026-05-04)
+- 사용자 모바일 접속 불가 → 데스크탑만 검증 완료
+- 출시 전 필수 검증:
+  - `/blog` 모바일: 좌/우 aside hidden + in-feed 1열 유지 + 하단 배너 노출
+  - `/blog/:lang/:slug` 모바일: 좌/우 hidden + 하단 배너 노출
+
+#### 3.3.2 AdSense 심사 후 모니터링 ⚠️
+- in-feed 광고 AdSense 심사 reject 위험
+- 비상 스위치: `VITE_INFEED_ADS_ENABLED=false` → in-feed 전체 즉시 비활성화 (재빌드 필요)
 
 ### 3.4 광고 SDK 성능 격리 ✅
 동적 스크립트 로드 (document.head.appendChild) — 게임 루프와 격리
