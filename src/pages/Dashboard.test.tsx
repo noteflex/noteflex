@@ -61,7 +61,7 @@ vi.mock("recharts", async () => {
   };
 });
 
-import Home from "./Home";
+import Dashboard from "./Dashboard";
 
 const defaultStats = {
   currentStreak: 3,
@@ -93,13 +93,13 @@ function renderAt(initialPath: string) {
   return render(
     <MemoryRouter initialEntries={[initialPath]}>
       <Routes>
-        <Route path="/home" element={<Home />} />
+        <Route path="/dashboard" element={<Dashboard />} />
       </Routes>
     </MemoryRouter>
   );
 }
 
-describe("Home — 탭 네비게이션", () => {
+describe("Dashboard — 탭 네비게이션", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockUseAuth.mockReturnValue({
@@ -111,8 +111,8 @@ describe("Home — 탭 네비게이션", () => {
     mockUseMyStats.mockReturnValue(defaultMyStats);
   });
 
-  it("/home 기본 진입 시 rhythm 탭이 활성", () => {
-    renderAt("/home");
+  it("/dashboard 기본 진입 시 rhythm 탭이 활성", () => {
+    renderAt("/dashboard");
 
     const rhythmTab = screen.getByRole("tab", { name: /학습.*리듬|리듬/ });
     expect(rhythmTab).toHaveAttribute("data-state", "active");
@@ -122,8 +122,8 @@ describe("Home — 탭 네비게이션", () => {
     expect(screen.getByText(/정확도 · 반응속도 추이/)).toBeInTheDocument();
   });
 
-  it("/home?tab=diagnosis 진입 시 diagnosis 탭 활성 + DiagnosisTab 마운트", async () => {
-    renderAt("/home?tab=diagnosis");
+  it("/dashboard?tab=diagnosis 진입 시 diagnosis 탭 활성 + DiagnosisTab 마운트", async () => {
+    renderAt("/dashboard?tab=diagnosis");
 
     const diagnosisTab = screen.getByRole("tab", {
       name: /실력.*진단|진단/,
@@ -135,7 +135,7 @@ describe("Home — 탭 네비게이션", () => {
   });
 
   it("잘못된 tab 값 (?tab=invalid)은 rhythm으로 fallback", () => {
-    renderAt("/home?tab=invalid");
+    renderAt("/dashboard?tab=invalid");
 
     const rhythmTab = screen.getByRole("tab", { name: /학습.*리듬|리듬/ });
     expect(rhythmTab).toHaveAttribute("data-state", "active");
@@ -144,7 +144,7 @@ describe("Home — 탭 네비게이션", () => {
 
   it("탭 클릭 시 URL이 ?tab=...으로 업데이트됨", async () => {
     const user = userEvent.setup();
-    renderAt("/home");
+    renderAt("/dashboard");
 
     const activityTab = screen.getByRole("tab", {
       name: /활동.*기록|기록/,
@@ -160,7 +160,7 @@ describe("Home — 탭 네비게이션", () => {
 
   it("각 탭의 콘텐츠가 분리되어 렌더됨", () => {
     // rhythm: XP 추이 / 정확도·반응속도 / 약점 음표 / AI 피드백
-    const { unmount } = renderAt("/home?tab=rhythm");
+    const { unmount } = renderAt("/dashboard?tab=rhythm");
     expect(screen.getByText(/XP 추이/)).toBeInTheDocument();
     expect(screen.getByText(/약점 음표 Top 10/)).toBeInTheDocument();
     expect(
@@ -171,7 +171,7 @@ describe("Home — 탭 네비게이션", () => {
     unmount();
 
     // activity: 최근 세션
-    renderAt("/home?tab=activity");
+    renderAt("/dashboard?tab=activity");
     expect(screen.getByText(/최근 세션/)).toBeInTheDocument();
     // activity에는 차트/AI 피드백 없음
     expect(screen.queryByText(/XP 추이/)).not.toBeInTheDocument();
@@ -182,14 +182,14 @@ describe("Home — 탭 네비게이션", () => {
 
   it("헤더/요약 섹션은 탭 바깥에서 항상 렌더됨", () => {
     // rhythm에서
-    const { unmount } = renderAt("/home?tab=rhythm");
+    const { unmount } = renderAt("/dashboard?tab=rhythm");
     expect(screen.getByText(/플레이그라운드/)).toBeInTheDocument();
     expect(screen.getByText(/현재 스트릭/)).toBeInTheDocument();
     expect(screen.getByText(/오늘 XP/)).toBeInTheDocument();
     unmount();
 
     // diagnosis에서도 (placeholder 탭)
-    renderAt("/home?tab=diagnosis");
+    renderAt("/dashboard?tab=diagnosis");
     expect(screen.getByText(/플레이그라운드/)).toBeInTheDocument();
     expect(screen.getByText(/현재 스트릭/)).toBeInTheDocument();
   });

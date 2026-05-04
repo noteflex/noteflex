@@ -396,7 +396,7 @@ function ReportTile({
 
 /* ---------- 페이지 ---------- */
 
-export default function Home() {
+export default function Dashboard() {
   const { user, profile, loading: authLoading } = useAuth();
   const stats = useUserStats(user);
   const myStats = useMyStats(user);
