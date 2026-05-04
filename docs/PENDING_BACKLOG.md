@@ -752,6 +752,47 @@ Calibration 사용 패턴 + 환경 분석을 위한 관리자 전용 뷰.
 - 사업자등록 + 약관 완성 후 즉시 신청
 - 심사 기간 중 코드 진행
 
+### 9.4 사업자 등록 완료 트리거 작업 (2026-05-14~16 예상, 3개 동시 진행)
+
+**사업자 등록 정정 완료 즉시 Day 1~2 안에 아래 3개 동시 착수.**
+
+#### Day 1 (각 1~2시간): Termly + AdSense
+
+**① Termly/iubenda 약관 4종 자동 생성** (1~2시간)
+- 서비스 이용약관·개인정보처리방침·쿠키 정책·환불 정책 자동 생성
+- $10~30/월 비용 발생
+- 생성 즉시 사이트 게시 (§10.1.1 임시 텍스트 대체)
+- **위험도: 낮음**
+
+**② AdSense 심사 신청** (1시간)
+- AdSense 계정 생성 (사업자 정보 사용)
+- Vercel 환경변수 박음 (메모리 #1 체크리스트 6·7·8번):
+  - `VITE_ADS_ENABLED=true`
+  - `VITE_ADSENSE_PUBLISHER_ID=ca-pub-실제ID` (계정 생성 시 발급)
+  - `VITE_INFEED_ADS_ENABLED=true`
+- 사이트 추가 + 심사 신청 → 1~2주 소요 (5/28~6/2 통과 예상)
+- reject 시: 출시 후 재신청 가능 (광고 X 상태 출시 가능)
+- **위험도: 중간**
+
+#### Day 1~2 (최우선): Paddle Vendor 심사 신청 (1~2일)
+
+**③ Paddle Vendor 심사 신청** (가장 큰 작업)
+- Paddle Vendor 계정 생성 (사업자 정보)
+- Vercel 환경변수 박음 (메모리 #1 체크리스트 1·2·3·4·5번):
+  - `VITE_PADDLE_ENVIRONMENT=production`
+  - `VITE_PADDLE_CLIENT_TOKEN=live_*`
+  - `VITE_PADDLE_PRICE_MONTHLY/YEARLY=실제 Production 상품 ID`
+- 심사 1~2주 소요 (5/28~6/2 통과 예상)
+- **위험도: 최고** — reject 시 출시 5/31 직접 차단
+
+#### Paddle reject fallback (결정 보류, 사업자 등록 완료 후 결정)
+
+| Plan | 내용 | 출시 영향 |
+|---|---|---|
+| Plan A | Stripe 등 다른 결제 플랫폼 즉시 전환 | 1~2주 추가 작업, 출시 연기 위험 |
+| Plan B | Free tier만 출시 (5/31 lock) + 결제 시스템 출시 후 sprint | 5/31 출시 유지, Premium 차단 |
+| Plan C | 출시 5/31 → 6/14 등으로 연기 | 출시 연기 |
+
 ---
 
 ## 10. 콘텐츠 + 마케팅
