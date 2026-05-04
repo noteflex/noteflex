@@ -919,10 +919,12 @@ Claude가 출시 임박 시 자동 고지.
 - **i18n 도입**: react-i18next, 영어 default + 한국어 토글
 - **약관 4종 임시 텍스트**: §10.1.1 참조
 
-#### 잠재 갭: /home → /dashboard 라우트 명
-- 현재 코드: `<Route path="/home" element={<Home />} />`
-- 정책 표현 (메모리 #21, §13.2 보호 라우트): `/dashboard`
-- 결정: i18n sprint에서 라우트 변경(`/home` → `/dashboard`) 또는 정책 표현 정정 중 선택 필요
+#### ~~잠재 갭: /home → /dashboard 라우트 명~~ ✅ 완료 (2026-05-04)
+- ~~현재 코드: `<Route path="/home" element={<Home />} />`~~
+- 완료: App.tsx `/dashboard` + Home.tsx→Dashboard.tsx 리네임 + AdminGuard redirect + Index.tsx Link 정정
+- AdminLayout 일반 영역 이동 링크 삭제 (메모리 #24 정책 일치)
+- Index.tsx "연습 대시보드" 버튼 admin 분기 추가 (메모리 #24)
+- **AdminGuard timing 이슈 모니터링**: 2026-05-04 1회 발생 (admin → /admin/users → /dashboard redirect), 새로고침 후 자가 해소. 원인 미확정 (profile.role 일시 null 추정). 출시 전 재현 시도 + Navigation sprint에서 fix 또는 모니터링.
 
 ### 13.3 §0-1 정책 결정 ✅ 완료 (2026-04-29 사용자 결정)
 - [x] 단계 Clear 기준 — 정답률 85% / 반응속도 평균 35% / 수행 10회 / 최대 연속 5회
@@ -1037,7 +1039,7 @@ Claude가 출시 임박 시 자동 고지.
 - [ ] §13.2 라우팅 보호 (NavOnlyRoute) 도입
 - [ ] §13.2 Navigation 정리 (header/sidebar 일관성, memory #14 NavOnlyRoute, memory #19 UX)
 - [ ] §13.5 메인 화면 리뉴얼 (Hero 카피·이메일·푸터·광고 제거·약관 임시 텍스트)
-- [ ] §13.5 /home → /dashboard 라우트 명 갭 결정
+- [x] §13.5 /home → /dashboard 라우트 명 갭 결정 ✅ 완료 (2026-05-04)
 - [ ] §1.1 회원 등급 차등화 적용
 - [ ] §1.3 결제 후킹 메시지
 - [ ] §5.2 회원관리 페이지
