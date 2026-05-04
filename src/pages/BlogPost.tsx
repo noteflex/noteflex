@@ -56,7 +56,7 @@ export default function BlogPost() {
 
       {/* 데스크톱: 좌/우 사이드바 광고 | 모바일: 없음 (하단 배너로 대체) */}
       <div className="flex-1 flex justify-center">
-        <aside className="hidden lg:flex flex-col items-end pt-10 pr-4 w-40 shrink-0">
+        <aside className="hidden lg:flex flex-col items-end pt-10 pr-4 w-40 shrink-0 sticky top-16 self-start">
           <AdBanner slot={getSlot("SIDEBAR_LEFT")} format="vertical" />
         </aside>
 
@@ -95,7 +95,7 @@ export default function BlogPost() {
           )}
         </main>
 
-        <aside className="hidden lg:flex flex-col items-start pt-10 pl-4 w-40 shrink-0">
+        <aside className="hidden lg:flex flex-col items-start pt-10 pl-4 w-40 shrink-0 sticky top-16 self-start">
           <AdBanner slot={getSlot("SIDEBAR_RIGHT")} format="vertical" />
         </aside>
       </div>
