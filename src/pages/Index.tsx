@@ -46,12 +46,14 @@ function AuthBar({ authLoading, user, onSignOut, onLoginRequest }: AuthBarProps)
     <div className="fixed top-0 left-0 right-0 z-40 flex items-center justify-end px-4 py-2 bg-background/80 backdrop-blur-sm border-b border-border/50">
       {user ? (
         <div className="flex items-center gap-3">
-          <Link
-            to="/home"
-            className="text-xs px-3 py-1.5 rounded-lg border border-border text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-          >
-            연습 대시보드
-          </Link>
+          {profile?.role !== "admin" && (
+            <Link
+              to="/dashboard"
+              className="text-xs px-3 py-1.5 rounded-lg border border-border text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+            >
+              연습 대시보드
+            </Link>
+          )}
           <Link
             to="/profile"
             className="text-xs px-3 py-1.5 rounded-lg border border-border text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
@@ -220,12 +222,14 @@ export default function Index() {
   const pageHeaderRight = GAME_ENABLED && !authLoading ? (
     user ? (
       <div className="flex items-center gap-3">
-        <Link
-          to="/home"
-          className="text-xs px-3 py-1.5 rounded-lg border border-border text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-        >
-          연습 대시보드
-        </Link>
+        {profile?.role !== "admin" && (
+          <Link
+            to="/dashboard"
+            className="text-xs px-3 py-1.5 rounded-lg border border-border text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+          >
+            연습 대시보드
+          </Link>
+        )}
         <Link
           to="/profile"
           className="text-xs px-3 py-1.5 rounded-lg border border-border text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
