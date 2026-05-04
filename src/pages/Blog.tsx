@@ -149,7 +149,7 @@ export default function Blog() {
       <AdBanner
         slot={getSlot("BANNER")}
         format="horizontal"
-        className="max-w-3xl mx-auto w-full px-4 py-4"
+        className="lg:hidden max-w-3xl mx-auto w-full px-4 py-4"
       />
       <Footer />
     </div>
