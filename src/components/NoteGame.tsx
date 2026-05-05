@@ -533,17 +533,31 @@ export default function NoteGame({
         bestStreakRef.current,
         gameStatus,
       ).then((result) => {
-        if (result) {
-          onAttemptRecorded?.({
-            ...result,
-            level,
-            sublevel,
-            totalAttempts: totalAttemptsRef.current,
-            totalCorrect: totalCorrectRef.current,
-            bestStreak: bestStreakRef.current,
-            gameStatus,
-          });
-        }
+        // 비로그인 시 result=null — fake payload 박음 (DB unlock X, 모달 노출 영역 보장).
+        // just_passed=false 고정 → AdInterstitial 박지 X (메모리 #1 일관).
+        const payload: RecordAttemptResult = result ?? {
+          level,
+          sublevel,
+          play_count: 0,
+          total_attempts: totalAttemptsRef.current,
+          total_correct: totalCorrectRef.current,
+          accuracy:
+            totalAttemptsRef.current > 0
+              ? totalCorrectRef.current / totalAttemptsRef.current
+              : 0,
+          best_streak: bestStreakRef.current,
+          passed: gameStatus === "success",
+          just_passed: false,
+        };
+        onAttemptRecorded?.({
+          ...payload,
+          level,
+          sublevel,
+          totalAttempts: totalAttemptsRef.current,
+          totalCorrect: totalCorrectRef.current,
+          bestStreak: bestStreakRef.current,
+          gameStatus,
+        });
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
