@@ -307,13 +307,22 @@ export default function Index() {
           </div>
 
           {GAME_ENABLED ? (
-            <button
-              onClick={handleStart}
-              className="px-10 py-4 rounded-2xl bg-primary text-primary-foreground font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-200 active:scale-95 animate-fade-up"
-              style={{ animationDelay: "0.15s" }}
-            >
-              {t.game.start}
-            </button>
+            <>
+              <button
+                onClick={handleStart}
+                className="px-10 py-4 rounded-2xl bg-primary text-primary-foreground font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-200 active:scale-95 animate-fade-up"
+                style={{ animationDelay: "0.15s" }}
+              >
+                {t.game.start}
+              </button>
+              <Link
+                to="/blog"
+                className="px-8 py-3 rounded-2xl border-2 border-border text-foreground font-medium text-base hover:bg-muted transition-all duration-200 active:scale-95 animate-fade-up"
+                style={{ animationDelay: "0.2s" }}
+              >
+                {t.comingSoon.blogButton}
+              </Link>
+            </>
           ) : (
             <ComingSoonNotice />
           )}
