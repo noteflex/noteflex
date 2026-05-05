@@ -1,6 +1,7 @@
 ---
+title: Cookie Policy
 effective: ""
 ---
 
-> Cookie Policy will be drafted after business registration.
-> Coming Soon — Drafting (will be replaced with Termly auto-generated content).
+> Coming Soon — Drafting.
+> The full policy will be published before the official launch.
