@@ -71,7 +71,7 @@ export default function MarkdownContent({ children }: Props) {
               className="block mx-auto my-6 rounded-lg"
               style={{
                 maxWidth: "min(100%, 600px)",
-                maxHeight: "500px",
+                maxHeight: "300px",
                 width: "auto",
                 height: "auto",
                 objectFit: "contain",
