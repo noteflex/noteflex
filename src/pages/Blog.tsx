@@ -1,8 +1,8 @@
 // src/pages/Blog.tsx
-import { useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
+import { useLang, useT } from "@/contexts/LanguageContext";
 import { listBlogPosts } from "@/lib/markdownLoader";
 import { AdBanner } from "@/components/AdBanner";
 import { InFeedAd } from "@/components/InFeedAd";
@@ -10,45 +10,18 @@ import { getSlot } from "@/lib/adsense";
 
 const INFEED_AD_INTERVAL = 6;
 
-const CATEGORIES: Record<"ko" | "en", string[]> = {
-  ko: ["all", "초견의 정석", "실전 연습 가이드", "음악 이론 & 화성학", "뮤직 테크 & 미래"],
-  en: ["all", "Sight-Reading Lab", "Practice Hub", "Theory & Harmony", "Music Tech"],
-};
-
-const UI: Record<"ko" | "en", { title: string; subtitle: string; home: string; all: string; empty: string }> = {
-  ko: {
-    title: "블로그",
-    subtitle: "악보 독보, 음악 학습, 그리고 Noteflex 이야기",
-    home: "← 홈으로",
-    all: "전체",
-    empty: "아직 게시된 글이 없습니다.",
-  },
-  en: {
-    title: "Blog",
-    subtitle: "Sight-reading, music learning, and Noteflex stories",
-    home: "← Home",
-    all: "All",
-    empty: "No posts yet.",
-  },
-};
-
 export default function Blog() {
-  const [lang, setLang] = useState<"ko" | "en">(() => {
-    return (localStorage.getItem("noteflex.blog_lang") as "ko" | "en") || "ko";
-  });
+  const { lang } = useLang();
+  const t = useT();
+  // ja·zh = en fallback (마크다운 영어 콘텐츠 노출, Phase 3 영역)
+  const docLang: "ko" | "en" = lang === "ko" ? "ko" : "en";
+
   const [searchParams, setSearchParams] = useSearchParams();
   const category = searchParams.get("category") || "all";
 
-  const t = UI[lang];
-  const allPosts = listBlogPosts(lang);
+  const allPosts = listBlogPosts(docLang);
   const posts =
     category === "all" ? allPosts : allPosts.filter((p) => p.category === category);
-
-  function handleLangChange(newLang: "ko" | "en") {
-    setLang(newLang);
-    setSearchParams({});
-    localStorage.setItem("noteflex.blog_lang", newLang);
-  }
 
   function handleCategoryChange(cat: string) {
     if (cat === "all") {
@@ -59,37 +32,12 @@ export default function Blog() {
   }
 
   const blogRight = (
-    <div className="flex items-center gap-4">
-      <div className="flex items-center gap-2 text-sm">
-        <button
-          onClick={() => handleLangChange("ko")}
-          className={
-            lang === "ko"
-              ? "font-bold text-foreground"
-              : "text-muted-foreground hover:text-foreground transition-colors"
-          }
-        >
-          한국어
-        </button>
-        <span className="text-muted-foreground">·</span>
-        <button
-          onClick={() => handleLangChange("en")}
-          className={
-            lang === "en"
-              ? "font-bold text-foreground"
-              : "text-muted-foreground hover:text-foreground transition-colors"
-          }
-        >
-          English
-        </button>
-      </div>
-      <Link
-        to="/"
-        className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-      >
-        {t.home}
-      </Link>
-    </div>
+    <Link
+      to="/"
+      className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+    >
+      {t.blog.home}
+    </Link>
   );
 
   return (
@@ -103,11 +51,11 @@ export default function Blog() {
         </aside>
 
         <main className="flex-1 max-w-3xl min-w-0 px-4 py-10">
-          <h1 className="text-3xl font-bold mb-2 text-foreground">{t.title}</h1>
-          <p className="text-muted-foreground mb-6">{t.subtitle}</p>
+          <h1 className="text-3xl font-bold mb-2 text-foreground">{t.blog.title}</h1>
+          <p className="text-muted-foreground mb-6">{t.blog.subtitle}</p>
 
           <div className="flex flex-wrap gap-2 mb-8">
-            {CATEGORIES[lang].map((cat) => (
+            {t.blog.categories.map((cat) => (
               <button
                 key={cat}
                 onClick={() => handleCategoryChange(cat)}
@@ -117,13 +65,13 @@ export default function Blog() {
                     : "border-border text-muted-foreground hover:text-foreground hover:border-foreground"
                 }`}
               >
-                {cat === "all" ? t.all : cat}
+                {cat === "all" ? t.blog.all : cat}
               </button>
             ))}
           </div>
 
           {posts.length === 0 ? (
-            <p className="text-muted-foreground py-12 text-center">{t.empty}</p>
+            <p className="text-muted-foreground py-12 text-center">{t.blog.empty}</p>
           ) : (
             <ul className="space-y-6">
               {posts.flatMap((post, idx) => {
@@ -154,7 +102,7 @@ export default function Blog() {
                 );
                 const showAdAfter = (idx + 1) % INFEED_AD_INTERVAL === 0;
                 return showAdAfter
-                  ? [card, <InFeedAd key={`infeed-${idx}`} lang={lang} />]
+                  ? [card, <InFeedAd key={`infeed-${idx}`} />]
                   : [card];
               })}
             </ul>

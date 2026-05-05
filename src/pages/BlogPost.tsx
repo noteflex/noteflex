@@ -4,12 +4,15 @@ import { Link, useParams } from "react-router-dom";
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
 import MarkdownContent from "@/components/MarkdownContent";
+import { useT } from "@/contexts/LanguageContext";
 import { loadBlogPost, type BlogPost as BlogPostType } from "@/lib/markdownLoader";
 import { AdBanner } from "@/components/AdBanner";
 import { getSlot } from "@/lib/adsense";
 
 export default function BlogPost() {
+  // URL :lang 유지 — 콘텐츠 lang은 URL 박힌 값 사용 (SEO·linkability 영역)
   const { lang, slug } = useParams<{ lang: string; slug: string }>();
+  const t = useT();
   const [post, setPost] = useState<BlogPostType | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
@@ -35,7 +38,6 @@ export default function BlogPost() {
     };
   }, [lang, slug]);
 
-  const backLabel = lang === "en" ? "← Blog" : "← 블로그 목록";
   const postCategory = post?.meta.category || "";
   const backUrl = postCategory
     ? `/blog?category=${encodeURIComponent(postCategory)}`
@@ -49,7 +51,7 @@ export default function BlogPost() {
             to={backUrl}
             className="text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
-            {backLabel}
+            {t.blog.backToList}
           </Link>
         }
       />
@@ -62,21 +64,13 @@ export default function BlogPost() {
 
         <main className="flex-1 max-w-3xl min-w-0 px-4 py-10">
           {loading ? (
-            <p className="text-muted-foreground">
-              {lang === "en" ? "Loading..." : "불러오는 중..."}
-            </p>
+            <p className="text-muted-foreground">{t.blog.loading}</p>
           ) : notFound || !post ? (
             <div className="py-12 text-center">
-              <h1 className="text-2xl font-bold mb-2">
-                {lang === "en" ? "Post not found" : "글을 찾을 수 없습니다"}
-              </h1>
-              <p className="text-muted-foreground mb-6">
-                {lang === "en"
-                  ? "The requested post does not exist."
-                  : "요청하신 글이 존재하지 않습니다."}
-              </p>
+              <h1 className="text-2xl font-bold mb-2">{t.blog.notFound}</h1>
+              <p className="text-muted-foreground mb-6">{t.blog.notFoundBody}</p>
               <Link to={backUrl} className="text-primary underline">
-                {lang === "en" ? "Back to blog" : "블로그 목록으로 돌아가기"}
+                {t.blog.backToBlog}
               </Link>
             </div>
           ) : (
