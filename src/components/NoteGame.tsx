@@ -1349,29 +1349,32 @@ export default function NoteGame({
             duration={TIMER_SECONDS}
             resetKey={timerKey}
             onExpire={handleTimerExpire}
-            paused={(phase !== "playing" && phase !== "final-retry") || showCountdown || showSwipeTutorial || showCalibration}
+            paused={(phase !== "playing" && phase !== "final-retry") || showCountdown || showSwipeTutorial || showCalibration || calibrationLoading}
           />
         </div>
 
-        <div className="w-full max-w-[612px] mx-auto">
+        {/* §검증73 (2026-05-05, 메모리 #28 게이팅 확장 — 옵션 A): wrapper에 invisible 추가 → staff·clef·brace까지 hidden.
+            메모리 #16 정책 P1 강화: 카운트다운 끝 시점에 staff·음표·조표·사운드 모두 동시 등장. */}
+        <div className={`w-full max-w-[612px] mx-auto ${(showCountdown || showSwipeTutorial || showCalibration || calibrationLoading) ? "invisible" : ""}`}>
           <GrandStaffPractice
             // §2 (2026-05-01): 카운트다운 중 음표·조표 숨김 (clef·오선만 표시).
             // §swipe-modal-perf (2026-05-02): swipe 모달 동안에도 동일하게 음표·조표 숨김.
-            targetNote={(showCountdown || showSwipeTutorial || showCalibration) ? null : targetNoteStr}
-            targetAccidental={(showCountdown || showSwipeTutorial || showCalibration) ? null : targetAccidental}
-            noteHistory={(showCountdown || showSwipeTutorial || showCalibration) ? [] : answeredNotes}
-            batchNotes={(showCountdown || showSwipeTutorial || showCalibration) ? undefined : batchNotesForDisplay}
-            batchIndex={!showCountdown && !showSwipeTutorial && !showCalibration && isBatchDisplay ? currentIndex : undefined}
+            // §enter-flicker (2026-05-05, 메모리 #28): calibrationLoading=true 동안 음표·조표 숨김 — 마운트 직후 한 frame 노출 영역 차단.
+            targetNote={(showCountdown || showSwipeTutorial || showCalibration || calibrationLoading) ? null : targetNoteStr}
+            targetAccidental={(showCountdown || showSwipeTutorial || showCalibration || calibrationLoading) ? null : targetAccidental}
+            noteHistory={(showCountdown || showSwipeTutorial || showCalibration || calibrationLoading) ? [] : answeredNotes}
+            batchNotes={(showCountdown || showSwipeTutorial || showCalibration || calibrationLoading) ? undefined : batchNotesForDisplay}
+            batchIndex={!showCountdown && !showSwipeTutorial && !showCalibration && !calibrationLoading && isBatchDisplay ? currentIndex : undefined}
             clef={currentClef}
             level={level}
             batchSize={currentStageConfig.batchSize}
             keySignature={currentKeySignature.abcKey}
-            keySharps={needsKeySig && !(showCountdown || showSwipeTutorial || showCalibration) ? currentKeySignature.sharps : undefined}
-            keyFlats={needsKeySig && !(showCountdown || showSwipeTutorial || showCalibration) ? currentKeySignature.flats : undefined}
+            keySharps={needsKeySig && !(showCountdown || showSwipeTutorial || showCalibration || calibrationLoading) ? currentKeySignature.sharps : undefined}
+            keyFlats={needsKeySig && !(showCountdown || showSwipeTutorial || showCalibration || calibrationLoading) ? currentKeySignature.flats : undefined}
           />
         </div>
 
-        <div className={`w-full mt-1 ${(showCountdown || showSwipeTutorial || showCalibration) ? "invisible" : ""}`}>
+        <div className={`w-full mt-1 ${(showCountdown || showSwipeTutorial || showCalibration || calibrationLoading) ? "invisible" : ""}`}>
           <p className="text-center text-sm text-muted-foreground mb-3">
             {isBatchDisplay
               ? `${currentIndex + 1}/${currentBatch.length}번째 음표의 이름은?`
@@ -1380,7 +1383,7 @@ export default function NoteGame({
 
           <NoteButtons
             onNoteClick={handleAnswer}
-            disabled={(phase !== "playing" && phase !== "final-retry") || showCountdown || showSwipeTutorial || showCalibration}
+            disabled={(phase !== "playing" && phase !== "final-retry") || showCountdown || showSwipeTutorial || showCalibration || calibrationLoading}
             disabledNotes={disabledNotes}
             keySharps={needsKeySig ? currentKeySignature.sharps : undefined}
             keyFlats={needsKeySig ? currentKeySignature.flats : undefined}
