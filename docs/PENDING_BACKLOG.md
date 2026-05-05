@@ -344,6 +344,28 @@ Claude Code 코드 분석 발견.
 
 ---
 
+### 0-3.7 모달 닫기 정책 적용 ✅ 완료 (2026-05-05)
+
+**정책 (메모리 #20 + #21 일관)**:
+- 게임 결과 모달: backdrop 클릭·ESC 무시 → 모달 안 버튼으로만 이동·닫기
+- AdInterstitial: backdrop 클릭 무시 + 5초 강제 시청 후 스킵 버튼 노출 (YouTube 표준 패턴)
+- AuthModal: 현재 동작 유지 (backdrop 클릭으로 닫히지 않음, 메모리 #20 부합)
+
+**적용 영역**:
+- `src/components/GameOverDialog.tsx:45-49` — `DialogContent`에 `onPointerDownOutside` + `onEscapeKeyDown` preventDefault 추가
+- `src/components/SublevelPassedDialog.tsx:58-62` — 동일 패턴 적용
+- `src/components/AdInterstitialModal.tsx` — `useEffect` 의존성 `[open]`으로 변경 + 자동 닫힘 제거 + 카운트다운 중 텍스트 표시, 0초 후 스킵 버튼 노출
+- `src/components/MissionSuccessModal.tsx` — 이미 `onPointerDownOutside` 적용, 변경 없음
+
+**검증 결과 (사용자 직접 확인 2026-05-05)**:
+- 검증 48: GameOver backdrop·ESC 무시 ✅
+- 검증 49: SublevelPassed backdrop·ESC 무시 ✅
+- 검증 50: AdInterstitial "5초 후 건너뛸 수 있어요" + 외부 클릭 무시 + 5초 후 스킵 버튼 ✅
+- 검증 51: AuthModal 그대로 유지 ✅
+- 검증 52: 메모리 #16 게임 동기화 정상 ✅
+
+---
+
 ## 0-4. 비로그인 시나리오 잠재 버그 fix ✅ 완료 (2026-05-05)
 
 박혀 있던 영역: 비로그인 사용자가 게임 끝 박을 때 결과 모달 박지 X.
