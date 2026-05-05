@@ -298,7 +298,6 @@ export default function Index() {
 
         <div className="safe-area-page flex-1 flex flex-col items-center justify-center gap-8 px-4 pb-10">
           <div className="flex flex-col items-center gap-3 animate-fade-up">
-            <span className="text-4xl">{t.hero.emoji}</span>
             <h1 className="text-3xl sm:text-4xl font-bold text-foreground text-center tracking-tight">
               {t.hero.title}
             </h1>

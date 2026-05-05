@@ -7,7 +7,6 @@ export interface Strings {
   hero: {
     title: string;
     subtitle: string;
-    emoji: string;
   };
   game: {
     start: string;
@@ -59,7 +58,6 @@ const ko: Strings = {
   hero: {
     title: "보는 즉시, 음악이 되다.",
     subtitle: "초견 훈련을 게임처럼.",
-    emoji: "🎼",
   },
   game: {
     start: "🎵 게임 시작",
@@ -116,7 +114,6 @@ const en: Strings = {
   hero: {
     title: "Where Sight Becomes Sound.",
     subtitle: "Sight-reading training, gamified.",
-    emoji: "🎼",
   },
   game: {
     start: "🎵 Start Game",
