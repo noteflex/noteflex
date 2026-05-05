@@ -309,8 +309,38 @@ Claude Code 코드 분석 발견.
 
 **검증 결과**: AuthModal 즉시 열림 + 게임 화면 전환 자연스러움 (사용자 직접 검증 2026-05-05, 메모리 #25 100ms 정책 부합). 메모리 #16 동기화 영역 영향 X (자동 테스트 458/458 PASS).
 
-### 0-3.6 별도 sprint 영역 (출시 전 또는 출시 후 결정)
-- Header sticky backdrop-blur (`src/components/Header.tsx:56`) — 모든 페이지 영향, 시각 변화 큼, 사용자 결정 후 박음
+### 0-3.6 Header sticky 스크롤 흔들림 — 마이너 이슈, 출시 후 UI 개선 sprint 영역 (2026-05-05)
+
+**증상**: 스크롤을 빠르게 위아래로 반복 시 Header가 미세하게 흔들림
+
+**시도한 fix (효과 부족)**:
+1. Header `backdrop-blur-sm` 제거 (옵션 E) → `src/components/Header.tsx:56` — 흔들림 오히려 발생
+2. `transform-gpu` 추가 → 효과 없음
+3. `@keyframes fade-up` `to` 상태에서 `filter: blur(0)` 제거 (옵션 A) → `src/index.css:137` — GPU layer 해제 시도했으나 흔들림 지속
+
+**현재 코드 상태 (2026-05-05 기준)**:
+- `src/components/Header.tsx:56` — `backdrop-blur-sm` 유지, `transform-gpu` 없음 (시도 후 원복)
+- `src/index.css:137` — `@keyframes fade-up` `to` 상태 `filter: blur(0)` 제거 (옵션 A 적용 유지)
+
+**진단 결과 (정적 분석)**:
+- Performance 측정: Frames 400ms drop, Animations 트랙 보라색 활성
+- Index.tsx 7개 element에 `animate-fade-up` + `animation-fill-mode: both` → `filter: blur(0)` GPU layer 영구 점유 가설
+- 옵션 A로 GPU layer 해제했으나 흔들림 지속 → 추가 원인 존재 가능성
+
+**가능 추가 원인 (출시 후 정밀 진단 영역)**:
+1. `bg-background/95` 반투명 + sticky 충돌
+2. Header 안 element layout shift
+3. 다른 fixed/sticky element와 z-index 충돌
+4. Vite preview 서버 환경 영역
+
+**우선순위**: 마이너 (출시 차단 X, 사용자 게임·서비스 동작 정상)
+**처리 시점**: 출시 후 UI 개선 sprint
+**처리 방법**: Performance 탭 정밀 측정 (Bottom-Up 탭, 시간 사용 함수 Top 5) + 정확한 원인 파악 후 fix
+
+**학습 (메모리 #30 적용)**:
+- CSS `filter` 속성은 값이 `0`이어도 GPU compositor layer 승격 트리거
+- `animation-fill-mode: both` 사용 시 `to` 상태의 `filter`는 명시적 제거 필요
+- `backdrop-blur`는 모달(animation 동반 시 frame drop 원인)과 sticky element(GPU layer 분리로 안정화)에서 역할이 다름
 
 ---
 
