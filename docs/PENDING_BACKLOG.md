@@ -270,6 +270,34 @@ Claude Code 코드 분석 발견.
 
 ---
 
+## 0-3. 모달 성능 영역 🔴⭐ (출시 전 필수, 사용자 결정 2026-05-05)
+
+**사용자 결정 박음 (2026-05-05)**: 우리 서비스에서 나오는 모든 모달은 즉시 열리고 버벅임 0건 박음. 하나라도 느리면 절대 안 됨.
+
+발견 경위: i18n Sprint A 검증 시 사용자가 AuthModal 박을 때 "엄청 버벅임" 보고. 글로벌 출시(메모리 #11) + 사용자 편의성 최우선 영역 박힘.
+
+### 0-3.1 대상 모달
+- **AuthModal** (로그인/회원가입) — 사용자 검증 시 "엄청 버벅임" 보고 (2026-05-05)
+- **게임 결과 모달** — SublevelPassedDialog·GameOverDialog (Sprint B 영역에서 i18n 박힐 예정)
+- **AdInterstitialModal** (전면 광고)
+- **알림·확인 모달** (Toast 외 modal 형식)
+- 그 외 신규 박힐 모달
+
+### 0-3.2 성능 기준
+- 첫 로드 100ms 이내
+- 인터랙션 응답 16ms 이내 (60fps)
+- 무거운 작업은 모달 열린 후 비동기 박고 로딩 인디케이터 박음
+- 모달 컴포넌트 lazy loading X (즉시 노출 보장)
+
+### 0-3.3 작업 사양 (별도 sprint, Opus 권장 — 시스템 분석 영역)
+- AuthModal 사실 추적 (Network·Performance 탭 분석)
+- 무거운 작업 식별 (Supabase 인증 초기화·OAuth provider 로드 등 추정)
+- 비동기 처리 박음 + skeleton/loading state 박음
+- 모든 박힌 모달에 동일 패턴 적용
+- 출시 전 반드시 박음 (메모리 #11 글로벌 출시 + 사용자 편의성 최우선 원칙)
+
+---
+
 ## 1. 비즈니스 모델 · 권한 정책 🔴 (2~3주차)
 
 ### 1.1 회원 등급 차등화 🔴
@@ -937,6 +965,15 @@ Claude가 출시 임박 시 자동 고지.
 **검증**: 458/458 테스트 PASS (각 commit 박은 후 회귀 X 확인). 사용자 화면 검증 = 별도 단계.
 
 **commit 1~7**: i18n 시스템 → Index.tsx → 메인 변경 → Footer → 약관 4종 → Blog 통합 → 백로그 갱신.
+
+#### Sprint A 잔여 fix ✅ 완료 (2026-05-05, commit 8~12)
+
+사용자 화면 검증에서 발견된 4가지 항목 박음:
+
+- ✅ **검증 1 fix (commit 8 `1321633`)**: 게임시작 버튼 한국어 hardcoded → `t.game.start` 박음 (KO "🎵 게임 시작" / EN "🎵 Start Game")
+- ✅ **검증 3 fix (commit 9 `15b40ca`)**: Hero 영역 emoji(🎼) span 삭제 + `hero.emoji` 키 제거 — 메인 화면 이미지 사라짐
+- ✅ **검증 4 fix (commit 10 `6412c20`)**: 블로그 읽기 버튼 게임시작 버튼 밑 복원 (GAME_ENABLED=true 영역) — outline 스타일 (CTO 권장 2차 CTA 패턴)
+- ✅ **검증 5 fix (commit 11 `23421a7`)**: 약관 4종 KO·EN 임시 텍스트에서 "Termly" 내부 도구명 제거 + frontmatter `title` 박음
 
 #### Sprint B 🔴 다음 (인증·게임·결과·대시보드)
 
