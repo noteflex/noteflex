@@ -32,7 +32,7 @@ export function AdInterstitialModal({ open, onClose }: AdInterstitialModalProps)
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-background/90 backdrop-blur-sm flex flex-col items-center justify-center gap-4 p-6"
+      className="fixed inset-0 z-50 bg-background/90 flex flex-col items-center justify-center gap-4 p-6"
       role="dialog"
       aria-label="광고"
     >

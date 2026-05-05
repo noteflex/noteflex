@@ -59,11 +59,12 @@ interface AuthBarProps {
 }
 function AuthBar({ authLoading, user, onSignOut, onLoginRequest }: AuthBarProps) {
   const t = useT();
+  const { profile } = useAuth();
 
   // Coming Soon 모드: 로그인/계정 UI 전체 숨김 (관리자는 /admin 직접 접근)
   if (!GAME_ENABLED) {
     return (
-      <div className="fixed top-0 left-0 right-0 z-40 h-10 bg-background/80 backdrop-blur-sm border-b border-border/50" />
+      <div className="fixed top-0 left-0 right-0 z-40 h-10 bg-background/80 border-b border-border/50" />
     );
   }
 
@@ -72,7 +73,7 @@ function AuthBar({ authLoading, user, onSignOut, onLoginRequest }: AuthBarProps)
       <div className="fixed top-0 left-0 right-0 z-40 h-10 bg-background/80 border-b border-border/50" />
     );
   return (
-    <div className="fixed top-0 left-0 right-0 z-40 flex items-center justify-end px-4 py-2 bg-background/80 backdrop-blur-sm border-b border-border/50">
+    <div className="fixed top-0 left-0 right-0 z-40 flex items-center justify-end px-4 py-2 bg-background/80 border-b border-border/50">
       {user ? (
         <div className="flex items-center gap-3">
           {profile?.role !== "admin" && (

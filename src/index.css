@@ -133,8 +133,8 @@
 }
 
 @keyframes fade-up {
-  from { transform: translateY(16px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
+  from { transform: translateY(16px); opacity: 0; filter: blur(4px); }
+  to { transform: translateY(0); opacity: 1; filter: blur(0); }
 }
 
 @keyframes pulse-reveal {
