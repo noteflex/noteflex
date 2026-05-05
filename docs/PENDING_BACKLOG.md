@@ -270,16 +270,16 @@ Claude Code 코드 분석 발견.
 
 ---
 
-## 0-3. 모달 성능 영역 🔴⭐ (출시 전 필수, 사용자 결정 2026-05-05)
+## 0-3. 모달 성능 영역 🟡 부분 완료 (AuthModal 박힘 2026-05-05, 다른 모달 별도 sprint)
 
 **사용자 결정 박음 (2026-05-05)**: 우리 서비스에서 나오는 모든 모달은 즉시 열리고 버벅임 0건 박음. 하나라도 느리면 절대 안 됨.
 
 발견 경위: i18n Sprint A 검증 시 사용자가 AuthModal 박을 때 "엄청 버벅임" 보고. 글로벌 출시(메모리 #11) + 사용자 편의성 최우선 영역 박힘.
 
 ### 0-3.1 대상 모달
-- **AuthModal** (로그인/회원가입) — 사용자 검증 시 "엄청 버벅임" 보고 (2026-05-05)
+- **AuthModal** (로그인/회원가입) — ✅ 박힘 (2026-05-05)
 - **게임 결과 모달** — SublevelPassedDialog·GameOverDialog (Sprint B 영역에서 i18n 박힐 예정)
-- **AdInterstitialModal** (전면 광고)
+- **AdInterstitialModal** (전면 광고) — backdrop-blur 박혀 있음, 별도 sprint
 - **알림·확인 모달** (Toast 외 modal 형식)
 - 그 외 신규 박힐 모달
 
@@ -295,6 +295,27 @@ Claude Code 코드 분석 발견.
 - 비동기 처리 박음 + skeleton/loading state 박음
 - 모든 박힌 모달에 동일 패턴 적용
 - 출시 전 반드시 박음 (메모리 #11 글로벌 출시 + 사용자 편의성 최우선 원칙)
+
+### 0-3.4 AuthModal fix 박음 ✅ (2026-05-05)
+
+**진단 박음**:
+- 진짜 원인: `@keyframes fade-up`의 `filter: blur(4px → 0)` + AuthModal `backdrop-blur-sm` 동시 박힘
+- frame 200~383ms drop (사용자 Performance 탭 측정 박음, 60fps 16ms 한참 위반)
+- INP 68ms / Scripting 12ms는 가벼움 → animation/painting 영역이 진짜 병목 (Tone.js 무관)
+
+**fix 박음**:
+- `src/index.css` `@keyframes fade-up`에서 `filter: blur` 영역 제거 (transform + opacity만 박음)
+- `src/components/AuthModal.tsx:189` `backdrop-blur-sm` 제거
+- 영향 영역: AuthModal·AccidentalSwipeTutorial·CalibrationModal·LevelSelect·NoteGame·Index 일괄 개선
+- AuthModal 즉시 열림 ✅ (사용자 직접 검증 2026-05-05, 메모리 #25 100ms 정책 부합)
+
+**메모리 #16 동기화 영역 영향 X** (사용자 검증 박음).
+
+### 0-3.5 남은 영역 (별도 sprint, 출시 전 또는 출시 후 결정)
+- AdInterstitialModal backdrop-blur 점검 (`src/components/AdInterstitialModal.tsx:35`, 동일 패턴)
+- Header sticky backdrop-blur 점검 (`src/components/Header.tsx:56`, 모든 페이지 영향)
+- Index AuthBar backdrop-blur 점검 (`src/pages/Index.tsx:66·75`, /play 영역)
+- 단계적 박음 — 한 번에 다 갈면 어느 영역이 효과 박혔는지 측정 X (메모리 #18)
 
 ---
 
