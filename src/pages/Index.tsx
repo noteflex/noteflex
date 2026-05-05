@@ -8,6 +8,7 @@ import LevelSelect from "@/components/LevelSelect";
 import AuthModal from "@/components/AuthModal";
 import Footer from "@/components/Footer";
 import { useAuth } from "@/contexts/AuthContext";
+import { useT } from "@/contexts/LanguageContext";
 import { GAME_ENABLED } from "@/lib/featureFlags";
 
 import { AdBanner } from "@/components/AdBanner";
@@ -24,6 +25,32 @@ import { SublevelPassedDialog } from "@/components/SublevelPassedDialog";
 
 type PlayScreen = "loading" | "levelSelect" | "game";
 
+function ComingSoonNotice() {
+  const t = useT();
+  const [bodyBefore, bodyAfter] = t.comingSoon.body.split("{email}");
+  const email = "admin@noteflex.app";
+  return (
+    <div
+      className="flex flex-col items-center gap-4 animate-fade-up"
+      style={{ animationDelay: "0.15s" }}
+    >
+      <div className="px-8 py-4 rounded-2xl bg-amber-50 border-2 border-amber-300 text-amber-900 font-semibold text-lg shadow-md">
+        {t.comingSoon.badge}
+      </div>
+      <p className="text-sm text-muted-foreground text-center max-w-md">
+        {bodyBefore}
+        <a
+          href={`mailto:${email}?subject=Noteflex%20Launch%20Notification`}
+          className="text-primary underline hover:text-primary/80"
+        >
+          {email}
+        </a>
+        {bodyAfter}
+      </p>
+    </div>
+  );
+}
+
 interface AuthBarProps {
   authLoading: boolean;
   user: { email?: string } | null;
@@ -31,6 +58,8 @@ interface AuthBarProps {
   onLoginRequest: () => void;
 }
 function AuthBar({ authLoading, user, onSignOut, onLoginRequest }: AuthBarProps) {
+  const t = useT();
+
   // Coming Soon 모드: 로그인/계정 UI 전체 숨김 (관리자는 /admin 직접 접근)
   if (!GAME_ENABLED) {
     return (
@@ -51,14 +80,14 @@ function AuthBar({ authLoading, user, onSignOut, onLoginRequest }: AuthBarProps)
               to="/dashboard"
               className="text-xs px-3 py-1.5 rounded-lg border border-border text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
             >
-              연습 대시보드
+              {t.header.dashboard}
             </Link>
           )}
           <Link
             to="/profile"
             className="text-xs px-3 py-1.5 rounded-lg border border-border text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
           >
-            프로필
+            {t.header.profile}
           </Link>
           <span className="text-xs text-muted-foreground truncate max-w-[150px]">
             {user.email}
@@ -68,7 +97,7 @@ function AuthBar({ authLoading, user, onSignOut, onLoginRequest }: AuthBarProps)
             onClick={onSignOut}
             className="text-xs px-3 py-1.5 rounded-lg border border-border text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
           >
-            로그아웃
+            {t.header.signOut}
           </button>
         </div>
       ) : (
@@ -76,7 +105,7 @@ function AuthBar({ authLoading, user, onSignOut, onLoginRequest }: AuthBarProps)
           onClick={onLoginRequest}
           className="text-xs px-4 py-1.5 rounded-lg bg-primary text-primary-foreground font-semibold hover:bg-primary/90 transition-colors"
         >
-          로그인 / 회원가입
+          {t.header.signIn}
         </button>
       )}
     </div>
@@ -85,6 +114,7 @@ function AuthBar({ authLoading, user, onSignOut, onLoginRequest }: AuthBarProps)
 
 export default function Index() {
   const { user, profile, loading: authLoading, signOut } = useAuth();
+  const t = useT();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -227,21 +257,21 @@ export default function Index() {
             to="/dashboard"
             className="text-xs px-3 py-1.5 rounded-lg border border-border text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
           >
-            연습 대시보드
+            {t.header.dashboard}
           </Link>
         )}
         <Link
           to="/profile"
           className="text-xs px-3 py-1.5 rounded-lg border border-border text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
         >
-          프로필
+          {t.header.profile}
         </Link>
         <span className="text-xs text-muted-foreground truncate max-w-[150px]">{user.email}</span>
         <button
           onClick={handleSignOut}
           className="text-xs px-3 py-1.5 rounded-lg border border-border text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
         >
-          로그아웃
+          {t.header.signOut}
         </button>
       </div>
     ) : (
@@ -249,7 +279,7 @@ export default function Index() {
         onClick={() => setShowAuth(true)}
         className="text-xs px-4 py-1.5 rounded-lg bg-primary text-primary-foreground font-semibold hover:bg-primary/90 transition-colors"
       >
-        로그인 / 회원가입
+        {t.header.signIn}
       </button>
     )
   ) : null;
@@ -267,12 +297,13 @@ export default function Index() {
         {showAuth && GAME_ENABLED && <AuthModal onClose={() => setShowAuth(false)} />}
 
         <div className="safe-area-page flex-1 flex flex-col items-center justify-center gap-8 px-4 pb-10">
-          <div className="flex flex-col items-center gap-4 animate-fade-up">
-            <span className="text-4xl">🎼</span>
+          <div className="flex flex-col items-center gap-3 animate-fade-up">
+            <span className="text-4xl">{t.hero.emoji}</span>
+            <h1 className="text-3xl sm:text-4xl font-bold text-foreground text-center tracking-tight">
+              {t.hero.title}
+            </h1>
             <p className="text-muted-foreground text-center max-w-md text-base leading-relaxed">
-              오선지 위 음표를 즉시 읽어내는 능력, 독보(讀譜)를 게임처럼 훈련하는 웹앱.
-              <br />
-              7단계 × 3서브레벨 = 21단계로 꾸준히 실력을 쌓아보세요.
+              {t.hero.subtitle}
             </p>
           </div>
 
@@ -285,21 +316,7 @@ export default function Index() {
               🎵 게임 시작
             </button>
           ) : (
-            <div
-              className="flex flex-col items-center gap-4 animate-fade-up"
-              style={{ animationDelay: "0.15s" }}
-            >
-              <div className="px-8 py-4 rounded-2xl bg-amber-50 border-2 border-amber-300 text-amber-900 font-semibold text-lg shadow-md">
-                🚀 2026년 5월 출시 예정
-              </div>
-              <p className="text-sm text-muted-foreground text-center max-w-md">
-                정식 출시까지 마지막 다듬기 중입니다.
-                <br />
-                출시 알림을 원하시면{" "}
-                <a href="mailto:admin@noteflex.app?subject=Noteflex%20%EC%B6%9C%EC%8B%9C%20%EC%95%8C%EB%A6%BC%20%EC%8B%A0%EC%B2%AD" className="text-primary underline hover:text-primary/80">admin@noteflex.app</a>
-                으로 메일을 보내주세요.
-              </p>
-            </div>
+            <ComingSoonNotice />
           )}
 
           {GAME_ENABLED && user && !profile?.is_premium && (
@@ -331,7 +348,7 @@ export default function Index() {
                 to="/blog"
                 className="px-5 py-2.5 rounded-xl border border-border text-sm text-foreground hover:bg-muted transition-colors"
               >
-                📝 블로그 읽기
+                {t.comingSoon.blogButton}
               </Link>
               <Link
                 to="/terms"
