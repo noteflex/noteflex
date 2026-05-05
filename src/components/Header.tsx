@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { PremiumBadge } from "@/components/PremiumBadge";
+import LangToggle from "@/components/LangToggle";
 
 interface HeaderProps {
   /** Page-specific right-side content */
@@ -56,7 +57,10 @@ export default function Header({
     >
       <div className={`${container} py-4 flex items-center justify-between gap-4`}>
         {left}
-        {right && <div className="shrink-0">{right}</div>}
+        <div className="flex items-center gap-4 shrink-0">
+          <LangToggle />
+          {right}
+        </div>
       </div>
       {below && <div className={`${container} pb-3`}>{below}</div>}
     </header>
