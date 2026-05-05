@@ -313,7 +313,7 @@ export default function Index() {
               className="px-10 py-4 rounded-2xl bg-primary text-primary-foreground font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-200 active:scale-95 animate-fade-up"
               style={{ animationDelay: "0.15s" }}
             >
-              🎵 게임 시작
+              {t.game.start}
             </button>
           ) : (
             <ComingSoonNotice />

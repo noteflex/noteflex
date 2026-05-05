@@ -9,6 +9,9 @@ export interface Strings {
     subtitle: string;
     emoji: string;
   };
+  game: {
+    start: string;
+  };
   comingSoon: {
     badge: string;
     /** {email} placeholder 박힘 */
@@ -57,6 +60,9 @@ const ko: Strings = {
     title: "보는 즉시, 음악이 되다.",
     subtitle: "초견 훈련을 게임처럼.",
     emoji: "🎼",
+  },
+  game: {
+    start: "🎵 게임 시작",
   },
   comingSoon: {
     badge: "🚀 2026년 5월 출시 예정",
@@ -111,6 +117,9 @@ const en: Strings = {
     title: "Where Sight Becomes Sound.",
     subtitle: "Sight-reading training, gamified.",
     emoji: "🎼",
+  },
+  game: {
+    start: "🎵 Start Game",
   },
   comingSoon: {
     badge: "🚀 Launching May 2026",
