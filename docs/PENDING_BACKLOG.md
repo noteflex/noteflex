@@ -360,7 +360,7 @@ CREATE TABLE tier_history (...)
 - Premium 사용자 자동 차단 (`getUserTier === "pro"` → null 반환)
 
 ### 3.3 광고 배치 코드 ✅ (2026-05-03 초기 + 2026-05-04 보완)
-- **배너**: Blog 목록 모바일 하단 + Blog 글 모바일 하단 + Home 하단 + ~~Index 랜딩 하단~~ (2026-05-04 폐기: 메인 페이지 광고 X 정책, i18n sprint에서 코드 제거)
+- **배너**: Blog 목록 모바일 하단 + Blog 글 모바일 하단 + Home 하단 + ~~Index 랜딩 하단~~ (✅ 2026-05-05 i18n Sprint A에서 코드 제거 — Index.tsx 박힌 `<AdBanner />` 삭제, /play levelSelect 영역 광고는 그대로)
 - **사이드바 sticky (lg+)**: Blog 목록 좌/우 ✅ + Blog 글 좌/우 ✅ (2026-05-04)
 - **In-feed**: Home 대시보드 (통계 카드 ↔ 탭 사이) + Blog 목록 6개마다 1개 ✅ (2026-05-04, `VITE_INFEED_ADS_ENABLED` 비상 스위치 박힘)
 - **전면 (AdInterstitialModal)**: 3게임마다 + 잠금 해제 시점, 중복 시 1번만
@@ -805,9 +805,13 @@ Calibration 사용 패턴 + 환경 분석을 위한 관리자 전용 뷰.
 - **사업자등록 직후 즉시 게시**
 - **Paddle Vendor 심사 + AdSense 심사의 핵심 의존성**
 
-#### 10.1.1 임시 텍스트 작업 (2026-05-04 결정, i18n + 메인 리뉴얼 sprint)
-- 현재 4종 기존 내용 삭제 → "임시 작성 준비 중" 대체 텍스트로 교체
-- 사업자 등록 정정 완료 후 Termly/iubenda 자동 생성 + 진짜 약관 게시
+#### 10.1.1 임시 텍스트 작업 ✅ 완료 (2026-05-05, i18n Sprint A)
+- ✅ KO 4종 (`src/content/legal/{terms,privacy,refund,cookies}.md`) 임시 텍스트 교체
+- ✅ EN 4종 (`*.en.md`) 신규 — Coming Soon — Drafting 박음
+- ✅ `effective: ""` 박음 (사업자 등록 후 박을 영역)
+- ✅ markdownLoader.ts `loadLegalContent(slug, lang)` 박음 — `*.en.md` 미박일 때 KO fallback
+- ✅ LegalPage.tsx i18n 적용 — slug 자동 분기, ja·zh = en fallback
+- 사업자 등록 정정 완료 후 Termly/iubenda 자동 생성 + 진짜 약관 게시 (메모리 #22 트리거)
 
 ### 10.2 ⏳ 블로그 글 작성 (사용자 직접, 출시 전부터 지속)
 - AdSense 심사용 15~20개 목표
@@ -865,18 +869,19 @@ Claude가 출시 임박 시 자동 고지.
 
 ## 13. 결정 보류 항목
 
-### 13.1 글로벌 다국어 출시 전략 (사용자 결정 2026-04-30)
+### 13.1 글로벌 다국어 출시 전략 (사용자 결정 2026-04-30 → 2026-05-05 i18n 시스템 박음)
 
 - **5/31 출시**: 한국어 + 영어 2개 언어 동시 출시
 - **출시 후 1~4주**: 일본어 추가 (1~2주), 중국어 추가 (2~4주) 점진 확장
 - **블로그**: 5/1부터 한+영 동시 작성 (4/30 글은 5/1에 영어 버전 추가)
-- **게임 UI i18n**: Week 3 도입 (react-i18next, Sonnet 1~2일)
+- ~~**게임 UI i18n**: Week 3 도입 (react-i18next, Sonnet 1~2일)~~ — ✅ **2026-05-05 자체 구현 박음** (i18n Sprint A, react-i18next 미도입). 시스템 영역 = `src/contexts/LanguageContext.tsx` + `src/i18n/strings.ts` + `src/components/LangToggle.tsx`. **Sprint A 완료 = 메인·Header·Footer·블로그·약관 4종**. **Sprint B 박을 영역 = 인증·게임·결과·대시보드** (§13.5 참조).
 - **음표 라벨 토글**: Week 2 (한국식·영문식·솔페주, 1~2시간)
-- **URL 구조**: `/ko/*`, `/en/*` 언어 코드 포함
+- ~~**URL 구조**: `/ko/*`, `/en/*` 언어 코드 포함~~ — 박힘 X. 자체 구현 + Context lang 박음. 블로그만 URL `:lang` (SEO·linkability) 박음. 메인·약관 등은 단일 URL + Context lang 분기.
 - **블로그 폴더**: `src/content/blog/ko/`, `src/content/blog/en/`
-- **카테고리 영문 매핑**: 초견의 정석 = Sight-Reading Lab, 실전 연습 가이드 = Practice Hub, 음악 이론 & 화성학 = Theory & Harmony, 뮤직 테크 & 미래 = Music Tech
+- **약관 4종**: `src/content/legal/{slug}.md` (KO) + `src/content/legal/{slug}.en.md` (EN, ✅ 2026-05-05 박음)
+- **카테고리 영문 매핑**: 초견의 정석 = Sight-Reading Lab, 실전 연습 가이드 = Practice Hub, 음악 이론 & 화성학 = Theory & Harmony, 뮤직 테크 & 미래 = Music Tech (✅ strings.ts에 박음)
 - **Paddle 글로벌 결제** 자동 활성화
-- 상세 전략: `docs/i18n/STRATEGY.md`
+- 상세 전략: `docs/i18n/STRATEGY.md` (구 react-i18next 전략 박힌 영역, 자체 구현 결정으로 일부 outdated)
 
 ### 13.2 라우팅 보호 + Navigation 정리 + PWA 등록 (사용자 결정 2026-04-30, Week 3~4)
 
@@ -904,20 +909,42 @@ Claude가 출시 임박 시 자동 고지.
 - 아이콘: 192·512·180 + maskable
 - **작업 시간**: Week 3 Navigation 정리 (Sonnet 1~2시간) + Week 4 PWA (Sonnet 7~8시간 + 사용자 아이콘 제작 30분)
 
-### 13.5 i18n + 메인 화면 리뉴얼 Sprint (Week 3, 2026-05-04 결정)
+### 13.5 i18n + 메인 화면 리뉴얼 Sprint (Week 3, 2026-05-04 결정 → 2026-05-05 Sprint A 완료)
 
-**목적**: 출시 전 메인 페이지 카피·UI·광고·이메일 정리 + 약관 임시 텍스트 교체
+**목적**: 출시 전 메인 페이지 카피·UI·광고·이메일 정리 + 약관 임시 텍스트 교체 + 글로벌 i18n 시스템 도입
 
-- **Hero 카피**: KO "보는 즉시, 음악이 되다." / EN "Where Sight Becomes Sound."
-- **부가 카피**: KO "초견 훈련을 게임처럼." / EN "Sight-reading training, gamified."
-- **상세 수치 제거**: "7단계 × 3서브레벨..." 텍스트 삭제 (카피 단순화)
-- **이메일 교체**: `admin@` → `contact@noteflex.app`
-- **메인 페이지 이용약관 버튼 삭제**: "📄 이용약관" 버튼 제거 (블로그 읽기 버튼만 유지)
-- **푸터 블로그 링크 삭제**: 이용약관·개인정보·환불·쿠키 4종 링크만 유지
-- **푸터 브랜드명**: "© 2026 Donofear" 박음
-- **메인 페이지 광고 제거**: Index.tsx L343 `<AdBanner>` 삭제 (메모리 #21 정책 반영)
-- **i18n 도입**: react-i18next, 영어 default + 한국어 토글
-- **약관 4종 임시 텍스트**: §10.1.1 참조
+#### Sprint A ✅ 완료 (2026-05-05) — 외부 노출 영역
+사용자 결정 박음 (2026-05-05): "사용자가 사용하고 보는 모든 화면 = 한·영 둘 다 박음". 영역 분량이 커서 Sprint A·B로 분리.
+
+**박힌 영역**: 메인(Index) + Header(LangToggle) + Footer + 블로그(Blog·BlogPost·InFeedAd) + 약관 4종(LegalPage)
+
+- ✅ **i18n 시스템**: 자체 구현 박음 (react-i18next 미도입, 자체 LanguageContext + strings 객체) — 블로그 영역 기존 `UI[lang]` 패턴 일관 + 번들 크기 최소
+  - `src/contexts/LanguageContext.tsx` (Provider + useLang + useT, default fallback 박음)
+  - `src/i18n/strings.ts` (Strings 인터페이스 + ko·en 풀, ja·zh = en fallback)
+  - `src/components/LangToggle.tsx` (Header 우상단, 한·영 button group)
+  - localStorage `noteflex.lang` (legacy `noteflex.blog_lang` 자동 마이그레이션)
+- ✅ **Hero 카피**: KO "보는 즉시, 음악이 되다." / EN "Where Sight Becomes Sound."
+- ✅ **부가 카피**: KO "초견 훈련을 게임처럼." / EN "Sight-reading training, gamified."
+- ✅ **상세 수치 제거**: 기존 "오선지/7단계 × 3서브레벨..." description 통째 삭제
+- ✅ **이메일 교체**: `admin@` → `contact@noteflex.app` (ComingSoonNotice mailto + 본문)
+- ✅ **메인 페이지 이용약관 버튼 삭제**: 블로그 읽기 버튼만 유지
+- ✅ **푸터 블로그 링크 삭제** + 약관 4종 링크 i18n
+- ✅ **푸터 브랜드명**: "© 2026 Donofear" 박음 + 푸터 이메일 삭제
+- ✅ **메인 페이지 광고 제거**: Index.tsx 랜딩 영역 `<AdBanner>` 삭제
+- ✅ **약관 4종 임시 텍스트**: §10.1.1 참조
+- ✅ **블로그 영역 통합**: Blog/BlogPost/InFeedAd 자체 lang state → useLang/useT, 자체 토글 제거 (Header LangToggle로 박힘)
+
+**검증**: 458/458 테스트 PASS (각 commit 박은 후 회귀 X 확인). 사용자 화면 검증 = 별도 단계.
+
+**commit 1~7**: i18n 시스템 → Index.tsx → 메인 변경 → Footer → 약관 4종 → Blog 통합 → 백로그 갱신.
+
+#### Sprint B 🔴 다음 (인증·게임·결과·대시보드)
+
+**박을 영역**: 인증(/login, /signup, AuthModal) + /play 단계 선택 + 게임 화면 + 결과 모달 + /dashboard
+
+**박힘 X (별도 sprint)**: /admin/* (메모리 #24 박힘) + /pricing, /profile, /settings (출시 후)
+
+**Phase 3 (출시 후)**: 일·중 번역 박음 — strings.ts ja·zh 키 + LangToggle UI 4언어 노출. 현재는 영어 fallback 박혀 있음.
 
 #### ~~잠재 갭: /home → /dashboard 라우트 명~~ ✅ 완료 (2026-05-04)
 - ~~현재 코드: `<Route path="/home" element={<Home />} />`~~
@@ -1034,11 +1061,12 @@ Claude가 출시 임박 시 자동 고지.
 - [ ] **사용자 작업**: 블로그 글 추가 (한+영 동시)
 
 ### Week 3 (5/13 ~ 5/19): i18n + 라우팅 보호 + Navigation 정리 + 비즈니스 모델
-- [ ] 게임 UI i18n 도입 (react-i18next, locales/ko·en.json, Sonnet 1~2일)
+- [x] **i18n Sprint A** ✅ 완료 (2026-05-05, 자체 구현 박음 — react-i18next 미도입, LanguageContext + strings.ts) — 메인·Header·Footer·블로그·약관 4종
+- [ ] **i18n Sprint B**: 인증·게임·결과·대시보드 i18n 박음 (다음 sprint, §13.5 참조)
 - [ ] 4/30·5/1~ 블로그 글 영어 번역 누적 (영어 폴더 분기)
 - [ ] §13.2 라우팅 보호 (NavOnlyRoute) 도입
 - [ ] §13.2 Navigation 정리 (header/sidebar 일관성, memory #14 NavOnlyRoute, memory #19 UX)
-- [ ] §13.5 메인 화면 리뉴얼 (Hero 카피·이메일·푸터·광고 제거·약관 임시 텍스트)
+- [x] §13.5 메인 화면 리뉴얼 (Sprint A) ✅ 완료 (2026-05-05) — Hero 카피·이메일·푸터·광고 제거·약관 임시 텍스트 박음
 - [x] §13.5 /home → /dashboard 라우트 명 갭 결정 ✅ 완료 (2026-05-04)
 - [ ] §1.1 회원 등급 차등화 적용
 - [ ] §1.3 결제 후킹 메시지
