@@ -186,7 +186,7 @@ export default function AuthModal({ onClose }: AuthModalProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-fade-up">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 animate-fade-up">
       <div className="bg-card border border-border rounded-2xl shadow-2xl w-full max-w-sm mx-4 max-h-[90vh] overflow-y-auto">
         {/* ━━━━━━━━━━━━━━━━ Header ━━━━━━━━━━━━━━━━ */}
         {mode === "login" ? (
