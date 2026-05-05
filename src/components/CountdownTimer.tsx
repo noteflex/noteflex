@@ -30,7 +30,7 @@ export default function CountdownTimer({ duration, resetKey, onExpire, paused = 
         expiredRef.current = true;
         onExpire();
       }
-    }, 50);
+    }, 100);
 
     return () => clearInterval(interval);
   }, [resetKey, duration, onExpire, paused]);
@@ -42,7 +42,7 @@ export default function CountdownTimer({ duration, resetKey, onExpire, paused = 
     <div className="w-full max-w-[500px] mx-auto px-1">
       <div className="w-full h-2 rounded-full bg-muted/40 overflow-hidden">
         <div
-          className={`h-full rounded-full transition-all duration-100 ease-linear ${
+          className={`h-full rounded-full transition-[width] duration-100 ease-linear ${
             isUrgent
               ? "bg-destructive animate-pulse"
               : fraction > 0.5
