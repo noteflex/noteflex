@@ -966,14 +966,22 @@ Claude가 출시 임박 시 자동 고지.
 
 **commit 1~7**: i18n 시스템 → Index.tsx → 메인 변경 → Footer → 약관 4종 → Blog 통합 → 백로그 갱신.
 
-#### Sprint A 잔여 fix ✅ 완료 (2026-05-05, commit 8~12)
+#### Sprint A 잔여 fix ✅ 완료 (2026-05-05, commit 8~13)
 
-사용자 화면 검증에서 발견된 4가지 항목 박음:
+사용자 화면 검증에서 발견된 5가지 항목 박음:
 
 - ✅ **검증 1 fix (commit 8 `1321633`)**: 게임시작 버튼 한국어 hardcoded → `t.game.start` 박음 (KO "🎵 게임 시작" / EN "🎵 Start Game")
 - ✅ **검증 3 fix (commit 9 `15b40ca`)**: Hero 영역 emoji(🎼) span 삭제 + `hero.emoji` 키 제거 — 메인 화면 이미지 사라짐
 - ✅ **검증 4 fix (commit 10 `6412c20`)**: 블로그 읽기 버튼 게임시작 버튼 밑 복원 (GAME_ENABLED=true 영역) — outline 스타일 (CTO 권장 2차 CTA 패턴)
 - ✅ **검증 5 fix (commit 11 `23421a7`)**: 약관 4종 KO·EN 임시 텍스트에서 "Termly" 내부 도구명 제거 + frontmatter `title` 박음
+- ✅ **검증 11 fix (commit 13 `67c2a6e`)**: 블로그 본문 이미지 `maxHeight` 500px → 400px → 300px 최종 박음 (`MarkdownContent.tsx:74`). 사용자 화면 검증 2회 조정 (가독성 영역). `maxWidth: min(100%, 600px)` + `objectFit: contain` 그대로 박음.
+
+### 13.5 i18n + 메인 화면 리뉴얼 Sprint A ✅ 완료 (2026-05-05)
+
+**Sprint A 박음 = i18n 시스템 도입 + 외부 노출 영역 (메인·Header·Footer·블로그·약관 4종) + 잔여 fix 5건.**
+13개 commit 박음 (1~13). 458/458 테스트 PASS 일관 박음.
+
+**다음 sprint**: Sprint B (인증·게임·결과·대시보드 i18n). §0-3 모달 성능 영역 (메모리 #25 박힘) 별도 sprint.
 
 #### Sprint B 🔴 다음 (인증·게임·결과·대시보드)
 
