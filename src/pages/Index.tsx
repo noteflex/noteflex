@@ -28,7 +28,7 @@ type PlayScreen = "loading" | "levelSelect" | "game";
 function ComingSoonNotice() {
   const t = useT();
   const [bodyBefore, bodyAfter] = t.comingSoon.body.split("{email}");
-  const email = "admin@noteflex.app";
+  const email = "contact@noteflex.app";
   return (
     <div
       className="flex flex-col items-center gap-4 animate-fade-up"
@@ -350,22 +350,9 @@ export default function Index() {
               >
                 {t.comingSoon.blogButton}
               </Link>
-              <Link
-                to="/terms"
-                className="px-5 py-2.5 rounded-xl border border-border text-sm text-foreground hover:bg-muted transition-colors"
-              >
-                📄 이용약관
-              </Link>
             </div>
           )}
         </div>
-
-        {/* 랜딩 페이지 하단 배너 (게임 페이지가 아닌 "/" 라우트) */}
-        <AdBanner
-          slot={getSlot("BANNER")}
-          format="horizontal"
-          className="w-full px-4 pb-4"
-        />
 
         <Footer />
       </div>
