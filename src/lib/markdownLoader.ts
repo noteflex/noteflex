@@ -44,13 +44,28 @@ const legalModules = import.meta.glob("/src/content/legal/*.md", {
   eager: true,
 }) as Record<string, string>;
 
-export function loadLegalContent(slug: string): MarkdownDoc {
-  const path = `/src/content/legal/${slug}.md`;
+export function loadLegalContent(
+  slug: string,
+  lang: "ko" | "en" = "ko"
+): MarkdownDoc {
+  const path =
+    lang === "en"
+      ? `/src/content/legal/${slug}.en.md`
+      : `/src/content/legal/${slug}.md`;
   const raw = legalModules[path];
   if (!raw) {
+    // EN 파일 미박일 때 KO로 fallback (Phase 3 영역)
+    if (lang === "en") {
+      const koPath = `/src/content/legal/${slug}.md`;
+      const koRaw = legalModules[koPath];
+      if (koRaw) return parseFrontmatter(koRaw);
+    }
     return {
       meta: {},
-      content: "> 이 문서는 곧 게시됩니다.",
+      content:
+        lang === "en"
+          ? "> This document is being drafted."
+          : "> 이 문서는 곧 게시됩니다.",
     };
   }
   return parseFrontmatter(raw);

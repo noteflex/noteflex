@@ -38,10 +38,10 @@ const App = () => (
               <Route path="/" element={<Index />} />
 
               {/* 법적 페이지 (항상 노출) */}
-              <Route path="/terms" element={<LegalPage slug="terms" title="이용약관" />} />
-              <Route path="/privacy" element={<LegalPage slug="privacy" title="개인정보처리방침" />} />
-              <Route path="/refund" element={<LegalPage slug="refund" title="환불 정책" />} />
-              <Route path="/cookies" element={<LegalPage slug="cookies" title="쿠키 정책" />} />
+              <Route path="/terms" element={<LegalPage slug="terms" />} />
+              <Route path="/privacy" element={<LegalPage slug="privacy" />} />
+              <Route path="/refund" element={<LegalPage slug="refund" />} />
+              <Route path="/cookies" element={<LegalPage slug="cookies" />} />
 
               {/* 블로그 (항상 노출) */}
               <Route path="/blog" element={<Blog />} />
