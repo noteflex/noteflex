@@ -19,14 +19,13 @@ export function AdInterstitialModal({ open, onClose }: AdInterstitialModalProps)
       setCountdown((c) => {
         if (c <= 1) {
           clearInterval(id);
-          onClose();
           return 0;
         }
         return c - 1;
       });
     }, 1000);
     return () => clearInterval(id);
-  }, [open, onClose]);
+  }, [open]);
 
   if (!open) return null;
 
@@ -42,12 +41,16 @@ export function AdInterstitialModal({ open, onClose }: AdInterstitialModalProps)
           format="rectangle"
           className="w-full min-h-[250px]"
         />
-        <button
-          onClick={onClose}
-          className="text-xs text-muted-foreground underline"
-        >
-          {countdown > 0 ? `${countdown}초 후 닫기` : "닫기"}
-        </button>
+        {countdown > 0 ? (
+          <p className="text-xs text-muted-foreground">{countdown}초 후 건너뛸 수 있어요</p>
+        ) : (
+          <button
+            onClick={onClose}
+            className="text-xs text-muted-foreground underline"
+          >
+            건너뛰기
+          </button>
+        )}
       </div>
     </div>
   );
