@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
 import { PremiumBadge } from "@/components/PremiumBadge";
-import { initSound } from "@/lib/sound";
+import { initSound, ensureAudioReady } from "@/lib/sound";
 import NoteGame from "@/components/NoteGame";
 import LevelSelect from "@/components/LevelSelect";
 import AuthModal from "@/components/AuthModal";
@@ -216,9 +216,11 @@ export default function Index() {
   };
 
   // /play 진입 시 사운드 preload 보장
+  // §F6 (2026-05-05, 정책 P4 — 메모리 #16 강화): ensureAudioReady도 prefetch → 카운트다운 끝 시점 paint·sound gap ↓.
   useEffect(() => {
     if (isPlayRoute && GAME_ENABLED) {
       initSound().catch((e) => console.warn("initSound 실패:", e));
+      ensureAudioReady().catch((e) => console.warn("ensureAudioReady prefetch 실패:", e));
     }
   }, [isPlayRoute]);
 

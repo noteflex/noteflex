@@ -28,17 +28,19 @@ export default function CountdownOverlay({
 
   if (count <= 0) return null;
 
+  // §F1 (2026-05-05, 정책 P3): 외부 div의 key={count} 영역 제거 — 매초 unmount/mount 영역 차단.
+  // 숫자 텍스트 span에만 key={count} 유지 → wrapper backdrop은 mount 1회, 숫자만 매초 새 element + animation.
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-background/95"
       aria-live="polite"
       aria-label={`${count}초 뒤 시작`}
     >
-      <div
-        key={count}
-        className="flex flex-col items-center gap-4 animate-countdown-pop"
-      >
-        <span className="text-8xl sm:text-9xl font-bold text-primary tabular-nums drop-shadow-lg">
+      <div className="flex flex-col items-center gap-4">
+        <span
+          key={count}
+          className="text-8xl sm:text-9xl font-bold text-primary tabular-nums drop-shadow-lg animate-countdown-pop"
+        >
           {count}
         </span>
         <span className="text-sm text-muted-foreground font-medium tracking-wide">

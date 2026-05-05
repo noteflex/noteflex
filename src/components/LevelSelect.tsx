@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { memo, useCallback, useMemo, useRef, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLevelProgress } from "@/hooks/useLevelProgress";
 import { getUserTier } from "@/lib/subscriptionTier";
@@ -60,52 +60,66 @@ export default function LevelSelect({
 
   const totalPassed = progress.filter((p) => p.passed).length;
 
-  // ── 셀 상태 계산 ────────────────────────────────────────────
-  function getCellState(level: number, sub: Sublevel): CellState {
-    // 1) 구독 게이트
-    if (!canAccessSublevel(tier, level, sub)) {
-      return {
-        passed: false, inProgress: false,
-        lockReason: "subscription", prevLabel: null, criteriaCount: 0,
-      };
+  // §F4 (2026-05-05, 정책 P1 보조): 21개 셀 state를 useMemo로 한 번에 계산 → SublevelCell React.memo 효과 확보.
+  const cellStates = useMemo(() => {
+    function compute(level: number, sub: Sublevel): CellState {
+      // 1) 구독 게이트
+      if (!canAccessSublevel(tier, level, sub)) {
+        return {
+          passed: false, inProgress: false,
+          lockReason: "subscription", prevLabel: null, criteriaCount: 0,
+        };
+      }
+
+      // 2) 진도 게이트 (이전 서브레벨 통과 필요)
+      const prev = getPreviousSublevel(level, sub);
+      const isPrevPassed = prev === null
+        ? true
+        : (getProgressFor(prev.level, prev.sublevel)?.passed ?? false);
+
+      if (!isPrevPassed && !isAdmin) {
+        const pl = formatSublevel(prev!.level, prev!.sublevel as Sublevel);
+        return {
+          passed: false, inProgress: false,
+          lockReason: "progress", prevLabel: pl, criteriaCount: 0,
+        };
+      }
+
+      // 3) 진도 데이터
+      const prog = getProgressFor(level, sub) as SublevelProgress | null;
+      const passed     = prog?.passed ?? false;
+      const inProgress = !passed && (prog?.play_count ?? 0) > 0;
+
+      let criteriaCount = 0;
+      if (prog) {
+        const c = getCompletion(prog);
+        criteriaCount = [
+          c.playCount.satisfied,
+          c.bestStreak.satisfied,
+          c.accuracy.satisfied,
+          c.avgReactionTime.satisfied,
+        ].filter(Boolean).length;
+      }
+
+      return { passed, inProgress, lockReason: null, prevLabel: null, criteriaCount };
     }
 
-    // 2) 진도 게이트 (이전 서브레벨 통과 필요)
-    const prev = getPreviousSublevel(level, sub);
-    const isPrevPassed = prev === null
-      ? true
-      : (getProgressFor(prev.level, prev.sublevel)?.passed ?? false);
-
-    if (!isPrevPassed && !isAdmin) {
-      const pl = formatSublevel(prev!.level, prev!.sublevel as Sublevel);
-      return {
-        passed: false, inProgress: false,
-        lockReason: "progress", prevLabel: pl, criteriaCount: 0,
-      };
+    const map = new Map<string, CellState>();
+    for (let level = 1; level <= 7; level++) {
+      for (const sub of [1, 2, 3] as Sublevel[]) {
+        map.set(`${level}-${sub}`, compute(level, sub));
+      }
     }
+    return map;
+  }, [tier, isAdmin, progress, getProgressFor]);
 
-    // 3) 진도 데이터
-    const prog = getProgressFor(level, sub) as SublevelProgress | null;
-    const passed     = prog?.passed ?? false;
-    const inProgress = !passed && (prog?.play_count ?? 0) > 0;
+  // §F4 (2026-05-05): handleSelect useCallback + cellStatesRef로 의존성 안정화.
+  const cellStatesRef = useRef(cellStates);
+  cellStatesRef.current = cellStates;
 
-    let criteriaCount = 0;
-    if (prog) {
-      const c = getCompletion(prog);
-      criteriaCount = [
-        c.playCount.satisfied,
-        c.bestStreak.satisfied,
-        c.accuracy.satisfied,
-        c.avgReactionTime.satisfied,
-      ].filter(Boolean).length;
-    }
-
-    return { passed, inProgress, lockReason: null, prevLabel: null, criteriaCount };
-  }
-
-  // ── 셀 클릭 ─────────────────────────────────────────────────
-  function handleCellClick(level: number, sub: Sublevel) {
-    const state = getCellState(level, sub);
+  const handleSelect = useCallback((level: number, sub: Sublevel) => {
+    const state = cellStatesRef.current.get(`${level}-${sub}`);
+    if (!state) return;
 
     if (state.lockReason === "subscription") {
       setUpgradeOpen(true);
@@ -119,7 +133,7 @@ export default function LevelSelect({
     }
 
     onSelectSublevel(level, sub);
-  }
+  }, [onSelectSublevel]);
 
   // ── Render ──────────────────────────────────────────────────
   return (
@@ -193,14 +207,14 @@ export default function LevelSelect({
               {/* 서브레벨 3개 */}
               <div className="grid grid-cols-3 gap-2">
                 {([1, 2, 3] as Sublevel[]).map((sub) => {
-                  const state = getCellState(level, sub);
+                  const state = cellStates.get(`${level}-${sub}`)!;
                   return (
                     <SublevelCell
                       key={sub}
                       level={level}
                       sublevel={sub}
                       state={state}
-                      onClick={() => handleCellClick(level, sub)}
+                      onSelect={handleSelect}
                     />
                   );
                 })}
@@ -224,16 +238,18 @@ export default function LevelSelect({
 }
 
 // ════════════════════════════════════════════════════════════
-// SublevelCell
+// SublevelCell — §F4 (2026-05-05, 정책 P1 보조): React.memo로 21개 셀 불필요 리렌더 차단.
+// onSelect는 부모에서 useCallback으로 안정화, state는 useMemo cellStates에서 안정 reference.
 // ════════════════════════════════════════════════════════════
 interface SublevelCellProps {
   level: number;
   sublevel: Sublevel;
   state: CellState;
-  onClick: () => void;
+  onSelect: (level: number, sublevel: Sublevel) => void;
 }
 
-function SublevelCell({ level, sublevel, state, onClick }: SublevelCellProps) {
+const SublevelCell = memo(function SublevelCell({ level, sublevel, state, onSelect }: SublevelCellProps) {
+  const onClick = () => onSelect(level, sublevel);
   const config    = SUBLEVEL_CONFIGS[sublevel];
   const label     = formatSublevel(level, sublevel);
   const shortLabel = `${level}-${sublevel}`;
@@ -351,4 +367,4 @@ function SublevelCell({ level, sublevel, state, onClick }: SublevelCellProps) {
       <span className="text-[9px] text-muted-foreground mt-auto">{configStr}</span>
     </button>
   );
-}
+});
