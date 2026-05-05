@@ -366,6 +366,91 @@ Claude Code 코드 분석 발견.
 
 ---
 
+### 0-3.8 Animations 트랙 fix ✅ 완료 (2026-05-05)
+
+- CountdownTimer setInterval 50ms → 100ms + transition-[width] 한정
+- 효과: 1초당 리렌더 1/2 + transition 트리거 ↓
+- Performance 측정: Frames 33.2ms (이전 400ms) ✅, INP 90ms (이전 101ms) ✅
+- Animations 트랙 5초 보라색 잔존 — 별도 sprint 영역 (다음 sprint, §0-3.15)
+
+---
+
+### 0-3.9 화면 전환 자연스러움 sprint Phase 1 ✅ 완료 (2026-05-05)
+
+- F1 CountdownOverlay key 제거 (정책 P3)
+- F2 Dialog animation 단순화 — slide 제거, fade+zoom만 유지 (정책 P2)
+- F4 SublevelCell memo + getCellState memo (정책 P1 보조)
+- F6 ensureAudioReady prefetch — Index.tsx 영역 (정책 P4, 메모리 #16 강화)
+- F3 제외: AdInterstitial은 단순 div 영역, gap 자체 없음
+- 학습: F6 NoteGame 영역 적용 시 5개 테스트 가정 위반 → Index.tsx 영역 갈음으로 동일 효과 + 테스트 영향 0
+
+---
+
+### 0-3.12 검증 73 회귀 fix ✅ 완료 (2026-05-05)
+
+- 사실: 메모리 #28 게이팅 박혀 있었으나 staff 영역은 게이팅 X (음표·조표만)
+- 사용자 인지: '오선지 확 떴다가 갑자기 카운트다운 뜨면서 blur 처리'
+- fix: GrandStaffPractice wrapper invisible 게이팅 추가 (`showCountdown || showSwipeTutorial || showCalibration || calibrationLoading`)
+- 효과: staff·음표·조표·사운드 카운트다운 끝 시점 동시 등장 (정책 P1)
+- 메모리 #16 강화 + 메모리 #28 정책 확장
+
+---
+
+### 0-3.13 사운드 다운로드 메시지 영역 (PENDING — 다음 sprint)
+
+**증상**: 게임 시작 버튼 누르면 이전엔 '사운드 다운로드' 메시지 노출 영역 있었으나 직전 sprint(F6 ensureAudioReady prefetch — Index.tsx 영역) 후 메시지 X + 버퍼링만 잔존
+
+**가능 원인**:
+- F6 영향: ensureAudioReady prefetch로 사운드 로딩 시점 변경
+- "loading" screen 영역 노출 시점 변경 가능성
+- handleStart 흐름과 F6 useEffect 흐름 사이 동기화 영역
+
+**fix 사양 (다음 sprint 영역)**:
+- 옵션 1: "loading" screen 영역 그대로 유지 + F6 prefetch 추가 (현재 구조)
+- 옵션 2: 사운드 로딩 인디케이터 자연스럽게 노출 (게임 시작 → 카운트다운 진입까지 사용자 인지 영역)
+- 옵션 3: 사운드 로딩 prefetch 시점 더 이른 영역 (메인 화면 마운트 시?)
+
+**사용자 의도**: 자연스러운 방법으로 해결. 버퍼링 인지 X 영역.
+
+**우선순위**: 출시 전 처리 권장 (메모리 #28 정책 부합)
+**처리 방법**: Sonnet 사실 추적 → handleStart + F6 useEffect 영역 + initSound 영역 → 정확한 fix 사양
+
+---
+
+### 0-3.14 다이얼로그 인위적 영역 (PENDING — 다음 sprint)
+
+**증상**: F2 fix 후 다이얼로그 노출·닫힘 너무 빠름 → 인위적
+
+**사용자 보고**: "버벅임 없이 바로바로 실행되네. 너무 인위적이기까지 하다."
+
+**fix 사양**:
+- 옵션 A: duration 200ms → 280ms
+- 옵션 B: slide-from-top 일부 복원
+- 옵션 C: 조합
+
+**우선순위**: 출시 전 처리 권장 (메모리 #28 자연스러움)
+
+---
+
+### 0-3.15 Animations 트랙 5초 보라색 잔존 (PENDING — 다음 sprint)
+
+**증상**: §0-3.8 (CountdownTimer setInterval 100ms + transition-[width]) fix 후에도 Animations 트랙 게임 진행 시간 전 구간 보라색
+
+**가능 원인**: 100ms 갱신도 여전히 잦은 영역 (1초당 10회 리렌더 + 매번 transition 트리거)
+
+**fix 사양 (다음 sprint)**: Sonnet 사실 추적 → transition 완전 제거 또는 CSS animation으로 갈음 (`@keyframes width 0%→100%` 자동 진행)
+
+**우선순위**: 출시 전 처리 권장 (메모리 #28 자연스러움)
+
+---
+
+### 0-3.16 보류 영역 (Phase 2 결정 영역)
+
+- F5 GrandStaffPractice key 안정화 (검증 74 OK 받음 — 보류 가능)
+- F7 animate-fade-up from filter (이전 사용자 보류 영역, 검증 73 fix로 시각적 영향 ↓)
+
+---
+
 ## 0-4. 비로그인 시나리오 잠재 버그 fix ✅ 완료 (2026-05-05)
 
 박혀 있던 영역: 비로그인 사용자가 게임 끝 박을 때 결과 모달 박지 X.
