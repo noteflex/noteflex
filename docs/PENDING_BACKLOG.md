@@ -609,6 +609,21 @@ VITE_ADSENSE_SLOT_INFEED=실제ID
 VITE_ADSENSE_SLOT_INTERSTITIAL=실제ID
 ```
 
+### §0-4.1 AdSense 광고 시스템 통합 ✅ 완료 (12개 ad unit 영역 갱신)
+
+(2026-05-06, Publisher ID `ca-pub-4314740126698954` + 12개 ad unit + ads.txt + placeholder 자체 노출)
+
+- 기존 10개 + 추가 2개 = 12개 ad unit
+- blog-post-bottom-horizontal: 글 본문 하단 (PC + 모바일)
+- play-mid-horizontal: 레벨 선택 Lv4↔Lv5 사이
+- 메모리 #21 정책 일관 갱신
+- index.html head 스크립트 + public/ads.txt
+- AdBanner 컴포넌트 갈음 (placeholderVariant prop + production 영역에서도 placeholder 노출)
+- AdPlaceholder 신규 (수평형 50/50 랜덤 + 수직형 블로그 글 자동 추출, 보고 있는 글 회피)
+- AdInterstitialModal 자체 노출 (프리미엄 + 블로그 랜덤, 5초 강제 시청)
+- Dashboard `?upgrade=1` 자동 UpgradeModal 노출 (프리미엄 CTA 영역)
+- VITE_ADS_ENABLED=false 그대로 (5/14~16 사업자 등록 + AdSense 심사 신청 후 true)
+
 ### 3.5 약점 음표 표시 (Fail 시) 🔴
 **설계 §5.나**: Fail 시 약점 음표 + 광고 시청으로 잠금 해제
 - 출시 전: 약점 음표 표시까지
