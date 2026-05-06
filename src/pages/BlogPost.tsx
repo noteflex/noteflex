@@ -59,7 +59,12 @@ export default function BlogPost() {
       {/* 데스크톱: 좌/우 사이드바 광고 | 모바일: 없음 (하단 배너로 대체) */}
       <div className="flex-1 flex justify-center">
         <aside className="hidden lg:flex flex-col items-end pt-10 pr-4 w-40 shrink-0 sticky top-16 self-start">
-          <AdBanner slot={getSlot("SIDEBAR_LEFT")} format="vertical" />
+          <AdBanner
+            slot={getSlot("BLOG_POST_LEFT")}
+            format="vertical"
+            placeholderVariant="vertical-blog"
+            excludeSlug={lang && slug ? `${lang}/${slug}` : undefined}
+          />
         </aside>
 
         <main className="flex-1 max-w-3xl min-w-0 px-4 py-10">
@@ -85,19 +90,37 @@ export default function BlogPost() {
                 <p className="text-sm text-muted-foreground mb-10">{post.meta.date}</p>
               )}
               <MarkdownContent>{post.content}</MarkdownContent>
+
+              {/* 글 본문 하단 배너 (PC + 모바일 모두 노출) */}
+              <div className="mt-12 pt-8 border-t border-border">
+                <AdBanner
+                  slot={getSlot("BLOG_POST_BOTTOM")}
+                  format="horizontal"
+                  placeholderVariant="horizontal-random"
+                  excludeSlug={lang && slug ? `${lang}/${slug}` : undefined}
+                  className="w-full"
+                />
+              </div>
             </>
           )}
         </main>
 
         <aside className="hidden lg:flex flex-col items-start pt-10 pl-4 w-40 shrink-0 sticky top-16 self-start">
-          <AdBanner slot={getSlot("SIDEBAR_RIGHT")} format="vertical" />
+          <AdBanner
+            slot={getSlot("BLOG_POST_RIGHT")}
+            format="vertical"
+            placeholderVariant="vertical-blog"
+            excludeSlug={lang && slug ? `${lang}/${slug}` : undefined}
+          />
         </aside>
       </div>
 
       {/* 모바일 하단 배너 (데스크톱에서는 사이드바가 대신함) */}
       <AdBanner
-        slot={getSlot("BANNER")}
+        slot={getSlot("BLOG_POST_MOBILE")}
         format="horizontal"
+        placeholderVariant="horizontal-random"
+        excludeSlug={lang && slug ? `${lang}/${slug}` : undefined}
         className="lg:hidden max-w-3xl mx-auto w-full px-4 py-4"
       />
 

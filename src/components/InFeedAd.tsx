@@ -20,7 +20,11 @@ export function InFeedAd(): JSX.Element | null {
       <span className="text-xs text-muted-foreground mb-2 block">
         {t.blog.adLabel}
       </span>
-      <AdBanner slot={getSlot("INFEED")} format="auto" />
+      <AdBanner
+        slot={getSlot("BLOG_LIST_INFEED")}
+        format="auto"
+        placeholderVariant="horizontal-random"
+      />
     </li>
   );
 }

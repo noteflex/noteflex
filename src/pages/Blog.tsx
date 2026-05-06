@@ -47,7 +47,11 @@ export default function Blog() {
       {/* 데스크톱: 좌/우 사이드바 광고 | 모바일: 없음 (하단 배너로 대체) */}
       <div className="flex-1 flex justify-center">
         <aside className="hidden lg:flex flex-col items-end pt-10 pr-4 w-40 shrink-0 sticky top-16 self-start">
-          <AdBanner slot={getSlot("SIDEBAR_LEFT")} format="vertical" />
+          <AdBanner
+            slot={getSlot("BLOG_LIST_LEFT")}
+            format="vertical"
+            placeholderVariant="vertical-blog"
+          />
         </aside>
 
         <main className="flex-1 max-w-3xl min-w-0 px-4 py-10">
@@ -110,14 +114,19 @@ export default function Blog() {
         </main>
 
         <aside className="hidden lg:flex flex-col items-start pt-10 pl-4 w-40 shrink-0 sticky top-16 self-start">
-          <AdBanner slot={getSlot("SIDEBAR_RIGHT")} format="vertical" />
+          <AdBanner
+            slot={getSlot("BLOG_LIST_RIGHT")}
+            format="vertical"
+            placeholderVariant="vertical-blog"
+          />
         </aside>
       </div>
 
       {/* 모바일 하단 배너 (데스크톱에서는 사이드바가 대신함) */}
       <AdBanner
-        slot={getSlot("BANNER")}
+        slot={getSlot("BLOG_LIST_MOBILE")}
         format="horizontal"
+        placeholderVariant="horizontal-random"
         className="lg:hidden max-w-3xl mx-auto w-full px-4 py-4"
       />
       <Footer />

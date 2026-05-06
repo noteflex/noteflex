@@ -3,6 +3,7 @@ import { Link, Navigate, useSearchParams } from "react-router-dom";
 import { BookOpen, RefreshCw } from "lucide-react";
 import Header from "@/components/Header";
 import { AdBanner } from "@/components/AdBanner";
+import UpgradeModal from "@/components/UpgradeModal";
 import { getSlot } from "@/lib/adsense";
 import { formatDistanceToNow } from "date-fns";
 import { ko } from "date-fns/locale";
@@ -414,6 +415,14 @@ export default function Dashboard() {
     );
   };
 
+  // ?upgrade=1 → UpgradeModal 자동 노출 (AdPlaceholder 프리미엄 CTA 영역)
+  const upgradeOpen = searchParams.get("upgrade") === "1";
+  const handleUpgradeClose = () => {
+    const next = new URLSearchParams(searchParams);
+    next.delete("upgrade");
+    setSearchParams(next, { replace: true });
+  };
+
   const isAdmin = profile?.role === "admin";
 
   // 실제 "마지막 연습 활동" 시각 계산
@@ -565,8 +574,9 @@ export default function Dashboard() {
 
         {/* In-feed 광고 (통계 카드와 탭 사이) */}
         <AdBanner
-          slot={getSlot("INFEED")}
+          slot={getSlot("DASH_INFEED")}
           format="rectangle"
+          placeholderVariant="horizontal-random"
           className="w-full"
         />
 
@@ -837,10 +847,13 @@ export default function Dashboard() {
 
         {/* 하단 배너 광고 */}
         <AdBanner
-          slot={getSlot("BANNER")}
+          slot={getSlot("DASH_BOTTOM")}
           format="horizontal"
+          placeholderVariant="horizontal-random"
           className="w-full"
         />
+
+        <UpgradeModal open={upgradeOpen} onClose={handleUpgradeClose} />
       </main>
     </div>
   );

@@ -399,7 +399,11 @@ export default function Index() {
             onLoginRequest={() => setShowAuth(true)}
           />
           <div className="w-full max-w-lg px-4 pb-6">
-            <AdBanner slot={getSlot("BANNER")} format="horizontal" />
+            <AdBanner
+              slot={getSlot("PLAY_BOTTOM")}
+              format="horizontal"
+              placeholderVariant="horizontal-random"
+            />
           </div>
         </div>
       </div>

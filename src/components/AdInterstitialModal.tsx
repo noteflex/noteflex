@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
-import { AdBanner } from "./AdBanner";
-import { getSlot } from "@/lib/adsense";
+import { AdPlaceholder } from "./AdPlaceholder";
 
 interface AdInterstitialModalProps {
   open: boolean;
@@ -29,6 +28,8 @@ export function AdInterstitialModal({ open, onClose }: AdInterstitialModalProps)
 
   if (!open) return null;
 
+  // 메모리 #20: backdrop·ESC 닫기 X (5초 강제 시청 후 스킵 버튼만)
+  // 메모리 #21: 자체 노출 영역 (Noteflex 프리미엄 + 블로그 추천 랜덤)
   return (
     <div
       className="fixed inset-0 z-50 bg-background/90 flex flex-col items-center justify-center gap-4 p-6"
@@ -36,10 +37,9 @@ export function AdInterstitialModal({ open, onClose }: AdInterstitialModalProps)
       aria-label="광고"
     >
       <div className="w-full max-w-sm flex flex-col items-center gap-4">
-        <AdBanner
-          slot={getSlot("INTERSTITIAL")}
-          format="rectangle"
-          className="w-full min-h-[250px]"
+        <AdPlaceholder
+          variant="horizontal-random"
+          className="w-full"
         />
         {countdown > 0 ? (
           <p className="text-xs text-muted-foreground">{countdown}초 후 건너뛸 수 있어요</p>

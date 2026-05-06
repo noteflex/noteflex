@@ -52,6 +52,16 @@ export interface Strings {
     ko: string;
     en: string;
   };
+  adPlaceholder: {
+    premium: {
+      title: string;
+      subtitle: string;
+      cta: string;
+    };
+    blog: {
+      readMore: string;
+    };
+  };
 }
 
 const ko: Strings = {
@@ -108,6 +118,16 @@ const ko: Strings = {
     ko: "한국어",
     en: "English",
   },
+  adPlaceholder: {
+    premium: {
+      title: "프리미엄 무료 체험 — 7일",
+      subtitle: "광고 X · 무제한 학습 · 자세한 통계",
+      cta: "체험 시작",
+    },
+    blog: {
+      readMore: "자세히 보기",
+    },
+  },
 };
 
 const en: Strings = {
@@ -163,6 +183,16 @@ const en: Strings = {
   langToggle: {
     ko: "한국어",
     en: "English",
+  },
+  adPlaceholder: {
+    premium: {
+      title: "Try Premium — 7 days free",
+      subtitle: "Ad-free · Unlimited practice · Detailed stats",
+      cta: "Start trial",
+    },
+    blog: {
+      readMore: "Read more",
+    },
   },
 };
 

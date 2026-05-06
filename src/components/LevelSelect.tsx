@@ -12,6 +12,8 @@ import {
   type SublevelProgress,
 } from "@/lib/levelSystem";
 import UpgradeModal from "./UpgradeModal";
+import { AdBanner } from "./AdBanner";
+import { getSlot } from "@/lib/adsense";
 
 // ── 레벨 메타 정보 ───────────────────────────────────────────
 const LEVEL_INFO = [
@@ -186,9 +188,9 @@ export default function LevelSelect({
 
       {/* 레벨 그룹 */}
       <div className="flex flex-col gap-3 w-full">
-        {LEVEL_INFO.map((info, idx) => {
+        {LEVEL_INFO.flatMap((info, idx) => {
           const level = idx + 1;
-          return (
+          const card = (
             <div
               key={level}
               className="rounded-2xl border border-border bg-card/60 p-3 shadow-sm"
@@ -221,6 +223,21 @@ export default function LevelSelect({
               </div>
             </div>
           );
+
+          // Lv4 ↔ Lv5 사이 중간 배너 (모든 폭 노출)
+          if (level === 4) {
+            return [
+              card,
+              <AdBanner
+                key="play-mid-ad"
+                slot={getSlot("PLAY_MID")}
+                format="horizontal"
+                placeholderVariant="horizontal-random"
+                className="w-full my-1"
+              />,
+            ];
+          }
+          return [card];
         })}
       </div>
 
