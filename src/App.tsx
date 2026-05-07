@@ -20,6 +20,9 @@ import ProfilePage from "./pages/ProfilePage.tsx";
 import LegalPage from "./pages/legal/LegalPage.tsx";
 import Blog from "./pages/Blog.tsx";
 import BlogPost from "./pages/BlogPost.tsx";
+import FAQ from "./pages/FAQ.tsx";
+import About from "./pages/About.tsx";
+import Contact from "./pages/Contact.tsx";
 import CookieBanner from "./components/CookieBanner.tsx";
 import ComingSoonGate from "./components/ComingSoonGate.tsx";
 
@@ -47,6 +50,11 @@ const App = () => (
               <Route path="/blog" element={<Blog />} />
               <Route path="/blog/:lang/:slug" element={<BlogPost />} />
               <Route path="/blog/:slug" element={<Navigate to="/blog" replace />} />
+
+              {/* 정적 정보 페이지 (항상 노출) */}
+              <Route path="/faq" element={<FAQ />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/contact" element={<Contact />} />
 
               {/* 게임·인증·결제 라우트 — Coming Soon 모드에서 차단 */}
               <Route

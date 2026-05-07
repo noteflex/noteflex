@@ -58,22 +58,11 @@ const CONTENT = {
       ["AI 분석 (일·주·월)", "—", "—", "✓"],
     ],
     faqTitle: "자주 묻는 질문",
+    faqMore: "자주 묻는 질문 전체 보기 →",
     faqs: [
       {
         q: "언제든 취소할 수 있나요?",
         a: "네, 구독 기간 중 언제든 취소할 수 있습니다. 취소 후에도 남은 기간은 계속 이용하실 수 있습니다.",
-      },
-      {
-        q: "어떤 결제 수단을 지원하나요?",
-        a: "Paddle을 통해 Visa·Mastercard·Amex 등 주요 신용카드와 PayPal, 지역별 결제 수단을 지원합니다.",
-      },
-      {
-        q: "무료 체험 기간이 있나요?",
-        a: "별도의 무료 체험 기간은 없습니다. Free 플랜으로 Level 1·2를 제한 없이 무료로 연습해 보세요.",
-      },
-      {
-        q: "Free에서 Premium으로 어떻게 업그레이드하나요?",
-        a: "이 페이지에서 플랜을 선택하거나 대시보드에서 업그레이드를 누르면 결제 창이 열립니다. 결제 완료 즉시 활성화됩니다.",
       },
       {
         q: "환불 정책이 궁금해요.",
@@ -137,22 +126,11 @@ const CONTENT = {
       ["AI analytics (daily/weekly/monthly)", "—", "—", "✓"],
     ],
     faqTitle: "Frequently Asked Questions",
+    faqMore: "See all FAQs →",
     faqs: [
       {
         q: "Can I cancel anytime?",
         a: "Yes. You can cancel at any time. Access continues through the end of the current billing period.",
-      },
-      {
-        q: "What payment methods are accepted?",
-        a: "Paddle supports major credit cards (Visa, Mastercard, Amex), PayPal, and various regional payment methods.",
-      },
-      {
-        q: "Is there a free trial?",
-        a: "There is no separate trial period. The Free plan gives you full access to Levels 1 and 2 at no charge.",
-      },
-      {
-        q: "How do I upgrade from Free to Premium?",
-        a: "Select a plan on this page or click Upgrade from the dashboard. A payment window opens, and your account activates immediately.",
       },
       {
         q: "What is the refund policy?",
@@ -409,6 +387,14 @@ export default function Pricing() {
                   </p>
                 </div>
               ))}
+              <div className="text-center pt-2">
+                <Link
+                  to="/faq"
+                  className="text-sm text-primary hover:underline underline-offset-2 transition-colors"
+                >
+                  {c.faqMore}
+                </Link>
+              </div>
             </div>
           </div>
 

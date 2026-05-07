@@ -34,6 +34,20 @@ export interface Strings {
   footer: {
     copyright: string;
     pricing: string;
+    product: string;
+    company: string;
+    support: string;
+    legalSection: string;
+    about: string;
+    contact: string;
+    faq: string;
+    blog: string;
+    companyName: string;
+    ceo: string;
+    bizReg: string;
+    ecommerceReg: string;
+    address: string;
+    email: string;
   };
   blog: {
     title: string;
@@ -95,6 +109,20 @@ const ko: Strings = {
   footer: {
     copyright: "© 2026 Donofear",
     pricing: "요금제",
+    product: "서비스",
+    company: "회사",
+    support: "고객지원",
+    legalSection: "법적 고지",
+    about: "회사 소개",
+    contact: "문의",
+    faq: "자주 묻는 질문",
+    blog: "블로그",
+    companyName: "회사명: Donofear",
+    ceo: "대표자: Kim Yongjun",
+    bizReg: "사업자 등록 번호: 367-45-01000",
+    ecommerceReg: "통신판매업: 신고 진행 중",
+    address: "사업장 주소: 서울특별시 서초구 사임당로8길 13, 4층, 402-L976호",
+    email: "이메일: contact@noteflex.app",
   },
   blog: {
     title: "블로그",
@@ -162,6 +190,20 @@ const en: Strings = {
   footer: {
     copyright: "© 2026 Donofear",
     pricing: "Pricing",
+    product: "Product",
+    company: "Company",
+    support: "Support",
+    legalSection: "Legal",
+    about: "About",
+    contact: "Contact",
+    faq: "FAQ",
+    blog: "Blog",
+    companyName: "Company: Donofear",
+    ceo: "CEO: Kim Yongjun",
+    bizReg: "Business Registration: 367-45-01000",
+    ecommerceReg: "E-commerce Registration: In Progress",
+    address: "Address: 402-L976, 4F, 13, Saimdang-ro 8-gil, Seocho-gu, Seoul, Republic of Korea",
+    email: "Email: contact@noteflex.app",
   },
   blog: {
     title: "Blog",

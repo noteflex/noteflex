@@ -1,4 +1,3 @@
-// src/components/Footer.tsx
 import { Link } from "react-router-dom";
 import { useT } from "@/contexts/LanguageContext";
 
@@ -7,35 +6,97 @@ export default function Footer() {
 
   return (
     <footer className="border-t border-border bg-background/50 mt-auto">
-      <div className="max-w-5xl mx-auto px-4 py-8">
-        <div className="flex flex-col sm:flex-row gap-6 sm:gap-12 items-start sm:items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="text-2xl">🎼</span>
-            <span className="font-semibold text-foreground">Noteflex</span>
+      <div className="max-w-5xl mx-auto px-4 py-10">
+
+        {/* 4섹션 그리드 */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-8 mb-8">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">
+              {t.footer.product}
+            </p>
+            <ul className="space-y-2">
+              <li>
+                <Link to="/pricing" className="text-sm text-foreground/70 hover:text-foreground transition-colors">
+                  {t.footer.pricing}
+                </Link>
+              </li>
+              <li>
+                <Link to="/blog" className="text-sm text-foreground/70 hover:text-foreground transition-colors">
+                  {t.footer.blog}
+                </Link>
+              </li>
+            </ul>
           </div>
 
-          <nav className="flex flex-wrap gap-x-6 gap-y-2 text-sm">
-            <Link to="/pricing" className="text-muted-foreground hover:text-foreground transition-colors">
-              {t.footer.pricing}
-            </Link>
-            <Link to="/terms" className="text-muted-foreground hover:text-foreground transition-colors">
-              {t.legal.terms}
-            </Link>
-            <Link to="/privacy" className="text-muted-foreground hover:text-foreground transition-colors">
-              {t.legal.privacy}
-            </Link>
-            <Link to="/refund" className="text-muted-foreground hover:text-foreground transition-colors">
-              {t.legal.refund}
-            </Link>
-            <Link to="/cookies" className="text-muted-foreground hover:text-foreground transition-colors">
-              {t.legal.cookies}
-            </Link>
-          </nav>
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">
+              {t.footer.company}
+            </p>
+            <ul className="space-y-2">
+              <li>
+                <Link to="/about" className="text-sm text-foreground/70 hover:text-foreground transition-colors">
+                  {t.footer.about}
+                </Link>
+              </li>
+              <li>
+                <Link to="/contact" className="text-sm text-foreground/70 hover:text-foreground transition-colors">
+                  {t.footer.contact}
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">
+              {t.footer.support}
+            </p>
+            <ul className="space-y-2">
+              <li>
+                <Link to="/faq" className="text-sm text-foreground/70 hover:text-foreground transition-colors">
+                  {t.footer.faq}
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">
+              {t.footer.legalSection}
+            </p>
+            <ul className="space-y-2">
+              <li>
+                <Link to="/terms" className="text-sm text-foreground/70 hover:text-foreground transition-colors">
+                  {t.legal.terms}
+                </Link>
+              </li>
+              <li>
+                <Link to="/privacy" className="text-sm text-foreground/70 hover:text-foreground transition-colors">
+                  {t.legal.privacy}
+                </Link>
+              </li>
+              <li>
+                <Link to="/cookies" className="text-sm text-foreground/70 hover:text-foreground transition-colors">
+                  {t.legal.cookies}
+                </Link>
+              </li>
+              <li>
+                <Link to="/refund" className="text-sm text-foreground/70 hover:text-foreground transition-colors">
+                  {t.legal.refund}
+                </Link>
+              </li>
+            </ul>
+          </div>
         </div>
 
-        <div className="mt-8 pt-6 border-t border-border/50 text-xs text-muted-foreground">
-          {t.footer.copyright}
+        {/* Company Info + Copyright */}
+        <div className="border-t border-border/50 pt-6 space-y-1 text-xs text-muted-foreground">
+          <p>{t.footer.companyName} · {t.footer.ceo}</p>
+          <p>{t.footer.bizReg} · {t.footer.ecommerceReg}</p>
+          <p>{t.footer.address}</p>
+          <p>{t.footer.email}</p>
+          <p className="mt-3">{t.footer.copyright}</p>
         </div>
+
       </div>
     </footer>
   );
