@@ -70,7 +70,7 @@ export default function PremiumRequiredDialog({
             <li>• 광고 없이 학습 집중</li>
           </ul>
           <p className="text-xs text-amber-700 mt-2 font-medium">
-            연간 $19.99 · 44% 할인
+            연간 $24.99 · Save 30%
           </p>
         </div>
 

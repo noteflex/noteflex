@@ -341,7 +341,7 @@ export default function Index() {
                 <p className="text-sm font-semibold text-amber-900">
                   Premium으로 모든 레벨 잠금 해제
                 </p>
-                <p className="text-xs text-amber-700">연간 $19.99 · 44% 할인</p>
+                <p className="text-xs text-amber-700">연간 $24.99 · Save 30%</p>
               </div>
               <span className="text-amber-600 group-hover:translate-x-0.5 transition-transform">
                 →
