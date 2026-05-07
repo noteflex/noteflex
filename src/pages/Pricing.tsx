@@ -1,61 +1,193 @@
-import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import Header from "@/components/Header";
 import { useAuth } from "@/contexts/AuthContext";
-import { openCheckout } from "@/lib/paddle";
-import { toast } from "@/hooks/use-toast";
+import { useLang } from "@/contexts/LanguageContext";
+import { getUserTier } from "@/lib/subscriptionTier";
 
-type BillingCycle = "monthly" | "yearly";
-
-const FEATURES = [
-  "Level 1~7 모든 레벨 이용",
-  "광고 완전 제거",
-  "무제한 플레이",
-  "상세 학습 통계 분석",
-  "약점 음표 집중 연습",
-  "악보 업로드 & 커스텀 연습",
-];
+// ── 다국어 콘텐츠 (ja·zh = en fallback, Phase 3에서 정식 번역 예정) ──────
+const CONTENT = {
+  ko: {
+    heroTitle: "Noteflex 요금제",
+    heroSub: "무료로 시작하고, 준비됐을 때 업그레이드하세요.",
+    freeName: "Free",
+    freePrice: "$0",
+    freePriceSub: "영원히 무료",
+    freeDesc: "핵심 기능 무료 제공",
+    moName: "Premium",
+    moPrice: "$2.99",
+    moPriceSub: "/월",
+    moBadge: "Most Popular",
+    moDesc: "모든 기능, 월 단위 이용",
+    yrName: "Premium",
+    yrPrice: "$24.99",
+    yrPriceSub: "/년",
+    yrBadge: "Save 30%",
+    yrDesc: "모든 기능, 연 단위 결제",
+    freeFeatures: [
+      "Level 1 전체 (서브레벨 1·2·3)",
+      "Level 2 전체 (서브레벨 1·2·3)",
+      "Level 3·4 서브레벨 1",
+      "대시보드 진입 가능",
+      "기본 연습 통계",
+    ],
+    premiumFeatures: [
+      "Level 1~7 모든 레벨 + 서브레벨 전체",
+      "광고 완전 제거",
+      "AI 학습 분석 (일·주·월)",
+      "약점 음표 집중 훈련",
+      "무제한 플레이",
+    ],
+    currentPlan: "현재 플랜",
+    alreadyPremium: "이미 프리미엄 이용 중",
+    startFree: "무료로 시작하기",
+    upgradeMo: "월간 구독 시작",
+    upgradeYr: "연간 구독 시작",
+    signupFirst: "회원가입 후 시작",
+    compareTitle: "플랜 비교",
+    compareHeaders: ["기능", "비가입", "Free", "Premium"],
+    compareRows: [
+      ["Level 1 전체", "✓", "✓", "✓"],
+      ["Level 2~4 (서브레벨 1)", "—", "✓", "✓"],
+      ["Level 3·4 서브레벨 2·3", "—", "—", "✓"],
+      ["Level 5·6·7 전체", "—", "—", "✓"],
+      ["광고 없음", "—", "—", "✓"],
+      ["AI 분석 (일/주/월)", "—", "—", "✓"],
+    ],
+    faqTitle: "자주 묻는 질문",
+    faqs: [
+      {
+        q: "언제든 취소할 수 있나요?",
+        a: "네, 구독 기간 중 언제든 취소할 수 있습니다. 취소 후에도 남은 기간은 계속 이용하실 수 있습니다.",
+      },
+      {
+        q: "어떤 결제 수단을 지원하나요?",
+        a: "Paddle을 통해 Visa·Mastercard·Amex 등 주요 신용카드와 PayPal, 지역별 결제 수단을 지원합니다.",
+      },
+      {
+        q: "무료 체험 기간이 있나요?",
+        a: "별도의 무료 체험 기간은 없습니다. Free 플랜으로 Level 1·2를 제한 없이 무료로 연습해 보세요.",
+      },
+      {
+        q: "Free에서 Premium으로 어떻게 업그레이드하나요?",
+        a: "이 페이지에서 플랜을 선택하거나 대시보드에서 업그레이드를 누르면 결제 창이 열립니다. 결제 완료 즉시 활성화됩니다.",
+      },
+      {
+        q: "환불 정책이 궁금해요.",
+        a: "결제 후 14일 이내 요청 시 전액 환불해 드립니다. 자세한 내용은 환불 정책 페이지를 확인해 주세요.",
+      },
+    ],
+    securedBy: "결제는 Paddle이 안전하게 처리합니다",
+    refundPolicy: "환불 정책",
+    cancelNote: "언제든 취소 가능 · 자동 갱신 · 이메일 영수증",
+    backHome: "← 홈으로",
+  },
+  en: {
+    heroTitle: "Noteflex Pricing",
+    heroSub: "Start free. Upgrade when you're ready.",
+    freeName: "Free",
+    freePrice: "$0",
+    freePriceSub: "forever",
+    freeDesc: "Core features at no cost",
+    moName: "Premium",
+    moPrice: "$2.99",
+    moPriceSub: "/mo",
+    moBadge: "Most Popular",
+    moDesc: "All features, billed monthly",
+    yrName: "Premium",
+    yrPrice: "$24.99",
+    yrPriceSub: "/yr",
+    yrBadge: "Save 30%",
+    yrDesc: "All features, best value",
+    freeFeatures: [
+      "Level 1 full (sublevels 1·2·3)",
+      "Level 2 full (sublevels 1·2·3)",
+      "Level 3·4 sublevel 1",
+      "Dashboard access",
+      "Basic practice stats",
+    ],
+    premiumFeatures: [
+      "All Levels 1–7, all sublevels",
+      "Ad-free experience",
+      "AI analysis (daily / weekly / monthly)",
+      "Targeted weak-note training",
+      "Unlimited play",
+    ],
+    currentPlan: "Current Plan",
+    alreadyPremium: "Already on Premium",
+    startFree: "Get Started Free",
+    upgradeMo: "Start Monthly",
+    upgradeYr: "Start Annual",
+    signupFirst: "Sign Up to Start",
+    compareTitle: "Plan Comparison",
+    compareHeaders: ["Feature", "Guest", "Free", "Premium"],
+    compareRows: [
+      ["Level 1 full", "✓", "✓", "✓"],
+      ["Levels 2–4 (sublevel 1)", "—", "✓", "✓"],
+      ["Levels 3–4 sublevels 2 & 3", "—", "—", "✓"],
+      ["Levels 5–7 full", "—", "—", "✓"],
+      ["Ad-free", "—", "—", "✓"],
+      ["AI Analysis (daily/weekly/monthly)", "—", "—", "✓"],
+    ],
+    faqTitle: "Frequently Asked Questions",
+    faqs: [
+      {
+        q: "Can I cancel anytime?",
+        a: "Yes. You can cancel at any time. Access continues through the end of the current billing period.",
+      },
+      {
+        q: "What payment methods are accepted?",
+        a: "Paddle supports major credit cards (Visa, Mastercard, Amex), PayPal, and various regional payment methods.",
+      },
+      {
+        q: "Is there a free trial?",
+        a: "There is no separate trial period. The Free plan gives you full access to Levels 1 and 2 at no charge.",
+      },
+      {
+        q: "How do I upgrade from Free to Premium?",
+        a: "Select a plan on this page or click Upgrade from the dashboard. A payment window opens, and your account activates immediately.",
+      },
+      {
+        q: "What is the refund policy?",
+        a: "You may request a full refund within 14 days of purchase. See the Refund Policy page for details.",
+      },
+    ],
+    securedBy: "Payments secured by Paddle",
+    refundPolicy: "Refund Policy",
+    cancelNote: "Cancel anytime · Auto-renews · Email receipt",
+    backHome: "← Home",
+  },
+} as const;
 
 export default function Pricing() {
   const { user, profile } = useAuth();
   const navigate = useNavigate();
-  const [cycle, setCycle] = useState<BillingCycle>("yearly");
-  const [loading, setLoading] = useState<BillingCycle | null>(null);
+  const { lang } = useLang();
+  const c = CONTENT[lang === "ko" ? "ko" : "en"];
+  const tier = getUserTier(user ?? null, profile ?? null);
 
-  const handleSubscribe = async (plan: BillingCycle) => {
-    if (!user) {
-      toast({
-        title: "로그인이 필요해요",
-        description: "구독하려면 먼저 로그인해주세요",
-      });
-      navigate("/");
+  const handleCta = (plan: "free" | "monthly" | "yearly") => {
+    if (tier === "pro") return;
+    if (plan === "free" && tier !== "guest") return; // Free 가입자는 현재 플랜
+    if (tier === "guest") {
+      navigate("/signup");
       return;
     }
-
-    if (profile?.is_premium) {
-      toast({
-        title: "이미 프리미엄 이용 중이에요 🎹",
-      });
-      return;
-    }
-
-    setLoading(plan);
-    try {
-      await openCheckout({
-        plan,
-        userEmail: user.email,
-        userId: user.id,
-      });
-    } catch (err: any) {
-      toast({
-        title: "결제 실행 실패",
-        description: err.message,
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(null);
-    }
+    // free 가입자 → 대시보드 UpgradeModal
+    navigate("/dashboard?upgrade=1");
   };
+
+  const freeCtaLabel =
+    tier === "pro"
+      ? c.alreadyPremium
+      : tier === "free"
+      ? c.currentPlan
+      : c.startFree;
+
+  const moCtaLabel =
+    tier === "pro" ? c.alreadyPremium : tier === "guest" ? c.signupFirst : c.upgradeMo;
+
+  const yrCtaLabel =
+    tier === "pro" ? c.alreadyPremium : tier === "guest" ? c.signupFirst : c.upgradeYr;
 
   return (
     <div
@@ -64,199 +196,229 @@ export default function Pricing() {
     >
       <Header
         right={
-          <Link to="/" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-            ← 홈으로
+          <Link
+            to="/"
+            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            {c.backHome}
           </Link>
         }
       />
-      <div className="flex-1 px-4 py-10">
-      <div className="max-w-4xl mx-auto">
-        <div className="flex flex-col items-center gap-3 mb-10 animate-fade-up">
-          <span className="text-5xl">🎹</span>
-          <h1 className="text-3xl sm:text-4xl font-bold text-foreground tracking-tight text-center">
-            Noteflex Premium
-          </h1>
-          <p className="text-muted-foreground text-center max-w-md text-sm sm:text-base">
-            반사 신경으로 악보를 읽는 진짜 실력, 지금 시작하세요
-          </p>
-        </div>
 
-        {/* 이미 프리미엄이면 배너 */}
-        {profile?.is_premium && (
-          <div className="max-w-md mx-auto mb-8 p-4 rounded-2xl bg-primary/10 border-2 border-primary/30 animate-fade-up">
-            <p className="text-center text-sm font-semibold text-primary">
-              ✨ 이미 프리미엄을 이용하고 계세요
+      <div className="flex-1 px-4 py-12">
+        <div className="max-w-5xl mx-auto space-y-16">
+
+          {/* ── Hero ─────────────────────────────────────────── */}
+          <div className="flex flex-col items-center gap-3 animate-fade-up">
+            <span className="text-5xl">🎹</span>
+            <h1 className="text-3xl sm:text-4xl font-bold text-foreground tracking-tight text-center">
+              {c.heroTitle}
+            </h1>
+            <p className="text-muted-foreground text-center max-w-md text-sm sm:text-base">
+              {c.heroSub}
             </p>
           </div>
-        )}
 
-        {/* 월간/연간 토글 */}
-        <div
-          className="flex items-center justify-center gap-2 mb-8 animate-fade-up"
-          style={{ animationDelay: "0.1s" }}
-        >
-          <button
-            onClick={() => setCycle("monthly")}
-            className={`px-5 py-2 rounded-lg text-sm font-semibold transition-all ${
-              cycle === "monthly"
-                ? "bg-primary text-primary-foreground shadow"
-                : "bg-muted text-muted-foreground hover:bg-muted/70"
-            }`}
+          {/* ── 플랜 카드 3개 ──────────────────────────────────── */}
+          <div
+            className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-fade-up"
+            style={{ animationDelay: "0.1s" }}
           >
-            월간
-          </button>
-          <button
-            onClick={() => setCycle("yearly")}
-            className={`px-5 py-2 rounded-lg text-sm font-semibold transition-all relative ${
-              cycle === "yearly"
-                ? "bg-primary text-primary-foreground shadow"
-                : "bg-muted text-muted-foreground hover:bg-muted/70"
-            }`}
-          >
-            연간
-            <span className="absolute -top-2 -right-2 px-1.5 py-0.5 rounded-full bg-orange-500 text-white text-[10px] font-bold">
-              44% OFF
-            </span>
-          </button>
-        </div>
-
-        {/* 플랜 카드 (1개 메인 플랜) */}
-        <div
-          className="max-w-md mx-auto animate-fade-up"
-          style={{ animationDelay: "0.2s" }}
-        >
-          <div className="relative rounded-3xl bg-card border-2 border-primary shadow-xl overflow-hidden">
-            {/* 배지 */}
-            {cycle === "yearly" && (
-              <div className="absolute top-0 right-0 px-4 py-1.5 rounded-bl-2xl bg-primary text-primary-foreground text-xs font-bold">
-                🎉 가장 인기
+            {/* Free */}
+            <div className="rounded-3xl bg-card border border-border shadow-sm overflow-hidden flex flex-col">
+              <div className="p-7 flex flex-col flex-1">
+                <div className="mb-1">
+                  <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                    {c.freeName}
+                  </span>
+                </div>
+                <p className="text-sm text-muted-foreground mb-5">{c.freeDesc}</p>
+                <div className="flex items-baseline gap-1 mb-6">
+                  <span className="text-4xl font-bold text-foreground">{c.freePrice}</span>
+                  <span className="text-sm text-muted-foreground">{c.freePriceSub}</span>
+                </div>
+                <ul className="space-y-2 mb-8 flex-1">
+                  {c.freeFeatures.map((f) => (
+                    <li key={f} className="flex items-start gap-2 text-sm">
+                      <span className="text-muted-foreground mt-0.5 flex-shrink-0">✓</span>
+                      <span className="text-foreground">{f}</span>
+                    </li>
+                  ))}
+                </ul>
+                <button
+                  onClick={() => handleCta("free")}
+                  disabled={tier !== "guest"}
+                  className="w-full py-3 rounded-xl border border-border text-sm font-semibold transition-all hover:bg-muted/60 disabled:opacity-60 disabled:cursor-default"
+                >
+                  {freeCtaLabel}
+                </button>
               </div>
-            )}
+            </div>
 
-            <div className="p-8">
-              {/* 플랜 제목 */}
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-2xl">🎹</span>
-                <h2 className="text-xl font-bold text-foreground">Premium</h2>
+            {/* Premium Monthly — Most Popular */}
+            <div className="relative rounded-3xl bg-card border-2 border-primary shadow-xl overflow-hidden flex flex-col">
+              <div className="absolute top-0 left-0 right-0 py-1.5 bg-primary text-primary-foreground text-xs font-bold text-center tracking-wide">
+                {c.moBadge}
               </div>
-              <p className="text-sm text-muted-foreground mb-6">
-                모든 기능을 자유롭게
-              </p>
-
-              {/* 가격 */}
-              <div className="mb-6">
-                {cycle === "monthly" ? (
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-4xl font-bold text-foreground">$2.99</span>
-                    <span className="text-muted-foreground text-sm">/월</span>
-                  </div>
-                ) : (
-                  <>
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-4xl font-bold text-foreground">$19.99</span>
-                      <span className="text-muted-foreground text-sm">/년</span>
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      <span className="line-through">$35.88</span>
-                      <span className="ml-2 text-primary font-semibold">
-                        월 $1.67 · 16달러 할인
-                      </span>
-                    </p>
-                  </>
-                )}
+              <div className="p-7 pt-10 flex flex-col flex-1">
+                <div className="mb-1">
+                  <span className="text-xs font-semibold uppercase tracking-widest text-primary">
+                    {c.moName}
+                  </span>
+                </div>
+                <p className="text-sm text-muted-foreground mb-5">{c.moDesc}</p>
+                <div className="flex items-baseline gap-1 mb-6">
+                  <span className="text-4xl font-bold text-foreground">{c.moPrice}</span>
+                  <span className="text-sm text-muted-foreground">{c.moPriceSub}</span>
+                </div>
+                <ul className="space-y-2 mb-8 flex-1">
+                  {c.premiumFeatures.map((f) => (
+                    <li key={f} className="flex items-start gap-2 text-sm">
+                      <span className="text-primary mt-0.5 flex-shrink-0">✓</span>
+                      <span className="text-foreground">{f}</span>
+                    </li>
+                  ))}
+                </ul>
+                <button
+                  onClick={() => handleCta("monthly")}
+                  disabled={tier === "pro"}
+                  className="w-full py-3 rounded-xl bg-primary text-primary-foreground text-sm font-semibold shadow-md hover:shadow-lg transition-all active:scale-95 disabled:opacity-60 disabled:cursor-default"
+                >
+                  {moCtaLabel}
+                </button>
+                <p className="text-[11px] text-muted-foreground text-center mt-2">
+                  {c.cancelNote}
+                </p>
               </div>
+            </div>
 
-              {/* 기능 리스트 */}
-              <ul className="space-y-2.5 mb-6">
-                {FEATURES.map((feature) => (
-                  <li key={feature} className="flex items-start gap-2 text-sm">
-                    <span className="text-primary mt-0.5 flex-shrink-0">✓</span>
-                    <span className="text-foreground">{feature}</span>
-                  </li>
-                ))}
-              </ul>
-
-              {/* 구독 버튼 */}
-              <button
-                onClick={() => handleSubscribe(cycle)}
-                disabled={loading !== null || profile?.is_premium}
-                className="w-full py-3.5 rounded-xl bg-primary text-primary-foreground font-semibold text-sm shadow-md hover:shadow-lg transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {loading === cycle
-                  ? "처리 중..."
-                  : profile?.is_premium
-                  ? "이미 이용 중"
-                  : cycle === "monthly"
-                  ? "월간 구독 시작하기"
-                  : "연간 구독 시작하기"}
-              </button>
-
-              {/* 안내 문구 */}
-              <p className="text-[11px] text-muted-foreground text-center mt-3 leading-relaxed">
-                언제든 취소 가능 · 자동 갱신 · 이메일로 영수증 발송
-              </p>
+            {/* Premium Annual — Save 30% */}
+            <div className="relative rounded-3xl bg-card border-2 border-orange-400 shadow-xl overflow-hidden flex flex-col">
+              <div className="absolute top-0 left-0 right-0 py-1.5 bg-orange-500 text-white text-xs font-bold text-center tracking-wide">
+                {c.yrBadge}
+              </div>
+              <div className="p-7 pt-10 flex flex-col flex-1">
+                <div className="mb-1">
+                  <span className="text-xs font-semibold uppercase tracking-widest text-orange-500">
+                    {c.yrName}
+                  </span>
+                </div>
+                <p className="text-sm text-muted-foreground mb-5">{c.yrDesc}</p>
+                <div className="flex items-baseline gap-1 mb-1">
+                  <span className="text-4xl font-bold text-foreground">{c.yrPrice}</span>
+                  <span className="text-sm text-muted-foreground">{c.yrPriceSub}</span>
+                </div>
+                <p className="text-xs text-muted-foreground mb-5">
+                  <span className="line-through">$35.88</span>
+                  <span className="ml-2 text-orange-500 font-semibold">
+                    {lang === "ko" ? "월 $2.08 · $10.89 절약" : "$2.08/mo · save $10.89"}
+                  </span>
+                </p>
+                <ul className="space-y-2 mb-8 flex-1">
+                  {c.premiumFeatures.map((f) => (
+                    <li key={f} className="flex items-start gap-2 text-sm">
+                      <span className="text-orange-500 mt-0.5 flex-shrink-0">✓</span>
+                      <span className="text-foreground">{f}</span>
+                    </li>
+                  ))}
+                </ul>
+                <button
+                  onClick={() => handleCta("yearly")}
+                  disabled={tier === "pro"}
+                  className="w-full py-3 rounded-xl bg-orange-500 text-white text-sm font-semibold shadow-md hover:shadow-lg hover:bg-orange-600 transition-all active:scale-95 disabled:opacity-60 disabled:cursor-default"
+                >
+                  {yrCtaLabel}
+                </button>
+                <p className="text-[11px] text-muted-foreground text-center mt-2">
+                  {c.cancelNote}
+                </p>
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* 무료 vs 프리미엄 비교 (간단 버전) */}
-        <div
-          className="mt-12 max-w-2xl mx-auto animate-fade-up"
-          style={{ animationDelay: "0.3s" }}
-        >
-          <h3 className="text-center text-lg font-bold text-foreground mb-4">
-            Free vs Premium
-          </h3>
-          <div className="rounded-2xl border border-border bg-card overflow-hidden">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="bg-muted/50 border-b border-border">
-                  <th className="text-left px-4 py-3 font-semibold text-foreground">
-                    기능
-                  </th>
-                  <th className="text-center px-4 py-3 font-semibold text-muted-foreground">
-                    Free
-                  </th>
-                  <th className="text-center px-4 py-3 font-semibold text-primary">
-                    Premium
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {[
-                  ["Level 1~4 (기본)", "✓", "✓"],
-                  ["Level 5~7 (조표)", "—", "✓"],
-                  ["광고 없음", "—", "✓"],
-                  ["학습 통계", "기본", "상세"],
-                  ["악보 업로드", "—", "✓"],
-                  ["커스텀 연습", "—", "✓"],
-                ].map(([label, free, premium], i, arr) => (
-                  <tr
-                    key={label}
-                    className={i < arr.length - 1 ? "border-b border-border" : ""}
-                  >
-                    <td className="px-4 py-3 text-foreground">{label}</td>
-                    <td className="text-center px-4 py-3 text-muted-foreground">
-                      {free}
-                    </td>
-                    <td className="text-center px-4 py-3 text-primary font-semibold">
-                      {premium}
-                    </td>
+          {/* ── 비교 매트릭스 ──────────────────────────────────── */}
+          <div
+            className="animate-fade-up"
+            style={{ animationDelay: "0.2s" }}
+          >
+            <h2 className="text-xl font-bold text-foreground text-center mb-5">
+              {c.compareTitle}
+            </h2>
+            <div className="rounded-2xl border border-border bg-card overflow-hidden max-w-3xl mx-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="bg-muted/50 border-b border-border">
+                    {c.compareHeaders.map((h, i) => (
+                      <th
+                        key={h}
+                        className={`px-4 py-3 font-semibold ${
+                          i === 0
+                            ? "text-left text-foreground"
+                            : i === 3
+                            ? "text-center text-primary"
+                            : "text-center text-muted-foreground"
+                        }`}
+                      >
+                        {h}
+                      </th>
+                    ))}
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {c.compareRows.map((row, i) => (
+                    <tr
+                      key={row[0]}
+                      className={i < c.compareRows.length - 1 ? "border-b border-border" : ""}
+                    >
+                      <td className="px-4 py-3 text-foreground">{row[0]}</td>
+                      <td className="text-center px-4 py-3 text-muted-foreground">{row[1]}</td>
+                      <td className="text-center px-4 py-3 text-muted-foreground">{row[2]}</td>
+                      <td className="text-center px-4 py-3 text-primary font-semibold">{row[3]}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
-        </div>
 
-        {/* 하단 안내 */}
-        <p
-          className="text-center text-xs text-muted-foreground mt-8 animate-fade-up"
-          style={{ animationDelay: "0.4s" }}
-        >
-          결제는 Paddle이 안전하게 처리합니다
-        </p>
-      </div>
+          {/* ── FAQ ────────────────────────────────────────────── */}
+          <div
+            className="max-w-2xl mx-auto animate-fade-up"
+            style={{ animationDelay: "0.3s" }}
+          >
+            <h2 className="text-xl font-bold text-foreground text-center mb-6">
+              {c.faqTitle}
+            </h2>
+            <div className="space-y-4">
+              {c.faqs.map((item) => (
+                <div
+                  key={item.q}
+                  className="rounded-xl border border-border bg-card p-5"
+                >
+                  <p className="font-semibold text-sm text-foreground mb-1">{item.q}</p>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    {item.a}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* ── Paddle 안전 문구 ──────────────────────────────── */}
+          <div
+            className="flex flex-col items-center gap-2 animate-fade-up"
+            style={{ animationDelay: "0.4s" }}
+          >
+            <p className="text-xs text-muted-foreground">{c.securedBy}</p>
+            <Link
+              to="/refund"
+              className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-2 transition-colors"
+            >
+              {c.refundPolicy}
+            </Link>
+          </div>
+
+        </div>
       </div>
     </div>
   );

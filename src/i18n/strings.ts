@@ -33,6 +33,7 @@ export interface Strings {
   };
   footer: {
     copyright: string;
+    pricing: string;
   };
   blog: {
     title: string;
@@ -93,6 +94,7 @@ const ko: Strings = {
   },
   footer: {
     copyright: "© 2026 Donofear",
+    pricing: "요금제",
   },
   blog: {
     title: "블로그",
@@ -159,6 +161,7 @@ const en: Strings = {
   },
   footer: {
     copyright: "© 2026 Donofear",
+    pricing: "Pricing",
   },
   blog: {
     title: "Blog",

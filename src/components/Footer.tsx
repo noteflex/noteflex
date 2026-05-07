@@ -15,6 +15,9 @@ export default function Footer() {
           </div>
 
           <nav className="flex flex-wrap gap-x-6 gap-y-2 text-sm">
+            <Link to="/pricing" className="text-muted-foreground hover:text-foreground transition-colors">
+              {t.footer.pricing}
+            </Link>
             <Link to="/terms" className="text-muted-foreground hover:text-foreground transition-colors">
               {t.legal.terms}
             </Link>
