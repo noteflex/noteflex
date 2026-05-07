@@ -301,12 +301,12 @@ export default function Index() {
 
         <div className="safe-area-page flex-1 flex flex-col items-center justify-center px-4">
           <h1
-            className="text-6xl sm:text-8xl md:text-9xl font-black text-foreground text-center tracking-tighter leading-none whitespace-pre-line animate-fade-up"
+            className="text-4xl sm:text-5xl md:text-6xl font-semibold text-foreground text-center tracking-tight leading-tight whitespace-pre-line animate-fade-up"
           >
             {t.hero.title}
           </h1>
           <p
-            className="text-xl sm:text-2xl font-light text-muted-foreground text-center mt-6 animate-fade-up"
+            className="text-lg sm:text-xl font-normal text-muted-foreground text-center mt-6 animate-fade-up"
             style={{ animationDelay: "0.2s" }}
           >
             {t.hero.subtitle}
@@ -314,7 +314,7 @@ export default function Index() {
           {GAME_ENABLED ? (
             <button
               onClick={handleStart}
-              className="mt-12 px-12 py-6 rounded-full bg-primary text-primary-foreground font-bold text-xl shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-150 active:scale-95 animate-fade-up"
+              className="mt-10 px-10 py-4 rounded-full bg-primary text-primary-foreground font-medium text-lg shadow hover:shadow-md hover:scale-[1.02] transition-all duration-150 active:scale-[0.98] animate-fade-up"
               style={{ animationDelay: "0.4s" }}
             >
               {t.game.start}
