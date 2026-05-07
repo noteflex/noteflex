@@ -500,6 +500,27 @@ Claude Code 코드 분석 발견.
 
 ---
 
+## 0-6. Landing page 미니멀리즘
+
+### §0-6.1 Landing page sprint ✅ 완료 (2026-05-08 `ba5a4fa`)
+- Hero 영역만 남김: 헤드라인 두 줄 + 부제 + Play 버튼 (정중앙, 100vh)
+- 헤드라인: "보는 즉시,\n음악이 되다." / "See it.\nPlay it." — text-6xl sm:text-8xl md:text-9xl font-black tracking-tighter leading-none whitespace-pre-line
+- 부제: "초견 훈련을 게임처럼." / "Sight-reading, gamified." — text-xl sm:text-2xl font-light
+- Play 버튼: ko·en 동일 "Play" — px-12 py-6 rounded-full font-bold text-xl hover:scale-105
+- 삭제: 블로그 읽기 링크, Premium CTA 배너, Coming Soon 블로그 링크
+- 유지: Header, Footer, ComingSoonNotice fallback (GAME_ENABLED=false 시), AuthModal
+- animate-fade-up 순차 (헤드라인 0s → 부제 0.2s → 버튼 0.4s)
+- 다국어 ko/en 완전, ja·zh = en fallback
+- tsc pass + vitest 458/458 pass
+
+### §0-6.2 출시 후 펜딩
+- ja·zh 정확 번역
+- Header 영역 갱신 (별도 sprint, 사용자 결정)
+- 헤드라인 사이즈 미세 조정 (화면 확인 후 필요 시)
+- Footer 갱신 (About·Contact·FAQ 추가, Sprint C 예정)
+
+---
+
 ## 1. 비즈니스 모델 · 권한 정책 🔴 (2~3주차)
 
 ### 1.1 회원 등급 차등화 🔴
