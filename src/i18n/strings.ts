@@ -43,7 +43,6 @@ export interface Strings {
     faq: string;
     blog: string;
     companyName: string;
-    ceo: string;
     bizReg: string;
     ecommerceReg: string;
     address: string;
@@ -118,7 +117,6 @@ const ko: Strings = {
     faq: "자주 묻는 질문",
     blog: "블로그",
     companyName: "회사명: Donofear",
-    ceo: "대표자: Kim Yongjun",
     bizReg: "사업자 등록 번호: 367-45-01000",
     ecommerceReg: "통신판매업: 신고 진행 중",
     address: "사업장 주소: 서울특별시 서초구 사임당로8길 13, 4층, 402-L976호",
@@ -199,7 +197,6 @@ const en: Strings = {
     faq: "FAQ",
     blog: "Blog",
     companyName: "Company: Donofear",
-    ceo: "CEO: Kim Yongjun",
     bizReg: "Business Registration: 367-45-01000",
     ecommerceReg: "E-commerce Registration: In Progress",
     address: "Address: 402-L976, 4F, 13, Saimdang-ro 8-gil, Seocho-gu, Seoul, Republic of Korea",

@@ -6,33 +6,15 @@ export default function Footer() {
 
   return (
     <footer className="border-t border-border bg-background/50 mt-auto">
-      <div className="max-w-5xl mx-auto px-4 py-10">
+      <div className="max-w-5xl mx-auto px-4 py-6">
 
-        {/* 4섹션 그리드 */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-8 mb-8">
+        {/* 4섹션 그리드 — Company → Product → Support → Legal */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 mb-5">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">
-              {t.footer.product}
-            </p>
-            <ul className="space-y-2">
-              <li>
-                <Link to="/pricing" className="text-sm text-foreground/70 hover:text-foreground transition-colors">
-                  {t.footer.pricing}
-                </Link>
-              </li>
-              <li>
-                <Link to="/blog" className="text-sm text-foreground/70 hover:text-foreground transition-colors">
-                  {t.footer.blog}
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">
+            <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-2">
               {t.footer.company}
             </p>
-            <ul className="space-y-2">
+            <ul className="space-y-1.5">
               <li>
                 <Link to="/about" className="text-sm text-foreground/70 hover:text-foreground transition-colors">
                   {t.footer.about}
@@ -47,10 +29,28 @@ export default function Footer() {
           </div>
 
           <div>
-            <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">
+            <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-2">
+              {t.footer.product}
+            </p>
+            <ul className="space-y-1.5">
+              <li>
+                <Link to="/pricing" className="text-sm text-foreground/70 hover:text-foreground transition-colors">
+                  {t.footer.pricing}
+                </Link>
+              </li>
+              <li>
+                <Link to="/blog" className="text-sm text-foreground/70 hover:text-foreground transition-colors">
+                  {t.footer.blog}
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-2">
               {t.footer.support}
             </p>
-            <ul className="space-y-2">
+            <ul className="space-y-1.5">
               <li>
                 <Link to="/faq" className="text-sm text-foreground/70 hover:text-foreground transition-colors">
                   {t.footer.faq}
@@ -60,10 +60,10 @@ export default function Footer() {
           </div>
 
           <div>
-            <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">
+            <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-2">
               {t.footer.legalSection}
             </p>
-            <ul className="space-y-2">
+            <ul className="space-y-1.5">
               <li>
                 <Link to="/terms" className="text-sm text-foreground/70 hover:text-foreground transition-colors">
                   {t.legal.terms}
@@ -89,12 +89,12 @@ export default function Footer() {
         </div>
 
         {/* Company Info + Copyright */}
-        <div className="border-t border-border/50 pt-6 space-y-1 text-xs text-muted-foreground">
-          <p>{t.footer.companyName} · {t.footer.ceo}</p>
+        <div className="border-t border-border/50 pt-4 space-y-0.5 text-xs text-muted-foreground">
+          <p>{t.footer.companyName}</p>
           <p>{t.footer.bizReg} · {t.footer.ecommerceReg}</p>
           <p>{t.footer.address}</p>
           <p>{t.footer.email}</p>
-          <p className="mt-3">{t.footer.copyright}</p>
+          <p className="mt-2">{t.footer.copyright}</p>
         </div>
 
       </div>
