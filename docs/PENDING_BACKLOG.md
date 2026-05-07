@@ -469,12 +469,26 @@ Claude Code 코드 분석 발견.
 
 ---
 
-## 0-5. AdInterstitial 환경 변수 영역 (출시 전 박을 영역)
+## 0-5. Pricing page + AdInterstitial 환경 변수 영역
 
-`.env.local`에 `VITE_ADS_ENABLED=false` 박혀 있음 (메모리 #1 일관).
-- dev/preview 환경에서 AdInterstitial 박지 X 정상
-- 5/14~16 AdSense 심사 신청 시점에 `VITE_ADS_ENABLED=true` 박을 영역 (사업자 등록 후)
-- 출시 전 sprint 영역 X — 환경 변수 갈음만 박음
+### §0-5.1 Pricing page sprint ✅ 완료 (2026-05-07)
+- Pricing.tsx 전면 갱신: 3개 플랜 카드 (Free·Premium 월·Premium 연) + 비교 매트릭스 + FAQ 5개 + CTA + ko/en 다국어
+- Footer "요금제/Pricing" 링크 추가 (strings.ts footer.pricing 키 포함)
+- USD 단일 표시 ($2.99/mo · $24.99/yr Save 30%)
+- CTA: 비로그인 → /signup, Free 가입 → /dashboard?upgrade=1
+- 광고 X (메모리 #21), animate-fade-up 순차 (메모리 #28)
+- canAccessSublevel + LevelSelect 이미 사용자 결정 기준 일치 → 차등 기능 별도 sprint 불필요
+- commit `3439306` — tsc pass + vitest 458/458 pass
+
+### §0-5.2 출시 후 펜딩
+- ja·zh 정확 번역 (현재 en fallback)
+- Paddle PricePreview API 자동 통화 (5/14~16 Real Paddle 가입 후)
+
+### §0-5.3 AdInterstitial 환경 변수
+`.env.local`에 `VITE_ADS_ENABLED=false` 설정됨 (메모리 #1 일관).
+- dev/preview 환경에서 AdInterstitial 미노출 정상
+- 5/14~16 AdSense 심사 신청 시점에 `VITE_ADS_ENABLED=true` 전환 (사업자 등록 후)
+- 출시 전 sprint 불필요 — 환경 변수 전환만 필요
 
 ---
 
