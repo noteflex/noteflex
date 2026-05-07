@@ -214,7 +214,7 @@ export default function Pricing() {
       />
 
       <div className="flex-1 px-4 py-12">
-        <div className="max-w-5xl mx-auto space-y-16">
+        <div className="max-w-7xl mx-auto space-y-16">
 
           {/* ── Hero ─────────────────────────────────────────── */}
           <div className="flex flex-col items-center gap-3 animate-fade-up">
