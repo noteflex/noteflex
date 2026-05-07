@@ -517,7 +517,29 @@ Claude Code 코드 분석 발견.
 - ja·zh 정확 번역
 - Header 영역 갱신 (별도 sprint, 사용자 결정)
 - 헤드라인 사이즈 미세 조정 (화면 확인 후 필요 시)
-- Footer 갱신 (About·Contact·FAQ 추가, Sprint C 예정)
+
+---
+
+## 0-7. Footer + FAQ + About/Contact sprint
+
+### §0-7.1 Footer + FAQ + About/Contact sprint ✅ 완료 (2026-05-08 `4471f79`)
+- Footer 4섹션 (Product·Company·Support·Legal) + Company Info 정확 정보
+  - 회사명: Donofear | 대표자: Kim Yongjun
+  - 사업자 등록 번호: 367-45-01000 | 통신판매업: 신고 진행 중
+  - 사업장 주소: 서울특별시 서초구 사임당로8길 13, 4층, 402-L976호
+  - 이메일: contact@noteflex.app | Copyright: © 2026 Donofear
+- /faq 페이지 생성 (FAQ 5개, ko/en 완전)
+- /about placeholder ("준비 중 / Coming soon.")
+- /contact placeholder ("준비 중" + contact@noteflex.app)
+- App.tsx: /faq·/about·/contact 공개 라우트 추가
+- Pricing.tsx: FAQ 5개 → 2개 (취소·환불) + "자주 묻는 질문 전체 보기 →" /faq 링크
+- strings.ts: footer 섹션 키 14개 추가 (product·company·support·legalSection·about·contact·faq·blog·companyName·ceo·bizReg·ecommerceReg·address·email)
+- tsc pass + vitest 458/458 pass
+
+### §0-7.2 출시 전 갱신 영역 (PENDING)
+- /about 콘텐츠 (회사 소개·미션·팀) — 출시 전 박음
+- /contact 콘텐츠 (문의 양식 또는 정확 이메일) — 출시 전 갱신
+- Footer Company Info: 통신판매업 신고 완료 후 번호 갱신 (5/14~16 사업자 등록 후)
 
 ---
 
