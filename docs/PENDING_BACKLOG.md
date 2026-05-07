@@ -480,6 +480,14 @@ Claude Code 코드 분석 발견.
 - canAccessSublevel + LevelSelect 이미 사용자 결정 기준 일치 → 차등 기능 별도 sprint 불필요
 - commit `3439306` — tsc pass + vitest 458/458 pass
 
+**2차 갱신 ✅ (2026-05-07 `38a154d`)**
+- Index.tsx + PremiumRequiredDialog: $19.99·44% → $24.99·Save 30% 통일
+- Pricing.tsx ko: freeDesc "핵심 기능, 평생 무료" / moDesc "악보가 음악으로 보이는 순간까지" / yrDesc "1년 약속, 30% 절약"
+- freeFeatures 6항목 (광고 시청 후 이용 추가, 기록 대시보드 명칭 갱신)
+- premiumFeatures ko/en 7항목 Seth Godin 스타일
+- compareRows 6행 → 7행 (Level 1/2/3/4/5·6·7/광고없음/AI분석), Free=서브레벨 1 명시
+- tsc pass + vitest 458/458 pass
+
 ### §0-5.2 출시 후 펜딩
 - ja·zh 정확 번역 (현재 en fallback)
 - Paddle PricePreview API 자동 통화 (5/14~16 Real Paddle 가입 후)
