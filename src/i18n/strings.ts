@@ -67,11 +67,11 @@ export interface Strings {
 
 const ko: Strings = {
   hero: {
-    title: "보는 즉시, 음악이 되다.",
+    title: "보는 즉시,\n음악이 되다.",
     subtitle: "초견 훈련을 게임처럼.",
   },
   game: {
-    start: "🎵 게임 시작",
+    start: "Play",
   },
   comingSoon: {
     badge: "🚀 2026년 5월 출시 예정",
@@ -134,11 +134,11 @@ const ko: Strings = {
 
 const en: Strings = {
   hero: {
-    title: "Where Sight Becomes Sound.",
-    subtitle: "Sight-reading training, gamified.",
+    title: "See it.\nPlay it.",
+    subtitle: "Sight-reading, gamified.",
   },
   game: {
-    start: "🎵 Start Game",
+    start: "Play",
   },
   comingSoon: {
     badge: "🚀 Launching May 2026",

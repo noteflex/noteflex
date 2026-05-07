@@ -299,68 +299,29 @@ export default function Index() {
         <Header right={pageHeaderRight} />
         {showAuth && GAME_ENABLED && <AuthModal onClose={() => setShowAuth(false)} />}
 
-        <div className="safe-area-page flex-1 flex flex-col items-center justify-center gap-8 px-4 pb-10">
-          <div className="flex flex-col items-center gap-3 animate-fade-up">
-            <h1 className="text-3xl sm:text-4xl font-bold text-foreground text-center tracking-tight">
-              {t.hero.title}
-            </h1>
-            <p className="text-muted-foreground text-center max-w-md text-base leading-relaxed">
-              {t.hero.subtitle}
-            </p>
-          </div>
-
+        <div className="safe-area-page flex-1 flex flex-col items-center justify-center px-4">
+          <h1
+            className="text-6xl sm:text-8xl md:text-9xl font-black text-foreground text-center tracking-tighter leading-none whitespace-pre-line animate-fade-up"
+          >
+            {t.hero.title}
+          </h1>
+          <p
+            className="text-xl sm:text-2xl font-light text-muted-foreground text-center mt-6 animate-fade-up"
+            style={{ animationDelay: "0.2s" }}
+          >
+            {t.hero.subtitle}
+          </p>
           {GAME_ENABLED ? (
-            <>
-              <button
-                onClick={handleStart}
-                className="px-10 py-4 rounded-2xl bg-primary text-primary-foreground font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-200 active:scale-95 animate-fade-up"
-                style={{ animationDelay: "0.15s" }}
-              >
-                {t.game.start}
-              </button>
-              <Link
-                to="/blog"
-                className="px-8 py-3 rounded-2xl border-2 border-border text-foreground font-medium text-base hover:bg-muted transition-all duration-200 active:scale-95 animate-fade-up"
-                style={{ animationDelay: "0.2s" }}
-              >
-                {t.comingSoon.blogButton}
-              </Link>
-            </>
+            <button
+              onClick={handleStart}
+              className="mt-12 px-12 py-6 rounded-full bg-primary text-primary-foreground font-bold text-xl shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-150 active:scale-95 animate-fade-up"
+              style={{ animationDelay: "0.4s" }}
+            >
+              {t.game.start}
+            </button>
           ) : (
-            <ComingSoonNotice />
-          )}
-
-          {GAME_ENABLED && user && !profile?.is_premium && (
-            <Link
-              to="/pricing"
-              className="flex items-center gap-3 px-5 py-3 rounded-xl bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 hover:border-amber-300 hover:shadow-md transition-all animate-fade-up group"
-              style={{ animationDelay: "0.3s" }}
-            >
-              <span className="text-2xl">✨</span>
-              <div className="flex-1 text-left">
-                <p className="text-sm font-semibold text-amber-900">
-                  Premium으로 모든 레벨 잠금 해제
-                </p>
-                <p className="text-xs text-amber-700">연간 $24.99 · Save 30%</p>
-              </div>
-              <span className="text-amber-600 group-hover:translate-x-0.5 transition-transform">
-                →
-              </span>
-            </Link>
-          )}
-
-          {/* Coming Soon 모드: 블로그·약관 안내 */}
-          {!GAME_ENABLED && (
-            <div
-              className="flex flex-col sm:flex-row gap-3 mt-4 animate-fade-up"
-              style={{ animationDelay: "0.3s" }}
-            >
-              <Link
-                to="/blog"
-                className="px-5 py-2.5 rounded-xl border border-border text-sm text-foreground hover:bg-muted transition-colors"
-              >
-                {t.comingSoon.blogButton}
-              </Link>
+            <div className="mt-12 animate-fade-up" style={{ animationDelay: "0.4s" }}>
+              <ComingSoonNotice />
             </div>
           )}
         </div>
