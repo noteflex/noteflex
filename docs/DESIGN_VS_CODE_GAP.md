@@ -585,17 +585,17 @@ if (tier === "free") { return level <= 5 && sublevel === 1 && /* 이전 Sub1 통
 | Mastery Score UI | Premium = 전체 노출, Free/Guest = 블러 + CTA |
 | AI Coaching | Free = 기본 2종 (결과 모달 1행 + 대시보드 카드), Premium = 전체 |
 
-### B-0.2 코드 영향 범위 🔴
+### B-0.2 코드 영향 범위
 
-| 파일 | 변경 내용 | 그룹 |
-|---|---|---|
-| `src/lib/levelSystem.ts` | `canAccessSublevel` guest/free 규칙 재작성 | Group A |
-| `supabase/migrations/20260509_pass_criteria_v2.sql` | DB PASS_CRITERIA 정정 (10/85%/35%/5) | Group A |
-| `src/pages/Pricing.tsx` | 카피 갱신 (광고 보상형 제거, Free 범위 Lv5, Guest Sub1) | Group A |
-| `daily_sessions` 테이블 + `useDailyLimit` + `DailyLimitModal` | 일일 한도 시스템 신규 | Group B |
-| `LevelSelect.tsx` + `PremiumBlurCard` | Mastery Score 블러 + 4지표 탭 | Group C |
-| AI Coaching 컴포넌트 | 결과 모달 1행 + 대시보드 카드 | Group C |
-| `record_sublevel_attempt` RPC + Quick Mastery 감지 | Quick Mastery Mode | Group D |
+| 파일 | 변경 내용 | 그룹 | 상태 |
+|---|---|---|---|
+| `src/lib/levelSystem.ts` | `canAccessSublevel` guest/free 규칙 재작성 + `getProgressGatePrev` 신규 | Group A | ✅ e6ed7b2 |
+| `supabase/migrations/20260509_pass_criteria_v2.sql` | DB PASS_CRITERIA 정정 (10/85%/35%/5) + avg_reaction_ratio 컬럼 | Group A | ✅ b232dcd |
+| `src/pages/Pricing.tsx` | 카피 갱신 (광고 보상형 제거, Free Lv5 Sub1, Guest Sub1 only) | Group A | ✅ 1848391 |
+| `daily_sessions` 테이블 + `useDailyLimit` + `DailyLimitModal` | 일일 한도 시스템 신규 | Group B | 🔴 미구현 |
+| `LevelSelect.tsx` + `PremiumBlurCard` | Mastery Score 블러 + 4지표 탭 | Group C | 🔴 미구현 |
+| AI Coaching 컴포넌트 | 결과 모달 1행 + 대시보드 카드 | Group C | 🔴 미구현 |
+| `record_sublevel_attempt` RPC + Quick Mastery 감지 | Quick Mastery Mode | Group D | 🔴 미구현 |
 
 ### B.1 일일 세션 한도 시스템 🔴 완전 미구현
 
@@ -633,6 +633,7 @@ if (tier === "free") { return level <= 5 && sublevel === 1 && /* 이전 Sub1 통
 - 2026-05-02 (Opus 4.7 분석): §7.3 Calibration 영역 분할 + 결합 위험 박힘 (§7.3 신규 표 + §11 Week 2 우선순위 §7.10·§7.1·§7.3 결합 순서). 코드 변경 0건.
 - 2026-05-03 (Sonnet 4.6): **§7.1 `Date.now()` → `performance.now()` 전면 전환 완료** — 15 사이트 (NoteGame 12 + CountdownTimer 3). 절대 시간 2 사이트 (DiagnosisTab·PremiumDialog) Date.now() 유지. vitest 373/373 PASS, sim:test 9984 게임 invariants 위반 0건.
 - 2026-05-09 (Sonnet 4.6): **§5 권한 매트릭스 5/9 결정 반영** (Guest Sub1 한정·Free Lv1~5 Sub1·Premium 전체) + **§B-0/§B.1~B.2 영역 B 결정 박음** (일일 세션 한도·Quick Mastery Mode 전체 미구현 확인 + 코드 영향 범위 매핑).
+- 2026-05-09 (Sonnet 4.6): **Group A 완료** — §B-0.2 코드 영향 범위 표 상태 열 추가 (✅ commits e6ed7b2·b232dcd·1848391). Group B~D 미구현 상태 명시 유지.
 - 2026-04-30: §0-1 코드 적용 완료 — §0-1.1~0-1.6 모두 구현 (commits f09919c, 6c1a7e8) + §2.6 PASS_CRITERIA 테이블 ✅ 갱신 + §2.6 같은조표연속학습 ✅ + §9.1 재도전마크 ✅ + §3.8 조표 비율 + treble/bass ✅ (commit bb062c3)
 - 2026-05-01: §3.11 §0.4 GrandStaffPractice 분석 추가 (Opus 보고서, 3갭 4 step 계획) + §3.12 §0.3 ✅ 추가 (commit eac606a) + §10/§11 갱신 (Week 1 완료 현황, Week 2 우선순위)
 - 2026-05-02: §2.1 stage 수 ⚠️ (Lv1~4 batchSize=1 확장 반영) + §2.4 음표 배치 테이블 ✅ + §3.2 버퍼링 방지 ✅ + 카운트다운 조표 숨김 ✅ + §3.13 §4 retry 시스템 신규 + §3.14 swipe 모달 신규 + §3.15 batchSize 렌더링 fix 신규 + §10 버그 5번 추가 + §11 Week 1 완료 12개·Week 2 §4 잔여 추가 + §13 변경 이력

@@ -557,15 +557,14 @@ Claude Code 코드 분석 발견.
 
 **폐기 정책**: 광고 시청 후 추가 세션 (Free/Guest에게 광고 보상형 제공) — 5/9 결정으로 폐기.
 
-### B-0.2 코드 정정 필요 항목 🔴
+### B-0.2 코드 정정 필요 항목 ✅ (2026-05-09, commits e6ed7b2·b232dcd·1848391)
 
-현재 `canAccessSublevel` (src/lib/levelSystem.ts:281-302) 불일치:
-- **Guest**: `level === 1` (Sub1~3 모두 허용) → `level === 1 && sublevel === 1` 으로 정정 필요
-- **Free**: `level <= 2` 전체 허용 → `level <= 5 && sublevel === 1` + 순차 해금으로 재작성 필요
+- **Guest**: `level === 1 && sublevel === 1` ✅
+- **Free**: `level <= 5 && sublevel === 1` + `getProgressGatePrev` 순차 해금 ✅
+- DB migration `20260509_pass_criteria_v2.sql` 적용 (avg_reaction_ratio + pass criteria v2) ✅
+- `Pricing.tsx` freeFeatures / compareRows 갱신 ✅
 
-→ **Group A 작업** (코드 변경, ~2h)
-
-### B.1 Guest 정책 세부 🔴
+### B.1 Guest 정책 세부 ✅ (canAccessSublevel 코드 완료, daily limit 게이트 미구현 → Group B)
 
 | 항목 | 내용 |
 |---|---|
@@ -574,7 +573,7 @@ Claude Code 코드 분석 발견.
 | 한도 초과 모달 | 가입 유도 전용 (광고 보상형 X) |
 | 게임 중 광고 | AdBanner (현재 구현됨), AdInterstitialModal 3게임마다 유지 |
 
-### B.2 Free 정책 세부 🔴
+### B.2 Free 정책 세부 ✅ (canAccessSublevel + getProgressGatePrev 완료, daily limit 미구현 → Group B)
 
 | 항목 | 내용 |
 |---|---|
@@ -1599,4 +1598,5 @@ Claude가 출시 임박 시 자동 고지.
 - 2026-05-03 (Sonnet 4.6): **§7.3.4 완료 — §7.3 코어 완료** — `useSessionRecorder.recordNote` boundary offset 차감 (DB 방식 C: JSONB `reaction_ms_raw` + `summary.avg_reaction_ms_raw` + `summary.offset_ms_applied`). NoteGame 3사이트 손대지 않음. speed bonus thresholds 값 유지 (corrected reactionMs 기준). 단위 테스트 6건 신규. vitest 425/425 PASS. sim:test 0 violations. PENDING: §7.3.5 Stats display (raw/corrected), speed bonus 재튜닝 (출시 후).
 - 2026-05-03 (Sonnet 4.6): **§7.3 UX fix + §7.3.5 완료** — CalibrationModal 측정 시간 30초→5초, 측정 시작 버튼 primary 색상. §7.3.5 Admin 동시 노출 완료. Q-J 정책 정정 (Home raw 토글 영구 제거, 메모리 #19).
 - 2026-05-09 (Sonnet 4.6): **영역 B-0 티어 매트릭스 결정 + 코드 사실 추적 7개 영역** — Guest(Lv1 Sub1, 3회/일)·Free(Lv1~5 Sub1 순차, 7회/일)·Premium(전 21단계, 무제한) 확정. Quick Mastery Mode (오류≤1%·시간≤50% 조건) + Mastery Score 블러 + AI Coaching 기본 정책 결정. DB PASS_CRITERIA 불일치 발견 (play≥5/80% vs TS 10/85%) → `20260509_pass_criteria_v2.sql` 마이그레이션 결정. 광고 보상형 세션 정책 영구 폐기. §B-0·§B.1~B.6 + §13.L + §0-1.1 DB 정정 노트 박음.
+- 2026-05-09 (Sonnet 4.6): **Group A 코드 완료** (commits e6ed7b2·b232dcd·1848391, 470/470 PASS) — A1: `canAccessSublevel` guest/free 재작성 + `getProgressGatePrev` 신규 (Sub1 순차 진도 게이트). A2: `20260509_pass_criteria_v2.sql` + `useLevelProgress` avgReactionRatio 파라미터 + NoteGame endSession→recordAttempt 순차 체인. A3: `Pricing.tsx` freeFeatures/compareRows 갱신. §B-0.2·§B.1·§B.2 ✅. 다음: Group B (daily_sessions 테이블·useDailyLimit·DailyLimitModal, ~4h).
 - 2026-05-03 (Sonnet 4.6): **§7.3 device 변경 자동 재측정 + A2 이벤트 로깅** — `onDeviceChange` 시그니처 갱신 (kinds 전달), `setIsCalibrated(false)` → 다음 게임 자동 모달 (메모리 #19 옵션 C). `device_change_events` 테이블 + migration SQL. `logDeviceChangeEvent`·`updateDeviceChangeEvent` 신규. 단위 테스트 8건 신규. vitest 433/433 PASS. PENDING: 출시 후 false positive 분석 → audio output 전용 감지 보강.
