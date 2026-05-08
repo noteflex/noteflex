@@ -174,6 +174,8 @@ batchSize=3+ stage (Sub 1 stage 3, Sub 2 stage 2·3, Sub 3 모든 stage):
 
 4개 모두 만족해야 stage Clear.
 
+> **⚠️ 2026-05-09 발견 — DB RPC 불일치**: `supabase/migrations/20260425_sublevel_system.sql` 의 `record_sublevel_attempt` RPC 실제 통과 기준은 `play_count >= 5 AND accuracy >= 0.80` (TS 기준 10/85%와 불일치). 실제 통과 기준은 DB가 override. **결정**: 신규 마이그레이션 `20260509_pass_criteria_v2.sql` 으로 DB를 TS 기준 (10회/85%/avg_reaction≤35%/streak≥5) 에 맞게 정정. → Group A 작업에 포함.
+
 **짚어드릴 점 — Lv 7-3 반응속도 1.05초**:
 - Lv 7-3 = 3초 타이머 × 35% = 1.05초
 - 일반 성인 + 학습 거치면 도달 가능
@@ -543,12 +545,96 @@ Claude Code 코드 분석 발견.
 
 ---
 
+## B-0. 영역 B — 티어 접근 매트릭스 (2026-05-09 결정) 🔴
+
+### B-0.1 3-Tier 접근 매트릭스 ✅ 확정
+
+| 등급 | 접근 범위 | 일일 한도 | 한도 초과 |
+|---|---|---|---|
+| **Guest (미가입)** | Lv1 Sub1만 | 3회/일 | 가입 유도 모달 |
+| **Free (가입)** | Lv1~5 Sub1만 (순차 해금) | 7회/일 | 24h 카운트다운 + Premium CTA |
+| **Premium** | 전 21단계 (순차 Sub1→Sub2→Sub3) | 무제한 | — |
+
+**폐기 정책**: 광고 시청 후 추가 세션 (Free/Guest에게 광고 보상형 제공) — 5/9 결정으로 폐기.
+
+### B-0.2 코드 정정 필요 항목 🔴
+
+현재 `canAccessSublevel` (src/lib/levelSystem.ts:281-302) 불일치:
+- **Guest**: `level === 1` (Sub1~3 모두 허용) → `level === 1 && sublevel === 1` 으로 정정 필요
+- **Free**: `level <= 2` 전체 허용 → `level <= 5 && sublevel === 1` + 순차 해금으로 재작성 필요
+
+→ **Group A 작업** (코드 변경, ~2h)
+
+### B.1 Guest 정책 세부 🔴
+
+| 항목 | 내용 |
+|---|---|
+| 접근 범위 | Lv1 Sub1만 (Lv1 Sub2·Sub3, Lv2~Lv7 전체 잠금) |
+| 일일 한도 | 3회/일 (DB `daily_sessions` 테이블 기반) |
+| 한도 초과 모달 | 가입 유도 전용 (광고 보상형 X) |
+| 게임 중 광고 | AdBanner (현재 구현됨), AdInterstitialModal 3게임마다 유지 |
+
+### B.2 Free 정책 세부 🔴
+
+| 항목 | 내용 |
+|---|---|
+| 접근 범위 | Lv1 Sub1 → Lv2 Sub1 → ... → Lv5 Sub1 (Sub1 통과 후 순차 해금) |
+| Lv6~Lv7 | 잠금 (Premium 전용) |
+| Sub2·Sub3 | 잠금 (Premium 전용) |
+| 일일 한도 | 7회/일 + 24시간 카운트다운 모달 |
+| AI Coaching | 결과 모달 1행 코멘트 + 대시보드 히어로 카드 요약 |
+| Mastery Score | 블러 처리 + "Premium으로 잠금 해제" CTA |
+
+### B.3 Premium 정책 세부 🔴
+
+| 항목 | 내용 |
+|---|---|
+| 접근 범위 | 전 21단계 (Lv1-1 ~ Lv7-3) |
+| 진행 방식 | Sub1→Sub2→Sub3 순차 (이전 Sub 통과 후 해금) |
+| 일일 한도 | 없음 |
+| Quick Mastery | Lv1 Sub2 ~ Lv7 Sub3 (오류율≤1% AND 반응시간≤타이머 50% 시 첫 세션 즉시 통과) |
+| AI Coaching | 전체 (상세 분석·약점 음표·학습 곡선·목표 설정) |
+| Mastery Score | 전체 노출 (단일 숫자 + 4지표 탭) |
+| 광고 | 없음 |
+
+### B.4 일일 세션 한도 시스템 🔴 완전 미구현
+
+**현황**: `daily_session_count` 컬럼, `useDailyLimit` 훅, `daily-reset` Edge Function, `DailyLimitModal` 컴포넌트 전무.
+
+**구현 범위 (Group B, ~4h)**:
+1. `supabase/migrations/20260509_daily_sessions.sql` — `daily_sessions` 테이블 (user_id, session_date, count, tier_snapshot)
+2. `src/hooks/useDailyLimit.ts` — 오늘 세션 수 조회 + 초과 체크 + guest/free 분기
+3. `src/components/DailyLimitModal.tsx` — 24h 카운트다운 UI + Premium CTA (Free) / 가입 유도 (Guest)
+4. `NoteGame.tsx` — 게임 시작 전 daily limit 체크 + 모달 트리거
+
+### B.5 Quick Mastery Mode 🔴 완전 미구현
+
+**현황**: 트리거 조건 체크, 배지, 즉시 해금 플로우 전무.
+
+**구현 범위 (Group D, ~4h)**:
+- `record_sublevel_attempt` RPC avg_reaction_ratio 파라미터 추가
+- 클라이언트: 첫 세션 오류율·반응시간 체크 → quick_mastery 플래그
+- 결과 모달 "빠른 통과" 배지 + 즉시 해금 UX
+
+### B.6 Mastery Score UI + AI Coaching 🔴 미구현
+
+**현황**: Mastery Score 단일 숫자만 표시 (블러 없음), AI Coaching 전무.
+
+**구현 범위 (Group C, ~5h)**:
+- `PremiumBlurCard` wrapper 컴포넌트 (tier 체크 + 블러 + CTA)
+- LevelSelect Mastery Score 블러 적용 (Free/Guest)
+- 4지표 탭 UI (Premium)
+- 결과 모달 AI 코멘트 1행 (Free용 최소 구현)
+- 대시보드 히어로 카드 요약
+
+---
+
 ## 1. 비즈니스 모델 · 권한 정책 🔴 (2~3주차)
 
-### 1.1 회원 등급 차등화 🔴
-- 미가입: 배치고사 1회 체험 + Lv 결정 (§0-1.3)
-- 가입자: Lv 1~2 (또는 Lv 1) + 광고 + 간략 보고서
-- Pro: 전 단계 + 상세 분석 + 광고 X + 스트릭 프리즈
+### 1.1 회원 등급 차등화 🔴 (B-0 결정으로 정리됨)
+- **Guest(미가입)**: Lv1 Sub1만, 3회/일, 광고 노출
+- **Free(가입자)**: Lv1~5 Sub1 순차, 7회/일, AI Coaching 기본, Mastery Score 블러
+- **Premium**: 전 21단계 순차, 무제한, 광고 없음, 모든 기능 활성
 
 ### 1.2 구독료 ✅ 결정됨
 - 월: $2.99
@@ -1285,6 +1371,12 @@ Claude가 출시 임박 시 자동 고지.
 - [ ] 미가입자 vs 가입자 광고 차이
 - [ ] 노출 빈도
 
+### 13.L 결제 플랜 보류 항목 (출시 후 결정)
+
+- [ ] **7일 무료 체험 (Premium Trial)**: Paddle 설정 + 체험 만료 → 다운그레이드 플로우 필요. 출시 후 검토.
+- [ ] **Lifetime 플랜 ($X 일시불)**: 가격 미결. 출시 후 매출 트래킹 후 결정.
+- [ ] ~~**광고 시청 후 추가 세션 (보상형)**~~: 5/9 결정으로 **영구 폐기**. Free/Guest 모두 해당 없음. `Pricing.tsx freeFeatures[5]` "광고 시청 후 이용" 항목 삭제 필요 (Group A).
+
 ---
 
 ## 🏆 우선순위 정리 (2026-05-03 갱신)
@@ -1506,4 +1598,5 @@ Claude가 출시 임박 시 자동 고지.
 - 2026-05-03 (Opus 4.7): **§7.3.3 + §7.10.2 완료** — `src/components/CalibrationModal.tsx` (4단계 상태 머신: intro→sync-measure→env-measure→complete), `src/lib/audioVisualSync.ts` (rAF+perf.now() vs AudioContext.currentTime, measureSyncGapAverage), `src/lib/calibrationMeasurement.ts` (trimmedMean·clampOffset·isSyncOutlier). NoteGame.tsx 통합 (showCalibration gate, memory #18 순서 보장). 단위 테스트 23건 신규 (audioVisualSync 7 + calibrationMeasurement 16). vitest 419/419 PASS. sim:test 9984 games 0 violations.
 - 2026-05-03 (Sonnet 4.6): **§7.3.4 완료 — §7.3 코어 완료** — `useSessionRecorder.recordNote` boundary offset 차감 (DB 방식 C: JSONB `reaction_ms_raw` + `summary.avg_reaction_ms_raw` + `summary.offset_ms_applied`). NoteGame 3사이트 손대지 않음. speed bonus thresholds 값 유지 (corrected reactionMs 기준). 단위 테스트 6건 신규. vitest 425/425 PASS. sim:test 0 violations. PENDING: §7.3.5 Stats display (raw/corrected), speed bonus 재튜닝 (출시 후).
 - 2026-05-03 (Sonnet 4.6): **§7.3 UX fix + §7.3.5 완료** — CalibrationModal 측정 시간 30초→5초, 측정 시작 버튼 primary 색상. §7.3.5 Admin 동시 노출 완료. Q-J 정책 정정 (Home raw 토글 영구 제거, 메모리 #19).
+- 2026-05-09 (Sonnet 4.6): **영역 B-0 티어 매트릭스 결정 + 코드 사실 추적 7개 영역** — Guest(Lv1 Sub1, 3회/일)·Free(Lv1~5 Sub1 순차, 7회/일)·Premium(전 21단계, 무제한) 확정. Quick Mastery Mode (오류≤1%·시간≤50% 조건) + Mastery Score 블러 + AI Coaching 기본 정책 결정. DB PASS_CRITERIA 불일치 발견 (play≥5/80% vs TS 10/85%) → `20260509_pass_criteria_v2.sql` 마이그레이션 결정. 광고 보상형 세션 정책 영구 폐기. §B-0·§B.1~B.6 + §13.L + §0-1.1 DB 정정 노트 박음.
 - 2026-05-03 (Sonnet 4.6): **§7.3 device 변경 자동 재측정 + A2 이벤트 로깅** — `onDeviceChange` 시그니처 갱신 (kinds 전달), `setIsCalibrated(false)` → 다음 게임 자동 모달 (메모리 #19 옵션 C). `device_change_events` 테이블 + migration SQL. `logDeviceChangeEvent`·`updateDeviceChangeEvent` 신규. 단위 테스트 8건 신규. vitest 433/433 PASS. PENDING: 출시 후 false positive 분석 → audio output 전용 감지 보강.
