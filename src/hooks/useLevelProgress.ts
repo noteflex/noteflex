@@ -40,7 +40,7 @@ export function useLevelProgress() {
     const { data, error: fetchError } = await supabase
       .from("user_sublevel_progress")
       .select(
-        "level, sublevel, play_count, best_streak, total_attempts, total_correct, passed"
+        "level, sublevel, play_count, best_streak, total_attempts, total_correct, passed, avg_reaction_ratio"
       )
       .eq("user_id", user.id);
 
@@ -62,7 +62,8 @@ export function useLevelProgress() {
       attempts: number,
       correct: number,
       maxStreak: number,
-      gameStatus: "success" | "gameover"
+      gameStatus: "success" | "gameover",
+      avgReactionRatio?: number
     ): Promise<RecordAttemptResult | null> => {
       if (!user) return null;
 
@@ -75,6 +76,7 @@ export function useLevelProgress() {
           p_correct: correct,
           p_max_streak: maxStreak,
           p_game_status: gameStatus,
+          p_avg_reaction_ratio: avgReactionRatio ?? null,
         }
       );
 

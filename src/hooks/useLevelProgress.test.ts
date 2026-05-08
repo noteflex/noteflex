@@ -176,6 +176,7 @@ describe("useLevelProgress", () => {
       p_correct: 9,
       p_max_streak: 6,
       p_game_status: "success",
+      p_avg_reaction_ratio: null,
     });
 
     expect(res).toMatchObject({ passed: true, just_passed: true });

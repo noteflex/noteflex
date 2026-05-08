@@ -521,18 +521,23 @@ export default function NoteGame({
       const reason     = phase === "success" ? "completed" : "gameover";
       const gameStatus: "success" | "gameover" = phase === "success" ? "success" : "gameover";
 
-      recorder.endSession(reason).then((result) => {
-        if (result) setSessionResult(result);
-      });
-
-      recordAttempt(
-        level,
-        sublevel,
-        totalAttemptsRef.current,
-        totalCorrectRef.current,
-        bestStreakRef.current,
-        gameStatus,
-      ).then((result) => {
+      recorder.endSession(reason).then((sessionResult) => {
+        if (sessionResult) setSessionResult(sessionResult);
+        // avg_reaction_ratio = 보정된 평균 반응 ms / 타이머 ms (§7.3 calibration 기반)
+        const avgReactionRatio =
+          sessionResult && TIMER_SECONDS > 0
+            ? sessionResult.avgReactionMs / (TIMER_SECONDS * 1000)
+            : undefined;
+        return recordAttempt(
+          level,
+          sublevel,
+          totalAttemptsRef.current,
+          totalCorrectRef.current,
+          bestStreakRef.current,
+          gameStatus,
+          avgReactionRatio,
+        );
+      }).then((result) => {
         // 비로그인 시 result=null — fake payload 박음 (DB unlock X, 모달 노출 영역 보장).
         // just_passed=false 고정 → AdInterstitial 박지 X (메모리 #1 일관).
         const payload: RecordAttemptResult = result ?? {
