@@ -17,7 +17,8 @@
     "iap:test": "bash -lc 'set -a; source .env.local.test; set +a; ./scripts/test-iap-verification.sh'",
     "sim:run": "vite-node scripts/run-simulation.ts",
     "sim:analyze": "vite-node scripts/analyze-sim-logs.ts",
-    "sim:test": "npm run sim:run && npm run sim:analyze"
+    "sim:test": "npm run sim:run && npm run sim:analyze",
+    "resume": "cat docs/sessions/$(ls -t docs/sessions/*.md 2>/dev/null | head -1 | xargs basename 2>/dev/null) && echo '\\n\\n=== PENDING_BACKLOG ===\\n' && cat docs/PENDING_BACKLOG.md && echo '\\n\\n=== DESIGN_VS_CODE_GAP ===\\n' && cat docs/DESIGN_VS_CODE_GAP.md && echo '\\n\\n=== RECENT MD CHANGES (last 14 days) ===\\n' && find docs -name '*.md' -mtime -14 | xargs ls -la 2>/dev/null"
   },
   "dependencies": {
     "@capacitor/android": "^8.3.0",
