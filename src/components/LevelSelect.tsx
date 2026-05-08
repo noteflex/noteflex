@@ -4,8 +4,8 @@ import { useLevelProgress } from "@/hooks/useLevelProgress";
 import { getUserTier } from "@/lib/subscriptionTier";
 import {
   canAccessSublevel,
+  getProgressGatePrev,
   getCompletion,
-  getPreviousSublevel,
   formatSublevel,
   SUBLEVEL_CONFIGS,
   type Sublevel,
@@ -73,8 +73,8 @@ export default function LevelSelect({
         };
       }
 
-      // 2) 진도 게이트 (이전 서브레벨 통과 필요)
-      const prev = getPreviousSublevel(level, sub);
+      // 2) 진도 게이트 (tier 인식 선행 단계 — getProgressGatePrev)
+      const prev = getProgressGatePrev(tier, level, sub);
       const isPrevPassed = prev === null
         ? true
         : (getProgressFor(prev.level, prev.sublevel)?.passed ?? false);
@@ -99,7 +99,7 @@ export default function LevelSelect({
           c.playCount.satisfied,
           c.bestStreak.satisfied,
           c.accuracy.satisfied,
-          c.avgReactionTime.satisfied,
+          c.avgReactionRatio.satisfied,
         ].filter(Boolean).length;
       }
 

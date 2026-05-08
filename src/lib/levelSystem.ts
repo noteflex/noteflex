@@ -22,10 +22,10 @@
  *   - 누적 정답률 ≥ 85%
  *   - sublevel 평균 반응속도 ≤ 타이머 × 35% (기록 없으면 통과 처리)
  *
- * 구독 게이트:
- *   - guest:  Lv 1만 (3단계)
- *   - free:   Lv 1·2 + Lv 3-1, Lv 4-1 (8단계)
- *   - pro:    전체 21단계
+ * 구독 게이트 (2026-05-09 결정):
+ *   - guest:  Lv 1-1만 (1단계, 3회/일)
+ *   - free:   Lv 1~5 Sub1 순차 (5단계, 7회/일)
+ *   - pro:    전체 21단계 순차 (무제한)
  */
 
 // ─────────────────────────────────────────────
@@ -76,8 +76,8 @@ export interface SublevelProgress {
   total_attempts: number;
   total_correct: number;
   passed: boolean;
-  /** sublevel 누적 평균 반응속도(초). 기록 없으면 undefined → 통과 처리 */
-  avg_reaction_time?: number;
+  /** sublevel 누적 평균 반응속도 비율 (avgReactionMs / timerMs). 기록 없으면 undefined → 통과 처리 */
+  avg_reaction_ratio?: number;
 }
 
 /** UI 표시용 진행률 정보 */
@@ -85,7 +85,7 @@ export interface SublevelCompletion {
   playCount: { current: number; required: number; satisfied: boolean };
   bestStreak: { current: number; required: number; satisfied: boolean };
   accuracy: { current: number; required: number; satisfied: boolean };
-  avgReactionTime: { current: number | null; required: number; satisfied: boolean };
+  avgReactionRatio: { current: number | null; required: number; satisfied: boolean };
   allSatisfied: boolean;
 }
 
@@ -215,11 +215,9 @@ export function calculateAccuracy(progress: SublevelProgress): number {
 
 /** 단계 통과 조건 충족 여부 (4개 모두) */
 export function checkPassed(progress: SublevelProgress): boolean {
-  const timeLimit = SUBLEVEL_CONFIGS[progress.sublevel].timeLimit;
-  const reactionRequired = timeLimit * PASS_CRITERIA.MIN_AVG_REACTION_RATIO;
   const reactionOk =
-    progress.avg_reaction_time === undefined ||
-    progress.avg_reaction_time <= reactionRequired;
+    progress.avg_reaction_ratio === undefined ||
+    progress.avg_reaction_ratio <= PASS_CRITERIA.MIN_AVG_REACTION_RATIO;
   return (
     progress.play_count >= PASS_CRITERIA.MIN_PLAY_COUNT &&
     progress.best_streak >= PASS_CRITERIA.MIN_BEST_STREAK &&
@@ -231,8 +229,6 @@ export function checkPassed(progress: SublevelProgress): boolean {
 /** UI 진행률 정보 생성 */
 export function getCompletion(progress: SublevelProgress): SublevelCompletion {
   const accuracy = calculateAccuracy(progress);
-  const timeLimit = SUBLEVEL_CONFIGS[progress.sublevel].timeLimit;
-  const reactionRequired = timeLimit * PASS_CRITERIA.MIN_AVG_REACTION_RATIO;
 
   const playCount = {
     current: progress.play_count,
@@ -252,24 +248,24 @@ export function getCompletion(progress: SublevelProgress): SublevelCompletion {
     satisfied: accuracy >= PASS_CRITERIA.MIN_ACCURACY,
   };
 
-  const avgReactionTime = {
-    current: progress.avg_reaction_time ?? null,
-    required: reactionRequired,
+  const avgReactionRatio = {
+    current: progress.avg_reaction_ratio ?? null,
+    required: PASS_CRITERIA.MIN_AVG_REACTION_RATIO,
     satisfied:
-      progress.avg_reaction_time === undefined ||
-      progress.avg_reaction_time <= reactionRequired,
+      progress.avg_reaction_ratio === undefined ||
+      progress.avg_reaction_ratio <= PASS_CRITERIA.MIN_AVG_REACTION_RATIO,
   };
 
   return {
     playCount,
     bestStreak,
     accuracy: accuracyResult,
-    avgReactionTime,
+    avgReactionRatio,
     allSatisfied:
       playCount.satisfied &&
       bestStreak.satisfied &&
       accuracyResult.satisfied &&
-      avgReactionTime.satisfied,
+      avgReactionRatio.satisfied,
   };
 }
 
@@ -277,28 +273,41 @@ export function getCompletion(progress: SublevelProgress): SublevelCompletion {
 // 구독 게이트
 // ─────────────────────────────────────────────
 
-/** 사용자가 특정 단계에 접근 가능한지 (구독 등급 기준) */
+/** 구독 등급 기준 접근 가능 여부 (순수 tier 체크, progression 무관) */
 export function canAccessSublevel(
   tier: SubscriptionTier,
   level: number,
   sublevel: Sublevel
 ): boolean {
-  // Pro: 전체 접근
   if (tier === "pro") return true;
-
-  // Guest (미가입): Lv 1만
-  if (tier === "guest") {
-    return level === 1;
-  }
-
-  // Free (일반 가입): Lv 1·2 전체 + Lv 3-1, Lv 4-1
-  if (tier === "free") {
-    if (level <= 2) return true;
-    if ((level === 3 || level === 4) && sublevel === 1) return true;
-    return false;
-  }
-
+  // Guest (미가입): Lv 1-1만 (2026-05-09)
+  if (tier === "guest") return level === 1 && sublevel === 1;
+  // Free: Lv 1~5 Sub1만 (2026-05-09)
+  if (tier === "free") return level <= 5 && sublevel === 1;
   return false;
+}
+
+/**
+ * 진도 게이트 — tier 인식 선행 단계 계산.
+ *
+ * canAccessSublevel 의 subscription gate 와 분리.
+ * LevelSelect 의 "이전 단계 통과 여부" 체크에 사용.
+ *
+ *   - guest:  Lv 1-1 만 접근, 선행 없음 → null
+ *   - free:   Lv(n)-Sub1 의 선행 = Lv(n-1)-Sub1 (Sub2·Sub3 는 subscription gate 에서 차단)
+ *   - pro:    표준 21단계 순서 (getPreviousSublevel 과 동일)
+ */
+export function getProgressGatePrev(
+  tier: SubscriptionTier,
+  level: number,
+  sublevel: Sublevel
+): { level: number; sublevel: Sublevel } | null {
+  if (tier === "guest") return null;
+  if (tier === "free") {
+    if (level === 1) return null;
+    return { level: level - 1, sublevel: 1 };
+  }
+  return getPreviousSublevel(level, sublevel);
 }
 
 // ─────────────────────────────────────────────

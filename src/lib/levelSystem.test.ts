@@ -10,6 +10,7 @@ import {
   checkPassed,
   getCompletion,
   canAccessSublevel,
+  getProgressGatePrev,
   getAllSublevels,
   formatSublevel,
   getNextSublevel,
@@ -134,49 +135,49 @@ describe("checkPassed - 4개 조건 모두 충족 검증", () => {
     expect(checkPassed(p)).toBe(true);
   });
 
-  it("avg_reaction_time 없음 (undefined) → 통과 처리", () => {
+  it("avg_reaction_ratio 없음 (undefined) → 통과 처리", () => {
     const p = makeProgress({
       play_count: 10,
       best_streak: 5,
       total_attempts: 10,
       total_correct: 9,
-      // avg_reaction_time 미기록
+      // avg_reaction_ratio 미기록
     });
     expect(checkPassed(p)).toBe(true);
   });
 
-  it("avg_reaction_time 기준 이하 (sublevel 1: ~2.45s) → passed=true", () => {
+  it("avg_reaction_ratio 기준 이하 (0.34 < 0.35) → passed=true", () => {
     const p = makeProgress({
       sublevel: 1,
       play_count: 10,
       best_streak: 5,
       total_attempts: 10,
       total_correct: 9,
-      avg_reaction_time: 2.44,
+      avg_reaction_ratio: 0.34,
     });
     expect(checkPassed(p)).toBe(true);
   });
 
-  it("avg_reaction_time 초과 (sublevel 1: >~2.45s) → passed=false", () => {
+  it("avg_reaction_ratio 초과 (0.36 > 0.35) → passed=false", () => {
     const p = makeProgress({
       sublevel: 1,
       play_count: 10,
       best_streak: 5,
       total_attempts: 10,
       total_correct: 9,
-      avg_reaction_time: 2.5,
+      avg_reaction_ratio: 0.36,
     });
     expect(checkPassed(p)).toBe(false);
   });
 
-  it("sublevel 3 반응속도 기준 (~3×0.35=1.05s)", () => {
+  it("avg_reaction_ratio 경계값 (0.35 = 기준) → passed=true", () => {
     const ok = makeProgress({
       sublevel: 3,
       play_count: 10,
       best_streak: 5,
       total_attempts: 10,
       total_correct: 9,
-      avg_reaction_time: 1.04,
+      avg_reaction_ratio: 0.35,
     });
     const fail = makeProgress({
       sublevel: 3,
@@ -184,7 +185,7 @@ describe("checkPassed - 4개 조건 모두 충족 검증", () => {
       best_streak: 5,
       total_attempts: 10,
       total_correct: 9,
-      avg_reaction_time: 1.06,
+      avg_reaction_ratio: 0.351,
     });
     expect(checkPassed(ok)).toBe(true);
     expect(checkPassed(fail)).toBe(false);
@@ -197,7 +198,7 @@ describe("getCompletion - UI 진행률", () => {
     expect(c.playCount.satisfied).toBe(false);
     expect(c.bestStreak.satisfied).toBe(false);
     expect(c.accuracy.satisfied).toBe(false);
-    expect(c.avgReactionTime.satisfied).toBe(true); // 미기록 → 통과 처리
+    expect(c.avgReactionRatio.satisfied).toBe(true); // 미기록 → 통과 처리
     expect(c.allSatisfied).toBe(false);
   });
 
@@ -215,7 +216,7 @@ describe("getCompletion - UI 진행률", () => {
     expect(c.allSatisfied).toBe(false);
   });
 
-  it("모두 충족 (avg_reaction_time 없음)", () => {
+  it("모두 충족 (avg_reaction_ratio 없음)", () => {
     const p = makeProgress({
       play_count: 10,
       best_streak: 5,
@@ -226,44 +227,45 @@ describe("getCompletion - UI 진행률", () => {
     expect(c.allSatisfied).toBe(true);
   });
 
-  it("avgReactionTime required = timeLimit × 0.35", () => {
-    // sublevel 1: timeLimit=7, required=2.45
+  it("avgReactionRatio required = 0.35 (서브레벨 무관)", () => {
     const c1 = getCompletion(makeProgress({ sublevel: 1 }));
-    expect(c1.avgReactionTime.required).toBeCloseTo(2.45);
+    expect(c1.avgReactionRatio.required).toBeCloseTo(0.35);
 
-    // sublevel 3: timeLimit=3, required=1.05
     const c3 = getCompletion(makeProgress({ sublevel: 3 }));
-    expect(c3.avgReactionTime.required).toBeCloseTo(1.05);
+    expect(c3.avgReactionRatio.required).toBeCloseTo(0.35);
   });
 
-  it("avg_reaction_time 기록 있을 때 current 반영", () => {
-    const p = makeProgress({ sublevel: 1, avg_reaction_time: 2.0 });
+  it("avg_reaction_ratio 기록 있을 때 current 반영", () => {
+    const p = makeProgress({ sublevel: 1, avg_reaction_ratio: 0.3 });
     const c = getCompletion(p);
-    expect(c.avgReactionTime.current).toBe(2.0);
-    expect(c.avgReactionTime.satisfied).toBe(true);
+    expect(c.avgReactionRatio.current).toBe(0.3);
+    expect(c.avgReactionRatio.satisfied).toBe(true);
   });
 
-  it("avg_reaction_time 초과 시 allSatisfied=false", () => {
+  it("avg_reaction_ratio 초과 시 allSatisfied=false", () => {
     const p = makeProgress({
       sublevel: 1,
       play_count: 10,
       best_streak: 5,
       total_attempts: 10,
       total_correct: 9,
-      avg_reaction_time: 3.0, // 7×0.35=2.45 초과
+      avg_reaction_ratio: 0.4, // > 0.35
     });
     const c = getCompletion(p);
-    expect(c.avgReactionTime.satisfied).toBe(false);
+    expect(c.avgReactionRatio.satisfied).toBe(false);
     expect(c.allSatisfied).toBe(false);
   });
 });
 
-describe("canAccessSublevel - 구독 게이트", () => {
+describe("canAccessSublevel - 구독 게이트 (2026-05-09 결정)", () => {
   describe("guest (미가입)", () => {
-    it("Lv 1 모든 서브레벨 접근 가능", () => {
+    it("Lv 1-1만 접근 가능", () => {
       expect(canAccessSublevel("guest", 1, 1)).toBe(true);
-      expect(canAccessSublevel("guest", 1, 2)).toBe(true);
-      expect(canAccessSublevel("guest", 1, 3)).toBe(true);
+    });
+
+    it("Lv 1-2, 1-3은 접근 불가 (Sub2·Sub3 영구 잠금)", () => {
+      expect(canAccessSublevel("guest", 1, 2)).toBe(false);
+      expect(canAccessSublevel("guest", 1, 3)).toBe(false);
     });
 
     it("Lv 2 이상은 접근 불가", () => {
@@ -274,28 +276,26 @@ describe("canAccessSublevel - 구독 게이트", () => {
   });
 
   describe("free (일반 가입)", () => {
-    it("Lv 1·2 모두 접근 가능", () => {
+    it("Lv 1~5 Sub1 접근 가능", () => {
       expect(canAccessSublevel("free", 1, 1)).toBe(true);
-      expect(canAccessSublevel("free", 1, 3)).toBe(true);
       expect(canAccessSublevel("free", 2, 1)).toBe(true);
-      expect(canAccessSublevel("free", 2, 3)).toBe(true);
-    });
-
-    it("Lv 3-1, Lv 4-1만 접근 가능 (맛보기)", () => {
       expect(canAccessSublevel("free", 3, 1)).toBe(true);
       expect(canAccessSublevel("free", 4, 1)).toBe(true);
+      expect(canAccessSublevel("free", 5, 1)).toBe(true);
     });
 
-    it("Lv 3-2, 3-3, 4-2, 4-3은 접근 불가", () => {
+    it("Sub2·Sub3는 모든 레벨에서 잠금 (Premium 전용)", () => {
+      expect(canAccessSublevel("free", 1, 2)).toBe(false);
+      expect(canAccessSublevel("free", 1, 3)).toBe(false);
+      expect(canAccessSublevel("free", 2, 2)).toBe(false);
+      expect(canAccessSublevel("free", 2, 3)).toBe(false);
       expect(canAccessSublevel("free", 3, 2)).toBe(false);
       expect(canAccessSublevel("free", 3, 3)).toBe(false);
-      expect(canAccessSublevel("free", 4, 2)).toBe(false);
-      expect(canAccessSublevel("free", 4, 3)).toBe(false);
     });
 
-    it("Lv 5 이상은 접근 불가", () => {
-      expect(canAccessSublevel("free", 5, 1)).toBe(false);
-      expect(canAccessSublevel("free", 6, 2)).toBe(false);
+    it("Lv 6·7는 접근 불가 (Premium 전용)", () => {
+      expect(canAccessSublevel("free", 6, 1)).toBe(false);
+      expect(canAccessSublevel("free", 7, 1)).toBe(false);
       expect(canAccessSublevel("free", 7, 3)).toBe(false);
     });
   });
@@ -307,6 +307,50 @@ describe("canAccessSublevel - 구독 게이트", () => {
           expect(canAccessSublevel("pro", level, sublevel)).toBe(true);
         }
       }
+    });
+  });
+});
+
+describe("getProgressGatePrev - tier 인식 진도 게이트", () => {
+  describe("guest", () => {
+    it("항상 null (Lv 1-1 이 유일한 진입점)", () => {
+      expect(getProgressGatePrev("guest", 1, 1)).toBeNull();
+    });
+  });
+
+  describe("free", () => {
+    it("Lv 1-1 선행 없음 → null", () => {
+      expect(getProgressGatePrev("free", 1, 1)).toBeNull();
+    });
+
+    it("Lv 2-1 선행 = Lv 1-1", () => {
+      expect(getProgressGatePrev("free", 2, 1)).toEqual({ level: 1, sublevel: 1 });
+    });
+
+    it("Lv 3-1 선행 = Lv 2-1", () => {
+      expect(getProgressGatePrev("free", 3, 1)).toEqual({ level: 2, sublevel: 1 });
+    });
+
+    it("Lv 5-1 선행 = Lv 4-1", () => {
+      expect(getProgressGatePrev("free", 5, 1)).toEqual({ level: 4, sublevel: 1 });
+    });
+  });
+
+  describe("pro", () => {
+    it("Lv 1-1 선행 없음 → null (표준 21단계)", () => {
+      expect(getProgressGatePrev("pro", 1, 1)).toBeNull();
+    });
+
+    it("Lv 1-2 선행 = Lv 1-1 (표준 21단계)", () => {
+      expect(getProgressGatePrev("pro", 1, 2)).toEqual({ level: 1, sublevel: 1 });
+    });
+
+    it("Lv 2-1 선행 = Lv 1-3 (표준 21단계, 레벨 경계)", () => {
+      expect(getProgressGatePrev("pro", 2, 1)).toEqual({ level: 1, sublevel: 3 });
+    });
+
+    it("Lv 7-3 선행 = Lv 7-2 (표준 21단계, 최종 직전)", () => {
+      expect(getProgressGatePrev("pro", 7, 3)).toEqual({ level: 7, sublevel: 2 });
     });
   });
 });
