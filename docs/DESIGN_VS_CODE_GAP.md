@@ -336,22 +336,32 @@ commits 941b04f·6f5290f·c1b9d7c·717797e. 373/373 PASS.
 
 ---
 
-## 5. 사용자 등급별 권한 ✅ (2026-04-29 결정 — Lv 1만)
+## 5. 사용자 등급별 권한 ❌ → 5/9 결정 완료, 코드 정정 필요
 
-### 5.1 설계 (§5) vs 구현 (`canAccessSublevel`)
+### 5.1 설계 (§5) vs 구현 vs 5/9 결정
 
-| 등급 | 설계 권한 | 코드 권한 | 평가 |
+| 등급 | 5/9 결정 | 현재 코드 | 평가 |
 |---|---|---|---|
-| **미가입자** | Lv 1~2 (제한적) + 광고 시청 + 게임 외 기능 X + 간단 진단 (가입 유도) | guest = Lv 1만 (Lv 1-1, 1-2, 1-3 = 3 sublevel) | ❌ |
-| **가입자** | Lv 1~2 모든 단계 + Lv 3~4 1단계만 + 광고 시청 + 대시보드 간략 보고서만 | free = Lv 1·2 전체 + Lv 3-1 + Lv 4-1 (8 sublevel) | ✅ 일치 |
-| **프리미엄** | 모든 기능 + 배치고사 + 광고 없음 + 랭킹 등록 | pro = 21단계 전체 (랭킹·배치고사·광고는 미구현) | ⚠️ |
+| **Guest (미가입자)** | Lv1 Sub1만, 3회/일 | `level === 1` (Sub1~3 모두 허용) | ❌ Sub1 한정 추가 필요 |
+| **Free (가입자)** | Lv1~5 Sub1만 순차, 7회/일 | Lv1·2 전체 + Lv3·4 Sub1 (9 sublevel) | ❌ 완전 재작성 필요 |
+| **Premium** | 전 21단계 순차 (Sub1→2→3), 무제한 | pro = 21단계 전체 | ✅ (순차 체크 추가 필요) |
 
-**불일치 — 미가입자 권한**:
+**코드 정정 대상** (`src/lib/levelSystem.ts:281-302`):
+```typescript
+// 현재 (잘못됨)
+if (tier === "guest") { return level === 1; }
+if (tier === "free") {
+  if (level <= 2) return true;
+  if ((level === 3 || level === 4) && sublevel === 1) return true;
+  return false;
+}
 
-설계: 미가입자도 Lv 1~2 가능 (가입 시도 유도용)
-코드: 미가입자(guest)는 Lv 1만 가능
+// 정정 목표
+if (tier === "guest") { return level === 1 && sublevel === 1; }
+if (tier === "free") { return level <= 5 && sublevel === 1 && /* 이전 Sub1 통과 체크 */; }
+```
 
-→ **결정 필요**: 어느 쪽으로 갈지
+→ **Group A 작업** 포함 (2026-05-09 결정)
 
 ### 5.2 광고 시청 정책 🔴
 
@@ -558,6 +568,56 @@ commits 941b04f·6f5290f·c1b9d7c·717797e. 373/373 PASS.
 
 ---
 
+---
+
+## B-0. 영역 B — 티어 매트릭스 결정 (2026-05-09)
+
+### B-0.1 결정 완료 항목 ✅
+
+| 항목 | 결정값 |
+|---|---|
+| Guest 접근 범위 | Lv1 Sub1만, 3회/일 |
+| Free 접근 범위 | Lv1~5 Sub1만 순차, 7회/일 |
+| Premium 접근 범위 | 전 21단계 순차, 무제한 |
+| 광고 보상형 세션 정책 | **영구 폐기** |
+| DB PASS_CRITERIA | `20260509_pass_criteria_v2.sql` 마이그레이션으로 TS 기준 정렬 |
+| Quick Mastery Mode | Premium 전용, Lv1 Sub2~Lv7 Sub3, 오류≤1%+시간≤50% 첫 세션 즉시 통과 |
+| Mastery Score UI | Premium = 전체 노출, Free/Guest = 블러 + CTA |
+| AI Coaching | Free = 기본 2종 (결과 모달 1행 + 대시보드 카드), Premium = 전체 |
+
+### B-0.2 코드 영향 범위 🔴
+
+| 파일 | 변경 내용 | 그룹 |
+|---|---|---|
+| `src/lib/levelSystem.ts` | `canAccessSublevel` guest/free 규칙 재작성 | Group A |
+| `supabase/migrations/20260509_pass_criteria_v2.sql` | DB PASS_CRITERIA 정정 (10/85%/35%/5) | Group A |
+| `src/pages/Pricing.tsx` | 카피 갱신 (광고 보상형 제거, Free 범위 Lv5, Guest Sub1) | Group A |
+| `daily_sessions` 테이블 + `useDailyLimit` + `DailyLimitModal` | 일일 한도 시스템 신규 | Group B |
+| `LevelSelect.tsx` + `PremiumBlurCard` | Mastery Score 블러 + 4지표 탭 | Group C |
+| AI Coaching 컴포넌트 | 결과 모달 1행 + 대시보드 카드 | Group C |
+| `record_sublevel_attempt` RPC + Quick Mastery 감지 | Quick Mastery Mode | Group D |
+
+### B.1 일일 세션 한도 시스템 🔴 완전 미구현
+
+설계·결정 기준 대비 코드 상태:
+- `daily_sessions` 테이블: 없음
+- `useDailyLimit` 훅: 없음
+- `DailyLimitModal` (24h 카운트다운): 없음
+- `NoteGame.tsx` 진입 시 한도 체크: 없음
+
+→ **Group B 전체 신규 구현** (~4h)
+
+### B.2 Quick Mastery Mode 🔴 완전 미구현
+
+설계·결정 기준 대비 코드 상태:
+- 트리거 조건 체크 (오류율·반응시간): 없음
+- 즉시 통과 플로우: 없음
+- "빠른 통과" 배지: 없음
+
+→ **Group D 전체 신규 구현** (~4h)
+
+---
+
 ## 12. 메모
 
 이 비교는 **설계 PDF 6페이지 + 구현 docs/ 8개 문서**를 1:1 대조한 결과다. 사용자 첨부 별도 기획서 4개 (배치고사·광고 UI·애드센스·성능 최적화) 의 항목은 이미 `PENDING_BACKLOG.md`에 14개 카테고리로 정리되어 있으므로 본 문서에서는 PDF 본문과의 차이만 다뤘다.
@@ -572,6 +632,7 @@ commits 941b04f·6f5290f·c1b9d7c·717797e. 373/373 PASS.
 - 2026-04-29: 사용자 결정 9개 + §0.1 완료 (commit 4e2b6ef) + §7.3 Calibration 출시 전 필수 격상 + §10/§11 갱신 (결정 완료 반영) + §2.4/§2.6/§5 평가 마크 ✅ 업데이트
 - 2026-05-02 (Opus 4.7 분석): §7.3 Calibration 영역 분할 + 결합 위험 박힘 (§7.3 신규 표 + §11 Week 2 우선순위 §7.10·§7.1·§7.3 결합 순서). 코드 변경 0건.
 - 2026-05-03 (Sonnet 4.6): **§7.1 `Date.now()` → `performance.now()` 전면 전환 완료** — 15 사이트 (NoteGame 12 + CountdownTimer 3). 절대 시간 2 사이트 (DiagnosisTab·PremiumDialog) Date.now() 유지. vitest 373/373 PASS, sim:test 9984 게임 invariants 위반 0건.
+- 2026-05-09 (Sonnet 4.6): **§5 권한 매트릭스 5/9 결정 반영** (Guest Sub1 한정·Free Lv1~5 Sub1·Premium 전체) + **§B-0/§B.1~B.2 영역 B 결정 박음** (일일 세션 한도·Quick Mastery Mode 전체 미구현 확인 + 코드 영향 범위 매핑).
 - 2026-04-30: §0-1 코드 적용 완료 — §0-1.1~0-1.6 모두 구현 (commits f09919c, 6c1a7e8) + §2.6 PASS_CRITERIA 테이블 ✅ 갱신 + §2.6 같은조표연속학습 ✅ + §9.1 재도전마크 ✅ + §3.8 조표 비율 + treble/bass ✅ (commit bb062c3)
 - 2026-05-01: §3.11 §0.4 GrandStaffPractice 분석 추가 (Opus 보고서, 3갭 4 step 계획) + §3.12 §0.3 ✅ 추가 (commit eac606a) + §10/§11 갱신 (Week 1 완료 현황, Week 2 우선순위)
 - 2026-05-02: §2.1 stage 수 ⚠️ (Lv1~4 batchSize=1 확장 반영) + §2.4 음표 배치 테이블 ✅ + §3.2 버퍼링 방지 ✅ + 카운트다운 조표 숨김 ✅ + §3.13 §4 retry 시스템 신규 + §3.14 swipe 모달 신규 + §3.15 batchSize 렌더링 fix 신규 + §10 버그 5번 추가 + §11 Week 1 완료 12개·Week 2 §4 잔여 추가 + §13 변경 이력
