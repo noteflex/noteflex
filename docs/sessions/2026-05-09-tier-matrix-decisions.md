@@ -1,0 +1,237 @@
+# 세션 로그 — 2026-05-09 영역 B-0 티어 매트릭스 + 사실 추적
+
+> **날짜**: 2026-05-09
+> **참여자**: 사용자 + Claude Sonnet 4.6
+> **작업 범위**: (1) 영역 B-0 티어 접근 매트릭스 결정 + (2) 코드 사실 추적 7개 영역 (read-only)
+> **이전 세션**: 2026-05-08 — 블로그 9일차 4편 한+영 작성 + 블로그 작성 정책 §1.4~1.5 갱신
+
+---
+
+## 1. 결정 개요
+
+### D1 — Guest 티어 접근 범위 ✅ 확정
+
+| 항목 | 결정값 |
+|---|---|
+| 접근 가능 레벨 | Lv1 Sub1만 |
+| 일일 세션 한도 | 3회/일 |
+| 한도 초과 시 | 가입 유도 모달 (광고 보상형 X) |
+
+**배경**: 최대한 빠른 가입 전환 유도. 게스트에게 광고 보상형으로 더 주는 정책은 5/9 결정으로 폐기.
+
+---
+
+### D2 — Free 티어 접근 범위 ✅ 확정
+
+| 항목 | 결정값 |
+|---|---|
+| 접근 가능 범위 | Lv1~5, 각 레벨 Sub1만 |
+| 진행 방식 | 순차 (이전 Sub1 통과 후 다음 레벨 Sub1 해금) |
+| 일일 세션 한도 | 7회/일 |
+| 한도 초과 시 | 24시간 카운트다운 모달 (Premium 업그레이드 유도) |
+
+**배경**: Sub2~Sub3는 Premium 전용. Free 사용자가 "더 하고 싶다"는 욕구가 생기는 지점을 Lv5 Sub1 통과 후로 설계.
+
+---
+
+### D3 — Premium 티어 접근 범위 ✅ 확정
+
+| 항목 | 결정값 |
+|---|---|
+| 접근 가능 범위 | 전 21단계 (Lv1-1 ~ Lv7-3) |
+| 진행 방식 | 순차 (Sub1→Sub2→Sub3 내 레벨 순차, 이전 Sub 통과 필요) |
+| 일일 세션 한도 | 없음 |
+| Quick Mastery Mode | 활성 (아래 D5 참조) |
+
+---
+
+### D4 — DB PASS_CRITERIA 정정 마이그레이션 ✅ 확정
+
+| 항목 | TS PASS_CRITERIA (현재) | DB RPC 현재 | 결정 (정정 목표) |
+|---|---|---|---|
+| 수행 횟수 | 10회 | 5회 | **10회** (TS 기준) |
+| 정답률 | 85% | 80% | **85%** (TS 기준) |
+| 반응속도 | 타이머 35% 이내 | 미구현 | **추가** |
+| 최대 연속 정답 | 5회 | 5회 | **5회** (동일) |
+
+**결정**: DB RPC를 TS 기준에 맞게 정정.
+**파일**: `supabase/migrations/20260509_pass_criteria_v2.sql` 신규 작성 필요.
+**코드 영향**: `record_sublevel_attempt` RPC 파라미터 확장 (`avg_reaction_ratio` 추가) + 통과 체크 로직 정정.
+
+---
+
+### D5 — Quick Mastery Mode (패스트 트랙) 정책 ✅ 확정
+
+| 항목 | 결정값 |
+|---|---|
+| 대상 등급 | Premium 전용 |
+| 적용 범위 | Lv1 Sub2 ~ Lv7 Sub3 (Sub1은 제외) |
+| 트리거 조건 | 첫 세션에서 오류율 ≤1% AND 평균 반응시간 ≤ 타이머의 50% |
+| 발동 시 | 결과 모달에 "빠른 통과" 배지 + 즉시 해금 |
+| 미발동 시 | 일반 통과 기준 (D4 기준) 적용 |
+
+**배경**: 이미 해당 레벨을 충분히 숙지한 Premium 사용자가 불필요한 반복을 건너뛸 수 있도록.
+
+---
+
+### D6 — Mastery Score UI 노출 정책 ✅ 확정
+
+| 등급 | UI 표시 |
+|---|---|
+| Guest / Free | 블러 처리된 카드 + "Premium으로 잠금 해제" CTA |
+| Premium | 전체 노출 (단일 숫자 + 4지표 탭) |
+
+**배경**: Mastery Score는 Premium 핵심 가치 중 하나. Free에게 블러로 노출해 업그레이드 유도.
+
+---
+
+### D7 — AI Coaching 정책 ✅ 확정
+
+| 등급 | 제공 범위 |
+|---|---|
+| Free | 결과 모달 1행 코멘트 (유형 B) + 대시보드 히어로 카드 요약 (유형 C) |
+| Premium | 전체 (유형 A~E: 상세 분석 + 다음 세션 추천 + 약점 음표 + 학습 곡선 + 목표 설정) |
+
+**현황**: AI Coaching 전체 미구현. Group C (Mastery Score + AI Coaching) 작업에서 구현 예정.
+
+---
+
+## 2. 코드 사실 추적 결과 (read-only, 2026-05-09)
+
+### F1 — `canAccessSublevel` (src/lib/levelSystem.ts:281-302) ❌ 불일치
+
+```typescript
+// 현재 코드
+if (tier === "guest") { return level === 1; }  // Lv1 Sub1~3 모두 허용 ← 5/9 결정과 불일치
+if (tier === "free") {
+  if (level <= 2) return true;  // Lv1~2 Sub1~3 모두 허용 ← 5/9 결정과 불일치
+  if ((level === 3 || level === 4) && sublevel === 1) return true;  // Lv3~4 Sub1
+  return false;
+}
+```
+
+**5/9 결정 기준 정정 내용**:
+- `guest`: `level === 1 && sublevel === 1` 으로 변경 (Sub1만)
+- `free`: `level <= 5 && sublevel === 1` + 순차 해금 조건 (이전 Sub1 통과 체크) 으로 재작성
+
+**작업 파일**: `src/lib/levelSystem.ts`
+
+---
+
+### F2 — 일일 세션 한도 시스템 🔴 완전 미구현
+
+- `daily_session_count` 컬럼: DB 없음
+- `useLives` / `useDailyLimit` 훅: 없음
+- `daily-reset` Edge Function: 없음
+- `24h countdown` 모달 컴포넌트: 없음
+
+**작업 범위 (Group B)**:
+1. `supabase/migrations/20260509_daily_sessions.sql` — `daily_sessions` 테이블 (user_id, date, count)
+2. `src/hooks/useDailyLimit.ts` — 오늘 세션 수 조회 + 초과 체크
+3. `src/components/DailyLimitModal.tsx` — 24h 카운트다운 UI + Premium CTA
+4. `NoteGame.tsx` — 게임 시작 전 daily limit 체크 훅 호출
+
+---
+
+### F3 — LevelSelect Mastery Score UI ⚠️ 부분 구현
+
+- `LevelSelect.tsx`: Mastery Score 숫자 표시 있음 (단일 숫자)
+- 4지표 탭 UI: 없음
+- 블러 처리 (Free/Guest): 없음 — Premium 아닌 사용자도 그대로 노출
+- `PremiumBlurCard` 컴포넌트: 없음
+
+**작업 범위 (Group C)**: 블러 래퍼 컴포넌트 + tier 체크 + 4지표 탭 추가
+
+---
+
+### F4 — AI Coaching 컴포넌트 🔴 완전 미구현
+
+- 결과 모달 1행 코멘트: 없음
+- 대시보드 히어로 카드: 없음
+- 분석 API 연동: 없음
+
+**작업 범위 (Group C)**: 최소 구현 (Free용 결과 모달 1행 + 대시보드 카드)
+
+---
+
+### F5 — Quick Mastery Mode 🔴 완전 미구현
+
+- 트리거 조건 체크 로직: 없음
+- "빠른 통과" 배지: 없음
+- 즉시 해금 플로우: 없음
+
+**작업 범위 (Group D)**: `record_sublevel_attempt` RPC 확장 + 클라이언트 트리거 감지 + 결과 모달 배지
+
+---
+
+### F6 — Pricing.tsx 카피 ⚠️ 수정 필요
+
+현재 `freeFeatures[5]`: `"광고 시청 후 이용"` — 5/9 결정으로 폐기된 정책.
+
+수정 항목:
+- `freeFeatures[5]` 삭제 또는 `"7회/일 세션 한도"` 로 교체
+- `compareRows` Free 열 Lv3~5 Sub1 반영 (현재 Lv3~4 Sub1만)
+- Guest 열 Lv1 Sub1만 반영 (현재 Lv1 전체)
+
+**작업 범위 (Group A)**: `src/pages/Pricing.tsx` 수술적 카피 갱신
+
+---
+
+### F7 — DB 스키마 + 마이그레이션 ⚠️ PASS_CRITERIA 불일치
+
+**`supabase/migrations/20260425_sublevel_system.sql` 확인 결과**:
+- `record_sublevel_attempt` RPC 통과 기준: `play_count >= 5 AND accuracy >= 0.80`
+- TS `PASS_CRITERIA` (levelSystem.ts:166-172): `MIN_PLAY_COUNT: 10, MIN_ACCURACY: 0.85`
+- **실제 통과 기준은 DB** — TS 설정은 클라이언트에서만 체크 (DB가 override)
+
+**결정**: 신규 마이그레이션으로 DB를 TS 기준에 맞게 정정
+- `play_count >= 10`
+- `accuracy >= 0.85`
+- `avg_reaction_ratio <= 0.35` (avg_reaction_ms / timer_ms) — 컬럼 추가 필요
+- `max_streak >= 5` (이미 일치)
+
+---
+
+## 3. 영역별 작업 그룹 분류
+
+| 그룹 | 항목 | 예상 시간 | 우선순위 |
+|---|---|---|---|
+| **Group A** (~2h) | canAccessSublevel 정정 + DB 마이그레이션 + Pricing.tsx | 2h | 🔴 즉시 |
+| **Group B** (~4h) | 일일 세션 한도 시스템 전체 | 4h | 🔴 출시 전 |
+| **Group C** (~5h) | Mastery Score UI (블러) + AI Coaching 기본 | 5h | 🔴 출시 전 |
+| **Group D** (~4h) | Quick Mastery Mode | 4h | 🔴 출시 전 |
+
+---
+
+## 4. 결정 보류 항목 (5/9 현재)
+
+| 항목 | 이유 |
+|---|---|
+| 7일 무료 체험 (Premium Trial) | 결제 플로우 + Paddle 설정 필요 — 출시 후 |
+| Lifetime 플랜 ($X 일시불) | 가격 정책 미결 — 출시 후 |
+| 배치고사 → 레벨 자동 배정 | 배치고사 전체 미구현 — 출시 후 |
+| 랭킹 등록 (Premium) | 랭킹 시스템 미구현 — 출시 후 |
+| Free 사용자 스트릭 프리즈 | 스트릭 시스템 미구현 — 추후 |
+
+---
+
+## 5. 다음 세션 시작 우선순위
+
+1. **Group A** (~2h): `canAccessSublevel` 정정 + `20260509_pass_criteria_v2.sql` + `Pricing.tsx` 카피 수술
+2. **Group B** (~4h): 일일 세션 한도 시스템 (DB + 훅 + 모달)
+3. **Group C** (~5h): Mastery Score 블러 UI + AI Coaching 기본
+4. **Group D** (~4h): Quick Mastery Mode
+
+---
+
+## 6. 이번 세션 완료 항목
+
+| 항목 | 상태 |
+|---|---|
+| 블로그 §1.4~1.5 작성 정책 갱신 | ✅ (2026-05-08 세션) |
+| 블로그 9일차 4편 한+영 작성 | ✅ (2026-05-08 세션) |
+| 영역 B-0 티어 매트릭스 결정 (D1~D7) | ✅ |
+| 코드 사실 추적 7개 영역 | ✅ (read-only) |
+| 세션 로그 박음 | ✅ |
+| PENDING_BACKLOG.md 갱신 | ✅ |
+| DESIGN_VS_CODE_GAP.md 갱신 | ✅ |
