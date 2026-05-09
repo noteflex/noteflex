@@ -1,5 +1,5 @@
 import { NavLink, Outlet } from "react-router-dom";
-import { Users, ScrollText, BarChart3 } from "lucide-react";
+import { Users, ScrollText, BarChart3, Music } from "lucide-react";
 import Header from "@/components/Header";
 import AdminGuard from "@/components/admin/AdminGuard";
 
@@ -7,6 +7,7 @@ const navTabs = [
   { to: "/admin/users", label: "사용자", icon: Users, end: false },
   { to: "/admin/logs", label: "액션 로그", icon: ScrollText, end: false },
   { to: "/admin/batch-runs", label: "배치 이력", icon: BarChart3, end: false },
+  { to: "/admin/staff-preview", label: "Staff Preview", icon: Music, end: false },
 ];
 
 export default function AdminLayout() {

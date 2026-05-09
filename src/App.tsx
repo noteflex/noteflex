@@ -16,6 +16,7 @@ import AdminUsers from "./pages/admin/AdminUsers.tsx";
 import AdminUserDetail from "./pages/admin/AdminUserDetail.tsx";
 import AdminLogs from "./pages/admin/AdminLogs.tsx";
 import AdminBatchRuns from "./pages/admin/AdminBatchRuns.tsx";
+import StaffPreview from "./pages/admin/StaffPreview.tsx";
 import ProfilePage from "./pages/ProfilePage.tsx";
 import LegalPage from "./pages/legal/LegalPage.tsx";
 import Blog from "./pages/Blog.tsx";
@@ -113,6 +114,7 @@ const App = () => (
                 <Route path="users/:id" element={<AdminUserDetail />} />
                 <Route path="logs" element={<AdminLogs />} />
                 <Route path="batch-runs" element={<AdminBatchRuns />} />
+                <Route path="staff-preview" element={<StaffPreview />} />
               </Route>
 
               <Route path="*" element={<NotFound />} />

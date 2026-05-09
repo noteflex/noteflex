@@ -51,9 +51,9 @@ const HISTORY_COLOR = "#1c1917"; // 검정 (대기 중 또는 history)
 const ANSWERED_COLOR = "#9ca3af"; // 회색 (batch 모드에서 이미 답한 음표)
 
 // ── 레이아웃 기준 상수 ────────────────────────────────────────
-const SVG_W    = 800;
-const STAFF_X1 = 30;
-const STAFF_X2 = 790;
+export const SVG_W    = 800;
+export const STAFF_X1 = 30;
+export const STAFF_X2 = 790;
 const STEP_H   = 12;
 const LINE_GAP = STEP_H * 2;   // 24
 const STAFF_H  = LINE_GAP * 4; // 96
@@ -144,7 +144,7 @@ const LEVEL_STYLES: Record<number, LevelStyle> = {
   7: { staffTop: 182, staffBot: 278, svgH: 656, bassYOff: 220 },
 };
 
-type ResolvedStyle = Required<LevelStyle>;
+export type ResolvedStyle = Required<LevelStyle>;
 
 /**
  * §0.4.2 batchSize별 음표 크기 scale (사용자 명세 2026-05-01).
@@ -159,7 +159,7 @@ function getNoteScale(batchSize: number | undefined): number {
   return 1.0;
 }
 
-function resolveStyle(
+export function resolveStyle(
   level: number,
   keySigCount: number,
   batchSize?: number,
