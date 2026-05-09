@@ -113,49 +113,27 @@
 - `noteStartTime.current`도 grace 내부에서 설정 → 반응속도 정확한 측정
 - 4개 TDD 테스트 (NoteGame.countdown.test.tsx)
 
-### 0.4 UI 음표 잘림·색깔·history 누적 🆕🐛 (사용자 검증 발견 + 설계 위반)
+### 0.4 UI 음표 잘림·색깔·history 누적 ✅ 완료 (2026-05-09 Phase 2 Sprint)
 
-**사용자 검증** (2026-04-29 dev server):
-- 오선지 음표가 잘림 (특정 위치에서 화면 밖으로 나가거나 일부만 보임)
-- 음표 색깔이 제대로 반영 안 됨
+**커밋**: `bfa0d94` (F2) · `ee73501` (F3) · `8c56e46` (F4)
 
-**설계 §3.3.라 위반**: "현재 정답을 맞춰야 하는 음표는 빨간색, 정답을 맞춘 후 history로 남아있는 음표는 회색, 대기 중인 음표는 검은색으로 구분"
+**§0.4.1 음표 history 누적 + 리셋 ✅**
+- batchSize=1: answeredNotes 누적(최대 7), 7개 도달 시 리셋. 세트 전환 시 유지.
+- batchSize≥3: setAnsweredNotes NOT accumulated in batch mode (visibleNoteCount = currentBatch.length)
+- stage 전환 시 answeredNotes 클리어
+- 4 visibleNoteCount 테스트 (NoteGame.history.test.tsx)
 
-**§0.4.1 음표 history 누적 + 리셋 (batchSize별 동작)**
+**§0.4.2 음표 크기 동적 조정 ✅**
+- getNoteScale(batchSize): batchSize≥7→0.70, ≥5→0.80, else→1.0
 
-batchSize=1 stage (Sub 1 stage 1·2, Sub 2 stage 1):
-- 답한 음표를 회색으로 누적 표시
-- 7개 누적 시 화면 리셋 (다음 set는 새 시작)
-- 사용자 진행감 = "history가 눈으로 보임"
+**§0.4.3 음표 색깔 3단계 ✅**
+- NoteRole = "target"|"answered"|"waiting" + getNoteColor() export
+- 5 테스트 (GrandStaffPractice.test.tsx)
 
-batchSize=3+ stage (Sub 1 stage 3, Sub 2 stage 2·3, Sub 3 모든 stage):
-- 한 batch (3·5·7개) 동시 표시
-- 정답 시 회색, 미답 검정, 현재 빨강
-- 한 batch 완료 시 다음 batch로 갈아타기 (자연 리셋)
-- 사용자 진행감 = "한 묶음씩 풀이"
-
-**§0.4.2 음표 크기 동적 조정** (설계 §3.2.다.※ 인용)
-
-설계 인용: "음표가 5개 또는 7개가 배치되는 STAGE는 조표가 나오는 레벨의 경우 조표의 공간을 고려하여 음표의 크기를 조정해야 할지 고려해야함."
-
-- batchSize=1: 표준 크기 (예: 음표 직경 30px)
-- batchSize=3: 표준 크기
-- batchSize=5: 약 80% 크기 (24px) — 조표·자리표 공간 고려
-- batchSize=7: 약 70% 크기 (21px) — 조표·자리표 공간 고려
-
-오선지 너비는 고정, 음표 크기로 조정.
-
-**§0.4.3 음표 색깔 3단계** (설계 §3.3.라):
-- 현재 정답 음표: **빨강**
-- 정답 후 history: **회색**
-- 대기 중 음표 (3·5·7개 동시 display 시): **검정**
-
-**§0.4.4 잘림 방지 검증**:
-- 5개·7개 표시 시 좌우 여백 + 음표 크기로 잘림 0건
-- 모바일·데스크톱 둘 다 검증
-- Lv5+ 조표 공간 추가 고려
-
-**작업 시간 추정**: 1~2일 (Opus 영역 — 분석 + 코드 수정 + 검증)
+**§0.4.4 N-등분 잘림 방지 ✅**
+- effectiveWidth = STAFF_X2 - noteStartX; segmentWidth = effectiveWidth/N
+- noteX(i) = noteStartX + segmentWidth*(i+0.5) (≡ adjustedStart + i*segmentWidth)
+- 6 N-division 테스트 (GrandStaffPractice.test.tsx): N=7 last X < STAFF_X2 확인
 
 ---
 
@@ -928,22 +906,15 @@ Public domain 클래식 곡별 레벨
 - 재도전 배지 삭제 (§0-1.5)
 - 게임 화면 단순화 (설계 §3.3.자)
 
-### 6.4 §3 GrandStaffPractice UI 세부 조정 (출시 전 UI 작업 시점) 🟡
+### 6.4 §3 GrandStaffPractice UI 세부 조정 ✅ 완료 (2026-05-09 Phase 2 Sprint)
 
-2026-05-02 사용자 결정으로 핵심 fix만 적용 (batchSize=3 균등 분포 + batchSize=7 잘림 X 보장). 세부 시각 조정은 출시 전 UI 작업 시점에 일괄 처리.
+**커밋**: `3faec95` (F1) · `bfa0d94` (F2) · `ee73501` (F3) · `8c56e46` (F4)
 
-**작업 항목**:
-- **/admin/staff-preview 어드민 페이지 신규**: 모든 Lv·Sub·stage·batchSize·keySig 조합을 한 화면에 격자 비교
-- 음표 시각 크기·spacing·자리표 영역·키사인 영역 세부 비례 조정
-- 모든 케이스 검증: batchSize 1~7 × keySig 0~7 × Lv 1~7
-- 모바일·다크모드·어드민 가드 적용
-- 도구: Sonnet, 작업 시간 1~2시간
-
-**현 상태 (2026-05-02 기준)**:
-- max-w 612 (NoteGame 게임 영역, commit 6bcd719)
-- batchSize=3 균등 분포 적용 (gap = batchSize+1 = 4, 첫 음표 spacing 안쪽으로)
-- batchSize=5·7 변경 X (현재 잘림 X 가정)
-- 음표 viewBox 좌표·크기 그대로 (1.25배 비례 조정 X — 시각 변동 없으므로 의미 X로 분석)
+- **/admin/staff-preview**: Lv·batchSize·keySig·clef·history 토글 + GrandStaffPractice 직접 렌더 + meta 패널 (rawNoteStartX·segmentWidth·effectiveWidth·N-div X 좌표). 14 tests PASS
+- 음표 색깔: NoteRole 타입 + getNoteColor() — batch/history 통합
+- history 누적: batchSize=1 rolling max7 / batchSize≥3 non-accumulation
+- N-등분 배치: effectiveWidth = STAFF_X2 - noteStartX; segmentWidth = effectiveWidth/N; noteX(i) = rawStart + segmentWidth*(i+0.5). 구버전 gapCount 특수처리 교체.
+- 잘림 방지: N=7 last note X < STAFF_X2=790 확인 (resolveStyle 테스트)
 
 ### 6.2 디자인 컨셉 통일 🟢 (출시 후 점진)
 - "Midnight Grand" — 다크 + 골드
@@ -1691,6 +1662,7 @@ Claude가 출시 임박 시 자동 고지.
 - 2026-05-03 (Opus 4.7): **§7.3.3 + §7.10.2 완료** — `src/components/CalibrationModal.tsx` (4단계 상태 머신: intro→sync-measure→env-measure→complete), `src/lib/audioVisualSync.ts` (rAF+perf.now() vs AudioContext.currentTime, measureSyncGapAverage), `src/lib/calibrationMeasurement.ts` (trimmedMean·clampOffset·isSyncOutlier). NoteGame.tsx 통합 (showCalibration gate, memory #18 순서 보장). 단위 테스트 23건 신규 (audioVisualSync 7 + calibrationMeasurement 16). vitest 419/419 PASS. sim:test 9984 games 0 violations.
 - 2026-05-03 (Sonnet 4.6): **§7.3.4 완료 — §7.3 코어 완료** — `useSessionRecorder.recordNote` boundary offset 차감 (DB 방식 C: JSONB `reaction_ms_raw` + `summary.avg_reaction_ms_raw` + `summary.offset_ms_applied`). NoteGame 3사이트 손대지 않음. speed bonus thresholds 값 유지 (corrected reactionMs 기준). 단위 테스트 6건 신규. vitest 425/425 PASS. sim:test 0 violations. PENDING: §7.3.5 Stats display (raw/corrected), speed bonus 재튜닝 (출시 후).
 - 2026-05-03 (Sonnet 4.6): **§7.3 UX fix + §7.3.5 완료** — CalibrationModal 측정 시간 30초→5초, 측정 시작 버튼 primary 색상. §7.3.5 Admin 동시 노출 완료. Q-J 정책 정정 (Home raw 토글 영구 제거, 메모리 #19).
+- 2026-05-09 밤~ (Sonnet 4.6): **Phase 2 GrandStaffPractice UI Sprint 완료** (commits 3faec95·bfa0d94·ee73501·8c56e46, 608/608 PASS, tsc 0, sim:test 0 violations) — F1: /admin/staff-preview (Lv·batchSize·keySig 토글 + meta 패널, 14 tests). F2: NoteRole + getNoteColor() — batch/history 색깔 통합 (5 tests). F3: visibleNoteCount = answeredNotes+batch.length; batch 모드 answerNotes 누적 안 함 (4 tests). F4: N-등분 배치 (resolveStyle에 visibleN 파라미터; effectiveWidth=STAFF_X2-noteStartX; segmentWidth=eff/N; noteX(i)=rawStart+seg*(i+0.5), 6 tests). §0.4 ✅ §6.4 ✅.
 - 2026-05-09 자정~ (Sonnet 4.6): **Group D 패스트트랙 완료** (commits 8a2f1bf·7ace91b·1148637, 579/579 PASS, tsc 0) — D1: `20260509_fast_track.sql` (fast_track 컬럼 + RPC 패스트트랙 분기 + get_mastery_score 100 강제 + tier 조회 정정). D2: 타입 전파 + computeMasteryScore 100 강제 + Index.tsx fastTrack 전달. D3: SublevelPassedDialog fastTrack 분기 + 5초 카운트다운 (autoAdvancedRef 1회) + aiCoaching fastTrack 우선 분기. 마이그레이션: Docker 오프라인 → 사용자 production apply 필요. §B.5 ❌→✅. 영역 B-0 7/7 완료. 신규 §X.UI 박음.
 - 2026-05-09 (Sonnet 4.6): **영역 B-0 티어 매트릭스 결정 + 코드 사실 추적 7개 영역** — Guest(Lv1 Sub1, 3회/일)·Free(Lv1~5 Sub1 순차, 7회/일)·Premium(전 21단계, 무제한) 확정. Quick Mastery Mode (오류≤1%·시간≤50% 조건) + Mastery Score 블러 + AI Coaching 기본 정책 결정. DB PASS_CRITERIA 불일치 발견 (play≥5/80% vs TS 10/85%) → `20260509_pass_criteria_v2.sql` 마이그레이션 결정. 광고 보상형 세션 정책 영구 폐기. §B-0·§B.1~B.6 + §13.L + §0-1.1 DB 정정 노트 박음.
 - 2026-05-09 (Sonnet 4.6): **Group A 코드 완료** (commits e6ed7b2·b232dcd·1848391, 470/470 PASS) — A1: `canAccessSublevel` guest/free 재작성 + `getProgressGatePrev` 신규 (Sub1 순차 진도 게이트). A2: `20260509_pass_criteria_v2.sql` + `useLevelProgress` avgReactionRatio 파라미터 + NoteGame endSession→recordAttempt 순차 체인. A3: `Pricing.tsx` freeFeatures/compareRows 갱신. §B-0.2·§B.1·§B.2 ✅. 다음: Group B (daily_sessions 테이블·useDailyLimit·DailyLimitModal, ~4h).

@@ -4,6 +4,31 @@
 
 ---
 
+## 2026-05-09 (밤~) — Phase 2 GrandStaffPractice UI Sprint ✅
+
+### 목표
+§0.4 (UI 음표 history·색깔·N-등분·잘림 방지) + §6.4 (admin/staff-preview) 완료
+
+### 커밋
+| 커밋 | 내용 |
+|---|---|
+| `3faec95` | F1: /admin/staff-preview 신규 (14 tests) |
+| `bfa0d94` | F2: getNoteColor 헬퍼 + batch/history 색깔 통합 (5 tests) |
+| `ee73501` | F3: visibleNoteCount 도입 + batch 모드 accumulation 중단 (4 tests) |
+| `8c56e46` | F4: N-등분 배치 정책 구현 — resolveStyle(visibleN) (6 tests) |
+
+### 핵심 변경
+- **NoteRole + getNoteColor()**: "target"(빨강) | "answered"(회색) | "waiting"(검정) — batch/history 두 경로 통일
+- **visibleNoteCount = answeredNotes.length + currentBatch.length**: history mode N=history+1, batch mode N=batchSize (answeredNotes=0 항상)
+- **N-등분 배치**: `effectiveWidth = STAFF_X2 - noteStartX`; `segmentWidth = effectiveWidth/N`; `noteX(i) = rawStart + segmentWidth*(i+0.5)` → 기존 공식 `noteStartX + i*noteSpacing` 유지하면서 구현 (noteStartX += segmentWidth/2)
+- **StaffPreview**: Lv·batchSize·keySig·clef·history 토글 + meta 패널 (rawNoteStartX·segmentWidth·effectiveWidth·N-div X 좌표)
+- **exports**: resolveStyle, ResolvedStyle, SVG_W, STAFF_X1, STAFF_X2, getNoteColor, NoteRole GrandStaffPractice에서 export
+
+### 수치
+- **608/608 PASS** (vitest) / **tsc 0** / **sim:test 9 invariants 위반 0건**
+
+---
+
 ## 2026-05-09 (자정~) — Group D 패스트트랙 (영역 B-0 마무리) ✅
 
 ### 사용자 결정

@@ -234,28 +234,18 @@
 - `NoteGame.invariants.test.tsx` 5케이스 (호출 횟수 회귀 방지)
 - `src/lib/simulator/sim.test.ts` 10케이스 (1만 게임 fuzz + 정량 보고서)
 
-### 3.11 GrandStaffPractice UI 음표 history·색깔·크기·잘림 🐛 → 4 step 계획 수립 (2026-05-01 Opus 분석)
+### 3.11 GrandStaffPractice UI 음표 history·색깔·크기·잘림 ✅ 완료 (2026-05-09 Phase 2 Sprint)
 
-**사용자 발견 이슈 3개**:
-1. **색깔 불일치** — 악보에서 target 음표가 빨간색이어야 하나 black으로 표시되는 경우 있음
-2. **history 누적 X** — batchSize=1 stage에서 이전 음표들이 악보에 남아야 하는데 매 set 완료 시 즉시 초기화됨
-3. **음표 크기·잘림** — history 음표가 작게 표시되거나 viewBox 경계에서 잘림
+**커밋**: `3faec95` (F1/StaffPreview) · `bfa0d94` (F2/색깔) · `ee73501` (F3/history) · `8c56e46` (F4/N-div)
 
-**Opus 분석 결과 (GrandStaffPractice.tsx 556줄 전체 추적)**:
+| 갭 | 구현 | 결과 |
+|---|---|---|
+| Gap 1 — 색깔 | `NoteRole` 타입 + `getNoteColor()` export; batch/history 두 경로 통합 | ✅ 5 tests |
+| Gap 2 — history 누적 | `setAnsweredNotes(prev)` — batchSize≥3 누적 안 함; `visibleNoteCount` 도입 | ✅ 4 tests |
+| Gap 3 — 크기·잘림 | **N-등분 배치**: effectiveWidth = STAFF_X2−noteStartX; segmentWidth = eff/N; noteX(i) = rawStart + seg×(i+0.5); resolveStyle(level,keySigCount,batchSize,visibleN) | ✅ 6 tests |
+| /admin/staff-preview | Lv·batchSize·keySig 토글 + meta panel (rawNoteStartX·segmentWidth·effectiveWidth·N-div X) | ✅ 14 tests |
 
-*Gap 1 — 색깔*: `TARGET_COLOR="#b91c1c"` (red), `HISTORY_COLOR="#1c1917"` (black), `ANSWERED_COLOR="#9ca3af"` (gray) — 모두 인라인 SVG 속성으로 분기됨. 현재 구현에서 `batchNotes[0]`이 target일 때 색깔 분기는 올바름. 단 history mode(batchNotes 없음)에서 legacy 렌더링 경로가 별도 존재 — 두 경로가 분리돼 있어 일관성 확인 필요.
-
-*Gap 2 — history 누적*: `handleSetComplete`가 `setAnsweredNotes([])` 호출. batchSize=1, notesPerSet=1인 stage(Sub1 1단계·2단계, Sub2 1단계)에서는 매 음표 정답 후 set 완료가 되어 history 즉시 초기화. 결과적으로 batchSize=1 구간에서 history 음표 0개 — 설계 의도("이전 음표들이 남아있어야 한다")와 불일치.
-
-*Gap 3 — 크기·잘림*: `noteSpacing` 계산에서 `gapCount`가 level 기반(Lv5+=6, 나머지=4)으로 계산됨 — batchSize가 아닌 level 기반이라 많은 history 음표가 쌓일 때 간격 계산 오차 가능. 현 viewBox=800 기준 최대 7개 history + target = 8개 음표가 들어갈 때 spacing 계산 미검증.
-
-**4 step 구현 계획**:
-- **Step 1 (30분)**: 색깔 분기 두 경로 통일 — history/batch 모드 모두 동일한 색깔 상수 사용 확인
-- **Step 2 (2~3시간)**: history 누적 fix — `handleSetComplete`의 `setAnsweredNotes([])` 를 batchSize=1 stage에서 조건부로 실행. stage 전환 시에만 초기화, 동일 stage 내 단일 음표 정답은 history 유지. 최대 누적 개수(예: 7) 초과 시 가장 오래된 것부터 제거.
-- **Step 3 (1~2시간)**: 크기 계산 fix — gapCount를 batchSize 기반으로 전환, history 최대치를 반영한 viewBox 여백 확보
-- **Step 4 (30분)**: 잘림 방지 — viewBox 좌우 padding 보장, 마지막 음표가 오른쪽 경계를 넘지 않도록 clamp
-
-**예상 총 소요**: 4~6시간 (§0.4 구현 세션)
+**608 PASS / tsc 0 / sim:test 9 invariants 위반 0건**
 
 ### 3.12 카운트다운 후 첫 음표 버퍼링 + Sub3 즉시 타임아웃 ✅ (2026-05-01, commit `eac606a`)
 
