@@ -6,10 +6,15 @@ keywords: ["weak notes", "targeted practice", "sight-reading", "deliberate pract
 slug: "weakness-note-practice"
 category: "Practice Hub"
 day: 11
+coverImage: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8f/BWV56-autograph-manuscript-first-page-Bach-1726.jpg/960px-BWV56-autograph-manuscript-first-page-Bach-1726.jpg"
+coverImageAlt: "J.S. Bach's autograph manuscript of the bass aria from Cantata BWV 56 (1726), showing bass clef notation in the composer's hand"
+coverImageSource: "https://commons.wikimedia.org/wiki/File:BWV56-autograph-manuscript-first-page-Bach-1726.jpg"
+coverImageLicense: "Public Domain"
+coverImageCredit: "J.S. Bach; Bach Digital archive, Leipzig"
 ---
 
-![Piano practice session with open sheet music](https://images.pexels.com/photos/4087991/pexels-photo-4087991.jpeg?auto=compress&cs=tinysrgb&w=640)
-*Figure 1: Piano practice session. Source: Pexels / Free to use*
+![J.S. Bach's autograph manuscript of the opening bass aria from Cantata BWV 56 (1726), showing bass clef notation in Bach's own hand — the bass clef positions that represent a common weak zone for learners trained primarily in treble clef](https://upload.wikimedia.org/wikipedia/commons/thumb/8/8f/BWV56-autograph-manuscript-first-page-Bach-1726.jpg/960px-BWV56-autograph-manuscript-first-page-Bach-1726.jpg)
+*Figure 1: J.S. Bach, autograph manuscript of bass aria, Cantata BWV 56 (1726). [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:BWV56-autograph-manuscript-first-page-Bach-1726.jpg) — Public Domain. Bach Digital archive, Leipzig.*
 
 Five run-throughs of the same piece and the hand still stops at the same note. Low F in the bass clef. The C above the treble staff. A sudden E♭ that keeps catching the eye. The hesitation doesn't diminish across sessions.
 
@@ -37,8 +42,8 @@ Applied to sight-reading: running through a full piece expends the session on a 
 
 **3. Find the category.** Whether weakness clusters in the bass clef, around ledger lines, or at accidentals matters. A category is easier to train than a list of individual notes, and identifying the category points to the underlying recognition gap.
 
-![Close study of sheet music notation](https://images.pexels.com/photos/1552252/pexels-photo-1552252.jpeg?auto=compress&cs=tinysrgb&w=640)
-*Figure 2: Analyzing a score. Source: Pexels / Free to use*
+![Beethoven's handwritten sketch manuscript for Piano Sonata in A Major Op. 101, Allegro movement (1816), showing the detailed notation process of a composer working through complex pitch patterns](https://upload.wikimedia.org/wikipedia/commons/2/2a/Beethoven_opus_101_manuscript.jpg)
+*Figure 2: Ludwig van Beethoven, sketch manuscript for Piano Sonata Op. 101, Allegro (1816). [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Beethoven_opus_101_manuscript.jpg) — Public Domain. Library of Congress.*
 
 ## 🔍 What Targeted Practice Looks Like
 
@@ -55,5 +60,5 @@ The note that stops you every time is already showing you exactly where to look.
 1. Ericsson, K. A., Krampe, R. T., & Tesch-Römer, C. (1993). The role of deliberate practice in the acquisition of expert performance. *Psychological Review*, 100(3), 363–406. DOI: [10.1037/0033-295X.100.3.363](https://doi.org/10.1037/0033-295X.100.3.363)
 
 ### Image Sources
-- Figure 1: Pexels / Free to use
-- Figure 2: Pexels / Free to use
+- Figure 1: J.S. Bach, autograph manuscript of bass aria, Cantata BWV 56 (1726). [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:BWV56-autograph-manuscript-first-page-Bach-1726.jpg) — Public Domain. Bach Digital archive, Leipzig.
+- Figure 2: Beethoven, sketch manuscript for Piano Sonata Op. 101, Allegro (1816). [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Beethoven_opus_101_manuscript.jpg) — Public Domain. Library of Congress.
