@@ -46,8 +46,8 @@ describe("MasteryHeroCard", () => {
     mockUseLang.mockReturnValue({ lang: "ko" });
   });
 
-  it("score 숫자 표시", () => {
-    renderCard();
+  it("score 숫자 표시 (데이터 있을 때)", () => {
+    renderCard({ bestScore: 72, playCount: 5 });
     expect(screen.getByTestId("hero-score")).toHaveTextContent("72");
   });
 
@@ -106,5 +106,33 @@ describe("MasteryHeroCard", () => {
     renderCard({ tier: "free" });
     await userEvent.click(screen.getByRole("button", { name: "Premium 시작하기" }));
     expect(mockNavigate).toHaveBeenCalledWith("/pricing");
+  });
+
+  // ── 데이터 없을 때 (no-data) ─────────────────────────────────
+
+  it("premium 데이터 없음 → '—' + '첫 세션을 시작해보세요'", () => {
+    renderCard({ tier: "premium", bestScore: 0 });
+    expect(screen.getByTestId("hero-score")).toHaveTextContent("—");
+    expect(screen.getByTestId("no-data-hint")).toHaveTextContent("첫 세션을 시작해보세요");
+  });
+
+  it("premium 데이터 없음 → 4 metric-tile 0 값 표시", () => {
+    renderCard({ tier: "premium", bestScore: 0 });
+    const tiles = screen.getAllByTestId("metric-tile");
+    expect(tiles).toHaveLength(4);
+    expect(tiles[0]).toHaveTextContent("0%");   // accuracy
+    expect(tiles[2]).toHaveTextContent("0");    // playCount
+    expect(tiles[3]).toHaveTextContent("0");    // bestStreak
+  });
+
+  it("premium 데이터 없음 + chartData=[] → trend-chart 표시", () => {
+    renderCard({ tier: "premium", bestScore: 0, chartData: [] });
+    expect(screen.getByTestId("trend-chart")).toBeInTheDocument();
+  });
+
+  it("free 데이터 없음 → '—' + CTA 그대로", () => {
+    renderCard({ tier: "free", bestScore: 0 });
+    expect(screen.getByTestId("hero-score")).toHaveTextContent("—");
+    expect(screen.getByTestId("free-cta")).toBeInTheDocument();
   });
 });

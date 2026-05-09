@@ -21,7 +21,7 @@ export interface MasteryHeroCardProps {
   bestScore: number;
   level: number;
   sublevel: number;
-  /** Premium only — 4 metrics */
+  /** Premium only — 4 metrics (undefined = no data → shows 0 or —) */
   accuracy?: number;
   avgReactionRatio?: number;
   playCount?: number;
@@ -35,7 +35,8 @@ export interface MasteryHeroCardProps {
 const STRINGS = {
   ko: {
     title: "마스터리 점수",
-    noData: "아직 플레이 기록이 없어요.",
+    sectionTitle: "이번 주 마스터리 분석",
+    noDataHint: "첫 세션을 시작해보세요",
     accuracy: "정확도",
     reaction: "반응 비율",
     playCount: "플레이 수",
@@ -46,7 +47,8 @@ const STRINGS = {
   },
   en: {
     title: "Mastery Score",
-    noData: "No play history yet.",
+    sectionTitle: "Your Mastery Analysis",
+    noDataHint: "Start your first session",
     accuracy: "Accuracy",
     reaction: "Reaction ratio",
     playCount: "Play count",
@@ -76,8 +78,15 @@ export default function MasteryHeroCard({
 
   const isPremium = tier === "premium" || tier === "admin" || tier === "pro";
   const label = formatSublevel(level, sublevel as 1 | 2 | 3);
+  const hasData = bestScore > 0 || playCount !== undefined;
 
   const handleUpgrade = onUpgrade ?? (() => navigate("/pricing"));
+
+  // 4 metrics — 0 값 fallback when no data (Premium)
+  const accDisplay = accuracy !== undefined ? `${Math.round(accuracy * 100)}%` : "0%";
+  const reactDisplay = avgReactionRatio !== undefined ? avgReactionRatio.toFixed(2) : "—";
+  const countDisplay = playCount !== undefined ? String(playCount) : "0";
+  const streakDisplay = bestStreak !== undefined ? String(bestStreak) : "0";
 
   return (
     <div
@@ -88,33 +97,41 @@ export default function MasteryHeroCard({
       <div className="flex items-start justify-between gap-2">
         <div>
           <p className="text-xs text-muted-foreground mb-0.5">
-            {label} {s.title}
+            {isPremium ? s.sectionTitle : `${label} ${s.title}`}
           </p>
           <span
             className="text-5xl font-bold tabular-nums text-foreground leading-none"
             data-testid="hero-score"
           >
-            {bestScore}
+            {hasData ? bestScore : "—"}
           </span>
           <span className="text-sm text-muted-foreground ml-1">/100</span>
+          {!hasData && (
+            <p
+              className="text-xs text-muted-foreground mt-1"
+              data-testid="no-data-hint"
+            >
+              {s.noDataHint}
+            </p>
+          )}
         </div>
 
-        {/* Premium: 4 metric tiles */}
+        {/* Premium: 4 metric tiles — always shown, 0 fallback */}
         {isPremium && (
           <div
             className="grid grid-cols-2 gap-1.5"
             data-testid="premium-metrics"
           >
-            <MetricTile label={s.accuracy} value={accuracy !== undefined ? `${Math.round(accuracy * 100)}%` : "—"} />
-            <MetricTile label={s.reaction} value={avgReactionRatio !== undefined ? avgReactionRatio.toFixed(2) : "—"} />
-            <MetricTile label={s.playCount} value={playCount !== undefined ? String(playCount) : "—"} />
-            <MetricTile label={s.bestStreak} value={bestStreak !== undefined ? String(bestStreak) : "—"} />
+            <MetricTile label={s.accuracy} value={accDisplay} />
+            <MetricTile label={s.reaction} value={reactDisplay} />
+            <MetricTile label={s.playCount} value={countDisplay} />
+            <MetricTile label={s.bestStreak} value={streakDisplay} />
           </div>
         )}
       </div>
 
-      {/* Premium: 7-day chart */}
-      {isPremium && chartData && chartData.length > 0 && (
+      {/* Premium: 7-day chart — shown when chartData provided (can be empty array) */}
+      {isPremium && chartData !== undefined && (
         <div className="mt-4" data-testid="trend-chart">
           <p className="text-xs text-muted-foreground mb-1">{s.trend}</p>
           <ResponsiveContainer width="100%" height={80}>
@@ -147,7 +164,7 @@ export default function MasteryHeroCard({
         </p>
       )}
 
-      {/* Free: 1-line CTA */}
+      {/* Free/Guest: 1-line CTA */}
       {!isPremium && (
         <div className="mt-4 flex flex-col gap-2" data-testid="free-cta">
           <p className="text-xs text-muted-foreground">{s.ctaLine}</p>
