@@ -37,6 +37,12 @@ type Props = {
   level?: number;
   /** §0.4.2: 현재 stage의 batchSize. 음표 크기·간격 동적 조정에 사용. */
   batchSize?: number;
+  /**
+   * §C1 M-등분 고정 슬롯: 이 stage·batch에서 최대로 표시될 음표 수 M.
+   * batchSize=1 → totalSets, batchSize≥3 → batchSize, final-retry → batch.length.
+   * 미제공 시 현재 가시 음표 수(visibleN)로 fallback (구버전 동작).
+   */
+  maxVisibleN?: number;
   keySignature?: string;
   keySharps?: string[];
   keyFlats?: string[];
@@ -158,29 +164,49 @@ const LEVEL_STYLES: Record<number, LevelStyle> = {
 export type ResolvedStyle = Required<LevelStyle>;
 
 /**
- * §0.4.2 batchSize별 음표 크기 scale (사용자 명세 2026-05-01).
- *  - batchSize >= 7 → 0.70 (조표 공간 확보 + 잘림 방지)
- *  - batchSize >= 5 → 0.80
- *  - 그 외 (1·3) → 1.0 표준 크기
+ * §C1 M-등분 기반 음표 크기 scale.
+ * M = stage·batch 최대 슬롯 수.
  */
-function getNoteScale(batchSize: number | undefined): number {
-  if (batchSize === undefined) return 1.0;
-  if (batchSize >= 7) return 0.70;
-  if (batchSize >= 5) return 0.80;
-  return 1.0;
+function getNoteScaleForM(M: number): number {
+  if (M <= 3)  return 1.0;   // 표준 (~30px)
+  if (M <= 5)  return 0.80;  // 80%  (~24px)
+  if (M <= 7)  return 0.70;  // 70%  (~21px)
+  if (M <= 10) return 0.60;  // 60%  (~18px)
+  return 0.53;               // 53%  (~16px)
+}
+
+/**
+ * §C1 M-등분 고정 슬롯: stage·phase·batchSize 기반 M 결정.
+ * @param isFinalRetry  final-retry phase 여부
+ * @param batchSize     stage batchSize (1·3·5·7)
+ * @param maxNotes      batchSize=1 stage일 때 최대 등장 음표 수 (totalSets × notesPerSet, TOTAL_SLOTS cap)
+ * @param currentBatchLength  final-retry 현재 batch 길이
+ */
+export function computeMaxVisibleN(
+  isFinalRetry: boolean,
+  batchSize: number,
+  maxNotes: number,
+  currentBatchLength: number,
+): number {
+  if (isFinalRetry) return currentBatchLength;
+  if (batchSize <= 1) return maxNotes;
+  return batchSize;
 }
 
 export function resolveStyle(
   level: number,
   keySigCount: number,
   batchSize?: number,
-  visibleN?: number,
+  maxN?: number,
 ): ResolvedStyle {
   const raw = LEVEL_STYLES[level] ?? LEVEL_STYLES[1];
   const merged = { ...DEFAULT_STYLE, ...raw } as ResolvedStyle;
 
-  // §0.4.2: batchSize별 음표·조표 크기 scale.
-  const scale = getNoteScale(batchSize);
+  // §C1 M-등분: maxN = M (stage 고정 슬롯 수), fallback = batchSize
+  const M = maxN ?? (batchSize ?? 1);
+
+  // §C1 M 기반 음표 크기 scale.
+  const scale = getNoteScaleForM(M);
   if (scale !== 1.0) {
     merged.noteheadRX = merged.noteheadRX * scale;
     merged.noteheadRY = merged.noteheadRY * scale;
@@ -195,14 +221,13 @@ export function resolveStyle(
     if (merged.noteStartX < minStart) merged.noteStartX = minStart;
   }
 
-  // §F4 N-등분 배치: N개 음표를 오선 유효 영역에 균등 분할.
+  // §C1 M-등분 배치: M개 슬롯으로 유효 영역 고정 분할.
   //   effectiveWidth = STAFF_X2 - noteStartX
-  //   segmentWidth   = effectiveWidth / N
+  //   segmentWidth   = effectiveWidth / M   (stage 시작 시 고정)
   //   noteX(i)       = noteStartX + segmentWidth × (i + 0.5)
   //   ↔ (noteStartX + segmentWidth/2) + i × segmentWidth  (호환 공식)
-  const N = visibleN ?? (batchSize ?? 1);
   const effectiveWidth = STAFF_X2 - merged.noteStartX;
-  const segmentWidth = effectiveWidth / N;
+  const segmentWidth   = effectiveWidth / M;
   merged.noteSpacing = segmentWidth;
   merged.noteStartX  = merged.noteStartX + segmentWidth / 2;
 
@@ -466,6 +491,7 @@ export function GrandStaffPractice({
   clef = "treble",
   level = 1,
   batchSize,
+  maxVisibleN,
   keySignature: _keySignature,
   keySharps,
   keyFlats,
@@ -479,12 +505,13 @@ export function GrandStaffPractice({
   // batch 모드 판별: batchNotes 배열 있고 길이 > 0이면 batch 모드
   const isBatchMode = !!batchNotes && batchNotes.length > 0;
 
-  // §F4: N-등분 배치용 가시 음표 수
+  // §C1 M-등분: 현재 가시 음표 수(fallback), 실제 M = maxVisibleN prop 우선
   const visibleN = isBatchMode
     ? batchNotes!.length
     : Math.min((noteHistory ?? []).length + 1, TOTAL_SLOTS);
+  const M = maxVisibleN ?? visibleN;
 
-  const style = resolveStyle(level, keySigCount, batchSize, visibleN);
+  const style = resolveStyle(level, keySigCount, batchSize, M);
 
   const notes = useMemo((): NoteEntry[] => {
     // ── Batch 모드: 한 batch 전체를 동시에 그림, 인덱스에 따라 색상 분기 ──

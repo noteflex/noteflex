@@ -445,6 +445,20 @@ export default function NoteGame({
   //   batch 모드 (batchSize≥3):  currentBatch 전체
   const visibleNoteCount = answeredNotes.length + currentBatch.length;
 
+  // §C1 M-등분 고정 슬롯: stage·phase 기반 최대 슬롯 수 M.
+  //   batchSize=1 → totalSets × notesPerSet (TOTAL_SLOTS cap)
+  //   batchSize≥3 → batchSize
+  //   final-retry → currentBatch.length (동적)
+  const maxVisibleN =
+    phase === "final-retry"
+      ? currentBatch.length
+      : currentStageConfig.batchSize <= 1
+        ? Math.min(
+            currentStageConfig.totalSets * currentStageConfig.notesPerSet,
+            TOTAL_SLOTS,
+          )
+        : currentStageConfig.batchSize;
+
   const currentTarget = currentBatch[currentIndex] ?? null;
 
   // §4: missedNotes 헬퍼.
@@ -1394,6 +1408,7 @@ export default function NoteGame({
             clef={currentClef}
             level={level}
             batchSize={currentStageConfig.batchSize}
+            maxVisibleN={maxVisibleN}
             keySignature={currentKeySignature.abcKey}
             keySharps={needsKeySig && !(showCountdown || showSwipeTutorial || showCalibration || calibrationLoading) ? currentKeySignature.sharps : undefined}
             keyFlats={needsKeySig && !(showCountdown || showSwipeTutorial || showCalibration || calibrationLoading) ? currentKeySignature.flats : undefined}
