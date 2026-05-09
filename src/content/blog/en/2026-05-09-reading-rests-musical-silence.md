@@ -6,10 +6,15 @@ keywords: ["reading rests", "musical rests", "silence in music", "rest notation"
 slug: "reading-rests-musical-silence"
 category: "Theory & Harmony"
 day: 10
+coverImage: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b0/Beethoven_Sonata_piano_no8_mov1_01.JPG/960px-Beethoven_Sonata_piano_no8_mov1_01.JPG"
+coverImageAlt: "First page of Beethoven's Piano Sonata No. 8 Pathétique Op. 13, first movement, showing piano grand staff notation"
+coverImageSource: "https://commons.wikimedia.org/wiki/File:Beethoven_Sonata_piano_no8_mov1_01.JPG"
+coverImageLicense: "Public Domain"
+coverImageCredit: "Ludwig van Beethoven; Universal Edition, 1918–1921"
 ---
 
-![Sheet music on a music stand](https://images.pexels.com/photos/210764/pexels-photo-210764.jpeg?auto=compress&cs=tinysrgb&w=640)
-*Figure 1: Sheet music practice. Source: Pexels / Free to use*
+![First page of Beethoven's Piano Sonata No. 8 "Pathétique" Op. 13, first movement — piano grand staff showing treble and bass clef notation with rests](https://upload.wikimedia.org/wikipedia/commons/thumb/b/b0/Beethoven_Sonata_piano_no8_mov1_01.JPG/960px-Beethoven_Sonata_piano_no8_mov1_01.JPG)
+*Figure 1: Ludwig van Beethoven, Piano Sonata No. 8 "Pathétique" Op. 13, first movement (Universal Edition, 1918–1921). [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Beethoven_Sonata_piano_no8_mov1_01.JPG) — Public Domain*
 
 Picture opening Beethoven's Piano Sonata No. 8 ("Pathétique") for the first time and working through the first movement. There is a moment when the hands stop — a whole rest, or a half rest, sits in the bar. The sound has ended, but the music has not. The internal pulse must keep moving forward, evenly, through that silence. When the internal reference is missing, the rest becomes a gap rather than a musical event.
 
@@ -41,8 +46,8 @@ Three types of rest-reading errors appear most often in sight-reading.
 
 **Losing the internal pulse during rests.** Treating the rest as a pause in the music itself rather than a pause in the sound. When the internal beat stops during a rest, the note that follows is unlikely to land on time. The rest ended the sound. It did not end the rhythm.
 
-![Musical score close-up](https://images.pexels.com/photos/1246437/pexels-photo-1246437.jpeg?auto=compress&cs=tinysrgb&w=640)
-*Figure 2: Musical notation detail. Source: Pexels / Free to use*
+![Beethoven's own handwritten autograph manuscript of Piano Sonata in E minor Op. 90, dated 1814, showing rest notation in the composer's hand](https://upload.wikimedia.org/wikipedia/commons/c/c5/Beethoven-Op.90-manuscript-opening.jpg)
+*Figure 2: Ludwig van Beethoven, autograph manuscript of Piano Sonata Op. 90 (1814). [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Beethoven-Op.90-manuscript-opening.jpg) — Public Domain. Beethoven-Haus Bonn.*
 
 ## 🔍 Practicing Rest Accuracy
 
@@ -63,5 +68,5 @@ The score does not go blank at a rest. Something is happening in that space, and
 2. Cooper, G. W., & Meyer, L. B. (1960). *The Rhythmic Structure of Music*. University of Chicago Press.
 
 ### Image Sources
-- Figure 1: Pexels / Free to use
-- Figure 2: Pexels / Free to use
+- Figure 1: Beethoven, Piano Sonata No. 8 "Pathétique" Op. 13 (Universal Edition, 1918–1921). [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Beethoven_Sonata_piano_no8_mov1_01.JPG) — Public Domain.
+- Figure 2: Beethoven, autograph manuscript of Piano Sonata Op. 90 (1814). [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Beethoven-Op.90-manuscript-opening.jpg) — Public Domain. Beethoven-Haus Bonn.

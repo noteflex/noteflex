@@ -6,10 +6,15 @@ keywords: ["쉼표 읽기", "악보 쉼표", "음악 침묵", "쉼표 종류", "
 slug: "reading-rests-musical-silence"
 category: "음악 이론 & 화성학"
 day: 10
+coverImage: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b0/Beethoven_Sonata_piano_no8_mov1_01.JPG/960px-Beethoven_Sonata_piano_no8_mov1_01.JPG"
+coverImageAlt: "베토벤 피아노 소나타 8번 «비창» Op. 13 1악장 악보 첫 페이지 — 피아노 대보표의 음표와 쉼표 기보"
+coverImageSource: "https://commons.wikimedia.org/wiki/File:Beethoven_Sonata_piano_no8_mov1_01.JPG"
+coverImageLicense: "Public Domain"
+coverImageCredit: "Ludwig van Beethoven; Universal Edition, 1918–1921"
 ---
 
-![악보가 펼쳐진 피아노 앞](https://images.pexels.com/photos/210764/pexels-photo-210764.jpeg?auto=compress&cs=tinysrgb&w=640)
-*그림 1: 악보 연습 장면. 출처: Pexels / Free to use*
+![베토벤 피아노 소나타 8번 «비창» Op. 13 1악장 악보 첫 페이지 — 피아노 대보표(treble + bass)의 음표와 쉼표가 선명히 기보됨](https://upload.wikimedia.org/wikipedia/commons/thumb/b/b0/Beethoven_Sonata_piano_no8_mov1_01.JPG/960px-Beethoven_Sonata_piano_no8_mov1_01.JPG)
+*그림 1: Ludwig van Beethoven, 피아노 소나타 8번 «비창» Op. 13 1악장 (Universal Edition, 1918–1921). [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Beethoven_Sonata_piano_no8_mov1_01.JPG) — Public Domain*
 
 베토벤의 피아노 소나타 8번 "비창" 1악장을 처음 연습한다고 상상해 보자. 첫 마디에서 손이 멈추는 순간이 온다. 음표가 없는 자리, 온쉼표나 2분쉼표가 놓인 그 자리에서 박자를 어디에 걸어둘지 몰라 흔들린다. 손이 없어도 음악은 계속되어야 하는데, 그 계속의 기준이 내면에 없을 때 쉼표는 공백이 된다.
 
@@ -41,8 +46,8 @@ Margulis(2007)의 연구는 음악에서 침묵이 단순히 소리의 부재가
 
 **내부 박자 유지 실패.** 쉼표 동안 손이 멈추는 것과 음악이 멈추는 것을 혼동하는 것. 쉼표 안에서도 내면의 박자는 동일한 속도로 흘러야 한다. 이 유지가 안 되면 쉼표 이후 첫 음표가 원하는 타이밍에 나오지 않는다.
 
-![악보 클로즈업](https://images.pexels.com/photos/1246437/pexels-photo-1246437.jpeg?auto=compress&cs=tinysrgb&w=640)
-*그림 2: 악보 기보. 출처: Pexels / Free to use*
+![베토벤의 피아노 소나타 E단조 Op. 90 자필 악보 (1814) — 작곡가 자신의 손으로 기보된 쉼표와 음표가 선명히 보임](https://upload.wikimedia.org/wikipedia/commons/c/c5/Beethoven-Op.90-manuscript-opening.jpg)
+*그림 2: Ludwig van Beethoven, 피아노 소나타 Op. 90 자필 악보 (1814). [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Beethoven-Op.90-manuscript-opening.jpg) — Public Domain. Beethoven-Haus Bonn 소장.*
 
 ## 쉼표를 훈련하는 방법 🔍
 
@@ -63,5 +68,5 @@ Noteflex의 훈련 구조에는 음표 인식 이후 단계로 리듬 처리 정
 2. Cooper, G. W., & Meyer, L. B. (1960). *The Rhythmic Structure of Music*. University of Chicago Press.
 
 ### 이미지 출처
-- 그림 1: Pexels / Free to use
-- 그림 2: Pexels / Free to use
+- 그림 1: Beethoven, 피아노 소나타 8번 «비창» Op. 13 (Universal Edition, 1918–1921). [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Beethoven_Sonata_piano_no8_mov1_01.JPG) — Public Domain.
+- 그림 2: Beethoven, 피아노 소나타 Op. 90 자필 악보 (1814). [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Beethoven-Op.90-manuscript-opening.jpg) — Public Domain. Beethoven-Haus Bonn 소장.
