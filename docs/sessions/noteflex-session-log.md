@@ -4,6 +4,43 @@
 
 ---
 
+## 2026-05-10 (새벽) — Phase 2 게임 UI 미세 정정 (첫 음표 위치) + S2/S3 마무리 ✅
+
+### 사용자 검증 발견
+- 첫 음표가 음자리표·조표와 너무 떨어진 영역 (segmentWidth × 0.5 배치)
+
+### 사용자 결정
+- segmentWidth × 0.5 → 0.25 박음 (등분 1/4 위치, 거리 절반)
+- 모든 음표 왼쪽으로 segmentWidth × 0.25 이동, 음표 간 간격 그대로
+
+### Commits
+- `37d1fcd` fix(staff): 첫 음표 위치 1/4 정정 — segmentWidth × 0.5 → 0.25
+- `5877c78` docs: S1·S2 완료 기록 (§0.4.6·§0.4.7 + §3.16·§3.17)
+- `3ac2d1b` feat(S2): PlayPage 분리 — 게임 화면 h-screen 전용 라우트
+- `bfd2431` feat(S1): GrandStaffPractice Uniform Scale (오선 간격 비율 보정)
+- `1a4d971` feat(admin): staff-preview scale/viewport/grand-staff toggle
+
+### 검증
+- 자동 테스트 648 PASS (44 files), tsc 0 errors
+- retry 9 invariants 무손상 (npm run sim:test 0 violations, 9984 games)
+- S2: /play 직접 URL → NavOnlyRoute redirect ✅, h-screen 스크롤 X ✅
+- 신규 시나리오:
+  - M=3·5·7·10 모두 첫 음표 x = rawStart + segmentWidth × 0.25 ✅
+  - 마지막 음표 잘림 X (effectiveWidth 안) ✅
+  - 음표 간 간격 segmentWidth 그대로 ✅
+
+### 갱신 docs
+- PENDING §0.4.4 정정 (0.5→0.25) + §0.4.9 신규 ✅
+- PENDING §0.4.6·§0.4.7·§0.4.8 신규 (S1·S2·S3) ✅
+- GAP §3.16 (S1 Uniform Scale) + §3.17 (S2 PlayPage) + §3.18 (0.25 정정) ✅
+- 메모리 #16 갱신: segmentWidth × (slotIdx+0.5) → (slotIdx+0.25) ✅
+
+### 다음 세션 시작점
+- /admin/staff-preview 시각 검증 (scale·viewport·grand-staff 토글)
+- 5/10 일요일 11일차 블로그 + 사용자 dashboard·등록·관리 sprint
+
+---
+
 ## 2026-05-09 (밤~) — Phase 2 GrandStaffPractice UI Sprint ✅
 
 ### 목표

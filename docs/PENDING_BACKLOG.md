@@ -132,7 +132,7 @@
 
 **§0.4.4 N-등분 잘림 방지 ✅**
 - effectiveWidth = STAFF_X2 - noteStartX; segmentWidth = effectiveWidth/N
-- noteX(i) = noteStartX + segmentWidth*(i+0.5) (≡ adjustedStart + i*segmentWidth)
+- noteX(i) = noteStartX + segmentWidth*(i+0.25) (≡ adjustedStart + i*segmentWidth) ← 2026-05-10 0.5→0.25 정정
 - 6 N-division 테스트 (GrandStaffPractice.test.tsx): N=7 last X < STAFF_X2 확인
 
 **§0.4.5 M-등분 고정 슬롯 정책 ✅ (2026-05-09 C1, 버그 정정)**
@@ -157,6 +157,13 @@
 - 문제: 게임 화면 min-h-screen + 상하 패딩 → 스크롤 발생
 - 해결: `/play` 전용 PlayPage (h-screen overflow-hidden) + NavOnlyRoute 직접 접근 차단
 - Index.tsx 랜딩 전용 축소, Start → navigate('/play', {state:{fromNav:true}})
+
+**§0.4.9 첫 음표 위치 1/4 정정 ✅ (2026-05-10 C1, commit `37d1fcd`)**
+- 사용자 검증: 첫 음표가 음자리표·조표와 너무 떨어진 영역
+- 원인: segmentWidth × 0.5 (등분 중앙) → 첫 음표가 음자리표 끝에서 segmentWidth/2 거리
+- 정정: segmentWidth × 0.25 (등분 1/4) → 거리 절반
+- noteX(i) = rawStart + segmentWidth × (i + 0.25), 음표 간 간격 그대로
+- 7 신규 단위 테스트 (648 총 PASS, sim:test 0 violations)
 
 **§0.4.8 StaffPreview scale·viewport·grand-staff 토글 ✅ (2026-05-10 S3, commit `1a4d971`)**
 - scale 슬라이더 (1.0/0.85/0.75/0.65/0.55) — scalePreset → resolveM override → uniscale 시각 검증

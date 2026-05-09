@@ -337,6 +337,23 @@ commits 941b04f·6f5290f·c1b9d7c·717797e. 373/373 PASS.
 | `App.tsx` 수정 | `/play` → `ComingSoonGate > NavOnlyRoute > PlayPage` |
 | `Index.tsx` 축소 | 랜딩 전용 (`/` only), Start 버튼 → `navigate('/play', {state:{fromNav:true}})` |
 
+### 3.18 첫 음표 위치 1/4 정정 ✅ (2026-05-10 C1, commit `37d1fcd`)
+
+**문제**: 사용자 검증 — 첫 음표가 음자리표·조표와 시각적으로 너무 떨어짐.
+
+**원인**: `noteX(i) = rawStart + segmentWidth × (i + 0.5)` — 등분 **중앙** 배치라 첫 음표가 `segmentWidth / 2` 거리.
+
+**정정**: `noteX(i) = rawStart + segmentWidth × (i + 0.25)` — 등분 **1/4** 배치.
+
+| 항목 | 변경 전 | 변경 후 |
+|---|---|---|
+| 구현 (`resolveStyle` line 258) | `noteStartX + segmentWidth / 2` | `noteStartX + segmentWidth / 4` |
+| 첫 음표 거리 | `segmentWidth × 0.5` | `segmentWidth × 0.25` (절반) |
+| 음표 간 간격 | `segmentWidth` | `segmentWidth` (동일) |
+| 마지막 음표 우측 padding | `segmentWidth × 0.5` | `segmentWidth × 0.75` (잘림 X) |
+
+M등분 고정 슬롯·Uniform scale·PlayPage 영향 없음. 7 신규 테스트, 648 총 PASS, sim:test 0 violations.
+
 ---
 
 ## 4. 배치고사 시스템 🔴
