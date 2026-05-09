@@ -46,9 +46,20 @@ type Props = {
 export const TOTAL_SLOTS = 8;
 const MAX_HISTORY = TOTAL_SLOTS - 1;
 
-const TARGET_COLOR  = "#b91c1c"; // 빨강 (현재 답할 음표)
-const HISTORY_COLOR = "#1c1917"; // 검정 (대기 중 또는 history)
-const ANSWERED_COLOR = "#9ca3af"; // 회색 (batch 모드에서 이미 답한 음표)
+const TARGET_COLOR   = "#b91c1c"; // 빨강 (현재 답할 음표)
+const WAITING_COLOR  = "#1c1917"; // 검정 (대기 중 batch 음표, 구조 요소)
+const ANSWERED_COLOR = "#9ca3af"; // 회색 (이미 답한 음표)
+
+/** §0.4.3 음표 색깔 3단계 */
+export type NoteRole = "target" | "answered" | "waiting";
+export function getNoteColor(role: NoteRole): string {
+  if (role === "target")   return TARGET_COLOR;
+  if (role === "answered") return ANSWERED_COLOR;
+  return WAITING_COLOR;
+}
+
+// HISTORY_COLOR alias kept for structural elements (staff lines, clef, etc.)
+const HISTORY_COLOR = WAITING_COLOR;
 
 // ── 레이아웃 기준 상수 ────────────────────────────────────────
 export const SVG_W    = 800;
@@ -487,10 +498,8 @@ export function GrandStaffPractice({
     if (isBatchMode && batchNotes) {
       const idx = batchIndex ?? 0;
       return batchNotes.map((n, i) => {
-        let color: string;
-        if (i < idx) color = ANSWERED_COLOR;       // 회색 (답한 것)
-        else if (i === idx) color = TARGET_COLOR;  // 빨강 (현재)
-        else color = HISTORY_COLOR;                // 검정 (대기)
+        const role: NoteRole = i < idx ? "answered" : i === idx ? "target" : "waiting";
+        const color = getNoteColor(role);
 
         return {
           x:    style.noteStartX + i * style.noteSpacing,
@@ -510,14 +519,14 @@ export function GrandStaffPractice({
         x:    style.noteStartX + i * style.noteSpacing,
         note: h.note,
         acc:  h.accidental ?? null,
-        color: ANSWERED_COLOR,
+        color: getNoteColor("answered"),
         clef: (h.clef ?? clef) as "treble" | "bass",
       })),
       {
         x:    style.noteStartX + visible.length * style.noteSpacing,
         note: targetNote,
         acc:  targetAccidental ?? null,
-        color: TARGET_COLOR,
+        color: getNoteColor("target"),
         clef,
       },
     ];
