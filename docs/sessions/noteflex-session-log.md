@@ -4,6 +4,35 @@
 
 ---
 
+## 2026-05-09 (야간) — Group C: Mastery Score UI 블러 + AI Coaching 기본 ✅
+
+### 완료 내용 (6 sub-step)
+
+| Sub-step | 파일 | 커밋 | 테스트 |
+|---|---|---|---|
+| C1 PremiumBlurCard | `src/components/PremiumBlurCard.tsx` | e1ca34e | 9 |
+| C2 get_mastery_score RPC | `supabase/migrations/20260509_mastery_score.sql` | e1ca34e | — (SQL) |
+| C3 MasteryScoreCard + LevelSelect | `src/components/MasteryScoreCard.tsx` | e1ca34e | 14 |
+| C4 aiCoaching + Dialog 통합 | `src/lib/aiCoaching.ts` + SPDialog + GODialog | 74d07de | 12 |
+| C5 MasteryHeroCard + Dashboard | `src/components/dashboard/MasteryHeroCard.tsx` | a2a9cfa | 8 |
+| C6 docs sync | PENDING_BACKLOG §B.6 ✅ + GAP §B.1.5 신규 + 세션 로그 | 현재 | — |
+
+**총 43개 테스트 추가. 555/555 PASS, tsc 0 errors.**
+
+### 핵심 결정
+
+- **PremiumBlurCard**: premium/admin → 통과, guest/free → `blur(Xpx)` + `will-change: filter` (메모리 #29 GPU layer). CTA → /pricing (onUpgrade prop 미제공 시).
+- **computeMasteryScore()**: 4-metric 25% 가중 평균 (accuracy/reaction/playCount/streak). pass criteria 달성 = exactly 100. 프론트·SQL 양쪽 동일 공식.
+- **MasteryScoreCard 2-layer**: Layer 1 = big number + progress bar + toggle. Layer 2 = 4 metric rows in PremiumBlurCard. getCurrentSublevel = 접근 가능 + 미통과 첫 번째.
+- **generateCoachingComment()**: 규칙 기반 (API 없음). passed: top/great/border 3분기. game_over: 정확도<0.70 / 연속<3 / 반응>0.50 / else 4분기.
+- **MasteryHeroCard Dashboard 통합**: Free = 점수+CTA 1개. pro/premium/admin = 4지표+7일 LineChart. currentMastery useMemo로 단계 자동 감지.
+
+### 시험 수정 (부산물)
+
+- `LevelSelect.test.tsx` `getByText(/0/)` → `getByText(/내 진도:/, { selector: "p" })` + `.textContent` 검사 (MasteryScoreCard "0" 추가 노출로 getMultipleElementsFoundError).
+
+---
+
 ## 2026-05-09 (저녁) — §X 사용자 등록·관리 영역 4 Phase 박음 (PENDING)
 
 ### 사용자 의도

@@ -623,16 +623,17 @@ Claude Code 코드 분석 발견.
 - 클라이언트: 첫 세션 오류율·반응시간 체크 → quick_mastery 플래그
 - 결과 모달 "빠른 통과" 배지 + 즉시 해금 UX
 
-### B.6 Mastery Score UI + AI Coaching 🔴 미구현
+### B.6 Mastery Score UI + AI Coaching ✅ (2026-05-09 Group C 완료)
 
-**현황**: Mastery Score 단일 숫자만 표시 (블러 없음), AI Coaching 전무.
+**완료 커밋**: `e1ca34e` (C1-C3) · `74d07de` (C4) · `a2a9cfa` (C5) · docs C6
 
-**구현 범위 (Group C, ~5h)**:
-- `PremiumBlurCard` wrapper 컴포넌트 (tier 체크 + 블러 + CTA)
-- LevelSelect Mastery Score 블러 적용 (Free/Guest)
-- 4지표 탭 UI (Premium)
-- 결과 모달 AI 코멘트 1행 (Free용 최소 구현)
-- 대시보드 히어로 카드 요약
+**구현 내용**:
+- C1: `PremiumBlurCard` — tier-aware blur + CTA overlay; premium/admin = 통과, free/guest = blur+/pricing; 9 tests
+- C2: `get_mastery_score` SQL RPC — 4-metric 25% 가중 평균; tier 분기 (premium 4지표, free/guest score only)
+- C3: `MasteryScoreCard` — 2-layer Progressive Disclosure (score + progress bar + toggle; 4 metrics in PremiumBlurCard); LevelSelect 현재 단계 자동 표시; 14 tests
+- C4: `generateCoachingComment()` (rule-based, no API) — passed 3-branch / game_over 4-branch; ko/en; SublevelPassedDialog + GameOverDialog 통합; 12 tests
+- C5: `MasteryHeroCard` — Free=score+CTA, Premium=4metrics+7일 LineChart; Dashboard 현재 단계 자동 표시; 8 tests
+- 555/555 pass, tsc 0 errors
 
 ---
 
