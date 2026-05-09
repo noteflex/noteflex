@@ -158,6 +158,13 @@
 - 해결: `/play` 전용 PlayPage (h-screen overflow-hidden) + NavOnlyRoute 직접 접근 차단
 - Index.tsx 랜딩 전용 축소, Start → navigate('/play', {state:{fromNav:true}})
 
+**§0.4.8 StaffPreview scale·viewport·grand-staff 토글 ✅ (2026-05-10 S3, commit `1a4d971`)**
+- scale 슬라이더 (1.0/0.85/0.75/0.65/0.55) — scalePreset → resolveM override → uniscale 시각 검증
+- viewport 시뮬레이션 (375×667 / 667×375 / 1440×900) — staffRenderH vs availH overflow 자동 계산
+- grand staff 토글 (treble·bass·grand) — 기존 Clef 토글 대체
+- 메타 패널: uniscale·staffH·lineGap·clefSize·keySigSize·svgH·bassYOff 추가
+- 단위 테스트 4케이스 신규 (641 총 PASS)
+
 ---
 
 ## 0-1. 설계-코드 갭 정책 결정 ✅ 완료 (2026-04-29 사용자 결정)
