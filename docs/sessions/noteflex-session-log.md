@@ -4,6 +4,58 @@
 
 ---
 
+## 2026-05-09 (오후) — Group B 일일 세션 한도 시스템
+
+### 사용자 결정 (CTO 권장 일관 OK)
+
+- Q1: 일일 한도 reset 시점 = **UTC 자정** (글로벌 출시 일관)
+- Q2: Guest 추적 = **localStorage 단순 적용**
+- Q3: tier 컬럼 분리 = **daily_sessions 에 tier_snapshot 두지 않음** (tier는 profiles 자체 등급 영역)
+- Q4: 카운트 시점 = **NoteGame 마운트 useEffect 시점** (handleStart 별도 함수 X 영역, 마운트 진입부에 가드)
+
+한도: Guest = 3회/일 / Free = 7회/일 / Premium = 무제한 (RPC X)
+
+### 진행 흐름 (Group B, 5 commits)
+
+| commit | 내용 |
+|---|---|
+| `7167977` B1 | daily_sessions 테이블 + RLS + RPC 2개 (increment_daily_session·get_today_session_count) |
+| `0cbd5ac` B2 | useDailyLimit 훅 (guest=localStorage / free=RPC / pro=Infinity 분기, 11/11 PASS) |
+| `b81937e` B3 | DailyLimitModal (24h 카운트다운, ko/en strings, 메모리 #19 backdrop·ESC 닫기 X, 12/12 PASS) |
+| `f4265df` B4 | NoteGame 마운트 게이트 + 모달 통합 + 통합 테스트 4 케이스 (497/497 PASS) |
+| (이 commit) B5 | docs 일괄 동기화 |
+
+검증: 497/497 PASS, tsc 0 errors. 시나리오 (1)~(8) 통과.
+
+### 구현 핵심 영역
+
+- **메모리 #16 카운트다운 동기화 영향 X**: 마운트 useEffect 진입부 가드만 추가, 통과 시 기존 calibration→swipe→countdown→첫 음표 흐름 무손상.
+- **메모리 #19 모달 닫기**: backdrop·ESC 차단(preventDefault), CTA·close·X 버튼만으로 닫기.
+- **DailyLimitModal 조건부 렌더**: `{showDailyLimitModal && <DailyLimitModal>}` — useNavigate 호출 회피로 기존 NoteGame 테스트 (MemoryRouter 미적용) 회귀 X.
+- **recordSession fire-and-forget**: DB 실패해도 게임 진행 (메모리 #18 사용자 편의 최우선).
+- **tier_snapshot 컬럼 두지 않음** (사용자 Q3 정정): tier는 profiles 자체 등급 영역.
+
+### 갱신 docs
+
+- **PENDING_BACKLOG.md**: §B.4 ✅ Group B 완료 (4 항목 모두 commit hash)
+- **DESIGN_VS_CODE_GAP.md**: §B-0.2 daily_sessions 행 ❌→✅ + §B.1 ❌→✅
+- **noteflex-session-log.md**: 본 영역 신규 추가
+
+### 다음 세션 시작점
+
+1. **5/10 일요일 = 11일차 = 주말 3편 블로그**: §3-38 약점 음표 + §5-56 피아노 학습자 + §7-79 가중치 학습 (14일차 차용)
+2. **그 후 Group C = Mastery Score UI 블러 + AI Coaching 기본 (~5h)**:
+   - `src/components/PremiumBlurCard.tsx` 신규
+   - LevelSelect Mastery Score 블러 + CTA
+   - 4지표 탭 UI (Premium 전용)
+   - AI Coaching 결과 모달 1행 + 대시보드 카드 (Free 영역)
+
+### 출시 카운트다운
+
+오늘 = 2026-05-09. 출시 = 2026-05-31. **22일 남음**.
+
+---
+
 ## 2026-05-09 (오전~) — Group A 실행 + 블로그 10일차
 
 ### 사용자 결정

@@ -596,15 +596,13 @@ Claude Code 코드 분석 발견.
 | Mastery Score | 전체 노출 (단일 숫자 + 4지표 탭) |
 | 광고 | 없음 |
 
-### B.4 일일 세션 한도 시스템 🔴 완전 미구현
+### B.4 일일 세션 한도 시스템 ✅ Group B 완료 (2026-05-09)
 
-**현황**: `daily_session_count` 컬럼, `useDailyLimit` 훅, `daily-reset` Edge Function, `DailyLimitModal` 컴포넌트 전무.
-
-**구현 범위 (Group B, ~4h)**:
-1. `supabase/migrations/20260509_daily_sessions.sql` — `daily_sessions` 테이블 (user_id, session_date, count, tier_snapshot)
-2. `src/hooks/useDailyLimit.ts` — 오늘 세션 수 조회 + 초과 체크 + guest/free 분기
-3. `src/components/DailyLimitModal.tsx` — 24h 카운트다운 UI + Premium CTA (Free) / 가입 유도 (Guest)
-4. `NoteGame.tsx` — 게임 시작 전 daily limit 체크 + 모달 트리거
+**구현 완료 (Group B, ~4h)**:
+1. `supabase/migrations/20260509_daily_sessions.sql` — `daily_sessions` 테이블 ✅ (commit 7167977, RPC 2개 포함, tier_snapshot 컬럼 두지 않음)
+2. `src/hooks/useDailyLimit.ts` — 오늘 세션 수 조회 + 초과 체크 + guest/free 분기 ✅ (commit 0cbd5ac, 11/11 PASS)
+3. `src/components/DailyLimitModal.tsx` — 24h 카운트다운 UI + Premium CTA (Free) / 가입 유도 (Guest) ✅ (commit b81937e, 12/12 PASS, ko/en strings)
+4. `NoteGame.tsx` — 게임 시작 전 daily limit 체크 + 모달 트리거 ✅ (commit f4265df, 497/497 PASS, 통합 테스트 4 케이스)
 
 ### B.5 Quick Mastery Mode 🔴 완전 미구현
 
@@ -1599,4 +1597,5 @@ Claude가 출시 임박 시 자동 고지.
 - 2026-05-03 (Sonnet 4.6): **§7.3 UX fix + §7.3.5 완료** — CalibrationModal 측정 시간 30초→5초, 측정 시작 버튼 primary 색상. §7.3.5 Admin 동시 노출 완료. Q-J 정책 정정 (Home raw 토글 영구 제거, 메모리 #19).
 - 2026-05-09 (Sonnet 4.6): **영역 B-0 티어 매트릭스 결정 + 코드 사실 추적 7개 영역** — Guest(Lv1 Sub1, 3회/일)·Free(Lv1~5 Sub1 순차, 7회/일)·Premium(전 21단계, 무제한) 확정. Quick Mastery Mode (오류≤1%·시간≤50% 조건) + Mastery Score 블러 + AI Coaching 기본 정책 결정. DB PASS_CRITERIA 불일치 발견 (play≥5/80% vs TS 10/85%) → `20260509_pass_criteria_v2.sql` 마이그레이션 결정. 광고 보상형 세션 정책 영구 폐기. §B-0·§B.1~B.6 + §13.L + §0-1.1 DB 정정 노트 박음.
 - 2026-05-09 (Sonnet 4.6): **Group A 코드 완료** (commits e6ed7b2·b232dcd·1848391, 470/470 PASS) — A1: `canAccessSublevel` guest/free 재작성 + `getProgressGatePrev` 신규 (Sub1 순차 진도 게이트). A2: `20260509_pass_criteria_v2.sql` + `useLevelProgress` avgReactionRatio 파라미터 + NoteGame endSession→recordAttempt 순차 체인. A3: `Pricing.tsx` freeFeatures/compareRows 갱신. §B-0.2·§B.1·§B.2 ✅. 다음: Group B (daily_sessions 테이블·useDailyLimit·DailyLimitModal, ~4h).
+- 2026-05-09 오후 (Opus 4.7): **Group B 코드 완료** (commits 7167977·0cbd5ac·b81937e·f4265df, 497/497 PASS, tsc 0) — B1: `20260509_daily_sessions.sql` (테이블 + RLS + RPC 2개, tier_snapshot 컬럼 두지 않음). B2: `useDailyLimit` 훅 (guest=localStorage / free=RPC / pro=Infinity, UTC 자정 카운트다운, 11/11 PASS). B3: `DailyLimitModal` (ko/en, 메모리 #19 backdrop·ESC 닫기 X, animate-pop-in, 12/12 PASS). B4: NoteGame 마운트 게이트 + 통합 테스트 4 케이스. 사용자 결정 Q1=UTC / Q2=localStorage / Q3=tier_snapshot 두지 않음 / Q4=마운트 시점. §B.4 ✅. 다음: 5/10 11일차 블로그 → Group C (~5h).
 - 2026-05-03 (Sonnet 4.6): **§7.3 device 변경 자동 재측정 + A2 이벤트 로깅** — `onDeviceChange` 시그니처 갱신 (kinds 전달), `setIsCalibrated(false)` → 다음 게임 자동 모달 (메모리 #19 옵션 C). `device_change_events` 테이블 + migration SQL. `logDeviceChangeEvent`·`updateDeviceChangeEvent` 신규. 단위 테스트 8건 신규. vitest 433/433 PASS. PENDING: 출시 후 false positive 분석 → audio output 전용 감지 보강.
