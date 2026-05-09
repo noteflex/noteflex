@@ -79,13 +79,14 @@ export interface Strings {
   dailyLimit: {
     guest: {
       title: string;
-      body: string;
+      values: readonly string[];
       cta: string;
       close: string;
     };
     free: {
       title: string;
-      body: string;
+      values: readonly string[];
+      pricing: string;
       cta: string;
       close: string;
     };
@@ -174,18 +175,28 @@ const ko: Strings = {
   },
   dailyLimit: {
     guest: {
-      title: "오늘 3회 다 사용했어요",
-      body: "가입하면 매일 7회까지 무료로 이용할 수 있어요.",
-      cta: "가입하기",
+      title: "오늘은 여기까지.",
+      values: [
+        "매일 7회 무료 세션 (지금의 2배 이상)",
+        "Lv1~Lv5 단계 이용 가능",
+        "AI 분석 보고서로 약점 진단",
+      ],
+      cta: "무료로 가입하기",
       close: "닫기",
     },
     free: {
-      title: "오늘 7회 다 사용했어요",
-      body: "Premium은 무제한으로 이용할 수 있어요.",
-      cta: "Premium 보기",
-      close: "내일 다시 오기",
+      title: "오늘 7회를 마치셨어요.",
+      values: [
+        "매일 무제한 세션",
+        "21단계 모두 열림",
+        "AI 풀 분석 — 약점 음표·학습 곡선·목표 추적",
+        "광고 없는 집중 환경",
+      ],
+      pricing: "월 $2.99 · 연 $24.99 (30% 절약)",
+      cta: "Premium 시작하기",
+      close: "내일 다시",
     },
-    countdown: "{hours}시간 {minutes}분 후 초기화",
+    countdown: "내일 reset까지: {hours}h {minutes}m",
   },
 };
 
@@ -269,18 +280,28 @@ const en: Strings = {
   },
   dailyLimit: {
     guest: {
-      title: "Daily limit reached",
-      body: "Sign up for 7 free sessions every day.",
-      cta: "Sign up",
-      close: "Maybe later",
+      title: "That's it for today.",
+      values: [
+        "7 free sessions daily (more than 2× now)",
+        "Access Lv1 through Lv5",
+        "AI analysis pinpoints your weak notes",
+      ],
+      cta: "Sign up — free",
+      close: "Close",
     },
     free: {
-      title: "Daily limit reached",
-      body: "Premium has unlimited sessions.",
-      cta: "View Premium",
-      close: "Try again tomorrow",
+      title: "You've finished today's seven.",
+      values: [
+        "Unlimited daily sessions",
+        "All 21 stages unlocked",
+        "Full AI analysis — weak notes, progress curve, goals",
+        "Ad-free focus",
+      ],
+      pricing: "$2.99/mo · $24.99/yr (save 30%)",
+      cta: "Start Premium",
+      close: "Try tomorrow",
     },
-    countdown: "Resets in {hours}h {minutes}m",
+    countdown: "Resets in: {hours}h {minutes}m",
   },
 };
 

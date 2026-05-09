@@ -2,9 +2,9 @@ import { useNavigate } from "react-router-dom";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useLang } from "@/contexts/LanguageContext";
@@ -16,8 +16,10 @@ interface DailyLimitModalProps {
   /** UTC 자정까지 남은 ms. 부모(useDailyLimit)가 1초마다 갱신해 전달. */
   timeUntilResetMs: number;
   onClose: () => void;
-  /** Guest 영역에서 "가입하기" 클릭 시. 부모가 AuthModal·navigate 결정. */
-  onSignUpRequest?: () => void;
+  /** Guest CTA 클릭 시. 부모가 /signup 또는 AuthModal 결정. 미제공 시 /signup 이동. */
+  onSignUpClick?: () => void;
+  /** Free CTA 클릭 시. 부모가 /pricing 또는 결제 모달 결정. 미제공 시 /pricing 이동. */
+  onPremiumClick?: () => void;
 }
 
 function formatCountdown(ms: number, template: string): string {
@@ -35,7 +37,8 @@ export default function DailyLimitModal({
   tier,
   timeUntilResetMs,
   onClose,
-  onSignUpRequest,
+  onSignUpClick,
+  onPremiumClick,
 }: DailyLimitModalProps) {
   const navigate = useNavigate();
   const { lang } = useLang();
@@ -44,19 +47,17 @@ export default function DailyLimitModal({
 
   const handleCta = () => {
     if (tier === "guest") {
-      if (onSignUpRequest) {
-        onSignUpRequest();
-      } else {
-        navigate("/signup");
-      }
+      if (onSignUpClick) onSignUpClick();
+      else navigate("/signup");
     } else {
-      navigate("/pricing");
+      if (onPremiumClick) onPremiumClick();
+      else navigate("/pricing");
     }
     onClose();
   };
 
-  // 메모리 #19: backdrop 클릭·ESC 닫기 X — CTA·close·X(시각) 버튼만으로 닫기
-  // onPointerDownOutside·onEscapeKeyDown 가 prevent 영역, X 버튼은 onOpenChange(false) 호출.
+  // 메모리 #19: backdrop·ESC 닫기 X — CTA·close·X(시각) 버튼만으로 닫기.
+  // onPointerDownOutside·onEscapeKeyDown preventDefault, X 버튼은 onOpenChange(false).
   const handleOpenChange = (next: boolean) => {
     if (!next) onClose();
   };
@@ -70,15 +71,37 @@ export default function DailyLimitModal({
         onInteractOutside={(e) => e.preventDefault()}
       >
         <DialogHeader>
-          <DialogTitle>{tierStrings.title}</DialogTitle>
-          <DialogDescription>{tierStrings.body}</DialogDescription>
+          <DialogTitle className="text-xl sm:text-2xl font-semibold">
+            {tierStrings.title}
+          </DialogTitle>
+          <DialogDescription className="sr-only">
+            {tierStrings.title}
+          </DialogDescription>
         </DialogHeader>
 
-        <p className="text-xs text-muted-foreground text-center py-1">
+        {/* 가치 리스트 (Guest 3개 / Free 4개) */}
+        <ul className="space-y-2 py-2">
+          {tierStrings.values.map((v) => (
+            <li key={v} className="flex items-start gap-2 text-sm">
+              <span className="text-primary mt-0.5 flex-shrink-0" aria-hidden="true">✓</span>
+              <span className="text-foreground">{v}</span>
+            </li>
+          ))}
+        </ul>
+
+        {/* Free 영역 가격 표시 */}
+        {tier === "free" && "pricing" in tierStrings && (
+          <p className="text-xs text-foreground font-semibold text-center">
+            {tierStrings.pricing}
+          </p>
+        )}
+
+        {/* 카운트다운 */}
+        <p className="text-xs text-muted-foreground text-center">
           {formatCountdown(timeUntilResetMs, s.countdown)}
         </p>
 
-        <div className="flex gap-2">
+        <div className="flex gap-2 pt-1">
           <Button className="flex-1" onClick={handleCta}>
             {tierStrings.cta}
           </Button>
