@@ -4,6 +4,48 @@
 
 ---
 
+## 2026-05-10 (저녁) — 블로그 이미지 전수 정정 sprint ✅
+
+### 작업 내용
+- 10일차(3편) + 11일차(3편) = 6편 × 한+영 = 12 .md 파일 이미지 전량 교체
+- Pexels/Unsplash 완전 제거 → Wikimedia Commons Public Domain 이미지로 대체
+- 24개 이미지 모두 직접 인증 출처 (Wikimedia Commons, 공공 도서관)
+- frontmatter 5개 필드 신규: `coverImage`, `coverImageAlt`, `coverImageSource`, `coverImageLicense`, `coverImageCredit`
+- 본문 이미지 캡션 + 글 끝 출처 섹션 전면 갱신
+
+### 이미지 쌍 (6쌍 × 2언어)
+| 포스트 | Figure 1 | Figure 2 |
+|--------|----------|----------|
+| §3-37 초견 실수 | Bach BWV1001 자필악보 (PD) | Danhauser «피아노 앞의 리스트» (PD) |
+| §2-24 쉼표 읽기 | Beethoven Pathétique 악보 (PD) | Beethoven Op.90 자필 1814 (PD) |
+| §8-87 21단계 | Czerny Op.337 악보 (CC0) | Carl Czerny 초상 c.1820 (PD) |
+| §3-38 약점 음표 | Bach BWV56 bass aria 1726 (PD) | Beethoven Op.101 스케치 1816 (PD) |
+| §5-56 피아노 초견 | Beethoven Op.109 자필 1820 (PD) | Childe Hassam «At the Piano» (PD) |
+| §7-79 가중치 학습 | 에빙하우스 망각 곡선 (CC BY-SA 3.0) | Ebbinghaus 초상 사진 (PD) |
+
+### curl 검증
+- HTTP 200 직접 확인: 10개 URL
+- MediaWiki API 파일 존재 확인: 2개 (에빙하우스 파일 — IP rate-limit 429)
+
+### Commits (6 blog + 1 docs)
+- `928a841` §3-37 초견 실수 패턴 이미지 교체
+- `f2cec52` §2-24 쉼표 읽기 이미지 교체
+- `f5e10d5` §8-87 21단계 시스템 이미지 교체
+- `3629081` §3-38 약점 음표 이미지 교체
+- `45199fa` §5-56 피아노 초견 이미지 교체
+- `69d20b4` §7-79 가중치 학습 이미지 교체
+- (docs commit 예정)
+
+### 이미지 정책 갱신 (Memory #13)
+- 금지: Pexels, Unsplash, Pixabay 완전 금지
+- 허용: Wikimedia Commons, LoC, Met Museum, BnF, NYPL, IMSLP, PLOS ONE, Frontiers, PMC
+
+### 다음 세션 시작점
+- Group C (§X 사용자 등록·관리 Phase C, ~5h) 또는
+- /admin/staff-preview 시각 검증 (keySig × scale 5레벨 140조합)
+
+---
+
 ## 2026-05-10 (오후) — 11일차 블로그 3편 ✅
 
 ### 박은 주제
