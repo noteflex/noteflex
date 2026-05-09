@@ -76,6 +76,22 @@ export interface Strings {
       readMore: string;
     };
   };
+  dailyLimit: {
+    guest: {
+      title: string;
+      body: string;
+      cta: string;
+      close: string;
+    };
+    free: {
+      title: string;
+      body: string;
+      cta: string;
+      close: string;
+    };
+    /** "{hours}h {minutes}m" placeholder 박힘 */
+    countdown: string;
+  };
 }
 
 const ko: Strings = {
@@ -156,6 +172,21 @@ const ko: Strings = {
       readMore: "자세히 보기",
     },
   },
+  dailyLimit: {
+    guest: {
+      title: "오늘 3회 다 사용했어요",
+      body: "가입하면 매일 7회까지 무료로 이용할 수 있어요.",
+      cta: "가입하기",
+      close: "닫기",
+    },
+    free: {
+      title: "오늘 7회 다 사용했어요",
+      body: "Premium은 무제한으로 이용할 수 있어요.",
+      cta: "Premium 보기",
+      close: "내일 다시 오기",
+    },
+    countdown: "{hours}시간 {minutes}분 후 초기화",
+  },
 };
 
 const en: Strings = {
@@ -235,6 +266,21 @@ const en: Strings = {
     blog: {
       readMore: "Read more",
     },
+  },
+  dailyLimit: {
+    guest: {
+      title: "Daily limit reached",
+      body: "Sign up for 7 free sessions every day.",
+      cta: "Sign up",
+      close: "Maybe later",
+    },
+    free: {
+      title: "Daily limit reached",
+      body: "Premium has unlimited sessions.",
+      cta: "View Premium",
+      close: "Try again tomorrow",
+    },
+    countdown: "Resets in {hours}h {minutes}m",
   },
 };
 
