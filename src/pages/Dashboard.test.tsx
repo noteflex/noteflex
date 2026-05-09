@@ -29,6 +29,18 @@ vi.mock("sonner", () => ({
   },
 }));
 
+// useLevelProgress is used by MasteryHeroCard in Dashboard — stub to prevent
+// async state updates after test teardown (window is not defined in jsdom).
+vi.mock("@/hooks/useLevelProgress", () => ({
+  useLevelProgress: () => ({
+    progress: [],
+    loading: false,
+    getProgressFor: () => null,
+    fetchProgress: vi.fn(),
+    recordAttempt: vi.fn().mockResolvedValue(null),
+  }),
+}));
+
 // DiagnosisTab pulls user note logs via supabase — stub to keep the tab test
 // hermetic. Empty result triggers the friendly "no records yet" empty state.
 vi.mock("@/lib/userNoteLogs", () => ({

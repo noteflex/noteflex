@@ -1,4 +1,5 @@
 import { memo, useCallback, useMemo, useRef, useState } from "react";
+import { Home } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLevelProgress } from "@/hooks/useLevelProgress";
 import { useDailyLimit } from "@/hooks/useDailyLimit";
@@ -12,6 +13,7 @@ import {
   type Sublevel,
   type SublevelProgress,
 } from "@/lib/levelSystem";
+import { Button } from "@/components/ui/button";
 import UpgradeModal from "./UpgradeModal";
 import DailyLimitModal from "./DailyLimitModal";
 import MasteryScoreCard from "./MasteryScoreCard";
@@ -176,35 +178,27 @@ export default function LevelSelect({
   return (
     <div className="flex flex-col items-center gap-5 w-full max-w-lg mx-auto px-2 pb-8 animate-fade-up">
 
-      {/* 헤더 */}
-      <div className="flex flex-col items-center gap-1 pt-2">
-        <span className="text-4xl">🎼</span>
-        <h2 className="text-xl font-bold text-foreground tracking-tight">단계 선택</h2>
-        <p className="text-sm text-muted-foreground">
-          내 진도:{" "}
-          <span className="font-semibold text-foreground">{totalPassed}</span> / 21 통과
-        </p>
+      {/* 헤더 + 메인 버튼 (우측 상단) */}
+      <div className="flex items-start justify-between w-full pt-2">
+        <div className="flex flex-col items-center gap-1 flex-1">
+          <span className="text-4xl">🎼</span>
+          <h2 className="text-xl font-bold text-foreground tracking-tight">단계 선택</h2>
+          <p className="text-sm text-muted-foreground" data-testid="progress-summary">
+            내 진도:{" "}
+            <span className="font-semibold text-foreground">{totalPassed}</span> / 21 통과
+          </p>
+        </div>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onBack}
+          className="gap-1.5 shrink-0"
+          data-testid="back-to-home-btn"
+        >
+          <Home className="w-4 h-4" aria-hidden="true" />
+          메인
+        </Button>
       </div>
-
-      {/* 구독 상태 뱃지 */}
-      {tier === "guest" && (
-        <div className="text-xs text-muted-foreground bg-muted px-3 py-1.5 rounded-full text-center">
-          로그인하면 더 많은 단계를 이용할 수 있어요
-          {onLoginRequest && (
-            <button
-              onClick={onLoginRequest}
-              className="ml-2 text-primary font-semibold hover:underline"
-            >
-              로그인
-            </button>
-          )}
-        </div>
-      )}
-      {tier === "pro" && (
-        <div className="text-xs text-primary font-semibold bg-primary/10 px-3 py-1.5 rounded-full">
-          ✨ Pro — 전 단계 이용 중
-        </div>
-      )}
 
       {/* 진도 잠금 메시지 (inline) */}
       {lockMsg && (
@@ -285,14 +279,6 @@ export default function LevelSelect({
           return [card];
         })}
       </div>
-
-      {/* 뒤로가기 */}
-      <button
-        onClick={onBack}
-        className="text-sm text-muted-foreground hover:text-foreground transition-colors py-2"
-      >
-        ← 메인으로 돌아가기
-      </button>
 
       <UpgradeModal open={upgradeOpen} onClose={() => setUpgradeOpen(false)} />
 

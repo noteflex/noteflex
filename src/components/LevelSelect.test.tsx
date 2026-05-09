@@ -130,10 +130,9 @@ describe("LevelSelect - 렌더링", () => {
     expect(p.textContent).toMatch(/0\s*\/\s*21/);
   });
 
-  it("로그인 유도 버튼 표시 (guest + onLoginRequest 있을 때)", () => {
-    const onLoginRequest = vi.fn();
-    renderLevelSelect({ onLoginRequest });
-    expect(screen.getByRole("button", { name: "로그인" })).toBeInTheDocument();
+  it("우측 상단 메인 버튼 표시", () => {
+    renderLevelSelect();
+    expect(screen.getByTestId("back-to-home-btn")).toBeInTheDocument();
   });
 });
 
@@ -286,9 +285,9 @@ describe("LevelSelect - Pro 구독 (전 단계 통과)", () => {
     mockUseLevelProgress.mockReturnValue(mockProgressHook(allPassedProgress()));
   });
 
-  it("'Pro — 전 단계 이용 중' 뱃지 표시", () => {
+  it("Pro 구독 상태 뱃지 삭제됨 (Header 영역 중복 제거)", () => {
     renderLevelSelect();
-    expect(screen.getByText(/Pro — 전 단계 이용 중/)).toBeInTheDocument();
+    expect(screen.queryByText(/Pro — 전 단계 이용 중/)).not.toBeInTheDocument();
   });
 
   it("21개 통과 → 내 진도 21 표시", () => {
@@ -400,19 +399,24 @@ describe("LevelSelect - UpgradeModal → Pricing 이동", () => {
 });
 
 // ─────────────────────────────────────────────────────────
-describe("LevelSelect - 뒤로가기", () => {
+describe("LevelSelect - 메인 버튼", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockUseAuth.mockReturnValue({ user: null, profile: null });
     mockUseLevelProgress.mockReturnValue(mockProgressHook([]));
   });
 
-  it("'메인으로 돌아가기' 버튼 클릭 → onBack 호출", async () => {
+  it("메인 버튼 클릭 → onBack 호출", async () => {
     const onBack = vi.fn();
     renderLevelSelect({ onBack });
 
-    await userEvent.click(screen.getByText(/메인으로 돌아가기/));
+    await userEvent.click(screen.getByTestId("back-to-home-btn"));
 
     expect(onBack).toHaveBeenCalledTimes(1);
+  });
+
+  it("하단 '메인으로 돌아가기' 영역 삭제됨", () => {
+    renderLevelSelect();
+    expect(screen.queryByText(/메인으로 돌아가기/)).not.toBeInTheDocument();
   });
 });
