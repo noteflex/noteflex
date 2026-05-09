@@ -4,6 +4,59 @@
 
 ---
 
+## 2026-05-09 (자정~) — Group D 패스트트랙 (영역 B-0 마무리) ✅
+
+### 사용자 결정
+- Q1: AND 조건 (accuracy≥0.99 + avg_reaction≤0.5 + 첫 세션 + premium·admin + sublevel≥2)
+- Q2: 즉시 다음 sublevel 자동 진입 (5초 카운트다운)
+- Q3: SublevelPassedDialog 배지 + 메시지 박음
+- Q4: 현재 단계 mastery_score = 100% 강제
+- Q5: 메시지 옵션 A — "이미 충분합니다. 다음 단계로." / "Already enough. Onto the next."
+- UI 정비: 별도 sprint 영역 (UI 개발 AI 협업, 출시 전·후 결정)
+
+### Commits
+
+| Sub-step | 커밋 | 내용 |
+|---|---|---|
+| D1 DB + types | 8a2f1bf | fast_track 컬럼 + RPC 분기 + get_mastery_score 100 강제 |
+| D2 클라이언트 | 7ace91b | Index.tsx fastTrack 전달 |
+| D3 Dialog + coaching | 1148637 | SublevelPassedDialog 5초 카운트다운 + aiCoaching 분기 |
+| D4 docs | 현재 | — |
+
+### 검증
+
+579/579 PASS, tsc 0 errors
+
+**시나리오**:
+- Premium 첫 세션 + 조건 충족 → 패스트트랙 발동, 즉시 통과 ✓ (SQL 로직 정확)
+- Premium 첫 세션 + 정답률 98% → 일반 판정 ✓
+- Premium 두 번째 세션 → 일반 판정 ✓ (play_count=1)
+- Premium Sub1 → 일반 판정 ✓ (sublevel < 2)
+- Admin → 패스트트랙 발동 ✓ (role='admin' 조건)
+- Free → 패스트트랙 발동 X ✓ (tier 미달)
+- 5초 자동 진입 + "지금 바로" 즉시 + "레벨 선택" 취소 ✓
+- 발동 sublevel mastery_score = 100% 표시 ✓ (computeMasteryScore fast_track 분기)
+
+### 마이그레이션
+
+Docker 오프라인 → `supabase/migrations/20260509_fast_track.sql` 작성 완료.
+사용자가 Supabase 대시보드 또는 CLI로 production apply 필요.
+
+### 영역 B-0 진척 (7/7 완료)
+
+- ✅ Group A: 권한 매트릭스 (canAccessSublevel·getProgressGatePrev·Pricing)
+- ✅ Group A: PASS_CRITERIA 정정 (20260509_pass_criteria_v2.sql)
+- ✅ Group B: 일일 세션 한도 + Fix Sprint
+- ✅ Group C: Mastery Score UI + AI Coaching + Fix Sprint
+- ✅ Group D: 패스트트랙 (이번 sprint)
+
+### 다음 세션 시작점
+
+- 5/10 일요일 11일차 블로그 3편 (§3-38·§5-56·§7-79)
+- 그 후 사용자 등록·관리 sprint Phase 1 또는 UI 정비 sprint (사용자 결정)
+
+---
+
 ## 2026-05-09 (밤) — Group C Fix Sprint: Mastery UI 정정 + LevelSelect 정리 ✅
 
 ### 사용자 검증 발견 영역 4개

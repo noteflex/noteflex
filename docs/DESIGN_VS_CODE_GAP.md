@@ -643,14 +643,25 @@ if (tier === "free") { return level <= 5 && sublevel === 1 && /* 이전 Sub1 통
 
 → **565/565 PASS, tsc 0 errors, unhandled rejections 0건**.
 
-### B.2 Quick Mastery Mode 🔴 완전 미구현
+### B.2 패스트트랙 (Fast Track) ✅ Group D 완료 (2026-05-09 자정~)
 
-설계·결정 기준 대비 코드 상태:
-- 트리거 조건 체크 (오류율·반응시간): 없음
-- 즉시 통과 플로우: 없음
-- "빠른 통과" 배지: 없음
+**커밋**: `8a2f1bf` (D1) · `7ace91b` (D2) · `1148637` (D3)
 
-→ **Group D 전체 신규 구현** (~4h)
+| 조건 | 구현 |
+|---|---|
+| premium/admin + sublevel≥2 + 첫 세션 | `v_progress.play_count = 0 AND (is_premium OR subscription_tier='pro' OR role='admin') AND p_sublevel >= 2` |
+| 세션 정답률 ≥ 99% | `p_correct / p_attempts >= 0.99` |
+| avg_reaction_ratio ≤ 0.5 | `p_avg_reaction_ratio <= 0.5` |
+| 발동 시 passed=true 강제 | `v_fast_track := true; v_passed := true;` |
+| mastery_score = 100 강제 | `IF v_progress.fast_track THEN RETURN jsonb_build_object('score', 100, ...)` |
+| SublevelPassedDialog 배지 | `🚀 패스트트랙` / `🚀 Fast Track` |
+| 5초 자동 진입 | `setInterval` + `autoAdvancedRef` 1회 보장 |
+| aiCoaching 메시지 | `이미 충분합니다. 다음 단계로.` / `Already enough. Onto the next.` |
+| 다음 sublevel unlock | 기존 `just_passed` 플로우 정합 일관 |
+
+**마이그레이션**: `supabase/migrations/20260509_fast_track.sql` — Docker 오프라인, 사용자 production apply 필요.
+
+→ **579/579 PASS, tsc 0 errors**. 영역 B-0 7/7 코드 적용 완료.
 
 ---
 
@@ -674,6 +685,7 @@ if (tier === "free") { return level <= 5 && sublevel === 1 && /* 이전 Sub1 통
 - 2026-05-09 오후~ (Opus 4.7): **Group B Fix Sprint** — §B-0.2·§B.1 정합 영역 갱신 (LevelSelect 메인 게이트 + NoteGame 안전망 패턴). commits b58d873·fbe4d29. 사용자 검증 발견: 백그라운드 게임 진행 차단 + DailyLimitModal 컨텐츠 후킹 강화 + Quick Mastery 영역 제거. 512/512 PASS.
 - 2026-05-09 (Sonnet 4.6): **Group C 완료** — §B.1.5 신규 (Group C C1-C5 커밋 e1ca34e·74d07de·a2a9cfa). §B-0.2 표 C-영역 ❌→✅. 555/555 PASS.
 - 2026-05-09 밤 (Sonnet 4.6): **Group C Fix Sprint** — §B.1.5.1 신규 (F1 default 펼침+0값 blur·F2 MasteryHeroCard 0값·F3 LevelSelect 라벨 삭제+메인 버튼 우측). commits 05d18dc·5b4b850·ee66cb8. 565/565 PASS, unhandled rejections 0건.
+- 2026-05-09 자정~ (Sonnet 4.6): **Group D 패스트트랙 완료** — §B.2 🔴→✅ (패스트트랙 조건표·구현 영역 명시). §B-0 영역 7/7 코드 적용 완료. commits 8a2f1bf·7ace91b·1148637. 579/579 PASS. 마이그레이션 production apply 사용자 필요.
 - 2026-04-30: §0-1 코드 적용 완료 — §0-1.1~0-1.6 모두 구현 (commits f09919c, 6c1a7e8) + §2.6 PASS_CRITERIA 테이블 ✅ 갱신 + §2.6 같은조표연속학습 ✅ + §9.1 재도전마크 ✅ + §3.8 조표 비율 + treble/bass ✅ (commit bb062c3)
 - 2026-05-01: §3.11 §0.4 GrandStaffPractice 분석 추가 (Opus 보고서, 3갭 4 step 계획) + §3.12 §0.3 ✅ 추가 (commit eac606a) + §10/§11 갱신 (Week 1 완료 현황, Week 2 우선순위)
 - 2026-05-02: §2.1 stage 수 ⚠️ (Lv1~4 batchSize=1 확장 반영) + §2.4 음표 배치 테이블 ✅ + §3.2 버퍼링 방지 ✅ + 카운트다운 조표 숨김 ✅ + §3.13 §4 retry 시스템 신규 + §3.14 swipe 모달 신규 + §3.15 batchSize 렌더링 fix 신규 + §10 버그 5번 추가 + §11 Week 1 완료 12개·Week 2 §4 잔여 추가 + §13 변경 이력
