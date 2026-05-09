@@ -624,6 +624,25 @@ if (tier === "free") { return level <= 5 && sublevel === 1 && /* 이전 Sub1 통
 
 → **555/555 PASS, tsc 0 errors**.
 
+#### B.1.5.1 Group C Fix Sprint ✅ (2026-05-09 밤)
+
+사용자 검증으로 발견된 4개 이슈 정정 — commits `05d18dc` (F1) · `5b4b850` (F2) · `ee66cb8` (F3).
+
+| 이슈 | 정정 내용 | 커밋 |
+|---|---|---|
+| MasteryScoreCard — blur 즉시 미노출 | `useState(false)` → `useState(true)` (default 펼침); 기록 없을 때도 ZERO_COMPLETION fallback으로 4지표 0값 렌더 + blur 항상 표시 | F1 |
+| MasteryHeroCard — 데이터 없을 때 빈 UI | `hasData` 분기: score "—" + "첫 세션을 시작해보세요" 안내; Premium metrics 항상 렌더 (0값 fallback) | F2 |
+| LevelSelect — 구독 뱃지 중복 (Header와 겹침) | guest 로그인 유도 pill + Pro 뱃지 제거 | F3 |
+| LevelSelect — 하단 "메인으로 돌아가기" 광고 영역 충돌 | 하단 버튼 삭제 → 우측 상단 ghost Button (Home 아이콘 + "메인") 이동 | F3 |
+
+추가 수정:
+- `Dashboard.test.tsx`: `useLevelProgress` mock 추가 (async setState teardown 경고 3건 → 0건)
+- MasteryScoreCard.test.tsx 5케이스 신규 (null progress → 0값, default 펼침, free null blur)
+- MasteryHeroCard.test.tsx 4케이스 신규 (no-data "—", 0값 tiles, empty chart, free CTA)
+- LevelSelect.test.tsx 3케이스 갱신 (back-to-home-btn, Pro 뱃지 삭제 확인)
+
+→ **565/565 PASS, tsc 0 errors, unhandled rejections 0건**.
+
 ### B.2 Quick Mastery Mode 🔴 완전 미구현
 
 설계·결정 기준 대비 코드 상태:
@@ -654,6 +673,7 @@ if (tier === "free") { return level <= 5 && sublevel === 1 && /* 이전 Sub1 통
 - 2026-05-09 오후 (Opus 4.7): **Group B 완료** — §B-0.2 daily_sessions 행 ✅ (7167977·0cbd5ac·b81937e·f4265df) + §B.1 ❌→✅ (구현 완료 영역 4 항목 명시). Group C (Mastery Score 블러 + AI Coaching 기본)·Group D (Quick Mastery Mode) 미구현 영역 일관 유지.
 - 2026-05-09 오후~ (Opus 4.7): **Group B Fix Sprint** — §B-0.2·§B.1 정합 영역 갱신 (LevelSelect 메인 게이트 + NoteGame 안전망 패턴). commits b58d873·fbe4d29. 사용자 검증 발견: 백그라운드 게임 진행 차단 + DailyLimitModal 컨텐츠 후킹 강화 + Quick Mastery 영역 제거. 512/512 PASS.
 - 2026-05-09 (Sonnet 4.6): **Group C 완료** — §B.1.5 신규 (Group C C1-C5 커밋 e1ca34e·74d07de·a2a9cfa). §B-0.2 표 C-영역 ❌→✅. 555/555 PASS.
+- 2026-05-09 밤 (Sonnet 4.6): **Group C Fix Sprint** — §B.1.5.1 신규 (F1 default 펼침+0값 blur·F2 MasteryHeroCard 0값·F3 LevelSelect 라벨 삭제+메인 버튼 우측). commits 05d18dc·5b4b850·ee66cb8. 565/565 PASS, unhandled rejections 0건.
 - 2026-04-30: §0-1 코드 적용 완료 — §0-1.1~0-1.6 모두 구현 (commits f09919c, 6c1a7e8) + §2.6 PASS_CRITERIA 테이블 ✅ 갱신 + §2.6 같은조표연속학습 ✅ + §9.1 재도전마크 ✅ + §3.8 조표 비율 + treble/bass ✅ (commit bb062c3)
 - 2026-05-01: §3.11 §0.4 GrandStaffPractice 분석 추가 (Opus 보고서, 3갭 4 step 계획) + §3.12 §0.3 ✅ 추가 (commit eac606a) + §10/§11 갱신 (Week 1 완료 현황, Week 2 우선순위)
 - 2026-05-02: §2.1 stage 수 ⚠️ (Lv1~4 batchSize=1 확장 반영) + §2.4 음표 배치 테이블 ✅ + §3.2 버퍼링 방지 ✅ + 카운트다운 조표 숨김 ✅ + §3.13 §4 retry 시스템 신규 + §3.14 swipe 모달 신규 + §3.15 batchSize 렌더링 fix 신규 + §10 버그 5번 추가 + §11 Week 1 완료 12개·Week 2 §4 잔여 추가 + §13 변경 이력

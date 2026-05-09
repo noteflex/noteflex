@@ -623,6 +623,17 @@ Claude Code 코드 분석 발견.
 - 클라이언트: 첫 세션 오류율·반응시간 체크 → quick_mastery 플래그
 - 결과 모달 "빠른 통과" 배지 + 즉시 해금 UX
 
+### B.6.1 Group C Fix Sprint ✅ (2026-05-09 밤)
+
+**커밋**: `05d18dc` (F1) · `5b4b850` (F2) · `ee66cb8` (F3)
+
+- MasteryScoreCard: default 펼침 + 데이터 없을 때 "—"+"첫 세션을 시작해보세요" + 0 값 4지표 + blur 무조건
+- MasteryHeroCard: 데이터 없을 때 0 값 UI + "첫 세션을 시작해보세요" + 빈 차트
+- LevelSelect: 구독 상태 뱃지 2개 삭제 (Header 중복) + 메인 버튼 우측 상단 이동
+
+**신규 PENDING (출시 후 1~2주 재검토)**:
+- §X.MasteryToggle: LevelSelect MasteryScoreCard 공간 영역 검토 — 너무 많이 차지하면 토글 제거 또는 default 접힘 변경
+
 ### B.6 Mastery Score UI + AI Coaching ✅ (2026-05-09 Group C 완료)
 
 **완료 커밋**: `e1ca34e` (C1-C3) · `74d07de` (C4) · `a2a9cfa` (C5) · docs C6

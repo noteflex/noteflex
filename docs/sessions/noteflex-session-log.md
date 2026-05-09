@@ -4,6 +4,54 @@
 
 ---
 
+## 2026-05-09 (밤) — Group C Fix Sprint: Mastery UI 정정 + LevelSelect 정리 ✅
+
+### 사용자 검증 발견 영역 4개
+
+1. MasteryScoreCard 데이터 없을 때 "기록 없음" → 4지표 UI 안 보임 → blur 영역 인지 X
+2. 펼치기 토글 default 접힘 → Free/Guest blur 영역 즉시 인지 X
+3. LevelSelect "내 진도 단계" + "Pro 전 단계 이용중" 뱃지 = Header Premium 배지 중복
+4. LevelSelect 하단 "메인으로 돌아가기" = 하단 배너 광고 영역 시각 충돌
+
+### 사용자 결정
+
+| 항목 | 결정 |
+|---|---|
+| 토글 default | 펼침 (A) — 첫 진입 시 blur 즉시 인지 |
+| 데이터 없을 때 1계층 | "—" + "첫 세션을 시작해보세요" |
+| 데이터 없을 때 4지표 | 0 값 그대로 노출 ("기록 없음" 텍스트 X) |
+| blur 조건 | 무조건 (데이터·펼침 무관) |
+| LevelSelect 뱃지 삭제 | 2개 모두 삭제 (Header 중복) |
+| 메인 버튼 | 우측 상단 이동 (ghost + Home 아이콘) |
+
+### Commits
+
+| Sub-step | 커밋 | 테스트 |
+|---|---|---|
+| F1 MasteryScoreCard | 05d18dc | 14 → 19 |
+| F2 MasteryHeroCard | 5b4b850 | 8 → 12 |
+| F3 LevelSelect 정리 | ee66cb8 | 갱신 3개 + Dashboard mock |
+| F4 docs 일괄 | 현재 | — |
+
+**565/565 PASS, tsc 0 errors. Unhandled rejection 0건 (Dashboard mock 추가).**
+
+### 신규 시나리오 검증
+
+- Free 첫 진입 시 4지표 blur 즉시 노출 ✓ (default 펼침)
+- Guest 첫 진입 시 blur 즉시 노출 ✓
+- Premium 첫 진입 시 4지표 풀 노출 ✓ (blur 없음)
+- 데이터 없을 때 "—" + "첫 세션을 시작해보세요" ✓
+- 4지표 0 값 UI 그대로 (기록 없음 텍스트 X) ✓
+- LevelSelect 뱃지 2개 삭제 ✓
+- 메인 버튼 우측 상단 + 클릭 onBack 호출 ✓
+
+### 다음 세션 시작점
+
+- 5/10 일요일 11일차 블로그 3편 (§3-38·§5-56·§7-79)
+- 그 후 Group D Quick Mastery Mode 또는 §X 사용자 등록·관리 sprint Phase 1
+
+---
+
 ## 2026-05-09 (야간) — Group C: Mastery Score UI 블러 + AI Coaching 기본 ✅
 
 ### 완료 내용 (6 sub-step)
