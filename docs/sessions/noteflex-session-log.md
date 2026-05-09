@@ -8,6 +8,7 @@
 
 ### 목표
 §0.4 (UI 음표 history·색깔·N-등분·잘림 방지) + §6.4 (admin/staff-preview) 완료
+→ C1: M-등분 고정 슬롯 정책 버그 정정 추가 (음표 왼쪽 밀림)
 
 ### 커밋
 | 커밋 | 내용 |
@@ -16,16 +17,20 @@
 | `bfa0d94` | F2: getNoteColor 헬퍼 + batch/history 색깔 통합 (5 tests) |
 | `ee73501` | F3: visibleNoteCount 도입 + batch 모드 accumulation 중단 (4 tests) |
 | `8c56e46` | F4: N-등분 배치 정책 구현 — resolveStyle(visibleN) (6 tests) |
+| `42cf4a8` | C1: M-등분 고정 슬롯 정책 — 음표 왼쪽 밀림 버그 정정 (12 tests) |
+| `ab66b2d` | C2: StaffPreview totalSets·showSlotIdx·maxVisibleN·meta-M 갱신 (18 tests) |
 
 ### 핵심 변경
 - **NoteRole + getNoteColor()**: "target"(빨강) | "answered"(회색) | "waiting"(검정) — batch/history 두 경로 통일
 - **visibleNoteCount = answeredNotes.length + currentBatch.length**: history mode N=history+1, batch mode N=batchSize (answeredNotes=0 항상)
-- **N-등분 배치**: `effectiveWidth = STAFF_X2 - noteStartX`; `segmentWidth = effectiveWidth/N`; `noteX(i) = rawStart + segmentWidth*(i+0.5)` → 기존 공식 `noteStartX + i*noteSpacing` 유지하면서 구현 (noteStartX += segmentWidth/2)
-- **StaffPreview**: Lv·batchSize·keySig·clef·history 토글 + meta 패널 (rawNoteStartX·segmentWidth·effectiveWidth·N-div X 좌표)
-- **exports**: resolveStyle, ResolvedStyle, SVG_W, STAFF_X1, STAFF_X2, getNoteColor, NoteRole GrandStaffPractice에서 export
+- **M-등분 고정 슬롯 정책 (C1 정정)**: M = stage 시작 고정값. batchSize=1→totalSets, ≥3→batchSize, final-retry→batch.len. 기존 visibleN(가변) 사용으로 인한 왼쪽 밀림 버그 해결.
+  - `computeMaxVisibleN()` export, `getNoteScaleForM(M)`, `resolveStyle(…, maxN?)` 4th param
+  - NoteGame: maxVisibleN 계산 → GrandStaffPractice maxVisibleN prop 전달
+- **StaffPreview (C2)**: totalSets toggle(1~10) + showSlotIdx + maxVisibleN={M} + meta-M·visibleN·emptySlots 패널
+- **exports**: resolveStyle, ResolvedStyle, SVG_W, STAFF_X1, STAFF_X2, getNoteColor, NoteRole, computeMaxVisibleN
 
 ### 수치
-- **608/608 PASS** (vitest) / **tsc 0** / **sim:test 9 invariants 위반 0건**
+- **624/624 PASS** (vitest) / **tsc 0** / **sim:test 9 invariants 위반 0건**
 
 ---
 

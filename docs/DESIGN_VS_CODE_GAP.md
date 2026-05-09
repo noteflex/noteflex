@@ -236,16 +236,21 @@
 
 ### 3.11 GrandStaffPractice UI 음표 history·색깔·크기·잘림 ✅ 완료 (2026-05-09 Phase 2 Sprint)
 
-**커밋**: `3faec95` (F1/StaffPreview) · `bfa0d94` (F2/색깔) · `ee73501` (F3/history) · `8c56e46` (F4/N-div)
+**커밋**: `3faec95` (F1/StaffPreview) · `bfa0d94` (F2/색깔) · `ee73501` (F3/history) · `8c56e46` (F4/N-div) · `42cf4a8` (C1/M-div 버그정정) · `ab66b2d` (C2/StaffPreview)
 
 | 갭 | 구현 | 결과 |
 |---|---|---|
 | Gap 1 — 색깔 | `NoteRole` 타입 + `getNoteColor()` export; batch/history 두 경로 통합 | ✅ 5 tests |
 | Gap 2 — history 누적 | `setAnsweredNotes(prev)` — batchSize≥3 누적 안 함; `visibleNoteCount` 도입 | ✅ 4 tests |
-| Gap 3 — 크기·잘림 | **N-등분 배치**: effectiveWidth = STAFF_X2−noteStartX; segmentWidth = eff/N; noteX(i) = rawStart + seg×(i+0.5); resolveStyle(level,keySigCount,batchSize,visibleN) | ✅ 6 tests |
-| /admin/staff-preview | Lv·batchSize·keySig 토글 + meta panel (rawNoteStartX·segmentWidth·effectiveWidth·N-div X) | ✅ 14 tests |
+| Gap 3 — 크기·잘림 | **M-등분 고정 슬롯**: M = stage 시작 고정 (batchSize=1→totalSets, ≥3→batchSize, final-retry→batch.len); `computeMaxVisibleN()` + `getNoteScaleForM(M)` + `resolveStyle(…,maxN)` 4th param; NoteGame: maxVisibleN → GrandStaffPractice | ✅ 12 tests |
+| /admin/staff-preview | Lv·batchSize·keySig·totalSets 토글 + showSlotIdx + meta panel (M·visibleN·emptySlots·segmentW·X좌표) | ✅ 18 tests |
 
-**608 PASS / tsc 0 / sim:test 9 invariants 위반 0건**
+**§3.11.N M-등분 왼쪽 밀림 버그 (2026-05-09 C1 정정)**
+- 원인: F4에서 `visibleN`(가변)으로 segmentation → 새 음표 추가마다 기존 음표 X 좌표 변경
+- 정책: `maxVisibleN(M)` — stage 시작 시 1회 결정, 이후 고정
+- M 결정: `batchSize=1` → `totalSets * notesPerSet` (TOTAL_SLOTS=8 cap); `batchSize≥3` → batchSize; `final-retry` → currentBatch.length
+
+**624 PASS / tsc 0 / sim:test 9 invariants 위반 0건**
 
 ### 3.12 카운트다운 후 첫 음표 버퍼링 + Sub3 즉시 타임아웃 ✅ (2026-05-01, commit `eac606a`)
 

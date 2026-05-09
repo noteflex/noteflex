@@ -115,7 +115,7 @@
 
 ### 0.4 UI 음표 잘림·색깔·history 누적 ✅ 완료 (2026-05-09 Phase 2 Sprint)
 
-**커밋**: `bfa0d94` (F2) · `ee73501` (F3) · `8c56e46` (F4)
+**커밋**: `bfa0d94` (F2) · `ee73501` (F3) · `8c56e46` (F4) · `42cf4a8` (C1) · `ab66b2d` (C2)
 
 **§0.4.1 음표 history 누적 + 리셋 ✅**
 - batchSize=1: answeredNotes 누적(최대 7), 7개 도달 시 리셋. 세트 전환 시 유지.
@@ -124,7 +124,7 @@
 - 4 visibleNoteCount 테스트 (NoteGame.history.test.tsx)
 
 **§0.4.2 음표 크기 동적 조정 ✅**
-- getNoteScale(batchSize): batchSize≥7→0.70, ≥5→0.80, else→1.0
+- getNoteScaleForM(M): M≤3→1.0, M≤5→0.80, M≤7→0.70, M≤10→0.60, M>10→0.53
 
 **§0.4.3 음표 색깔 3단계 ✅**
 - NoteRole = "target"|"answered"|"waiting" + getNoteColor() export
@@ -134,6 +134,17 @@
 - effectiveWidth = STAFF_X2 - noteStartX; segmentWidth = effectiveWidth/N
 - noteX(i) = noteStartX + segmentWidth*(i+0.5) (≡ adjustedStart + i*segmentWidth)
 - 6 N-division 테스트 (GrandStaffPractice.test.tsx): N=7 last X < STAFF_X2 확인
+
+**§0.4.5 M-등분 고정 슬롯 정책 ✅ (2026-05-09 C1, 버그 정정)**
+- 문제: F4 N-div에서 visibleN(가변) 사용 → 새 음표 추가 시 기존 음표가 왼쪽으로 밀림
+- 해결: M(stage 시작 시 고정)으로 분할 기준 고정
+  - batchSize=1 → M = totalSets (× notesPerSet, capped TOTAL_SLOTS)
+  - batchSize≥3 → M = batchSize
+  - final-retry → M = currentBatch.length
+- computeMaxVisibleN() export + getNoteScaleForM(M) + resolveStyle(level, keySig, batchSize, maxN) 4th param
+- NoteGame: maxVisibleN 계산 후 GrandStaffPractice에 전달
+- StaffPreview: totalSets toggle + showSlotIdx + maxVisibleN prop + meta-M 패널 갱신
+- 단위 테스트 12케이스 신규 (624 총 PASS, sim:test 0 violations)
 
 ---
 
@@ -908,13 +919,14 @@ Public domain 클래식 곡별 레벨
 
 ### 6.4 §3 GrandStaffPractice UI 세부 조정 ✅ 완료 (2026-05-09 Phase 2 Sprint)
 
-**커밋**: `3faec95` (F1) · `bfa0d94` (F2) · `ee73501` (F3) · `8c56e46` (F4)
+**커밋**: `3faec95` (F1) · `bfa0d94` (F2) · `ee73501` (F3) · `8c56e46` (F4) · `42cf4a8` (C1 버그정정) · `ab66b2d` (C2 StaffPreview)
 
-- **/admin/staff-preview**: Lv·batchSize·keySig·clef·history 토글 + GrandStaffPractice 직접 렌더 + meta 패널 (rawNoteStartX·segmentWidth·effectiveWidth·N-div X 좌표). 14 tests PASS
+- **/admin/staff-preview**: Lv·batchSize·keySig·clef·history·totalSets 토글 + GrandStaffPractice 직접 렌더 + meta 패널 (M·visibleN·emptySlots·segmentW·X 좌표 + showSlotIdx 오버레이). 18 tests PASS
 - 음표 색깔: NoteRole 타입 + getNoteColor() — batch/history 통합
 - history 누적: batchSize=1 rolling max7 / batchSize≥3 non-accumulation
-- N-등분 배치: effectiveWidth = STAFF_X2 - noteStartX; segmentWidth = effectiveWidth/N; noteX(i) = rawStart + segmentWidth*(i+0.5). 구버전 gapCount 특수처리 교체.
-- 잘림 방지: N=7 last note X < STAFF_X2=790 확인 (resolveStyle 테스트)
+- N-등분 배치 → M-등분 고정 슬롯: effectiveWidth/M 분할, M = stage 시작 시 고정. 음표 왼쪽 밀림 버그 정정.
+- 잘림 방지: M=7 last note X < STAFF_X2=790 확인 (resolveStyle 테스트)
+- 총 테스트 624 PASS, sim:test 0 violations
 
 ### 6.2 디자인 컨셉 통일 🟢 (출시 후 점진)
 - "Midnight Grand" — 다크 + 골드
