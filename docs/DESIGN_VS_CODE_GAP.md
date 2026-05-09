@@ -356,6 +356,24 @@ M등분 고정 슬롯·Uniform scale·PlayPage 영향 없음. 7 신규 테스트
 
 ---
 
+### 3.19 조표 위치 표준 음악 표기 정정 ✅ (2026-05-10, commit `c63b04a`)
+
+**문제**: bass clef 조표(#·♭)가 모두 오선보 위쪽에 떠있어 시각적으로 완전히 틀림.
+
+**원인**: `SHARP_KEY_POS.bass` / `FLAT_KEY_POS.bass` 값이 `treble - 7` (1옥타브)로 계산됨. 실제로는 `treble - 14` (2옥타브)가 맞음.
+
+| 항목 | 변경 전 (오류) | 변경 후 (정정) |
+|---|---|---|
+| F# bass | -4+7=+3 (오선보 위) | -4 (L4) |
+| B♭ bass | -8+7=-1 (L5 위) | -8 (L2) |
+| G# bass | -2+7=+5 (오선보 훨씬 위) | -2 (L5) |
+
+- `SHARP_KEY_POS`, `FLAT_KEY_POS` export 추가 → 28 단위 테스트 가능
+- 28 신규 테스트 (treble/bass × sharp/flat 각 7), 676 총 PASS, sim:test 0 violations
+- `renderKeySignature`는 수정 없음 — 테이블 값만 변경
+
+---
+
 ## 4. 배치고사 시스템 🔴
 
 ### 4.1 설계 (§4) vs 구현

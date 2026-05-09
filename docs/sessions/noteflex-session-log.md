@@ -4,6 +4,34 @@
 
 ---
 
+## 2026-05-10 (낮) — 조표 위치 표준 음악 표기 정정 ✅
+
+### 사용자 검증 발견
+- bass clef 조표(#·♭)가 모두 오선보 위쪽에 떠있음 — 시각적으로 완전히 틀림
+- 원인: SHARP_KEY_POS.bass / FLAT_KEY_POS.bass 값이 treble - 7 (1옥타브 오류) → treble - 14 (2옥타브)가 맞음
+
+### 사용자 결정
+- 표준 음악 표기 기준으로 bass # 위치: F=-4, C=-7, G=-2, D=-6, A=-9, E=-5, B=-8
+- 표준 음악 표기 기준으로 bass ♭ 위치: B=-8, E=-5, A=-9, D=-6, G=-10, C=-7, F=-11
+- SHARP_KEY_POS, FLAT_KEY_POS export 추가 → 28 단위 테스트 직접 검증
+
+### Commits
+- `c63b04a` fix(staff): 조표 위치 표준 음악 표기 박음 — flat/sharp 각 stave position
+
+### 검증
+- 자동 테스트 676 PASS (648 → +28, treble/bass × sharp/flat 각 7개 위치)
+- sim:test 0 violations (9984 games)
+
+### 갱신 docs
+- PENDING §0.4.10 신규 ✅
+- GAP §3.19 신규 ✅
+
+### 다음 세션 시작점
+- /admin/staff-preview 시각 검증 — bass clef 조표 위치 직접 확인
+- 5/10 블로그 11일차 + 사용자 dashboard·등록·관리 sprint
+
+---
+
 ## 2026-05-10 (새벽) — Phase 2 게임 UI 미세 정정 (첫 음표 위치) + S2/S3 마무리 ✅
 
 ### 사용자 검증 발견

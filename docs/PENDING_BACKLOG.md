@@ -158,6 +158,10 @@
 - 해결: `/play` 전용 PlayPage (h-screen overflow-hidden) + NavOnlyRoute 직접 접근 차단
 - Index.tsx 랜딩 전용 축소, Start → navigate('/play', {state:{fromNav:true}})
 
+**§0.4.10 조표 위치 표준 음악 표기 정정 ✅ (2026-05-10, commit `c63b04a`)**
+- bass clef SHARP_KEY_POS·FLAT_KEY_POS 전체 수정 — 기존 treble-7 오류 → treble-14 (2옥타브)
+- 28 신규 단위 테스트 (treble/bass × sharp/flat 각 7개 위치 검증, 676 총 PASS, sim:test 0 violations)
+
 **§0.4.9 첫 음표 위치 1/4 정정 ✅ (2026-05-10 C1, commit `37d1fcd`)**
 - 사용자 검증: 첫 음표가 음자리표·조표와 너무 떨어진 영역
 - 원인: segmentWidth × 0.5 (등분 중앙) → 첫 음표가 음자리표 끝에서 segmentWidth/2 거리
