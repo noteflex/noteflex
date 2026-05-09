@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { getNoteColor, resolveStyle, computeMaxVisibleN, computeScale, STAFF_X2, SHARP_KEY_POS, FLAT_KEY_POS } from "./GrandStaffPractice";
+import { getNoteColor, resolveStyle, computeMaxVisibleN, computeScale, STAFF_X2, SHARP_KEY_POS, FLAT_KEY_POS, stepToY, STEP_H, LINE_GAP } from "./GrandStaffPractice";
 
 describe("getNoteColor", () => {
   it("target → #b91c1c (빨강)", () => {
@@ -290,4 +290,198 @@ describe("조표 표준 음악 표기 위치 — bass flats (7)", () => {
   it("Gb stave position = -10 (L1)", () => expect(FLAT_KEY_POS.bass.G).toBe(-10));
   it("Cb stave position = -7 (S2)", () => expect(FLAT_KEY_POS.bass.C).toBe(-7));
   it("Fb stave position = -11 (below L1)", () => expect(FLAT_KEY_POS.bass.F).toBe(-11));
+});
+
+describe("stepToY — treble stave line 정확 y 좌표", () => {
+  // Level 1, scale=1.0: staffTop=98, staffBot=194, stepH=12, lineGap=24
+  const s = resolveStyle(1, 0, 1, 3);
+  const stepH = STEP_H * s.uniscale;
+  const lineGap = LINE_GAP * s.uniscale;
+
+  it("line 5 (step=10) → staffTop", () => {
+    expect(stepToY(10, "treble", s.staffBot, 0, stepH)).toBeCloseTo(s.staffTop, 1);
+  });
+  it("line 4 (step=8) → staffTop + lineGap", () => {
+    expect(stepToY(8, "treble", s.staffBot, 0, stepH)).toBeCloseTo(s.staffTop + lineGap, 1);
+  });
+  it("line 3 (step=6) → staffTop + 2*lineGap (middle)", () => {
+    expect(stepToY(6, "treble", s.staffBot, 0, stepH)).toBeCloseTo(s.staffTop + 2 * lineGap, 1);
+  });
+  it("line 2 (step=4) → staffTop + 3*lineGap", () => {
+    expect(stepToY(4, "treble", s.staffBot, 0, stepH)).toBeCloseTo(s.staffTop + 3 * lineGap, 1);
+  });
+  it("line 1 (step=2) → staffBot", () => {
+    expect(stepToY(2, "treble", s.staffBot, 0, stepH)).toBeCloseTo(s.staffBot, 1);
+  });
+  it("space 4 (step=9) = midpoint L4~L5", () => {
+    const l4 = stepToY(8, "treble", s.staffBot, 0, stepH);
+    const l5 = stepToY(10, "treble", s.staffBot, 0, stepH);
+    expect(stepToY(9, "treble", s.staffBot, 0, stepH)).toBeCloseTo((l4 + l5) / 2, 1);
+  });
+  it("above L5 (step=11) = staffTop - stepH", () => {
+    expect(stepToY(11, "treble", s.staffBot, 0, stepH)).toBeCloseTo(s.staffTop - stepH, 1);
+  });
+});
+
+describe("stepToY — bass stave line 정확 y 좌표", () => {
+  // Level 2 bass-only, scale=1.0: staffTop=74, staffBot=170, stepH=12, lineGap=24
+  const s = resolveStyle(2, 0, 1, 3);
+  const stepH = STEP_H * s.uniscale;
+  const lineGap = LINE_GAP * s.uniscale;
+
+  it("line 5 (step=-2) → staffTop (A3)", () => {
+    expect(stepToY(-2, "bass", s.staffBot, 0, stepH)).toBeCloseTo(s.staffTop, 1);
+  });
+  it("line 4 (step=-4) → staffTop + lineGap (F3)", () => {
+    expect(stepToY(-4, "bass", s.staffBot, 0, stepH)).toBeCloseTo(s.staffTop + lineGap, 1);
+  });
+  it("line 3 (step=-6) → staffTop + 2*lineGap middle (D3)", () => {
+    expect(stepToY(-6, "bass", s.staffBot, 0, stepH)).toBeCloseTo(s.staffTop + 2 * lineGap, 1);
+  });
+  it("line 2 (step=-8) → staffTop + 3*lineGap (B2)", () => {
+    expect(stepToY(-8, "bass", s.staffBot, 0, stepH)).toBeCloseTo(s.staffTop + 3 * lineGap, 1);
+  });
+  it("line 1 (step=-10) → staffBot (G2)", () => {
+    expect(stepToY(-10, "bass", s.staffBot, 0, stepH)).toBeCloseTo(s.staffBot, 1);
+  });
+  it("below L1 (step=-11) = staffBot + stepH", () => {
+    expect(stepToY(-11, "bass", s.staffBot, 0, stepH)).toBeCloseTo(s.staffBot + stepH, 1);
+  });
+});
+
+describe("stepToY — scale 5단계 비례 일관 (treble F#=line5)", () => {
+  // F# treble: step=10, should always map to staffTop regardless of scale
+  it("M=3 (scale=1.0): F# → staffTop", () => {
+    const s = resolveStyle(1, 0, 1, 3);
+    expect(stepToY(10, "treble", s.staffBot, 0, STEP_H * s.uniscale)).toBeCloseTo(s.staffTop, 1);
+  });
+  it("M=5 (scale=0.85): F# → staffTop", () => {
+    const s = resolveStyle(1, 0, 1, 5);
+    expect(stepToY(10, "treble", s.staffBot, 0, STEP_H * s.uniscale)).toBeCloseTo(s.staffTop, 1);
+  });
+  it("M=7 (scale=0.75): F# → staffTop", () => {
+    const s = resolveStyle(1, 0, 1, 7);
+    expect(stepToY(10, "treble", s.staffBot, 0, STEP_H * s.uniscale)).toBeCloseTo(s.staffTop, 1);
+  });
+  it("M=10 (scale=0.65): F# → staffTop", () => {
+    const s = resolveStyle(1, 0, 1, 10);
+    expect(stepToY(10, "treble", s.staffBot, 0, STEP_H * s.uniscale)).toBeCloseTo(s.staffTop, 1);
+  });
+  it("M=12 (scale=0.55): F# → staffTop", () => {
+    const s = resolveStyle(1, 0, 1, 12);
+    expect(stepToY(10, "treble", s.staffBot, 0, STEP_H * s.uniscale)).toBeCloseTo(s.staffTop, 1);
+  });
+});
+
+describe("조표 SVG y 좌표 — treble sharps 7개 stave position 매핑", () => {
+  // stepToY(step, "treble", staffBot, 0, stepH) = exact y for each sharp
+  const s = resolveStyle(1, 0, 1, 3);
+  const stepH = STEP_H * s.uniscale;
+  const lineGap = LINE_GAP * s.uniscale;
+
+  it("F# (step=10): line 5 = staffTop", () => {
+    expect(stepToY(SHARP_KEY_POS.treble.F, "treble", s.staffBot, 0, stepH)).toBeCloseTo(s.staffTop, 1);
+  });
+  it("C# (step=7): space 3 = staffTop + 1.5*lineGap", () => {
+    expect(stepToY(SHARP_KEY_POS.treble.C, "treble", s.staffBot, 0, stepH)).toBeCloseTo(s.staffTop + 1.5 * lineGap, 1);
+  });
+  it("G# (step=11): above line 5 = staffTop - stepH", () => {
+    expect(stepToY(SHARP_KEY_POS.treble.G, "treble", s.staffBot, 0, stepH)).toBeCloseTo(s.staffTop - stepH, 1);
+  });
+  it("D# (step=8): line 4 = staffTop + lineGap", () => {
+    expect(stepToY(SHARP_KEY_POS.treble.D, "treble", s.staffBot, 0, stepH)).toBeCloseTo(s.staffTop + lineGap, 1);
+  });
+  it("A# (step=5): space 2 = staffTop + 2.5*lineGap", () => {
+    expect(stepToY(SHARP_KEY_POS.treble.A, "treble", s.staffBot, 0, stepH)).toBeCloseTo(s.staffTop + 2.5 * lineGap, 1);
+  });
+  it("E# (step=9): space 4 = staffTop + 0.5*lineGap", () => {
+    expect(stepToY(SHARP_KEY_POS.treble.E, "treble", s.staffBot, 0, stepH)).toBeCloseTo(s.staffTop + 0.5 * lineGap, 1);
+  });
+  it("B# (step=6): line 3 = staffTop + 2*lineGap", () => {
+    expect(stepToY(SHARP_KEY_POS.treble.B, "treble", s.staffBot, 0, stepH)).toBeCloseTo(s.staffTop + 2 * lineGap, 1);
+  });
+});
+
+describe("조표 SVG y 좌표 — treble flats 7개 stave position 매핑", () => {
+  const s = resolveStyle(1, 0, 1, 3);
+  const stepH = STEP_H * s.uniscale;
+  const lineGap = LINE_GAP * s.uniscale;
+
+  it("Bb (step=6): line 3 = staffTop + 2*lineGap", () => {
+    expect(stepToY(FLAT_KEY_POS.treble.B, "treble", s.staffBot, 0, stepH)).toBeCloseTo(s.staffTop + 2 * lineGap, 1);
+  });
+  it("Eb (step=9): space 4 = staffTop + 0.5*lineGap", () => {
+    expect(stepToY(FLAT_KEY_POS.treble.E, "treble", s.staffBot, 0, stepH)).toBeCloseTo(s.staffTop + 0.5 * lineGap, 1);
+  });
+  it("Ab (step=5): space 2 = staffTop + 2.5*lineGap", () => {
+    expect(stepToY(FLAT_KEY_POS.treble.A, "treble", s.staffBot, 0, stepH)).toBeCloseTo(s.staffTop + 2.5 * lineGap, 1);
+  });
+  it("Db (step=8): line 4 = staffTop + lineGap", () => {
+    expect(stepToY(FLAT_KEY_POS.treble.D, "treble", s.staffBot, 0, stepH)).toBeCloseTo(s.staffTop + lineGap, 1);
+  });
+  it("Gb (step=4): line 2 = staffTop + 3*lineGap", () => {
+    expect(stepToY(FLAT_KEY_POS.treble.G, "treble", s.staffBot, 0, stepH)).toBeCloseTo(s.staffTop + 3 * lineGap, 1);
+  });
+  it("Cb (step=7): space 3 = staffTop + 1.5*lineGap", () => {
+    expect(stepToY(FLAT_KEY_POS.treble.C, "treble", s.staffBot, 0, stepH)).toBeCloseTo(s.staffTop + 1.5 * lineGap, 1);
+  });
+  it("Fb (step=3): space 1 = staffTop + 3.5*lineGap", () => {
+    expect(stepToY(FLAT_KEY_POS.treble.F, "treble", s.staffBot, 0, stepH)).toBeCloseTo(s.staffTop + 3.5 * lineGap, 1);
+  });
+});
+
+describe("조표 SVG y 좌표 — bass sharps 7개 stave position 매핑", () => {
+  const s = resolveStyle(2, 0, 1, 3);
+  const stepH = STEP_H * s.uniscale;
+  const lineGap = LINE_GAP * s.uniscale;
+
+  it("F# (step=-4): line 4 = staffTop + lineGap", () => {
+    expect(stepToY(SHARP_KEY_POS.bass.F, "bass", s.staffBot, 0, stepH)).toBeCloseTo(s.staffTop + lineGap, 1);
+  });
+  it("C# (step=-7): space 2 = staffTop + 2.5*lineGap", () => {
+    expect(stepToY(SHARP_KEY_POS.bass.C, "bass", s.staffBot, 0, stepH)).toBeCloseTo(s.staffTop + 2.5 * lineGap, 1);
+  });
+  it("G# (step=-2): line 5 = staffTop", () => {
+    expect(stepToY(SHARP_KEY_POS.bass.G, "bass", s.staffBot, 0, stepH)).toBeCloseTo(s.staffTop, 1);
+  });
+  it("D# (step=-6): line 3 = staffTop + 2*lineGap", () => {
+    expect(stepToY(SHARP_KEY_POS.bass.D, "bass", s.staffBot, 0, stepH)).toBeCloseTo(s.staffTop + 2 * lineGap, 1);
+  });
+  it("A# (step=-9): space 1 = staffTop + 3.5*lineGap", () => {
+    expect(stepToY(SHARP_KEY_POS.bass.A, "bass", s.staffBot, 0, stepH)).toBeCloseTo(s.staffTop + 3.5 * lineGap, 1);
+  });
+  it("E# (step=-5): space 3 = staffTop + 1.5*lineGap", () => {
+    expect(stepToY(SHARP_KEY_POS.bass.E, "bass", s.staffBot, 0, stepH)).toBeCloseTo(s.staffTop + 1.5 * lineGap, 1);
+  });
+  it("B# (step=-8): line 2 = staffTop + 3*lineGap", () => {
+    expect(stepToY(SHARP_KEY_POS.bass.B, "bass", s.staffBot, 0, stepH)).toBeCloseTo(s.staffTop + 3 * lineGap, 1);
+  });
+});
+
+describe("조표 SVG y 좌표 — bass flats 7개 stave position 매핑", () => {
+  const s = resolveStyle(2, 0, 1, 3);
+  const stepH = STEP_H * s.uniscale;
+  const lineGap = LINE_GAP * s.uniscale;
+
+  it("Bb (step=-8): line 2 = staffTop + 3*lineGap", () => {
+    expect(stepToY(FLAT_KEY_POS.bass.B, "bass", s.staffBot, 0, stepH)).toBeCloseTo(s.staffTop + 3 * lineGap, 1);
+  });
+  it("Eb (step=-5): space 3 = staffTop + 1.5*lineGap", () => {
+    expect(stepToY(FLAT_KEY_POS.bass.E, "bass", s.staffBot, 0, stepH)).toBeCloseTo(s.staffTop + 1.5 * lineGap, 1);
+  });
+  it("Ab (step=-9): space 1 = staffTop + 3.5*lineGap", () => {
+    expect(stepToY(FLAT_KEY_POS.bass.A, "bass", s.staffBot, 0, stepH)).toBeCloseTo(s.staffTop + 3.5 * lineGap, 1);
+  });
+  it("Db (step=-6): line 3 = staffTop + 2*lineGap", () => {
+    expect(stepToY(FLAT_KEY_POS.bass.D, "bass", s.staffBot, 0, stepH)).toBeCloseTo(s.staffTop + 2 * lineGap, 1);
+  });
+  it("Gb (step=-10): line 1 = staffBot", () => {
+    expect(stepToY(FLAT_KEY_POS.bass.G, "bass", s.staffBot, 0, stepH)).toBeCloseTo(s.staffBot, 1);
+  });
+  it("Cb (step=-7): space 2 = staffTop + 2.5*lineGap", () => {
+    expect(stepToY(FLAT_KEY_POS.bass.C, "bass", s.staffBot, 0, stepH)).toBeCloseTo(s.staffTop + 2.5 * lineGap, 1);
+  });
+  it("Fb (step=-11): below line 1 = staffBot + stepH", () => {
+    expect(stepToY(FLAT_KEY_POS.bass.F, "bass", s.staffBot, 0, stepH)).toBeCloseTo(s.staffBot + stepH, 1);
+  });
 });

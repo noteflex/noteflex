@@ -71,8 +71,8 @@ const HISTORY_COLOR = WAITING_COLOR;
 export const SVG_W    = 800;
 export const STAFF_X1 = 30;
 export const STAFF_X2 = 790;
-const STEP_H   = 12;
-const LINE_GAP = STEP_H * 2;   // 24
+export const STEP_H   = 12;
+export const LINE_GAP = STEP_H * 2;   // 24
 const STAFF_H  = LINE_GAP * 4; // 96
 
 // ── SMuFL (Bravura) 글리프 ────────────────────────────────────
@@ -278,7 +278,7 @@ function noteToStep(note: string): number {
   return (octave - 4) * 7 + idx;
 }
 
-function stepToY(
+export function stepToY(
   step: number,
   clef: "treble" | "bass",
   staffBot: number,
@@ -390,7 +390,7 @@ function renderKeySignature(
         <text
           key={`ks-s-${clef}-${letter}`}
           x={x}
-          y={y + style.keySigFontSize * 0.28}
+          y={y}
           fontSize={style.keySigFontSize}
           fontFamily="Bravura, serif"
           fill={HISTORY_COLOR}
@@ -410,7 +410,7 @@ function renderKeySignature(
         <text
           key={`ks-f-${clef}-${letter}`}
           x={x}
-          y={y + style.keySigFontSize * 0.28}
+          y={y}
           fontSize={style.keySigFontSize}
           fontFamily="Bravura, serif"
           fill={HISTORY_COLOR}
