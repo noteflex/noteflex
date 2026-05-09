@@ -6,10 +6,15 @@ keywords: ["21-stage learning", "progressive difficulty", "sight-reading levels"
 slug: "seven-level-twenty-one-stage-system"
 category: "Music Tech"
 day: 10
+coverImage: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/CCzernyOp337Teil1.png/960px-CCzernyOp337Teil1.png"
+coverImageAlt: "Carl Czerny's Op. 337 piano exercise score showing progressive difficulty with fingering markings"
+coverImageSource: "https://commons.wikimedia.org/wiki/File:CCzernyOp337Teil1.png"
+coverImageLicense: "CC0 Public Domain"
+coverImageCredit: "Manuela Gößnitzer (LilyPond engraving); based on Carl Czerny's public domain composition"
 ---
 
-![A staircase representing progressive levels](https://images.pexels.com/photos/1552617/pexels-photo-1552617.jpeg?auto=compress&cs=tinysrgb&w=640)
-*Figure 1: Stepwise progression. Source: Pexels / Free to use*
+![Carl Czerny's Op. 337 "40 Daily Exercises" Part 1 piano score, showing graded exercise progression with fingering markings — a foundational example of systematic difficulty structuring in piano pedagogy](https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/CCzernyOp337Teil1.png/960px-CCzernyOp337Teil1.png)
+*Figure 1: Carl Czerny, Op. 337 "40 Daily Exercises" Part 1, LilyPond engraving by M. Gößnitzer. [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:CCzernyOp337Teil1.png) — CC0 Public Domain*
 
 Putting Bach's *Well-Tempered Clavier* in front of someone on their first day of music study is not education — it is discouragement. Conversely, having a two-year student repeat the same opening bar every day is not growth — it is stagnation. Learning happens in a specific zone: just above current ability, but not so far above that the task becomes unreachable.
 
@@ -44,8 +49,8 @@ Noteflex's pass criteria for each sublevel make that position visible. A stage i
 
 All four must be satisfied. If any falls short, the stage continues. Because the criteria are explicit, a learner always knows the answer to "where am I now" in concrete numbers, not in vague impressions.
 
-![Pianist practicing at the keyboard](https://images.pexels.com/photos/995301/pexels-photo-995301.jpeg?auto=compress&cs=tinysrgb&w=640)
-*Figure 2: Piano practice. Source: Pexels / Free to use*
+![Historical lithograph portrait of Carl Czerny (1791–1857), Austrian pianist and piano pedagogue, creator of the graded exercise methods used in piano training worldwide](https://upload.wikimedia.org/wikipedia/commons/thumb/7/76/Carl_Czerny_Lanzedelli_Litho.jpg/960px-Carl_Czerny_Lanzedelli_Litho.jpg)
+*Figure 2: Carl Czerny, lithograph by Josef Lanzedelli d. Ä. (c. 1820). [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Carl_Czerny_Lanzedelli_Litho.jpg) — Public Domain. Albertina, Vienna.*
 
 ## 🎹 How the 21 Stages Are Actually Structured
 
@@ -72,5 +77,5 @@ When Vygotsky described the ZPD, he emphasized not the boundary itself but the f
 3. Hattie, J., & Timperley, H. (2007). The power of feedback. *Review of Educational Research*, 77(1), 81–112. DOI: [10.3102/003465430298487](https://doi.org/10.3102/003465430298487)
 
 ### Image Sources
-- Figure 1: Pexels / Free to use
-- Figure 2: Pexels / Free to use
+- Figure 1: Carl Czerny, Op. 337 "40 Daily Exercises" Part 1, LilyPond engraving by M. Gößnitzer. [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:CCzernyOp337Teil1.png) — CC0 Public Domain.
+- Figure 2: Carl Czerny, lithograph by Josef Lanzedelli d. Ä. (c. 1820). [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Carl_Czerny_Lanzedelli_Litho.jpg) — Public Domain. Albertina, Vienna.
