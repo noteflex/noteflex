@@ -174,6 +174,7 @@ export function resolveStyle(
   level: number,
   keySigCount: number,
   batchSize?: number,
+  visibleN?: number,
 ): ResolvedStyle {
   const raw = LEVEL_STYLES[level] ?? LEVEL_STYLES[1];
   const merged = { ...DEFAULT_STYLE, ...raw } as ResolvedStyle;
@@ -194,31 +195,17 @@ export function resolveStyle(
     if (merged.noteStartX < minStart) merged.noteStartX = minStart;
   }
 
-  if (merged.noteSpacing === 0) {
-    // §0.4.4 (2026-05-01): batchSize 기반 동적 간격 — 오선지 전체 너비를 균등 분할.
-    //  - batchSize=1 (history 누적 모드): TOTAL_SLOTS-1 = 7 gap (최대 8개 음표)
-    //  - batchSize=3 (§3 2026-05-02): batchSize+1 = 4 gap, 첫 음표를 spacing만큼 안쪽으로
-    //                                    → 좌·중·우 균등 분포 (3등분 배치)
-    //  - batchSize>1 (3 외): batchSize-1 gap
-    //  - batchSize 미지정: 기존 level 기반 fallback
-    let gapCount: number;
-    if (batchSize === undefined) {
-      gapCount = level >= 5 ? 6 : 4;
-    } else if (batchSize <= 1) {
-      gapCount = TOTAL_SLOTS - 1;
-    } else if (batchSize === 3) {
-      gapCount = batchSize + 1;
-    } else {
-      gapCount = batchSize - 1;
-    }
-    merged.noteSpacing = (SVG_W - merged.noteStartX - 50) / gapCount;
+  // §F4 N-등분 배치: N개 음표를 오선 유효 영역에 균등 분할.
+  //   effectiveWidth = STAFF_X2 - noteStartX
+  //   segmentWidth   = effectiveWidth / N
+  //   noteX(i)       = noteStartX + segmentWidth × (i + 0.5)
+  //   ↔ (noteStartX + segmentWidth/2) + i × segmentWidth  (호환 공식)
+  const N = visibleN ?? (batchSize ?? 1);
+  const effectiveWidth = STAFF_X2 - merged.noteStartX;
+  const segmentWidth = effectiveWidth / N;
+  merged.noteSpacing = segmentWidth;
+  merged.noteStartX  = merged.noteStartX + segmentWidth / 2;
 
-    // §3 (2026-05-02): batchSize=3 균등 분포 — 첫 음표를 spacing만큼 안쪽으로 옮김
-    // (좌·우 여백을 spacing 단위로 두어 좌·중·우 균등 시각).
-    if (batchSize === 3) {
-      merged.noteStartX = merged.noteStartX + merged.noteSpacing;
-    }
-  }
   return merged;
 }
 
@@ -488,10 +475,16 @@ export function GrandStaffPractice({
 
   const keySigCount = (keySharps?.length ?? 0) + (keyFlats?.length ?? 0);
   const hasKeySignature = keySigCount > 0;
-  const style = resolveStyle(level, keySigCount, batchSize);
 
   // batch 모드 판별: batchNotes 배열 있고 길이 > 0이면 batch 모드
   const isBatchMode = !!batchNotes && batchNotes.length > 0;
+
+  // §F4: N-등분 배치용 가시 음표 수
+  const visibleN = isBatchMode
+    ? batchNotes!.length
+    : Math.min((noteHistory ?? []).length + 1, TOTAL_SLOTS);
+
+  const style = resolveStyle(level, keySigCount, batchSize, visibleN);
 
   const notes = useMemo((): NoteEntry[] => {
     // ── Batch 모드: 한 batch 전체를 동시에 그림, 인덱스에 따라 색상 분기 ──

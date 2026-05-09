@@ -115,26 +115,30 @@ export default function StaffPreview() {
     return { keySharps: undefined, keyFlats: [...FLAT_ORDER].slice(0, n), keySigN: n };
   }, [keySigType, keySigCount]);
 
-  const style = useMemo(
-    () => resolveStyle(level, keySigN, batchSize),
-    [level, keySigN, batchSize],
-  );
-
   // Visible note count N
   const N = batchSize === 1 ? Math.min(historyCount + 1, TOTAL_SLOTS) : batchSize;
 
-  // Current layout X positions
+  // §F4: resolveStyle에 visibleN 전달 → N-등분 배치 반영
+  const style = useMemo(
+    () => resolveStyle(level, keySigN, batchSize, N),
+    [level, keySigN, batchSize, N],
+  );
+
+  // style.noteSpacing = segmentWidth, style.noteStartX = rawStart + segmentWidth/2
+  const segmentWidth    = style.noteSpacing;
+  const rawNoteStartX   = Math.round(style.noteStartX - segmentWidth / 2);
+  const effectiveWidth  = STAFF_X2 - rawNoteStartX;
+
+  // Note X positions (after F4 = N-div positions)
   const currentXArr = useMemo(
     () => Array.from({ length: N }, (_, i) => Math.round(style.noteStartX + i * style.noteSpacing)),
     [N, style.noteStartX, style.noteSpacing],
   );
 
-  // N-equal-division projected X positions
-  const effectiveWidth = SVG_W - style.noteStartX - RIGHT_PADDING;
-  const segmentWidth   = effectiveWidth / N;
+  // N-equal-division projected X (same as currentXArr after F4)
   const ndivXArr = useMemo(
-    () => Array.from({ length: N }, (_, i) => Math.round(style.noteStartX + segmentWidth * (i + 0.5))),
-    [N, style.noteStartX, segmentWidth],
+    () => Array.from({ length: N }, (_, i) => Math.round(rawNoteStartX + segmentWidth * (i + 0.5))),
+    [N, rawNoteStartX, segmentWidth],
   );
 
   // Sample notes
@@ -284,8 +288,8 @@ export default function StaffPreview() {
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
               <MetaStat label="N (visible)" value={N} testId="meta-N" />
-              <MetaStat label="noteStartX" value={Math.round(style.noteStartX)} testId="meta-noteStartX" />
-              <MetaStat label="noteSpacing" value={Math.round(style.noteSpacing)} testId="meta-noteSpacing" />
+              <MetaStat label="noteStartX" value={rawNoteStartX} testId="meta-noteStartX" />
+              <MetaStat label="segmentW" value={Math.round(segmentWidth)} testId="meta-noteSpacing" />
               <MetaStat label="effectiveW" value={Math.round(effectiveWidth)} testId="meta-effectiveWidth" />
             </div>
 
