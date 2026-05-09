@@ -7,6 +7,7 @@ import {
   SVG_W,
   STAFF_X2,
   resolveStyle,
+  computeMaxVisibleN,
 } from "@/components/practice/GrandStaffPractice";
 
 // Right padding = SVG_W - STAFF_X2
@@ -101,6 +102,8 @@ export default function StaffPreview() {
   const [keySigCount, setKeySigCount] = useState(2);
   const [historyCount, setHistoryCount] = useState(3);
   const [batchIndex, setBatchIndex] = useState(0);
+  const [totalSets, setTotalSets]   = useState(5);
+  const [showSlotIdx, setShowSlotIdx] = useState(false);
 
   const isGrand = level >= 5;
 
@@ -115,13 +118,13 @@ export default function StaffPreview() {
     return { keySharps: undefined, keyFlats: [...FLAT_ORDER].slice(0, n), keySigN: n };
   }, [keySigType, keySigCount]);
 
-  // Visible note count N
-  const N = batchSize === 1 ? Math.min(historyCount + 1, TOTAL_SLOTS) : batchSize;
+  // §C1 M-등분 고정 슬롯: stage 시작 시 고정되는 최대 슬롯 수 M
+  const M = computeMaxVisibleN(false, batchSize, batchSize === 1 ? totalSets : batchSize, 0);
 
-  // §F4: resolveStyle에 visibleN 전달 → N-등분 배치 반영
+  // §C1: resolveStyle에 M 전달 → 고정 슬롯 배치
   const style = useMemo(
-    () => resolveStyle(level, keySigN, batchSize, N),
-    [level, keySigN, batchSize, N],
+    () => resolveStyle(level, keySigN, batchSize, M),
+    [level, keySigN, batchSize, M],
   );
 
   // style.noteSpacing = segmentWidth, style.noteStartX = rawStart + segmentWidth/2
@@ -129,17 +132,21 @@ export default function StaffPreview() {
   const rawNoteStartX   = Math.round(style.noteStartX - segmentWidth / 2);
   const effectiveWidth  = STAFF_X2 - rawNoteStartX;
 
-  // Note X positions (after F4 = N-div positions)
-  const currentXArr = useMemo(
-    () => Array.from({ length: N }, (_, i) => Math.round(style.noteStartX + i * style.noteSpacing)),
-    [N, style.noteStartX, style.noteSpacing],
+  // All M slot positions (fixed grid)
+  const allSlotsXArr = useMemo(
+    () => Array.from({ length: M }, (_, i) => Math.round(style.noteStartX + i * style.noteSpacing)),
+    [M, style.noteStartX, style.noteSpacing],
   );
 
-  // N-equal-division projected X (same as currentXArr after F4)
+  // N-equal-division projected X (verification: same as allSlotsXArr)
   const ndivXArr = useMemo(
-    () => Array.from({ length: N }, (_, i) => Math.round(rawNoteStartX + segmentWidth * (i + 0.5))),
-    [N, rawNoteStartX, segmentWidth],
+    () => Array.from({ length: M }, (_, i) => Math.round(rawNoteStartX + segmentWidth * (i + 0.5))),
+    [M, rawNoteStartX, segmentWidth],
   );
+
+  // Visible note count (for empty slot calculation)
+  const visibleN = batchSize === 1 ? Math.min(historyCount + 1, M) : batchSize;
+  const emptySlots = M - visibleN;
 
   // Sample notes
   const batchNotes = useMemo(
@@ -167,7 +174,7 @@ export default function StaffPreview() {
       <div className="flex items-center gap-3">
         <h1 className="text-xl font-bold">Staff Preview</h1>
         <span className="text-xs font-semibold bg-amber-500/10 text-amber-600 px-2 py-0.5 rounded">
-          N-div debug
+          M-div debug
         </span>
       </div>
 
@@ -229,20 +236,37 @@ export default function StaffPreview() {
           )}
 
           {batchSize === 1 && (
-            <div className="space-y-1">
-              <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                History: {historyCount}
+            <>
+              <div className="space-y-1">
+                <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                  TotalSets (M): {totalSets}
+                </div>
+                <input
+                  type="range"
+                  min={1}
+                  max={10}
+                  value={totalSets}
+                  onChange={(e) => setTotalSets(Number(e.target.value))}
+                  className="w-full"
+                  data-testid="total-sets-slider"
+                />
               </div>
-              <input
-                type="range"
-                min={0}
-                max={TOTAL_SLOTS - 1}
-                value={historyCount}
-                onChange={(e) => setHistoryCount(Number(e.target.value))}
-                className="w-full"
-                data-testid="history-count-slider"
-              />
-            </div>
+
+              <div className="space-y-1">
+                <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                  History (answered): {historyCount}
+                </div>
+                <input
+                  type="range"
+                  min={0}
+                  max={Math.max(0, M - 1)}
+                  value={Math.min(historyCount, M - 1)}
+                  onChange={(e) => setHistoryCount(Number(e.target.value))}
+                  className="w-full"
+                  data-testid="history-count-slider"
+                />
+              </div>
+            </>
           )}
 
           {batchSize > 1 && (
@@ -261,6 +285,23 @@ export default function StaffPreview() {
               />
             </div>
           )}
+
+          <div className="space-y-1">
+            <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+              Debug
+            </div>
+            <button
+              onClick={() => setShowSlotIdx((v) => !v)}
+              className={`px-2.5 py-1 rounded text-sm font-medium border transition-colors ${
+                showSlotIdx
+                  ? "bg-primary text-primary-foreground border-primary"
+                  : "bg-card text-foreground border-border hover:border-primary/60"
+              }`}
+              data-testid="toggle-slot-idx"
+            >
+              {showSlotIdx ? "Hide" : "Show"} slot idx
+            </button>
+          </div>
         </div>
 
         {/* Preview + Meta */}
@@ -274,6 +315,7 @@ export default function StaffPreview() {
             clef={targetClef}
             level={level}
             batchSize={batchSize}
+            maxVisibleN={M}
             keySharps={keySharps}
             keyFlats={keyFlats}
             className="max-w-2xl"
@@ -287,17 +329,23 @@ export default function StaffPreview() {
             <div className="font-semibold text-sm font-sans">Layout Metrics</div>
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-              <MetaStat label="N (visible)" value={N} testId="meta-N" />
+              <MetaStat label="M (slots)" value={M} testId="meta-M" />
               <MetaStat label="noteStartX" value={rawNoteStartX} testId="meta-noteStartX" />
               <MetaStat label="segmentW" value={Math.round(segmentWidth)} testId="meta-noteSpacing" />
               <MetaStat label="effectiveW" value={Math.round(effectiveWidth)} testId="meta-effectiveWidth" />
             </div>
 
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              <MetaStat label="visibleN" value={visibleN} testId="meta-visibleN" />
+              <MetaStat label="emptySlots" value={emptySlots} testId="meta-empty-slots" />
+              <MetaStat label="TOTAL_SLOTS" value={TOTAL_SLOTS} testId="meta-total-slots" />
+            </div>
+
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <div className="text-muted-foreground mb-1">Current X positions</div>
+                <div className="text-muted-foreground mb-1">All slot X positions (M={M})</div>
                 <div className="bg-background rounded px-2 py-1 text-[11px]" data-testid="meta-current-x">
-                  [{currentXArr.join(", ")}]
+                  [{allSlotsXArr.join(", ")}]
                 </div>
               </div>
               <div>
@@ -307,6 +355,23 @@ export default function StaffPreview() {
                 </div>
               </div>
             </div>
+
+            {showSlotIdx && (
+              <div data-testid="meta-slot-idx">
+                <div className="text-muted-foreground mb-1">Slot indices</div>
+                <div className="flex flex-wrap gap-1">
+                  {allSlotsXArr.map((x, i) => (
+                    <span
+                      key={i}
+                      className="bg-background border border-border rounded px-1.5 py-0.5 text-[11px]"
+                      data-testid={`slot-idx-${i}`}
+                    >
+                      [{i}] x={x}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
 
             <div className="text-muted-foreground text-[11px] grid grid-cols-2 sm:grid-cols-3 gap-x-4">
               <span>segmentW = <span data-testid="meta-segmentWidth">{segmentWidth.toFixed(1)}</span></span>

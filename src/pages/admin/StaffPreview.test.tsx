@@ -32,9 +32,9 @@ describe("StaffPreview — render & controls", () => {
     expect(screen.getByTestId("grand-staff-mock")).toBeInTheDocument();
   });
 
-  it("default N=4 (batchSize=1, history=3)", () => {
+  it("default M=5 (batchSize=1, totalSets=5)", () => {
     renderPage();
-    expect(screen.getByTestId("meta-N")).toHaveTextContent("4");
+    expect(screen.getByTestId("meta-M")).toHaveTextContent("5");
   });
 
   it("shows level toggle buttons 1-7", () => {
@@ -51,17 +51,17 @@ describe("StaffPreview — render & controls", () => {
     }
   });
 
-  it("batchSize=3 → N=3, batch-index-slider visible", async () => {
+  it("batchSize=3 → M=3, batch-index-slider visible", async () => {
     renderPage();
     await userEvent.click(screen.getByTestId("toggle-batchsize-3"));
-    expect(screen.getByTestId("meta-N")).toHaveTextContent("3");
+    expect(screen.getByTestId("meta-M")).toHaveTextContent("3");
     expect(screen.getByTestId("batch-index-slider")).toBeInTheDocument();
   });
 
-  it("batchSize=7 → N=7", async () => {
+  it("batchSize=7 → M=7", async () => {
     renderPage();
     await userEvent.click(screen.getByTestId("toggle-batchsize-7"));
-    expect(screen.getByTestId("meta-N")).toHaveTextContent("7");
+    expect(screen.getByTestId("meta-M")).toHaveTextContent("7");
   });
 
   it("history-count-slider visible when batchSize=1", () => {
@@ -97,12 +97,12 @@ describe("StaffPreview — render & controls", () => {
 });
 
 describe("StaffPreview — meta value correctness", () => {
-  it("batchSize=1 history=3 → current-x has 4 entries", () => {
+  it("batchSize=1, totalSets=5 → current-x has 5 entries (M=5 fixed grid)", () => {
     renderPage();
     const el = screen.getByTestId("meta-current-x");
     const text = el.textContent ?? "";
     const entries = text.replace("[", "").replace("]", "").split(",").filter(Boolean);
-    expect(entries).toHaveLength(4);
+    expect(entries).toHaveLength(5);
   });
 
   it("batchSize=5 → current-x has 5 entries", async () => {
@@ -126,5 +126,35 @@ describe("StaffPreview — meta value correctness", () => {
       .map((s) => parseInt(s.trim(), 10));
     expect(values[0]).toBeLessThan(values[1]);
     expect(values[1]).toBeLessThan(values[2]);
+  });
+});
+
+describe("StaffPreview — C2 M-등분 고정 슬롯 정책", () => {
+  it("total-sets-slider visible when batchSize=1", () => {
+    renderPage();
+    expect(screen.getByTestId("total-sets-slider")).toBeInTheDocument();
+  });
+
+  it("total-sets-slider hidden when batchSize=3", async () => {
+    renderPage();
+    await userEvent.click(screen.getByTestId("toggle-batchsize-3"));
+    expect(screen.queryByTestId("total-sets-slider")).not.toBeInTheDocument();
+  });
+
+  it("batchSize=1, totalSets=7 → meta-M=7", async () => {
+    const { fireEvent } = await import("@testing-library/react");
+    renderPage();
+    const slider = screen.getByTestId("total-sets-slider");
+    fireEvent.change(slider, { target: { value: "7" } });
+    expect(screen.getByTestId("meta-M")).toHaveTextContent("7");
+  });
+
+  it("toggle-slot-idx toggles meta-slot-idx visibility", async () => {
+    renderPage();
+    expect(screen.queryByTestId("meta-slot-idx")).not.toBeInTheDocument();
+    await userEvent.click(screen.getByTestId("toggle-slot-idx"));
+    expect(screen.getByTestId("meta-slot-idx")).toBeInTheDocument();
+    await userEvent.click(screen.getByTestId("toggle-slot-idx"));
+    expect(screen.queryByTestId("meta-slot-idx")).not.toBeInTheDocument();
   });
 });
