@@ -8,7 +8,9 @@ import {
   } from "@/components/ui/dialog";
   import { Button } from "@/components/ui/button";
   import { formatSublevel, getNextSublevel } from "@/lib/levelSystem";
-  
+  import { generateCoachingComment } from "@/lib/aiCoaching";
+  import { useLang } from "@/contexts/LanguageContext";
+
   interface SublevelPassedDialogProps {
     open: boolean;
     level: number;
@@ -16,13 +18,14 @@ import {
     totalAttempts: number;
     totalCorrect: number;
     bestStreak: number;
+    avgReactionRatio?: number;
     justPassed: boolean;
     onReplay: () => void;
     onGoToNextSublevel: () => void;
     onBackToSelect: () => void;
     onClose: () => void;
   }
-  
+
   export function SublevelPassedDialog({
     open,
     level,
@@ -30,12 +33,14 @@ import {
     totalAttempts,
     totalCorrect,
     bestStreak,
+    avgReactionRatio,
     justPassed,
     onReplay,
     onGoToNextSublevel,
     onBackToSelect,
     onClose,
   }: SublevelPassedDialogProps) {
+    const { lang } = useLang();
     const accuracy = totalAttempts > 0
       ? Math.round((totalCorrect / totalAttempts) * 100)
       : 0;
@@ -52,6 +57,18 @@ import {
         ? `축하해요! ${nextLabel}이(가) 해제됐어요.`
         : "🏆 마지막 단계까지 통과했어요. 진짜 그랜드마스터!"
       : "이번 판도 깔끔하게 클리어. 더 도전해볼래요?";
+
+    const accuracyRatio = totalAttempts > 0 ? totalCorrect / totalAttempts : 0;
+    const coaching = generateCoachingComment(
+      {
+        outcome: "passed",
+        accuracy: accuracyRatio,
+        bestStreak,
+        avgReactionRatio,
+        playCount: 0,
+      },
+      lang === "ko" ? "ko" : "en"
+    );
   
     return (
       <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
@@ -83,7 +100,14 @@ import {
               </div>
             </div>
           </div>
-  
+
+          <p
+            className="text-sm text-muted-foreground text-center px-1"
+            data-testid="coaching-comment"
+          >
+            {coaching}
+          </p>
+
           <DialogFooter className="flex flex-col gap-2 sm:flex-row sm:justify-between">
             <Button
               variant="outline"
