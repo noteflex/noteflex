@@ -14,6 +14,7 @@ import {
 } from "@/lib/levelSystem";
 import UpgradeModal from "./UpgradeModal";
 import DailyLimitModal from "./DailyLimitModal";
+import MasteryScoreCard from "./MasteryScoreCard";
 import { AdBanner } from "./AdBanner";
 import { getSlot } from "@/lib/adsense";
 
@@ -65,6 +66,24 @@ export default function LevelSelect({
   const [dailyLimitOpen, setDailyLimitOpen] = useState(false);
 
   const totalPassed = progress.filter((p) => p.passed).length;
+
+  // 현재 플레이 중인 단계 = 접근 가능 + 미통과 중 첫 번째 (MasteryScoreCard 기준)
+  const currentSublevel = useMemo(() => {
+    for (let level = 1; level <= 7; level++) {
+      for (const sub of [1, 2, 3] as Sublevel[]) {
+        if (!canAccessSublevel(tier, level, sub)) continue;
+        const prev = getProgressGatePrev(tier, level, sub);
+        const isPrevPassed =
+          prev === null
+            ? true
+            : (progress.find((p) => p.level === prev.level && p.sublevel === prev.sublevel)?.passed ?? false);
+        if (!isPrevPassed && !isAdmin) continue;
+        const prog = progress.find((p) => p.level === level && p.sublevel === sub);
+        if (!prog?.passed) return { level, sublevel: sub, progress: prog ?? null };
+      }
+    }
+    return null;
+  }, [tier, isAdmin, progress]);
 
   // §F4 (2026-05-05, 정책 P1 보조): 21개 셀 state를 useMemo로 한 번에 계산 → SublevelCell React.memo 효과 확보.
   const cellStates = useMemo(() => {
@@ -200,6 +219,16 @@ export default function LevelSelect({
       {/* 로딩 */}
       {loading && (
         <p className="text-sm text-muted-foreground">진도 불러오는 중...</p>
+      )}
+
+      {/* 현재 단계 마스터리 점수 */}
+      {!loading && currentSublevel && (
+        <MasteryScoreCard
+          tier={isAdmin ? "admin" : tier}
+          progress={currentSublevel.progress}
+          level={currentSublevel.level}
+          sublevel={currentSublevel.sublevel}
+        />
       )}
 
       {/* 레벨 그룹 */}

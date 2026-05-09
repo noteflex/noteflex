@@ -125,8 +125,9 @@ describe("LevelSelect - 렌더링", () => {
 
   it("'내 진도: 0 / 21' 표시", () => {
     renderLevelSelect();
-    expect(screen.getByText(/내 진도:/)).toBeInTheDocument();
-    expect(screen.getByText(/0/)).toBeInTheDocument();
+    const p = screen.getByText(/내 진도:/, { selector: "p" });
+    expect(p).toBeInTheDocument();
+    expect(p.textContent).toMatch(/0\s*\/\s*21/);
   });
 
   it("로그인 유도 버튼 표시 (guest + onLoginRequest 있을 때)", () => {
