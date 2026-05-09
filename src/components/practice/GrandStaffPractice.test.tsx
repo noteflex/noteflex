@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { getNoteColor, resolveStyle, computeMaxVisibleN, computeScale, STAFF_X2 } from "./GrandStaffPractice";
+import { getNoteColor, resolveStyle, computeMaxVisibleN, computeScale, STAFF_X2, SHARP_KEY_POS, FLAT_KEY_POS } from "./GrandStaffPractice";
 
 describe("getNoteColor", () => {
   it("target → #b91c1c (빨강)", () => {
@@ -250,4 +250,44 @@ describe("resolveStyle — 첫 음표 1/4 위치 정책 (segmentWidth × 0.25)",
     // M=3은 segmentWidth가 커서 0.25 오프셋도 더 크다
     expect(s3.noteStartX).toBeGreaterThan(s7.noteStartX);
   });
+});
+
+describe("조표 표준 음악 표기 위치 — treble sharps (7)", () => {
+  it("F# stave position = 10 (L5)", () => expect(SHARP_KEY_POS.treble.F).toBe(10));
+  it("C# stave position = 7 (S3)", () => expect(SHARP_KEY_POS.treble.C).toBe(7));
+  it("G# stave position = 11 (above L5)", () => expect(SHARP_KEY_POS.treble.G).toBe(11));
+  it("D# stave position = 8 (L4)", () => expect(SHARP_KEY_POS.treble.D).toBe(8));
+  it("A# stave position = 5 (S2)", () => expect(SHARP_KEY_POS.treble.A).toBe(5));
+  it("E# stave position = 9 (S4)", () => expect(SHARP_KEY_POS.treble.E).toBe(9));
+  it("B# stave position = 6 (L3)", () => expect(SHARP_KEY_POS.treble.B).toBe(6));
+});
+
+describe("조표 표준 음악 표기 위치 — treble flats (7)", () => {
+  it("Bb stave position = 6 (L3)", () => expect(FLAT_KEY_POS.treble.B).toBe(6));
+  it("Eb stave position = 9 (S4)", () => expect(FLAT_KEY_POS.treble.E).toBe(9));
+  it("Ab stave position = 5 (S2)", () => expect(FLAT_KEY_POS.treble.A).toBe(5));
+  it("Db stave position = 8 (L4)", () => expect(FLAT_KEY_POS.treble.D).toBe(8));
+  it("Gb stave position = 4 (L2)", () => expect(FLAT_KEY_POS.treble.G).toBe(4));
+  it("Cb stave position = 7 (S3)", () => expect(FLAT_KEY_POS.treble.C).toBe(7));
+  it("Fb stave position = 3 (L1)", () => expect(FLAT_KEY_POS.treble.F).toBe(3));
+});
+
+describe("조표 표준 음악 표기 위치 — bass sharps (7)", () => {
+  it("F# stave position = -4 (L4)", () => expect(SHARP_KEY_POS.bass.F).toBe(-4));
+  it("C# stave position = -7 (S2)", () => expect(SHARP_KEY_POS.bass.C).toBe(-7));
+  it("G# stave position = -2 (L5)", () => expect(SHARP_KEY_POS.bass.G).toBe(-2));
+  it("D# stave position = -6 (L3)", () => expect(SHARP_KEY_POS.bass.D).toBe(-6));
+  it("A# stave position = -9 (S1)", () => expect(SHARP_KEY_POS.bass.A).toBe(-9));
+  it("E# stave position = -5 (S3)", () => expect(SHARP_KEY_POS.bass.E).toBe(-5));
+  it("B# stave position = -8 (L2)", () => expect(SHARP_KEY_POS.bass.B).toBe(-8));
+});
+
+describe("조표 표준 음악 표기 위치 — bass flats (7)", () => {
+  it("Bb stave position = -8 (L2)", () => expect(FLAT_KEY_POS.bass.B).toBe(-8));
+  it("Eb stave position = -5 (S3)", () => expect(FLAT_KEY_POS.bass.E).toBe(-5));
+  it("Ab stave position = -9 (S1)", () => expect(FLAT_KEY_POS.bass.A).toBe(-9));
+  it("Db stave position = -6 (L3)", () => expect(FLAT_KEY_POS.bass.D).toBe(-6));
+  it("Gb stave position = -10 (L1)", () => expect(FLAT_KEY_POS.bass.G).toBe(-10));
+  it("Cb stave position = -7 (S2)", () => expect(FLAT_KEY_POS.bass.C).toBe(-7));
+  it("Fb stave position = -11 (below L1)", () => expect(FLAT_KEY_POS.bass.F).toBe(-11));
 });

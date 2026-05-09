@@ -85,13 +85,20 @@ const GLYPH_FLAT   = "\uE260";
 const SHARP_ORDER = ["F", "C", "G", "D", "A", "E", "B"] as const;
 const FLAT_ORDER  = ["B", "E", "A", "D", "G", "C", "F"] as const;
 
-const SHARP_KEY_POS: Record<"treble" | "bass", Record<string, number>> = {
+// §조표 표준 음악 표기 (stave position step values):
+//   treble bottomStep=2 (E4), bass bottomStep=-10 (G2).
+//   sharps 순서: F·C·G·D·A·E·B  /  flats 순서: B·E·A·D·G·C·F
+export const SHARP_KEY_POS: Record<"treble" | "bass", Record<string, number>> = {
   treble: { F: 10, C:  7, G: 11, D:  8, A:  5, E:  9, B:  6 },
-  bass:   { F: -4, C:  0, G: -3, D:  1, A: -2, E:  2, B: -1 },
+  //  F#=L5  C#=S3  G#=above·L5  D#=L4  A#=S2  E#=S4  B#=L3
+  bass:   { F: -4, C: -7, G: -2, D: -6, A: -9, E: -5, B: -8 },
+  //  F#=L4  C#=S2  G#=L5   D#=L3  A#=S1  E#=S3  B#=L2
 };
-const FLAT_KEY_POS: Record<"treble" | "bass", Record<string, number>> = {
+export const FLAT_KEY_POS: Record<"treble" | "bass", Record<string, number>> = {
   treble: { B:  6, E:  9, A:  5, D:  8, G:  4, C:  7, F:  3 },
-  bass:   { B: -1, E:  2, A: -2, D:  1, G: -3, C:  0, F: -4 },
+  //  B♭=L3  E♭=S4  A♭=S2  D♭=L4  G♭=L2  C♭=S3  F♭=L1
+  bass:   { B: -8, E: -5, A: -9, D: -6, G: -10, C: -7, F: -11 },
+  //  B♭=L2  E♭=S3  A♭=S1  D♭=L3  G♭=L1   C♭=S2  F♭=below·L1
 };
 
 // ═════════════════════════════════════════════════════════════
