@@ -372,6 +372,29 @@ M등분 고정 슬롯·Uniform scale·PlayPage 영향 없음. 7 신규 테스트
 - 28 신규 테스트 (treble/bass × sharp/flat 각 7), 676 총 PASS, sim:test 0 violations
 - `renderKeySignature`는 수정 없음 — 테이블 값만 변경
 
+### 3.20 조표 SVG anchor point 정정 ✅ (2026-05-10, commit `1e73baf`)
+
+**문제**: 사용자 시각 검증 — treble clef F# (line 5) 위치가 정확히 박히지 않음.
+
+**원인**: `renderKeySignature`에서 `y={stepToY(...) + keySigFontSize * 0.28}` — 잘못된 수동 offset.
+- Bravura SMuFL 설계: glyph origin(y=0 = baseline) = stave position (accidental이 속한 line/space 중앙)
+- G-clef·F-clef 렌더링은 offset 없이 `y={stave_y}` 사용 — key sig만 불일치
+- 0.28 * 64 = 17.9px 아래 박힘 → F# line 5에서 약 0.75 stave space 내려 보임
+
+**정정**: `y={stave_y}` (offset 제거).
+
+| 항목 | 변경 전 | 변경 후 |
+|---|---|---|
+| sharp y | `stepToY(...) + keySigFontSize * 0.28` | `stepToY(...)` |
+| flat y | `stepToY(...) + keySigFontSize * 0.28` | `stepToY(...)` |
+| 원칙 | manual calibration | Bravura SMuFL 설계 원칙 일치 |
+
+- `stepToY`, `STEP_H`, `LINE_GAP` export 추가 → 46 신규 단위 테스트
+  - treble/bass 각 5 line + 1 space + 1 ledger 위치 검증 (14개)
+  - F# treble scale 5단계 비례 검증 (5개)
+  - treble/bass × sharp/flat 각 7위치 y 좌표 (28개)
+- 722 총 PASS, sim:test 0 violations
+
 ---
 
 ## 4. 배치고사 시스템 🔴

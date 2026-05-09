@@ -158,9 +158,12 @@
 - 해결: `/play` 전용 PlayPage (h-screen overflow-hidden) + NavOnlyRoute 직접 접근 차단
 - Index.tsx 랜딩 전용 축소, Start → navigate('/play', {state:{fromNav:true}})
 
-**§0.4.10 조표 위치 표준 음악 표기 정정 ✅ (2026-05-10, commit `c63b04a`)**
+**§0.4.10 조표 위치 표준 음악 표기 정정 ✅ (2026-05-10, commit `c63b04a` + `1e73baf`)**
 - bass clef SHARP_KEY_POS·FLAT_KEY_POS 전체 수정 — 기존 treble-7 오류 → treble-14 (2옥타브)
-- 28 신규 단위 테스트 (treble/bass × sharp/flat 각 7개 위치 검증, 676 총 PASS, sim:test 0 violations)
+- SVG anchor point 정정: keySigFontSize×0.28 offset 제거 → y={stave_pos_y}
+  Bravura SMuFL 설계 원칙: glyph baseline = stave position (G-clef 패턴과 일관)
+- stepToY·STEP_H·LINE_GAP export + 46 신규 단위 테스트 (stave line/space y 좌표 검증)
+- 722 총 PASS, sim:test 0 violations
 
 **§0.4.9 첫 음표 위치 1/4 정정 ✅ (2026-05-10 C1, commit `37d1fcd`)**
 - 사용자 검증: 첫 음표가 음자리표·조표와 너무 떨어진 영역

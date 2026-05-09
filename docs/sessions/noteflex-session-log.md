@@ -4,6 +4,34 @@
 
 ---
 
+## 2026-05-10 (낮~오후) — 조표 SVG anchor point 정정 ✅
+
+### 사용자 검증 발견
+- treble clef 2 sharps에서 F#(line 5)이 staff line과 정렬 안 됨
+- 원인: keySigFontSize * 0.28 = 17.9px 아래로 내려 박힌 잘못된 offset
+
+### 사용자 결정
+- Bravura SMuFL 설계 원칙: glyph baseline = stave position → offset 제거
+- G-clef/F-clef 렌더링 패턴과 일관 (둘 다 extra offset 없음)
+
+### Commits
+- `1e73baf` fix(staff): 조표 SVG anchor point 정정 — keySigFontSize*0.28 offset 제거
+
+### 검증
+- 자동 테스트 722 PASS (676 → +46, stepToY/stave position y 좌표 검증)
+- sim:test 0 violations (9984 games)
+
+### 갱신 docs
+- PENDING §0.4.10 갱신 (anchor point 정정 내용 추가) ✅
+- GAP §3.20 신규 ✅
+- session-log §19 신규 ✅
+
+### 다음 세션 시작점
+- /admin/staff-preview 시각 검증 — keySig 모든 조합(1~7 sharps/flats × treble/bass × scale 5단계) 확인
+- 사용자 직접 검증: F# treble line 5 정확 박혔는지 확인
+
+---
+
 ## 2026-05-10 (낮) — 조표 위치 표준 음악 표기 정정 ✅
 
 ### 사용자 검증 발견
