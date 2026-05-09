@@ -1,9 +1,119 @@
-# 세션 로그 — 2026-05-09 영역 B-0 티어 매트릭스 + 사실 추적
+# Noteflex 세션 로그
 
-> **날짜**: 2026-05-09
-> **참여자**: 사용자 + Claude Sonnet 4.6
-> **작업 범위**: (1) 영역 B-0 티어 접근 매트릭스 결정 + (2) 코드 사실 추적 7개 영역 (read-only)
-> **이전 세션**: 2026-05-08 — 블로그 9일차 4편 한+영 작성 + 블로그 작성 정책 §1.4~1.5 갱신
+> **운영 원칙**: 1개 파일에 모든 세션 누적. 시간 역순 (최신 위). 매 세션 마무리 시 Claude Code가 박음.
+
+---
+
+## 2026-05-09 (오전~) — Group A 실행 + 블로그 10일차
+
+### 사용자 결정
+
+- **Q1·Q2·Q3 (CTO 권장 그대로 OK)**:
+  - Q1 = (a) A2 RPC + 클라이언트 = atomic commit
+  - Q2 = (b) Free 순차 해금 = useLevelProgress 메모리 캐시 (UI 가드용 즉시 반응, RPC 이중 검증)
+  - Q3 = (a) A2 마이그레이션 = 즉시 production apply
+- **docs 갱신 패턴 v2 (Group B부터)**: sub-step별 file in-place ✅ 박음(commit X) + 마지막 docs 일괄 commit 1개. 코드 commit 사이에 docs commit 끼움 X.
+- **세션 로그 1개 파일 누적 결정**: docs/sessions/noteflex-session-log.md 1개 파일 시간 역순 누적. 파일 분리 X. 토픽 분리 X.
+- **블로그 10일차 = 토요일 3편 = 한+영 6 .md**: §3-37·§2-24·§8-87. §8-87 13일차 3편째 차용, 시프트 X.
+
+### 진행 흐름
+
+#### Group A (코드 적용, 4 commits)
+
+| commit | 내용 |
+|---|---|
+| `e6ed7b2` A1 | canAccessSublevel 재작성 + getProgressGatePrev 신규 (avg_reaction_ratio 개칭 포함) |
+| `b232dcd` A2 | 20260509_pass_criteria_v2.sql + useLevelProgress + NoteGame 순차 체인 (atomic) |
+| `1848391` A3 | Pricing.tsx freeFeatures·compareRows 5/9 결정 반영 |
+| `fbb4340` A4 | docs 동기화 (§B-0.2/B.1/B.2 ✅) |
+
+검증: 470/470 PASS, tsc 0 errors.
+
+#### 블로그 10일차 (콘텐츠, 4 commits)
+
+| commit | 내용 |
+|---|---|
+| `05744b1` | §3-37 초견 실수 패턴 분석 (ko+en, ~1,700자 / ~880 words) |
+| `60e8fb3` | §2-24 쉼표 읽기 (ko+en, ~1,700자 / ~870 words) |
+| `d988676` | §8-87 21단계 시스템 (ko+en, ~1,850자 / ~900 words, 13일차 차용) |
+| `8acd24e` | blog_topics_100.md §6 이력 6행 + §1.1 10일차 표 + v15 |
+
+이미지 curl HTTP 200 검증 (6개 Pexels): pexels 164821·3756766·210764·1246437·1552617·995301 = 200 ✓
+
+학술 인용:
+- Kopiez & Lee (2008) DOI: 10.1080/14613800701871363
+- Lehmann & McArthur (2002) Oxford University Press (§3-37)
+- Margulis (2007) DOI: 10.1525/mp.2007.24.5.485
+- Cooper & Meyer (1960) University of Chicago Press (§2-24)
+- Vygotsky (1978) Harvard University Press
+- Hattie & Timperley (2007) DOI: 10.3102/003465430298487 (§8-87)
+
+거장 전통: Levitin + 음악 교육 / Copland + Bernstein / Levitin + 음악 교육.
+
+### 갱신 docs
+
+- **PENDING_BACKLOG.md**: §B-0.2·§B.1·§B.2 ✅ 표시 (commit fbb4340)
+- **DESIGN_VS_CODE_GAP.md**: §B-0.2 코드 영향 범위 표 상태 열 추가 (commit fbb4340)
+- **blog_topics_100.md**: §6 이력 6행 추가 + §1.1 10일차 행 박음 + v15. 누적 46편 (한 23 + 영 23).
+
+### 다음 세션 시작점
+
+1. **5/10 일요일 = 11일차 = 주말 3편**: §3-38 약점 음표 집중 학습 + §5-56 피아노 학습자 가이드 + §7-79 가중치 학습 (14일차 차용)
+2. **그 후 Group B = 일일 세션 한도 시스템 (~4h)**:
+   - `supabase/migrations/20260509_daily_sessions.sql` 신규
+   - `src/hooks/useDailyLimit.ts`
+   - `src/components/DailyLimitModal.tsx`
+   - NoteGame.tsx 게임 시작 전 limit 체크 + 모달 트리거
+   - commit 패턴 v2 적용 (sub-step별 in-place ✅ + 마지막 일괄 commit)
+
+### 출시 카운트다운
+
+오늘 = 2026-05-09. 출시 = 2026-05-31. **22일 남음**.
+
+---
+
+## 2026-05-08 밤 ~ 2026-05-09 새벽 — 영역 B-0 티어 매트릭스 결정 + 사실 추적
+
+> **원본 전문**: 이 파일 하단 섹션 (구 세션 로그 형식) 에 박힘. 아래 요약은 핵심 결정·사실·commit만 추출.
+
+### 결정 요약 (D1~D7)
+
+| 결정 | 내용 |
+|---|---|
+| D1 Guest | Lv1 Sub1만, 3회/일, 가입 유도 모달 |
+| D2 Free | Lv1~5 Sub1 순차, 7회/일, 24h 카운트다운 모달 |
+| D3 Premium | 전 21단계, 무제한, Quick Mastery 포함 |
+| D4 DB PASS_CRITERIA | 20260509_pass_criteria_v2.sql (10회/85%/35%/5 연속) |
+| D5 Quick Mastery Mode | Premium 전용, 오류율≤1% AND 반응시간≤타이머 50% → 첫 세션 즉시 통과 |
+| D6 Mastery Score UI | Free/Guest = 블러 + CTA, Premium = 전체 노출 |
+| D7 AI Coaching | Free = 기본 2종, Premium = 전체 |
+
+### 코드 사실 추적 요약 (F1~F7)
+
+| 사실 | 결과 |
+|---|---|
+| F1 canAccessSublevel 갭 | Guest Sub1~3 허용 → Sub1만으로 정정 필요 (→ A1) |
+| F2 일일 세션 한도 | 완전 미구현 (→ Group B) |
+| F3 Mastery Score | 부분 구현, 블러 미구현 (→ Group C) |
+| F4 AI Coaching | 완전 미구현 (→ Group C) |
+| F5 Quick Mastery Mode | 완전 미구현 (→ Group D) |
+| F6 Pricing 카피 | 구 Free 범위 반영, 수정 필요 (→ A3) |
+| F7 DB PASS_CRITERIA | play≥5/80% vs TS 10/85% 불일치 (→ A2) |
+
+### commits
+
+| commit | 내용 |
+|---|---|
+| `8c66a6c` | 세션 로그 신규 (구 파일명, 본 파일로 통합) |
+| `5d95cd0` | package.json `npm run resume` 단축어 |
+| `74f5200` | PENDING_BACKLOG §B-0/§B.1~B.6/§13.L/§0-1.1 |
+| `5571a6e` | DESIGN_VS_CODE_GAP §5/§B-0/§B.1~B.2 |
+
+---
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- 아래: 구 세션 로그 형식 (2026-05-08 밤, 상세 원문 보존) -->
+<!-- ═══════════════════════════════════════════════════════ -->
 
 ---
 
