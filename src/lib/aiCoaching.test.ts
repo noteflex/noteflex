@@ -132,3 +132,44 @@ describe("generateCoachingComment — game_over (ko)", () => {
     expect(comment).toMatch(/accuracy/i);
   });
 });
+
+// ── fastTrack 전용 분기 ───────────────────────────────────────
+
+describe("generateCoachingComment — fastTrack", () => {
+  it("fastTrack=true, ko → '이미 충분합니다' 메시지", () => {
+    const comment = generateCoachingComment(
+      { ...base, fastTrack: true },
+      "ko"
+    );
+    expect(comment).toBe("이미 충분합니다. 다음 단계로.");
+  });
+
+  it("fastTrack=true, en → 'Already enough' 메시지", () => {
+    const comment = generateCoachingComment(
+      { ...base, fastTrack: true },
+      "en"
+    );
+    expect(comment).toBe("Already enough. Onto the next.");
+  });
+
+  it("fastTrack=true → outcome·accuracy 무관하게 fast_track 메시지 우선", () => {
+    const comment = generateCoachingComment(
+      { ...base, outcome: "game_over", accuracy: 0.50, fastTrack: true },
+      "ko"
+    );
+    expect(comment).toBe("이미 충분합니다. 다음 단계로.");
+  });
+
+  it("fastTrack=false (명시) → 일반 분기 유지", () => {
+    const comment = generateCoachingComment(
+      { ...base, fastTrack: false },
+      "ko"
+    );
+    expect(comment).not.toBe("이미 충분합니다. 다음 단계로.");
+  });
+
+  it("fastTrack undefined → 일반 분기 유지", () => {
+    const comment = generateCoachingComment(base, "ko");
+    expect(comment).not.toBe("이미 충분합니다. 다음 단계로.");
+  });
+});

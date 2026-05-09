@@ -1,5 +1,5 @@
-import { describe, it, expect, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { render, screen, act } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { SublevelPassedDialog } from "./SublevelPassedDialog";
 
@@ -79,5 +79,84 @@ describe("SublevelPassedDialog", () => {
     );
     await user.click(screen.getByText(/Lv 2-2로/));
     expect(onGoToNextSublevel).toHaveBeenCalledOnce();
+  });
+});
+
+// ── fastTrack 분기 테스트 (lang default = "en") ───────────────────
+
+describe("SublevelPassedDialog — fastTrack=true", () => {
+  const ftProps = {
+    open: true,
+    level: 2,
+    sublevel: 2 as const,
+    totalAttempts: 20,
+    totalCorrect: 20,
+    bestStreak: 10,
+    justPassed: true,
+    fastTrack: true,
+    onReplay: vi.fn(),
+    onGoToNextSublevel: vi.fn(),
+    onBackToSelect: vi.fn(),
+    onClose: vi.fn(),
+  };
+
+  beforeEach(() => vi.useFakeTimers());
+  afterEach(() => vi.useRealTimers());
+
+  it("fastTrack=true → '🚀 Fast Track' 배지 노출", () => {
+    render(<SublevelPassedDialog {...ftProps} />);
+    expect(screen.getByTestId("fast-track-badge")).toHaveTextContent("🚀 Fast Track");
+  });
+
+  it("fastTrack=true → 'Already enough' 메시지 노출", () => {
+    render(<SublevelPassedDialog {...ftProps} />);
+    expect(screen.getByTestId("fast-track-message")).toHaveTextContent(
+      "Already enough. Onto the next."
+    );
+  });
+
+  it("fastTrack=true → 'Auto-advance in 5s' 라벨 노출", () => {
+    render(<SublevelPassedDialog {...ftProps} />);
+    expect(screen.getByTestId("auto-advance-label")).toHaveTextContent(
+      "Auto-advance in 5s"
+    );
+  });
+
+  it("fastTrack=true → 5초 후 onGoToNextSublevel 자동 호출", () => {
+    const onGoToNextSublevel = vi.fn();
+    render(<SublevelPassedDialog {...ftProps} onGoToNextSublevel={onGoToNextSublevel} />);
+    act(() => vi.advanceTimersByTime(5000));
+    expect(onGoToNextSublevel).toHaveBeenCalledOnce();
+  });
+
+  it("fastTrack=true → 'Next stage now' 클릭 시 즉시 onGoToNextSublevel", async () => {
+    vi.useRealTimers();
+    const user = userEvent.setup();
+    const onGoToNextSublevel = vi.fn();
+    render(<SublevelPassedDialog {...ftProps} onGoToNextSublevel={onGoToNextSublevel} />);
+    await user.click(screen.getByTestId("fast-track-go-now-btn"));
+    expect(onGoToNextSublevel).toHaveBeenCalledOnce();
+  });
+
+  it("fastTrack=true → 'Level select' 클릭 시 onBackToSelect 호출", async () => {
+    vi.useRealTimers();
+    const user = userEvent.setup();
+    const onBackToSelect = vi.fn();
+    render(<SublevelPassedDialog {...ftProps} onBackToSelect={onBackToSelect} />);
+    await user.click(screen.getByTestId("fast-track-level-select-btn"));
+    expect(onBackToSelect).toHaveBeenCalledOnce();
+  });
+
+  it("fastTrack=true + Lv7-3 (no next) → 카운트다운·go-now 버튼 없음", () => {
+    render(<SublevelPassedDialog {...ftProps} level={7} sublevel={3} />);
+    expect(screen.queryByTestId("auto-advance-label")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("fast-track-go-now-btn")).not.toBeInTheDocument();
+    expect(screen.getByTestId("fast-track-level-select-btn")).toBeInTheDocument();
+  });
+
+  it("fastTrack=false → 일반 stats grid 노출 (회귀 X)", () => {
+    render(<SublevelPassedDialog {...ftProps} fastTrack={false} />);
+    expect(screen.queryByTestId("fast-track-badge")).not.toBeInTheDocument();
+    expect(screen.getByTestId("coaching-comment")).toBeInTheDocument();
   });
 });

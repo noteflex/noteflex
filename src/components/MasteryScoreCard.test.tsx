@@ -66,6 +66,16 @@ describe("computeMasteryScore", () => {
     const prog: SublevelProgress = { ...baseProg, avg_reaction_ratio: undefined };
     expect(computeMasteryScore(prog)).toBe(Math.round(25 + 0.09 + 25 + 25));
   });
+
+  it("fast_track=true → 100 강제 (메트릭 무관)", () => {
+    const prog: SublevelProgress = {
+      ...baseProg,
+      play_count: 1,
+      best_streak: 2,
+      fast_track: true,
+    };
+    expect(computeMasteryScore(prog)).toBe(100);
+  });
 });
 
 describe("MasteryScoreCard — Layer 1 (score + progress bar)", () => {

@@ -10,11 +10,14 @@ export interface CoachingInput {
   avgReactionRatio?: number;
   /** 누적 플레이 횟수 */
   playCount: number;
+  /** 패스트트랙 통과 (true → 전용 메시지 반환) */
+  fastTrack?: boolean;
 }
 
 interface CoachingStrings {
   passed: readonly [string, string, string];    // 3 branches
   game_over: readonly [string, string, string, string]; // 4 branches
+  fast_track: string; // fastTrack 전용
 }
 
 const STRINGS: Record<"ko" | "en", CoachingStrings> = {
@@ -37,6 +40,7 @@ const STRINGS: Record<"ko" | "en", CoachingStrings> = {
       // branch 3: else — general encouragement
       "조금만 더 하면 돼요! 플레이할수록 기준에 가까워지고 있어요.",
     ],
+    fast_track: "이미 충분합니다. 다음 단계로.",
   },
   en: {
     passed: [
@@ -57,6 +61,7 @@ const STRINGS: Record<"ko" | "en", CoachingStrings> = {
       // branch 3: general
       "Almost there! Every play brings you closer to passing.",
     ],
+    fast_track: "Already enough. Onto the next.",
   },
 };
 
@@ -65,6 +70,10 @@ export function generateCoachingComment(
   lang: "ko" | "en"
 ): string {
   const s = STRINGS[lang];
+
+  if (input.fastTrack) {
+    return s.fast_track;
+  }
 
   if (input.outcome === "passed") {
     if (
