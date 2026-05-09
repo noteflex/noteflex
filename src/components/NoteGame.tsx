@@ -9,7 +9,9 @@ import AccidentalSwipeTutorial, {
   markSwipeTutorialSeen,
 } from "./AccidentalSwipeTutorial";
 import CalibrationModal from "./CalibrationModal";
+import DailyLimitModal from "./DailyLimitModal";
 import { useUserEnvOffset } from "@/hooks/useUserEnvOffset";
+import { useDailyLimit } from "@/hooks/useDailyLimit";
 import { useAuth } from "@/contexts/AuthContext";
 import { playNote, playWrong, isSamplerReady, initSound, ensureAudioReady } from "@/lib/sound";
 import { useNoteLogger } from "@/hooks/useNoteLogger";
@@ -345,7 +347,8 @@ export default function NoteGame({
   const retryQueue    = useRetryQueue();
   const { masteryMap } = useUserMastery();
   const { recordAttempt } = useLevelProgress();
-  const { profile }   = useAuth();
+  const { profile, user } = useAuth();
+  const dailyLimit = useDailyLimit();
   const {
     needsCalibration,
     isLoading: calibrationLoading,
@@ -858,13 +861,24 @@ export default function NoteGame({
   const [showCalibration, setShowCalibration] = useState(false);
   const [showSwipeTutorial, setShowSwipeTutorial] = useState(false);
   const [showCountdown, setShowCountdown] = useState(false);
+  // §B-0 daily limit: 한도 도달 시 게임 진입 차단.
+  const [showDailyLimitModal, setShowDailyLimitModal] = useState(false);
 
   // 1회 초기화 guard — isLoading 완료 후 modal 흐름 결정
   const calibrationInitRef = useRef(false);
 
   useEffect(() => {
-    if (calibrationLoading || calibrationInitRef.current) return;
+    if (calibrationLoading || dailyLimit.isLoading || calibrationInitRef.current) return;
     calibrationInitRef.current = true;
+
+    // §B-0 daily limit gate (메모리 #16: 카운트다운·첫 음표 흐름 진입 X 영역, 흐름 손상 X)
+    if (dailyLimit.hasReached) {
+      setShowDailyLimitModal(true);
+      return;
+    }
+    // 통과 시 recordSession (fire-and-forget — DB 실패해도 게임 진행)
+    void dailyLimit.recordSession();
+
     if (needsCalibration) {
       setShowCalibration(true);
     } else if (level >= 5 && !hasSeenSwipeTutorial(level)) {
@@ -872,7 +886,7 @@ export default function NoteGame({
     } else if (!skipCountdown) {
       setShowCountdown(true);
     }
-  }, [calibrationLoading, needsCalibration, level, skipCountdown]);
+  }, [calibrationLoading, needsCalibration, level, skipCountdown, dailyLimit]);
 
   // 안전망: 로드 완료 후 needsCalibration이 false로 바뀌면 모달 닫기
   useEffect(() => {
@@ -1302,6 +1316,14 @@ export default function NoteGame({
         onSkip={handleCalibrationSkip}
       />
       <AccidentalSwipeTutorial isOpen={showSwipeTutorial} onClose={handleSwipeTutorialClose} />
+      {showDailyLimitModal && (
+        <DailyLimitModal
+          open={true}
+          tier={user ? "free" : "guest"}
+          timeUntilResetMs={dailyLimit.timeUntilResetMs}
+          onClose={() => setShowDailyLimitModal(false)}
+        />
+      )}
 
       <span className="sr-only">
         현재 정답: {targetNoteStr ?? "(없음)"}
