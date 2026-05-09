@@ -14,6 +14,8 @@ export interface RecordAttemptResult {
   passed: boolean;
   /** 이번 호출로 처음 통과 (false→true 순간) */
   just_passed: boolean;
+  /** 패스트트랙 조건 충족 → 즉시 통과 */
+  fast_track?: boolean;
 }
 
 /**
@@ -40,7 +42,7 @@ export function useLevelProgress() {
     const { data, error: fetchError } = await supabase
       .from("user_sublevel_progress")
       .select(
-        "level, sublevel, play_count, best_streak, total_attempts, total_correct, passed, avg_reaction_ratio"
+        "level, sublevel, play_count, best_streak, total_attempts, total_correct, passed, avg_reaction_ratio, fast_track"
       )
       .eq("user_id", user.id);
 

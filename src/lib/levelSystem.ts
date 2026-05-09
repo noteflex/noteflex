@@ -78,6 +78,8 @@ export interface SublevelProgress {
   passed: boolean;
   /** sublevel 누적 평균 반응속도 비율 (avgReactionMs / timerMs). 기록 없으면 undefined → 통과 처리 */
   avg_reaction_ratio?: number;
+  /** 패스트트랙으로 통과한 경우 true — mastery_score 100 강제 적용 */
+  fast_track?: boolean;
 }
 
 /** UI 표시용 진행률 정보 */

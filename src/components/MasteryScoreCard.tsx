@@ -15,6 +15,7 @@ import { useLang } from "@/contexts/LanguageContext";
 // ── Score formula (mirrors SQL get_mastery_score) ─────────────
 export function computeMasteryScore(prog: SublevelProgress | null): number {
   if (!prog) return 0;
+  if (prog.fast_track) return 100;
   const accuracy =
     prog.total_attempts > 0 ? prog.total_correct / prog.total_attempts : 0;
   const reaction = prog.avg_reaction_ratio ?? 99;
