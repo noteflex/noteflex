@@ -6,10 +6,15 @@ keywords: ["sight-reading mistakes", "sight-reading errors", "note recognition e
 slug: "sight-reading-mistake-patterns"
 category: "Practice Hub"
 day: 10
+coverImage: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e2/BWV1001-cropped.jpg/960px-BWV1001-cropped.jpg"
+coverImageAlt: "J.S. Bach's autograph manuscript of Violin Sonata No. 1 in G minor BWV 1001, showing dense notation with ledger lines"
+coverImageSource: "https://commons.wikimedia.org/wiki/File:BWV1001-cropped.jpg"
+coverImageLicense: "Public Domain"
+coverImageCredit: "J.S. Bach; Bach Digital archive"
 ---
 
-![Piano keys close-up](https://images.pexels.com/photos/164821/pexels-photo-164821.jpeg?auto=compress&cs=tinysrgb&w=640)
-*Figure 1: Piano keyboard. Source: Pexels / Free to use*
+![J.S. Bach's autograph manuscript of Violin Sonata No. 1 in G minor BWV 1001, showing dense notation with ledger lines and complex accidentals](https://upload.wikimedia.org/wikipedia/commons/thumb/e/e2/BWV1001-cropped.jpg/960px-BWV1001-cropped.jpg)
+*Figure 1: J.S. Bach, autograph manuscript of Violin Sonata No. 1 in G minor BWV 1001. [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:BWV1001-cropped.jpg) — Public Domain*
 
 If you open a new piece of music and find yourself stopping at the same kinds of passages every time, that experience is almost certainly not random. Researchers studying sight-reading have long known that errors in music reading do not distribute evenly across a score. They cluster. Certain note positions, certain rhythmic structures, and certain melodic intervals produce errors at consistently higher rates.
 
@@ -45,8 +50,8 @@ Errors in sight-reading can be separated into three functional categories.
 
 Identifying which of these three is responsible for most of a person's errors makes it possible to target practice more precisely.
 
-![Sheet music open on a piano](https://images.pexels.com/photos/3756766/pexels-photo-3756766.jpeg?auto=compress&cs=tinysrgb&w=640)
-*Figure 2: Sheet music open during a practice session. Source: Pexels / Free to use*
+!["Liszt at the Piano" (1840), oil painting by Josef Danhauser showing Franz Liszt performing for George Sand, Alexandre Dumas, and others gathered around the instrument](https://upload.wikimedia.org/wikipedia/commons/e/ef/Liszt_at_the_Piano.JPG)
+*Figure 2: Josef Danhauser, "Liszt at the Piano" (1840), oil on canvas. [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Liszt_at_the_Piano.JPG) — Public Domain. Alte Nationalgalerie, Berlin.*
 
 ## 🔍 How to Map Your Own Pattern
 
@@ -65,5 +70,5 @@ The first time you stop at a passage is useful information, not just a frustrati
 2. Lehmann, A. C., & McArthur, V. (2002). Sight-reading. In R. Parncutt & G. E. McPherson (Eds.), *The Science and Psychology of Music Performance* (pp. 135–150). Oxford University Press.
 
 ### Image Sources
-- Figure 1: Pexels / Free to use
-- Figure 2: Pexels / Free to use
+- Figure 1: J.S. Bach, autograph manuscript of Violin Sonata No. 1 in G minor BWV 1001. [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:BWV1001-cropped.jpg) — Public Domain.
+- Figure 2: Josef Danhauser, "Liszt at the Piano" (1840), oil on canvas. [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Liszt_at_the_Piano.JPG) — Public Domain. Alte Nationalgalerie, Berlin.
