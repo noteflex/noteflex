@@ -158,3 +158,49 @@ describe("StaffPreview — C2 M-등분 고정 슬롯 정책", () => {
     expect(screen.queryByTestId("meta-slot-idx")).not.toBeInTheDocument();
   });
 });
+
+describe("StaffPreview — §S3 scale·viewport·grand staff 토글", () => {
+  it("scale-preset 1.0 → uniscale=1.00, scale-preset 0.75 → uniscale=0.75", async () => {
+    renderPage();
+    await userEvent.click(screen.getByTestId("toggle-scale-preset-1.0"));
+    expect(screen.getByTestId("meta-uniscale")).toHaveTextContent("1.00");
+    await userEvent.click(screen.getByTestId("toggle-scale-preset-0.75"));
+    expect(screen.getByTestId("meta-uniscale")).toHaveTextContent("0.75");
+    await userEvent.click(screen.getByTestId("toggle-scale-preset-0.55"));
+    expect(screen.getByTestId("meta-uniscale")).toHaveTextContent("0.55");
+  });
+
+  it("viewport portrait → meta-viewport 노출 + 375×667 포함", async () => {
+    renderPage();
+    expect(screen.queryByTestId("meta-viewport")).not.toBeInTheDocument();
+    await userEvent.click(screen.getByTestId("toggle-viewport-portrait"));
+    const vpEl = screen.getByTestId("meta-viewport");
+    expect(vpEl).toBeInTheDocument();
+    expect(vpEl.textContent).toContain("375×667");
+    await userEvent.click(screen.getByTestId("toggle-viewport-desktop"));
+    expect(screen.getByTestId("meta-viewport").textContent).toContain("1440×900");
+    await userEvent.click(screen.getByTestId("toggle-viewport-none"));
+    expect(screen.queryByTestId("meta-viewport")).not.toBeInTheDocument();
+  });
+
+  it("staff-mode grand → meta-staff-mode=grand, styleLevel≥5", async () => {
+    renderPage();
+    expect(screen.getByTestId("meta-staff-mode")).toHaveTextContent("treble");
+    await userEvent.click(screen.getByTestId("toggle-staff-mode-grand"));
+    expect(screen.getByTestId("meta-staff-mode")).toHaveTextContent("grand");
+    // styleLevel should be ≥5 (default level=1 → forced to 5)
+    expect(Number(screen.getByTestId("meta-style-level").textContent)).toBeGreaterThanOrEqual(5);
+    await userEvent.click(screen.getByTestId("toggle-staff-mode-bass"));
+    expect(screen.getByTestId("meta-staff-mode")).toHaveTextContent("bass");
+  });
+
+  it("메타 패널: staffH·uniscale·staffLineGap·clefFontSize·keySigFontSize 존재", () => {
+    renderPage();
+    expect(screen.getByTestId("meta-staffH")).toBeInTheDocument();
+    expect(screen.getByTestId("meta-uniscale")).toBeInTheDocument();
+    expect(screen.getByTestId("meta-staffLineGap")).toBeInTheDocument();
+    expect(screen.getByTestId("meta-clefFontSize")).toBeInTheDocument();
+    expect(screen.getByTestId("meta-keySigFontSize")).toBeInTheDocument();
+    expect(screen.getByTestId("meta-svgH")).toBeInTheDocument();
+  });
+});
