@@ -440,6 +440,11 @@ export default function NoteGame({
     ? currentBatch.length > 1
     : currentStageConfig.batchSize > 1;
 
+  // §0.4.1: 화면에 보이는 음표 수.
+  //   history 모드 (batchSize=1): answeredNotes(누적) + 1(현재)
+  //   batch 모드 (batchSize≥3):  currentBatch 전체
+  const visibleNoteCount = answeredNotes.length + currentBatch.length;
+
   const currentTarget = currentBatch[currentIndex] ?? null;
 
   // §4: missedNotes 헬퍼.
@@ -1034,15 +1039,15 @@ export default function NoteGame({
         clef: clefForLog,
       };
       setAnsweredNotes(prev => {
-        if (stageBatchSize === 1) {
-          // §0.4.1: batchSize=1 — 답한 음표 회색으로 누적, MAX_HISTORY(7) 도달 시 화면 리셋.
-          if (prev.length >= TOTAL_SLOTS - 1) {
-            return [];
-          }
-          return [...prev, newEntry];
+        if (stageBatchSize !== 1) {
+          // §0.4.1: batch 모드 — answeredNotes 누적 안 함 (visibleNoteCount = currentBatch.length).
+          return prev;
         }
-        // batchSize > 1 (batch mode) — set 전환 시 클리어되므로 안전망으로만 capping.
-        return [...prev.slice(-(TOTAL_SLOTS - 2)), newEntry];
+        // §0.4.1: history 모드 — MAX_HISTORY(7) 도달 시 화면 리셋.
+        if (prev.length >= TOTAL_SLOTS - 1) {
+          return [];
+        }
+        return [...prev, newEntry];
       });
 
       logNote({
@@ -1448,7 +1453,7 @@ export default function NoteGame({
         </div>
       )}
       <span className="sr-only" data-testid="game-debug-state">
-        turn: {turnCounterRef.current} size: {retryQueue.size}
+        turn: {turnCounterRef.current} size: {retryQueue.size} visible: {visibleNoteCount}
       </span>
     </div>
   );

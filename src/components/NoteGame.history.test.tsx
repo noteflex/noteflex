@@ -270,3 +270,78 @@ describe("§0.4.1 batchSize=1 history 누적 + 화면 리셋", () => {
     expect(capturedProps.current.batchNotes.length).toBe(3);
   });
 });
+
+describe("§0.4.1 visibleNoteCount", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    localStorage.setItem("noteflex.solfege_system", "en");
+    capturedProps.current = { noteHistory: [], batchNotes: [], targetNote: null };
+  });
+
+  function getVisibleCount(): number {
+    const el = screen.queryByTestId("game-debug-state");
+    const m = el?.textContent?.match(/visible:\s*(\d+)/);
+    return m ? parseInt(m[1], 10) : -1;
+  }
+
+  it("history 모드 초기: visibleNoteCount=1 (history 0 + target 1)", async () => {
+    render(<NoteGame level={1} sublevel={1} skipCountdown />);
+    await settle();
+    expect(getVisibleCount()).toBe(1);
+  });
+
+  it("history 모드 3개 정답 후: visibleNoteCount=4", async () => {
+    const user = userEvent.setup();
+    render(<NoteGame level={1} sublevel={1} skipCountdown />);
+    await settle();
+
+    for (let i = 0; i < 3; i++) {
+      const q = getCurrentQuestion();
+      if (!q) break;
+      await answerCorrect(user, q!);
+      await settle();
+    }
+
+    expect(getVisibleCount()).toBe(4);
+  });
+
+  it("batch 모드 진입 후: visibleNoteCount = batchSize (answeredNotes 누적 안 함)", async () => {
+    const user = userEvent.setup();
+    render(<NoteGame level={1} sublevel={1} skipCountdown />);
+    await settle();
+
+    // stage1(5) + stage2(6) + stage3(7) = 18 answers to reach stage4 (batchSize=3)
+    for (let i = 0; i < 18; i++) {
+      const q = getCurrentQuestion();
+      if (!q) break;
+      await answerCorrect(user, q!);
+      await settle();
+    }
+
+    // stage4 = batchSize=3 → visibleNoteCount=3
+    expect(getVisibleCount()).toBe(3);
+  });
+
+  it("batch 모드에서 1개 정답 후: visibleNoteCount 여전히 batchSize (answeredNotes 0 유지)", async () => {
+    const user = userEvent.setup();
+    render(<NoteGame level={1} sublevel={1} skipCountdown />);
+    await settle();
+
+    for (let i = 0; i < 18; i++) {
+      const q = getCurrentQuestion();
+      if (!q) break;
+      await answerCorrect(user, q!);
+      await settle();
+    }
+
+    // stage4 batchSize=3 진입, 1개 정답
+    const q = getCurrentQuestion();
+    if (q) {
+      await answerCorrect(user, q);
+      await settle();
+    }
+
+    // answeredNotes는 0 유지 → visibleNoteCount = 0 + 3 = 3
+    expect(getVisibleCount()).toBe(3);
+  });
+});
