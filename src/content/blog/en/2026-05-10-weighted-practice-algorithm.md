@@ -6,10 +6,15 @@ keywords: ["weighted practice", "spaced repetition", "sight-reading algorithm", 
 slug: "weighted-practice-algorithm"
 category: "Learning Science"
 day: 11
+coverImage: "https://upload.wikimedia.org/wikipedia/commons/d/dc/Ebbinghaus_Forgetting_Curve.jpg"
+coverImageAlt: "The Ebbinghaus Forgetting Curve showing memory retention declining over time without review"
+coverImageSource: "https://commons.wikimedia.org/wiki/File:Ebbinghaus_Forgetting_Curve.jpg"
+coverImageLicense: "CC BY-SA 3.0"
+coverImageCredit: "Nheise (Wikimedia Commons)"
 ---
 
-![Sheet music and study materials](https://images.pexels.com/photos/4088009/pexels-photo-4088009.jpeg?auto=compress&cs=tinysrgb&w=640)
-*Figure 1: Music practice and study. Source: Pexels / Free to use*
+![The Ebbinghaus Forgetting Curve diagram showing memory retention percentage declining over time without review — the scientific foundation underpinning spaced repetition and weighted practice systems](https://upload.wikimedia.org/wikipedia/commons/d/dc/Ebbinghaus_Forgetting_Curve.jpg)
+*Figure 1: The Ebbinghaus Forgetting Curve. [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Ebbinghaus_Forgetting_Curve.jpg) — CC BY-SA 3.0. Credit: Nheise.*
 
 The same note appears again in today's session. Low F in the bass clef — the same one that appeared yesterday, and the day before. It keeps coming back.
 
@@ -43,8 +48,8 @@ The specific implementations of weighted practice vary, but the underlying struc
 
 **Spaced re-presentation (N+2 scheduling).** A wrong note should not reappear on the very next turn — that creates conditions for short-term memory to produce a correct answer without actual recognition improvement. Scheduling reappearance N+2 turns later (after two other notes) creates a minimal but real retrieval demand, which drives genuine consolidation rather than immediate recall.
 
-![Data-driven learning design](https://images.pexels.com/photos/7095517/pexels-photo-7095517.jpeg?auto=compress&cs=tinysrgb&w=640)
-*Figure 2: Data-informed practice design. Source: Pexels / Free to use*
+![Historical portrait photograph of Hermann Ebbinghaus (1850–1909), German psychologist whose memory experiments established the empirical basis for modern spaced repetition systems](https://upload.wikimedia.org/wikipedia/commons/9/92/Ebbinghaus2.jpg)
+*Figure 2: Hermann Ebbinghaus (1850–1909). [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Ebbinghaus2.jpg) — Public Domain.*
 
 ## 🔍 How Noteflex Implements This
 
@@ -59,5 +64,5 @@ For a learner who keeps seeing the same low F in the bass clef appear again and 
 1. Cepeda, N. J., Pashler, H., Vul, E., Wixted, J. T., & Rohrer, D. (2006). Distributed practice in verbal recall tasks: A review and quantitative synthesis. *Psychological Bulletin*, 132(3), 354–380. DOI: [10.1037/0033-2909.132.3.354](https://doi.org/10.1037/0033-2909.132.3.354)
 
 ### Image Sources
-- Figure 1: Pexels / Free to use
-- Figure 2: Pexels / Free to use
+- Figure 1: The Ebbinghaus Forgetting Curve. [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Ebbinghaus_Forgetting_Curve.jpg) — CC BY-SA 3.0. Credit: Nheise.
+- Figure 2: Hermann Ebbinghaus (1850–1909). [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Ebbinghaus2.jpg) — Public Domain.
