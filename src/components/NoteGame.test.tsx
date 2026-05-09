@@ -84,6 +84,17 @@ vi.mock("@/hooks/useUserEnvOffset", () => ({
   }),
 }));
 
+vi.mock("@/hooks/useDailyLimit", () => ({
+  useDailyLimit: () => ({
+    todayCount: 0,
+    limit: 7,
+    hasReached: false,
+    timeUntilResetMs: 12 * 60 * 60 * 1000,
+    recordSession: vi.fn().mockResolvedValue(undefined),
+    isLoading: false,
+  }),
+}));
+
 // GrandStaffPractice는 렌더링만 되면 되므로 단순화
 vi.mock("@/components/practice/GrandStaffPractice", () => ({
   TOTAL_SLOTS: 10,

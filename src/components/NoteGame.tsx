@@ -9,7 +9,6 @@ import AccidentalSwipeTutorial, {
   markSwipeTutorialSeen,
 } from "./AccidentalSwipeTutorial";
 import CalibrationModal from "./CalibrationModal";
-import DailyLimitModal from "./DailyLimitModal";
 import { useUserEnvOffset } from "@/hooks/useUserEnvOffset";
 import { useDailyLimit } from "@/hooks/useDailyLimit";
 import { useAuth } from "@/contexts/AuthContext";
@@ -347,7 +346,7 @@ export default function NoteGame({
   const retryQueue    = useRetryQueue();
   const { masteryMap } = useUserMastery();
   const { recordAttempt } = useLevelProgress();
-  const { profile, user } = useAuth();
+  const { profile } = useAuth();
   const dailyLimit = useDailyLimit();
   const {
     needsCalibration,
@@ -861,23 +860,26 @@ export default function NoteGame({
   const [showCalibration, setShowCalibration] = useState(false);
   const [showSwipeTutorial, setShowSwipeTutorial] = useState(false);
   const [showCountdown, setShowCountdown] = useState(false);
-  // §B-0 daily limit: 한도 도달 시 게임 진입 차단.
-  const [showDailyLimitModal, setShowDailyLimitModal] = useState(false);
 
   // 1회 초기화 guard — isLoading 완료 후 modal 흐름 결정
   const calibrationInitRef = useRef(false);
 
+  // dailyLimit 영역 ref로 안정화 (객체 reference가 매 render 변경되어도 effect 재실행 X)
+  const dailyLimitRef = useRef(dailyLimit);
+  dailyLimitRef.current = dailyLimit;
+
   useEffect(() => {
-    if (calibrationLoading || dailyLimit.isLoading || calibrationInitRef.current) return;
+    if (calibrationLoading || dailyLimitRef.current.isLoading || calibrationInitRef.current) return;
     calibrationInitRef.current = true;
 
-    // §B-0 daily limit gate (메모리 #16: 카운트다운·첫 음표 흐름 진입 X 영역, 흐름 손상 X)
-    if (dailyLimit.hasReached) {
-      setShowDailyLimitModal(true);
+    // §B-0 daily limit gate — 안전망 영역 (LevelSelect가 메인 게이트, F3 정정).
+    // 한도 도달 상태에서 NoteGame 마운트 시 onLevelSelect 콜백으로 LevelSelect 복귀.
+    if (dailyLimitRef.current.hasReached) {
+      if (onLevelSelect) onLevelSelect();
       return;
     }
     // 통과 시 recordSession (fire-and-forget — DB 실패해도 게임 진행)
-    void dailyLimit.recordSession();
+    void dailyLimitRef.current.recordSession();
 
     if (needsCalibration) {
       setShowCalibration(true);
@@ -886,7 +888,7 @@ export default function NoteGame({
     } else if (!skipCountdown) {
       setShowCountdown(true);
     }
-  }, [calibrationLoading, needsCalibration, level, skipCountdown, dailyLimit]);
+  }, [calibrationLoading, needsCalibration, level, skipCountdown, onLevelSelect]);
 
   // 안전망: 로드 완료 후 needsCalibration이 false로 바뀌면 모달 닫기
   useEffect(() => {
@@ -1316,14 +1318,6 @@ export default function NoteGame({
         onSkip={handleCalibrationSkip}
       />
       <AccidentalSwipeTutorial isOpen={showSwipeTutorial} onClose={handleSwipeTutorialClose} />
-      {showDailyLimitModal && (
-        <DailyLimitModal
-          open={true}
-          tier={user ? "free" : "guest"}
-          timeUntilResetMs={dailyLimit.timeUntilResetMs}
-          onClose={() => setShowDailyLimitModal(false)}
-        />
-      )}
 
       <span className="sr-only">
         현재 정답: {targetNoteStr ?? "(없음)"}

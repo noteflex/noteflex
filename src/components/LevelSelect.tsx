@@ -1,6 +1,7 @@
 import { memo, useCallback, useMemo, useRef, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLevelProgress } from "@/hooks/useLevelProgress";
+import { useDailyLimit } from "@/hooks/useDailyLimit";
 import { getUserTier } from "@/lib/subscriptionTier";
 import {
   canAccessSublevel,
@@ -12,6 +13,7 @@ import {
   type SublevelProgress,
 } from "@/lib/levelSystem";
 import UpgradeModal from "./UpgradeModal";
+import DailyLimitModal from "./DailyLimitModal";
 import { AdBanner } from "./AdBanner";
 import { getSlot } from "@/lib/adsense";
 
@@ -54,11 +56,13 @@ export default function LevelSelect({
 }: LevelSelectProps) {
   const { user, profile } = useAuth();
   const { progress, loading, getProgressFor } = useLevelProgress();
+  const dailyLimit = useDailyLimit();
   const tier = getUserTier(user ?? null, profile ?? null);
   const isAdmin = profile?.role === "admin";
 
   const [upgradeOpen, setUpgradeOpen]   = useState(false);
   const [lockMsg,     setLockMsg]       = useState<string | null>(null);
+  const [dailyLimitOpen, setDailyLimitOpen] = useState(false);
 
   const totalPassed = progress.filter((p) => p.passed).length;
 
@@ -119,6 +123,12 @@ export default function LevelSelect({
   const cellStatesRef = useRef(cellStates);
   cellStatesRef.current = cellStates;
 
+  // §B-0 daily limit gate (Fix Sprint 2026-05-09):
+  //   기존 NoteGame 마운트 게이트 → LevelSelect 단계 클릭 시점으로 이동.
+  //   subscription/progress 통과 후 hasReached 체크 → DailyLimitModal 노출 + onSelectSublevel 호출 X.
+  const dailyLimitReachedRef = useRef(dailyLimit.hasReached);
+  dailyLimitReachedRef.current = dailyLimit.hasReached;
+
   const handleSelect = useCallback((level: number, sub: Sublevel) => {
     const state = cellStatesRef.current.get(`${level}-${sub}`);
     if (!state) return;
@@ -131,6 +141,12 @@ export default function LevelSelect({
     if (state.lockReason === "progress") {
       setLockMsg(`${state.prevLabel} 먼저 통과해주세요`);
       setTimeout(() => setLockMsg(null), 3000);
+      return;
+    }
+
+    // §B-0 daily limit gate (메모리 #25 — 단계 클릭 즉시 모달 노출, navigate X)
+    if (dailyLimitReachedRef.current) {
+      setDailyLimitOpen(true);
       return;
     }
 
@@ -250,6 +266,15 @@ export default function LevelSelect({
       </button>
 
       <UpgradeModal open={upgradeOpen} onClose={() => setUpgradeOpen(false)} />
+
+      {dailyLimitOpen && (
+        <DailyLimitModal
+          open={true}
+          tier={user ? "free" : "guest"}
+          timeUntilResetMs={dailyLimit.timeUntilResetMs}
+          onClose={() => setDailyLimitOpen(false)}
+        />
+      )}
     </div>
   );
 }

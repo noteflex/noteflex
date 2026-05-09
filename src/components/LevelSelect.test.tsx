@@ -21,6 +21,18 @@ vi.mock("@/hooks/useLevelProgress", () => ({
   useLevelProgress: mockUseLevelProgress,
 }));
 
+// 기본: 한도 미도달 (useDailyLimit 영향 X 영역). dailyLimit 테스트 파일은 따로 박음.
+vi.mock("@/hooks/useDailyLimit", () => ({
+  useDailyLimit: () => ({
+    todayCount: 0,
+    limit: 7,
+    hasReached: false,
+    timeUntilResetMs: 12 * 60 * 60 * 1000,
+    recordSession: vi.fn().mockResolvedValue(undefined),
+    isLoading: false,
+  }),
+}));
+
 vi.mock("react-router-dom", async () => {
   const actual = await vi.importActual<typeof import("react-router-dom")>("react-router-dom");
   return { ...actual, useNavigate: () => mockNavigate };
