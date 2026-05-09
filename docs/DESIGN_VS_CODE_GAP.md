@@ -592,20 +592,25 @@ if (tier === "free") { return level <= 5 && sublevel === 1 && /* 이전 Sub1 통
 | `src/lib/levelSystem.ts` | `canAccessSublevel` guest/free 규칙 재작성 + `getProgressGatePrev` 신규 | Group A | ✅ e6ed7b2 |
 | `supabase/migrations/20260509_pass_criteria_v2.sql` | DB PASS_CRITERIA 정정 (10/85%/35%/5) + avg_reaction_ratio 컬럼 | Group A | ✅ b232dcd |
 | `src/pages/Pricing.tsx` | 카피 갱신 (광고 보상형 제거, Free Lv5 Sub1, Guest Sub1 only) | Group A | ✅ 1848391 |
-| `daily_sessions` 테이블 + `useDailyLimit` + `DailyLimitModal` | 일일 한도 시스템 신규 | Group B | ✅ 7167977·0cbd5ac·b81937e·f4265df |
+| `daily_sessions` 테이블 + `useDailyLimit` + `DailyLimitModal` | 일일 한도 시스템 신규 | Group B | ✅ 7167977·0cbd5ac·b81937e·f4265df + Fix Sprint b58d873·fbe4d29 (LevelSelect 메인 게이트 + NoteGame 안전망) |
 | `LevelSelect.tsx` + `PremiumBlurCard` | Mastery Score 블러 + 4지표 탭 | Group C | 🔴 미구현 |
 | AI Coaching 컴포넌트 | 결과 모달 1행 + 대시보드 카드 | Group C | 🔴 미구현 |
 | `record_sublevel_attempt` RPC + Quick Mastery 감지 | Quick Mastery Mode | Group D | 🔴 미구현 |
 
-### B.1 일일 세션 한도 시스템 ✅ Group B 완료 (2026-05-09)
+### B.1 일일 세션 한도 시스템 ✅ Group B + Fix Sprint 완료 (2026-05-09)
 
-코드 적용 결과:
-- `daily_sessions` 테이블 + RLS + RPC 2개 (`increment_daily_session`·`get_today_session_count`) — commit 7167977
-- `useDailyLimit` 훅 (guest=localStorage / free=RPC / pro=Infinity 분기, UTC 자정 카운트다운 1초 갱신) — commit 0cbd5ac
-- `DailyLimitModal` (guest/free 분기, ko/en strings, animate-pop-in, 메모리 #19 backdrop·ESC 닫기 X) — commit b81937e
-- `NoteGame.tsx` 마운트 useEffect 한도 게이트 (calibration/swipe/countdown 흐름 진입 X 영역, 통과 시 recordSession fire-and-forget) — commit f4265df
+**Group B 코드 (commits 7167977·0cbd5ac·b81937e·f4265df)**:
+- `daily_sessions` 테이블 + RLS + RPC 2개 (`increment_daily_session`·`get_today_session_count`)
+- `useDailyLimit` 훅 (guest=localStorage / free=RPC / pro=Infinity, UTC 자정 카운트다운)
+- `DailyLimitModal` (guest/free 분기, ko/en strings, animate-pop-in, 메모리 #19 backdrop·ESC 닫기 X)
+- `NoteGame.tsx` 마운트 한도 게이트 (B4 영역, 후속 Fix Sprint에서 안전망 패턴으로 정정)
 
-→ **Group B 4 commits 완료**, 497/497 PASS, tsc 0 errors.
+**Fix Sprint (commits b58d873·fbe4d29)** — 사용자 검증 발견 영역 정정:
+- 게이트 위치: NoteGame 마운트 → **LevelSelect 단계 클릭 시점** 이동 (백그라운드 게임 진행 영역 차단)
+- NoteGame = 안전망 패턴 (한도 도달 시 `onLevelSelect()` 콜백, 게임 진입 X)
+- DailyLimitModal 컨텐츠 재작성 — Guest 가치 3개·Free 가치 4개·Free 가격 표시·Quick Mastery 영역 제거 + "모든 단계 열림" 표현 정정
+
+→ **512/512 PASS, tsc 0 errors**. 메모리 #16·#18·#19·#24·#25·#26·#27 일관.
 
 ### B.2 Quick Mastery Mode 🔴 완전 미구현
 
@@ -635,6 +640,7 @@ if (tier === "free") { return level <= 5 && sublevel === 1 && /* 이전 Sub1 통
 - 2026-05-09 (Sonnet 4.6): **§5 권한 매트릭스 5/9 결정 반영** (Guest Sub1 한정·Free Lv1~5 Sub1·Premium 전체) + **§B-0/§B.1~B.2 영역 B 결정 박음** (일일 세션 한도·Quick Mastery Mode 전체 미구현 확인 + 코드 영향 범위 매핑).
 - 2026-05-09 (Sonnet 4.6): **Group A 완료** — §B-0.2 코드 영향 범위 표 상태 열 추가 (✅ commits e6ed7b2·b232dcd·1848391). Group B~D 미구현 상태 명시 유지.
 - 2026-05-09 오후 (Opus 4.7): **Group B 완료** — §B-0.2 daily_sessions 행 ✅ (7167977·0cbd5ac·b81937e·f4265df) + §B.1 ❌→✅ (구현 완료 영역 4 항목 명시). Group C (Mastery Score 블러 + AI Coaching 기본)·Group D (Quick Mastery Mode) 미구현 영역 일관 유지.
+- 2026-05-09 오후~ (Opus 4.7): **Group B Fix Sprint** — §B-0.2·§B.1 정합 영역 갱신 (LevelSelect 메인 게이트 + NoteGame 안전망 패턴). commits b58d873·fbe4d29. 사용자 검증 발견: 백그라운드 게임 진행 차단 + DailyLimitModal 컨텐츠 후킹 강화 + Quick Mastery 영역 제거. 512/512 PASS.
 - 2026-04-30: §0-1 코드 적용 완료 — §0-1.1~0-1.6 모두 구현 (commits f09919c, 6c1a7e8) + §2.6 PASS_CRITERIA 테이블 ✅ 갱신 + §2.6 같은조표연속학습 ✅ + §9.1 재도전마크 ✅ + §3.8 조표 비율 + treble/bass ✅ (commit bb062c3)
 - 2026-05-01: §3.11 §0.4 GrandStaffPractice 분석 추가 (Opus 보고서, 3갭 4 step 계획) + §3.12 §0.3 ✅ 추가 (commit eac606a) + §10/§11 갱신 (Week 1 완료 현황, Week 2 우선순위)
 - 2026-05-02: §2.1 stage 수 ⚠️ (Lv1~4 batchSize=1 확장 반영) + §2.4 음표 배치 테이블 ✅ + §3.2 버퍼링 방지 ✅ + 카운트다운 조표 숨김 ✅ + §3.13 §4 retry 시스템 신규 + §3.14 swipe 모달 신규 + §3.15 batchSize 렌더링 fix 신규 + §10 버그 5번 추가 + §11 Week 1 완료 12개·Week 2 §4 잔여 추가 + §13 변경 이력

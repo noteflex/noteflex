@@ -4,6 +4,60 @@
 
 ---
 
+## 2026-05-09 (오후~) — Group B Fix Sprint (LevelSelect 게이트 + 메시지 재작성)
+
+### 사용자 검증 발견 영역
+
+1. DailyLimitModal 표시 시 백그라운드 게임 진행 (마운트 게이트 의도와 어긋남) — audio context·timer state 초기화·진행
+2. 보조 버튼 "나중에" 클릭 시 게임 가능 (escape hatch)
+3. 메시지 컨텐츠 단순 — Free 영역 Premium 가치 후킹 부족
+
+### Fix 설계
+
+- **게이트 위치 이동**: NoteGame 마운트 → **LevelSelect 단계 클릭 시점**
+- **NoteGame = 안전망**: 한도 도달 시 마운트 useEffect → `onLevelSelect()` 콜백 호출 + return (게임 진입 X)
+- **DailyLimitModal 컨텐츠 재작성** (스티브잡스 스타일):
+  - Guest: 가치 3개 (7회 무료·Lv1~Lv5·AI 분석)
+  - Free: 가치 4개 (무제한·21단계·AI 풀 분석·광고 X) + 가격 ($2.99/mo·$24.99/yr 30% 절약)
+  - Quick Mastery 영역 제거 (사용자 정정)
+  - "모든 단계 열림" 표현 정정 — Premium=21단계 모두, Free=Sub1만
+
+### Commits (F1·F2)
+
+| commit | 내용 |
+|---|---|
+| `b58d873` F1+F3 | LevelSelect 단계 클릭 게이트 + NoteGame 안전망 패턴 (onLevelSelect 콜백) + DailyLimitModal 인라인 제거 + 6개 NoteGame.*.test.tsx useDailyLimit 모킹 + LevelSelect.dailyLimit 신규 7케이스 + NoteGame.dailyLimit 안전망 패턴 4케이스 |
+| `fbe4d29` F2 | DailyLimitModal 컨텐츠 재작성 (가치 리스트·가격·title·countdown 영역 ko/en) + 단위 테스트 12→20 |
+| (이 commit) F4 | docs 일괄 동기화 |
+
+> F3 (NoteGame 안전망 패턴) = F1 commit에 통합 박힘 (LevelSelect 테스트 격리 영역 필요).
+
+### 검증
+
+- **512/512 PASS, tsc 0 errors**
+- 시나리오 (1)~(8) 회귀 X (메모리 #16·#26 일관)
+- 신규 시나리오:
+  - Guest 3회 도달 후 단계 클릭 → DailyLimitModal 노출, onSelectSublevel 호출 X ✓
+  - Free 7회 도달 후 단계 클릭 → DailyLimitModal 노출, navigate X ✓
+  - 보조 버튼 클릭 → onClose, LevelSelect 머무름 (navigate X) ✓
+  - 한도 도달 후 NoteGame 직접 마운트 → onLevelSelect() 콜백, 게임 진입 X ✓
+
+### 갱신 docs
+
+- PENDING_BACKLOG §B.4 fix sprint 영역 추가 (백그라운드 게임 진행 차단)
+- DESIGN_VS_CODE_GAP §B-0.2 정합 영역 갱신 (LevelSelect 메인 게이트 + NoteGame 안전망)
+
+### 다음 세션 시작점
+
+- **5/10 일요일 11일차 블로그 3편**: §3-38 약점 음표 + §5-56 피아노 학습자 + §7-79 가중치 학습 (14일차 차용)
+- 그 후 **Group C** = Mastery Score UI 블러 + AI Coaching 기본 (~5h)
+
+### 출시 카운트다운
+
+오늘 = 2026-05-09. 출시 = 2026-05-31. **22일 남음**.
+
+---
+
 ## 2026-05-09 (오후) — Group B 일일 세션 한도 시스템
 
 ### 사용자 결정 (CTO 권장 일관 OK)
