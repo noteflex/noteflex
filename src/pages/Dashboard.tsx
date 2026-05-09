@@ -39,6 +39,15 @@ import {
 } from "@/components/ui/tabs";
 import DiagnosisTab from "@/components/home/DiagnosisTab";
 import InfoTooltip from "@/components/ui/info-tooltip";
+import MasteryHeroCard from "@/components/dashboard/MasteryHeroCard";
+import { useLevelProgress } from "@/hooks/useLevelProgress";
+import { getUserTier } from "@/lib/subscriptionTier";
+import {
+  canAccessSublevel,
+  getProgressGatePrev,
+  type Sublevel,
+} from "@/lib/levelSystem";
+import { computeMasteryScore } from "@/components/MasteryScoreCard";
 
 const VALID_TABS = ["rhythm", "diagnosis", "activity"] as const;
 type HomeTab = (typeof VALID_TABS)[number];
@@ -424,6 +433,38 @@ export default function Dashboard() {
   };
 
   const isAdmin = profile?.role === "admin";
+  const tier = getUserTier(user ?? null, profile ?? null);
+  const { progress: levelProgress, getProgressFor } = useLevelProgress();
+
+  // 현재 진행 단계 + 마스터리 점수 계산
+  const currentMastery = useMemo(() => {
+    for (let lv = 1; lv <= 7; lv++) {
+      for (const sub of [1, 2, 3] as Sublevel[]) {
+        if (!canAccessSublevel(tier, lv, sub)) continue;
+        const prev = getProgressGatePrev(tier, lv, sub);
+        const isPrevPassed =
+          prev === null
+            ? true
+            : (getProgressFor(prev.level, prev.sublevel)?.passed ?? false);
+        if (!isPrevPassed && !isAdmin) continue;
+        const prog = getProgressFor(lv, sub);
+        if (!prog?.passed) {
+          return {
+            level: lv,
+            sublevel: sub,
+            progress: prog ?? null,
+            score: computeMasteryScore(prog ?? null),
+            accuracy: prog && prog.total_attempts > 0 ? prog.total_correct / prog.total_attempts : undefined,
+            avgReactionRatio: prog?.avg_reaction_ratio,
+            playCount: prog?.play_count,
+            bestStreak: prog?.best_streak,
+          };
+        }
+      }
+    }
+    return null;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tier, isAdmin, levelProgress, getProgressFor]);
 
   // 실제 "마지막 연습 활동" 시각 계산
   //  - 최근 세션의 started_at (가장 정확)
@@ -571,6 +612,20 @@ export default function Dashboard() {
             </p>
           ) : null}
         </section>
+
+        {/* 마스터리 히어로 카드 */}
+        {currentMastery && (
+          <MasteryHeroCard
+            tier={isAdmin ? "admin" : tier}
+            bestScore={currentMastery.score}
+            level={currentMastery.level}
+            sublevel={currentMastery.sublevel}
+            accuracy={currentMastery.accuracy}
+            avgReactionRatio={currentMastery.avgReactionRatio}
+            playCount={currentMastery.playCount}
+            bestStreak={currentMastery.bestStreak}
+          />
+        )}
 
         {/* In-feed 광고 (통계 카드와 탭 사이) */}
         <AdBanner
