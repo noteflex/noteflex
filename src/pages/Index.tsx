@@ -139,6 +139,7 @@ export default function Index() {
     bestStreak: number;
     passed: boolean;
     just_passed: boolean;
+    fast_track?: boolean;
     gameStatus: "success" | "gameover";
   } | null>(null);
 
@@ -150,6 +151,7 @@ export default function Index() {
     bestStreak: number;
     passed: boolean;
     just_passed: boolean;
+    fast_track?: boolean;
     gameStatus: "success" | "gameover";
   }) => {
     setLastResult(result);
@@ -419,6 +421,7 @@ export default function Index() {
               totalCorrect={lastResult.totalCorrect}
               bestStreak={lastResult.bestStreak}
               justPassed={lastResult.just_passed}
+              fastTrack={lastResult.fast_track ?? false}
               onReplay={handleReplaySameSublevel}
               onGoToNextSublevel={handleGoToNextSublevel}
               onBackToSelect={handleBackToLevelSelect}
