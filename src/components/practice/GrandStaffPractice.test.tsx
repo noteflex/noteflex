@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { getNoteColor, resolveStyle, computeMaxVisibleN, STAFF_X2 } from "./GrandStaffPractice";
+import { getNoteColor, resolveStyle, computeMaxVisibleN, computeScale, STAFF_X2 } from "./GrandStaffPractice";
 
 describe("getNoteColor", () => {
   it("target → #b91c1c (빨강)", () => {
@@ -71,6 +71,75 @@ describe("resolveStyle — N-등분 배치 (F4)", () => {
   });
 });
 
+describe("computeScale — S1 Uniform scale 비율", () => {
+  it("M=3 → scale=1.0", () => expect(computeScale(3)).toBe(1.0));
+  it("M=5 → scale=0.85", () => expect(computeScale(5)).toBe(0.85));
+  it("M=7 → scale=0.75", () => expect(computeScale(7)).toBe(0.75));
+  it("M=10 → scale=0.65", () => expect(computeScale(10)).toBe(0.65));
+  it("M=12 → scale=0.55", () => expect(computeScale(12)).toBe(0.55));
+});
+
+describe("resolveStyle — S1 Uniform scale (오선 간격·음자리표·비율)", () => {
+  // staffHeight = (staffBot - staffTop) = 4 * LINE_GAP * scale = 96 * scale
+  it("M=3 (scale=1.0): staffHeight=96, noteheadRX=15.5, clefFontSize=96", () => {
+    const s = resolveStyle(1, 0, 1, 3);
+    expect(s.staffBot - s.staffTop).toBeCloseTo(96 * 1.0, 1);
+    expect(s.noteheadRX).toBeCloseTo(15.5 * 1.0, 3);
+    expect(s.clefFontSize).toBeCloseTo(96 * 1.0, 1);
+    expect(s.uniscale).toBe(1.0);
+  });
+
+  it("M=5 (scale=0.85): staffHeight=81.6, clefFontSize scaled", () => {
+    const s = resolveStyle(1, 0, 1, 5);
+    expect(s.staffBot - s.staffTop).toBeCloseTo(96 * 0.85, 1);
+    expect(s.clefFontSize).toBeCloseTo(96 * 0.85, 1);
+    expect(s.uniscale).toBe(0.85);
+  });
+
+  it("M=7 (scale=0.75): staffHeight=72, noteheadRX/staffHeight 비율 일정", () => {
+    const s = resolveStyle(1, 0, 1, 7);
+    expect(s.staffBot - s.staffTop).toBeCloseTo(72, 1);
+    // noteheadRX / (STEP_H * scale) = noteheadRX / ((staffHeight/8))
+    const stepH = (s.staffBot - s.staffTop) / 8;
+    const ratio = s.noteheadRX / stepH;
+    // ratio should be close to 15.5/12 ≈ 1.29 (consistent across scales)
+    expect(ratio).toBeCloseTo(15.5 / 12, 2);
+  });
+
+  it("M=10 (scale=0.65): staffHeight=62.4", () => {
+    const s = resolveStyle(1, 0, 1, 10);
+    expect(s.staffBot - s.staffTop).toBeCloseTo(96 * 0.65, 1);
+  });
+
+  it("M=12 (scale=0.55): staffHeight=52.8", () => {
+    const s = resolveStyle(1, 0, 1, 12);
+    expect(s.staffBot - s.staffTop).toBeCloseTo(96 * 0.55, 1);
+  });
+
+  it("keySig=4, scale=0.75: effectiveWidth > keySig=4, scale=1.0 (keySig 축소 → 공간 증가)", () => {
+    const sScaled = resolveStyle(1, 4, 1, 7);   // scale=0.75
+    const sFull   = resolveStyle(1, 4, 1, 1);   // scale=1.0
+    // effectiveWidth = STAFF_X2 - rawNoteStartX
+    const rawScaled = sScaled.noteStartX - sScaled.noteSpacing / 2;
+    const rawFull   = sFull.noteStartX   - sFull.noteSpacing   / 2;
+    expect(rawScaled).toBeLessThan(rawFull);     // smaller noteStartX → more room
+  });
+
+  it("Lv5 grand staff M=7 (scale=0.75): staffHeight·uniscale 일관", () => {
+    const s = resolveStyle(5, 0, 1, 7);
+    expect(s.staffBot - s.staffTop).toBeCloseTo(72, 1);
+    expect(s.uniscale).toBe(0.75);
+  });
+
+  it("M=3 ratio = M=7 ratio (비율 일정성)", () => {
+    const s3 = resolveStyle(1, 0, 1, 3);
+    const s7 = resolveStyle(1, 0, 1, 7);
+    const stepH3 = (s3.staffBot - s3.staffTop) / 8;
+    const stepH7 = (s7.staffBot - s7.staffTop) / 8;
+    expect(s3.noteheadRX / stepH3).toBeCloseTo(s7.noteheadRX / stepH7, 2);
+  });
+});
+
 describe("computeMaxVisibleN — M-등분 고정 슬롯 정책 (C1)", () => {
   // batchSize=1 stage: M = totalSets (batchSize=1, notesPerSet=1)
   it("batchSize=1, totalSets=5 → M=5", () => {
@@ -111,19 +180,19 @@ describe("resolveStyle — M-등분 고정 슬롯 (C1 음표 크기·위치 고�
     expect(sM5.noteSpacing).toBeCloseTo(sM5b.noteSpacing, 5);
   });
 
-  it("M=5: 음표 크기 80% (noteheadRX = 15.5 × 0.80)", () => {
+  it("M=5: 음표 크기 85% (noteheadRX = 15.5 × 0.85)", () => {
     const style = resolveStyle(1, 0, 1, 5);
-    expect(style.noteheadRX).toBeCloseTo(15.5 * 0.80, 3);
+    expect(style.noteheadRX).toBeCloseTo(15.5 * 0.85, 3);
   });
 
-  it("M=7: 음표 크기 70% (noteheadRX = 15.5 × 0.70)", () => {
+  it("M=7: 음표 크기 75% (noteheadRX = 15.5 × 0.75)", () => {
     const style = resolveStyle(1, 0, 1, 7);
-    expect(style.noteheadRX).toBeCloseTo(15.5 * 0.70, 3);
+    expect(style.noteheadRX).toBeCloseTo(15.5 * 0.75, 3);
   });
 
-  it("M=10: 음표 크기 60% (noteheadRX = 15.5 × 0.60)", () => {
+  it("M=10: 음표 크기 65% (noteheadRX = 15.5 × 0.65)", () => {
     const style = resolveStyle(1, 0, 1, 10);
-    expect(style.noteheadRX).toBeCloseTo(15.5 * 0.60, 3);
+    expect(style.noteheadRX).toBeCloseTo(15.5 * 0.65, 3);
   });
 
   // 기존 음표 위치 고정 확인: slot 0 의 x 값은 M가 같으면 visibleN에 무관

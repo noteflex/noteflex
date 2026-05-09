@@ -125,6 +125,8 @@ type LevelStyle = {
   noteStartX?: number;
   noteSpacing?: number;
   keySigToNoteGap?: number;
+  /** §S1 Uniform scale: M 기반 전체 비율 (1.0·0.85·0.75·0.65·0.55). */
+  uniscale?: number;
 };
 
 const DEFAULT_STYLE = {
@@ -149,6 +151,7 @@ const DEFAULT_STYLE = {
   noteStartX:         180,
   noteSpacing:        0,
   keySigToNoteGap:    50,
+  uniscale:           1,
 } as const;
 
 const LEVEL_STYLES: Record<number, LevelStyle> = {
@@ -164,15 +167,15 @@ const LEVEL_STYLES: Record<number, LevelStyle> = {
 export type ResolvedStyle = Required<LevelStyle>;
 
 /**
- * §C1 M-등분 기반 음표 크기 scale.
+ * §S1 Uniform scale: 음표·오선·음자리표·조표 모두 같은 비율.
  * M = stage·batch 최대 슬롯 수.
  */
-function getNoteScaleForM(M: number): number {
-  if (M <= 3)  return 1.0;   // 표준 (~30px)
-  if (M <= 5)  return 0.80;  // 80%  (~24px)
-  if (M <= 7)  return 0.70;  // 70%  (~21px)
-  if (M <= 10) return 0.60;  // 60%  (~18px)
-  return 0.53;               // 53%  (~16px)
+export function computeScale(M: number): number {
+  if (M <= 3)  return 1.0;
+  if (M <= 5)  return 0.85;
+  if (M <= 7)  return 0.75;
+  if (M <= 10) return 0.65;
+  return 0.55;
 }
 
 /**
@@ -205,16 +208,39 @@ export function resolveStyle(
   // §C1 M-등분: maxN = M (stage 고정 슬롯 수), fallback = batchSize
   const M = maxN ?? (batchSize ?? 1);
 
-  // §C1 M 기반 음표 크기 scale.
-  const scale = getNoteScaleForM(M);
-  if (scale !== 1.0) {
-    merged.noteheadRX = merged.noteheadRX * scale;
-    merged.noteheadRY = merged.noteheadRY * scale;
-    merged.stemLen = merged.stemLen * scale;
-    merged.ledgerHalf = merged.ledgerHalf * scale;
-    merged.accidentalFontSize = merged.accidentalFontSize * scale;
+  // §S1 Uniform scale: 음표·오선·음자리표·조표 모두 동일 비율.
+  const uniscale = computeScale(M);
+  merged.uniscale = uniscale;
+
+  if (uniscale !== 1.0) {
+    // ── 음표 치수 ──────────────────────────────────────────
+    merged.noteheadRX        *= uniscale;
+    merged.noteheadRY        *= uniscale;
+    merged.stemLen           *= uniscale;
+    merged.stemW             *= uniscale;
+    merged.ledgerHalf        *= uniscale;
+    merged.ledgerW           *= uniscale;
+    merged.accidentalFontSize *= uniscale;
+
+    // ── 음자리표·조표·중괄호 ────────────────────────────────
+    merged.clefFontSize      *= uniscale;
+    merged.keySigFontSize    *= uniscale;
+    merged.keySigSpacing     *= uniscale;
+    merged.keySigStartX      *= uniscale;
+    merged.braceFontSize     *= uniscale;
+
+    // ── 오선 Y 좌표: staffCenter 고정, LINE_GAP 축소 ────────
+    const lineGap    = LINE_GAP * uniscale;
+    const staffCenter = (merged.staffTop + merged.staffBot) / 2;
+    merged.staffTop  = staffCenter - 2 * lineGap;
+    merged.staffBot  = staffCenter + 2 * lineGap;
+    if (merged.bassYOff !== 0) {
+      merged.bassYOff = merged.bassYOff * uniscale;
+    }
+    // svgH: viewBox 높이 유지 (extra whitespace — preserveAspectRatio meet이 처리)
   }
 
+  // §C1 keySig → noteStartX 보정 (scaled keySigSpacing 반영)
   if (keySigCount > 0) {
     const keySigEndX = STAFF_X1 + merged.keySigStartX + keySigCount * merged.keySigSpacing;
     const minStart = keySigEndX + merged.keySigToNoteGap;
@@ -249,10 +275,11 @@ function stepToY(
   step: number,
   clef: "treble" | "bass",
   staffBot: number,
-  yOff: number
+  yOff: number,
+  stepH: number = STEP_H,
 ): number {
   const bottomStep = clef === "treble" ? 2 : -10;
-  return staffBot + yOff - (step - bottomStep) * STEP_H;
+  return staffBot + yOff - (step - bottomStep) * stepH;
 }
 
 function getLedgerSteps(step: number, clef: "treble" | "bass"): number[] {
@@ -271,11 +298,12 @@ function getLedgerSteps(step: number, clef: "treble" | "bass"): number[] {
 
 // ── 오선 / 경계선 ─────────────────────────────────────────────
 function renderStaffLines(staffTop: number, yOff: number, style: ResolvedStyle) {
+  const lineGap = LINE_GAP * style.uniscale;
   return [0, 1, 2, 3, 4].map(i => (
     <line
       key={`sl-${yOff}-${i}`}
-      x1={STAFF_X1} y1={staffTop + yOff + i * LINE_GAP}
-      x2={STAFF_X2} y2={staffTop + yOff + i * LINE_GAP}
+      x1={STAFF_X1} y1={staffTop + yOff + i * lineGap}
+      x2={STAFF_X2} y2={staffTop + yOff + i * lineGap}
       stroke={HISTORY_COLOR} strokeWidth={style.staffSW}
     />
   ));
@@ -300,7 +328,8 @@ function renderBarlines(staffTop: number, staffBot: number, yOff: number, style:
 
 // ── 음자리표 (Bravura) ────────────────────────────────────────
 function renderTrebleClef(staffBot: number, yOff: number, style: ResolvedStyle) {
-  const g4Y = staffBot + yOff - LINE_GAP;
+  const lineGap = LINE_GAP * style.uniscale;
+  const g4Y = staffBot + yOff - lineGap;
   return (
     <text
       x={STAFF_X1 + style.clefOffsetX}
@@ -315,7 +344,8 @@ function renderTrebleClef(staffBot: number, yOff: number, style: ResolvedStyle) 
 }
 
 function renderBassClef(staffTop: number, yOff: number, style: ResolvedStyle) {
-  const f3Y = staffTop + yOff + LINE_GAP;
+  const lineGap = LINE_GAP * style.uniscale;
+  const f3Y = staffTop + yOff + lineGap;
   return (
     <text
       x={STAFF_X1 + style.clefOffsetX}
@@ -338,6 +368,7 @@ function renderKeySignature(
   flats: string[] | undefined,
   style: ResolvedStyle
 ) {
+  const stepH = STEP_H * style.uniscale;
   const elements: JSX.Element[] = [];
   const startX = STAFF_X1 + style.keySigStartX;
   let x = startX;
@@ -347,7 +378,7 @@ function renderKeySignature(
       if (!sharps.includes(letter)) continue;
       const step = SHARP_KEY_POS[clef][letter];
       if (step === undefined) continue;
-      const y = stepToY(step, clef, staffBot, yOff);
+      const y = stepToY(step, clef, staffBot, yOff, stepH);
       elements.push(
         <text
           key={`ks-s-${clef}-${letter}`}
@@ -367,7 +398,7 @@ function renderKeySignature(
       if (!flats.includes(letter)) continue;
       const step = FLAT_KEY_POS[clef][letter];
       if (step === undefined) continue;
-      const y = stepToY(step, clef, staffBot, yOff);
+      const y = stepToY(step, clef, staffBot, yOff, stepH);
       elements.push(
         <text
           key={`ks-f-${clef}-${letter}`}
@@ -421,6 +452,7 @@ function renderNotes(
   style: ResolvedStyle,
   hasKeySignature: boolean
 ) {
+  const stepH      = STEP_H * style.uniscale;
   const bottomStep = clef === "treble" ? 2 : -10;
   const topStep    = clef === "treble" ? 10 : -2;
   const midStep    = (bottomStep + topStep) / 2;
@@ -431,7 +463,7 @@ function renderNotes(
 
   return notes.map((n, i) => {
     const step   = noteToStep(n.note);
-    const y      = stepToY(step, clef, staffBot, yOff);
+    const y      = stepToY(step, clef, staffBot, yOff, stepH);
     const leds   = getLedgerSteps(step, clef);
     const stemUp = step <= midStep;
 
@@ -442,7 +474,7 @@ function renderNotes(
     return (
       <g key={`note-${clef}-${i}-${n.note}`}>
         {leds.map(ls => {
-          const ly = stepToY(ls, clef, staffBot, yOff);
+          const ly = stepToY(ls, clef, staffBot, yOff, stepH);
           return (
             <line
               key={`led-${ls}`}
