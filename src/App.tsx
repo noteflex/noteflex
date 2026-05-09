@@ -6,6 +6,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import Index from "./pages/Index.tsx";
+import PlayPage from "./pages/PlayPage.tsx";
+import NavOnlyRoute from "./components/NavOnlyRoute.tsx";
 import Dashboard from "./pages/Dashboard.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import CheckoutSuccess from "./pages/CheckoutSuccess.tsx";
@@ -62,7 +64,9 @@ const App = () => (
                 path="/play"
                 element={
                   <ComingSoonGate>
-                    <Index />
+                    <NavOnlyRoute>
+                      <PlayPage />
+                    </NavOnlyRoute>
                   </ComingSoonGate>
                 }
               />
