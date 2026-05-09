@@ -250,12 +250,12 @@ export function resolveStyle(
   // §C1 M-등분 배치: M개 슬롯으로 유효 영역 고정 분할.
   //   effectiveWidth = STAFF_X2 - noteStartX
   //   segmentWidth   = effectiveWidth / M   (stage 시작 시 고정)
-  //   noteX(i)       = noteStartX + segmentWidth × (i + 0.5)
-  //   ↔ (noteStartX + segmentWidth/2) + i × segmentWidth  (호환 공식)
+  //   noteX(i)       = noteStartX + segmentWidth × (i + 0.25)  (등분 1/4 위치)
+  //   ↔ (noteStartX + segmentWidth/4) + i × segmentWidth  (호환 공식)
   const effectiveWidth = STAFF_X2 - merged.noteStartX;
   const segmentWidth   = effectiveWidth / M;
   merged.noteSpacing = segmentWidth;
-  merged.noteStartX  = merged.noteStartX + segmentWidth / 2;
+  merged.noteStartX  = merged.noteStartX + segmentWidth / 4;
 
   return merged;
 }
