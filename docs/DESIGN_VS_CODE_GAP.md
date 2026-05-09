@@ -304,6 +304,39 @@ commits 941b04f·6f5290f·c1b9d7c·717797e. 373/373 PASS.
 | batchSize=7 잘림 방지 | 잘림 발생 가능 | no-clip 보장 | ✅ |
 | 세부 시각 조정 | — | 출시 전 UI 작업 시점 펜딩 (PENDING_BACKLOG §6.4) | 🟡 |
 
+### 3.16 GrandStaffPractice Uniform Scale ✅ (2026-05-10 S1, commit `bfd2431`)
+
+**문제**: 음표 크기만 축소(getNoteScaleForM) → 오선 간격은 원본 유지 → 음표가 오선 칸/줄 기준보다 작아 시각 비례 어색.
+
+**해결**: Uniform scale — 모든 시각 요소를 동일 배율로 일괄 축소. `computeScale(M)` 단일 함수.
+
+| M | scale |
+|---|---|
+| ≤3 | 1.0 |
+| ≤5 | 0.85 |
+| ≤7 | 0.75 |
+| ≤10 | 0.65 |
+| >10 | 0.55 |
+
+**스케일 대상**: `noteheadRX/RY`, `stemLen/W`, `ledgerHalf/W`, `accidentalFontSize`, `clefFontSize`, `keySigFontSize/Spacing/StartX`, `braceFontSize`, 오선 간격(`LINE_GAP × scale`), bass clef 오프셋(`bassYOff × scale`). SVG 전체 높이(svgH)는 고정.
+
+**구현**: `staffCenter = (staffTop+staffBot)/2` 고정 후 `staffTop = center - 2*lineGap`, `staffBot = center + 2*lineGap` 재계산. `stepToY` 5번째 파라미터 `stepH = STEP_H * uniscale` 추가. `uniscale` 필드 `ResolvedStyle`에 추가.
+
+**테스트**: 13케이스 신규 (`computeScale` 5 + `resolveStyle S1` 8) — staffHeight=96×scale, ratio=noteheadRX/stepH 일정, clefFontSize 축소 확인. 637 총 PASS.
+
+### 3.17 PlayPage 분리 — 한 화면 정책 ✅ (2026-05-10 S2, commit `3ac2d1b`)
+
+**문제**: `/play` 게임 화면이 `min-h-screen + pt-16 + py-8` → 스크롤 발생 → 한 화면 정책 위반.
+
+**해결**: 전용 `PlayPage.tsx` 분리 + `NavOnlyRoute` 직접 URL 접근 차단.
+
+| 변경 | 내용 |
+|---|---|
+| `NavOnlyRoute` 신규 | `location.state?.fromNav` 미설정 시 `/` 리다이렉트 |
+| `PlayPage.tsx` 신규 | 게임 화면 `h-screen overflow-hidden`, levelSelect 화면 `min-h-screen` 유지 |
+| `App.tsx` 수정 | `/play` → `ComingSoonGate > NavOnlyRoute > PlayPage` |
+| `Index.tsx` 축소 | 랜딩 전용 (`/` only), Start 버튼 → `navigate('/play', {state:{fromNav:true}})` |
+
 ---
 
 ## 4. 배치고사 시스템 🔴

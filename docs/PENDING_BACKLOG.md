@@ -146,6 +146,18 @@
 - StaffPreview: totalSets toggle + showSlotIdx + maxVisibleN prop + meta-M 패널 갱신
 - 단위 테스트 12케이스 신규 (624 총 PASS, sim:test 0 violations)
 
+**§0.4.6 Uniform Scale ✅ (2026-05-10 S1, commit `bfd2431`)**
+- 문제: 음표만 축소(getNoteScaleForM) + 오선 간격 고정 → 시각 비례 어색
+- 해결: `computeScale(M)` — 오선 간격·음자리표·조표·음표머리·줄기 등 모든 요소를 동일 배율 일괄 적용
+  - scale: M≤3=1.0, ≤5=0.85, ≤7=0.75, ≤10=0.65, >10=0.55
+  - staffCenter 고정 후 staffTop/staffBot 재산출; stepToY에 stepH 파라미터 추가
+- 단위 테스트 13케이스 신규 (637 총 PASS)
+
+**§0.4.7 PlayPage 한 화면 정책 ✅ (2026-05-10 S2, commit `3ac2d1b`)**
+- 문제: 게임 화면 min-h-screen + 상하 패딩 → 스크롤 발생
+- 해결: `/play` 전용 PlayPage (h-screen overflow-hidden) + NavOnlyRoute 직접 접근 차단
+- Index.tsx 랜딩 전용 축소, Start → navigate('/play', {state:{fromNav:true}})
+
 ---
 
 ## 0-1. 설계-코드 갭 정책 결정 ✅ 완료 (2026-04-29 사용자 결정)
