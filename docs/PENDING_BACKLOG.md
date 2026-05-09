@@ -636,6 +636,59 @@ Claude Code 코드 분석 발견.
 
 ---
 
+## §X. 사용자 등록·관리 영역 (출시 전 sprint, ~5일) 🔴
+
+### 점검 결과 (2026-05-09)
+
+사용자 의도: 출시 전까지 사용자 등록·관리 영역 다듬어야 함. 결제 시스템·약관과 함께 출시 신뢰의 기둥.
+
+### 4 Phase 분할 (각 Phase ~1일)
+
+#### Phase 1: 가입 영역 (A)
+- **A1**. 이메일 OTP 인증 (외부 이메일 가입자, 비밀번호 + OTP 조합) — Supabase `signInWithOtp`/`verifyOtp`
+- **A3**. 이메일 중복 검증 — Supabase 기본 동작 검증 + UX 개선
+- **A4**. 닉네임 중복 검증 — DB 레벨 unique 제약 + UI 즉시 피드백 (§5.3과 통합)
+- **A5**. 비밀번호 강도 검증 — 최소 8자·대소문자·숫자 (zxcvbn 또는 자체 룰)
+- **A2·B1 검증**: Google OAuth 가입 흐름 사실 추적 (profiles 자동 생성·`email_confirmed_at`·닉네임 처리·동일 이메일 충돌)
+
+#### Phase 2: 로그인·세션 (B)
+- **B2**. 비밀번호 재설정 (forget password) — Supabase `resetPasswordForEmail`
+- **B4**. Refresh token 기간 검증 — Supabase 설정 확인 + 적정 값 결정 (24h vs 7d vs 30d)
+
+#### Phase 3: 계정 관리 (C, §5.2 통합)
+- **C1**. 비밀번호 변경
+- **C2**. 이메일 변경 (인증 메일 발송 후 확정)
+- **C4**. 탈퇴 (계정 삭제 + 데이터 처리 정책, GDPR/PIPA 의무 영역)
+
+#### Phase 4: 보안 (D)
+- **D1**. 이메일 confirm 강제 (Supabase 설정) — 이메일·비밀번호 가입자 대상
+- **D2**. 전 테이블 RLS 정책 검증 — `admin_actions`·`user_sessions`·`subscriptions` 등 §0-2.1 스키마 표류 6개 테이블 영역 포함
+
+### 출시 후 OK
+- A6 가입 후 onboarding (첫 게임 안내·튜토리얼)
+- B3 세션 관리 (다른 기기 로그아웃)
+- C3 닉네임 변경
+- C5 학습 이력 다운로드
+- D3 Auth events 로깅
+- Apple OAuth (iOS 출시 영역과 함께)
+
+### 우선순위 영역
+- **C4 탈퇴** = GDPR·PIPA 법적 의무 — 출시 전 필수
+- **A1 이메일 OTP** = 외부 이메일 가입자 abuse 차단 1차 영역
+- **B2 비밀번호 재설정** = 사용자 신뢰 기본 영역
+- **D2 RLS 검증** = 보안 기둥 (출시 직전 1주 sprint에 박는 것도 OK)
+
+### 의존성
+- §0-2.1 스키마 표류 정리 (6개 테이블) → D2 RLS 검증과 통합 처리
+- §10.1 약관 4종 (Termly) → C4 탈퇴 정책에 GDPR/PIPA 영역 명시
+- §3.5·§5.4·§1.1 결제·차등화 영역 → C 영역 UI에서 같이 박음
+
+### 진행 시점
+- 5/10 일요일 11일차 블로그 후 또는 Group C 후 진입
+- 전체 5일 sprint 또는 phase별 분리 진행
+
+---
+
 ## 1. 비즈니스 모델 · 권한 정책 🔴 (2~3주차)
 
 ### 1.1 회원 등급 차등화 🔴 (B-0 결정으로 정리됨)
@@ -819,13 +872,15 @@ Public domain 클래식 곡별 레벨
 ### 5.1 기록 비교 피드백 🟢⭐ (출시 후)
 "어제보다 G5 0.3초 빨라졌어요" — 이탈 방지
 
-### 5.2 회원관리 페이지 🔴 (3주차)
-- 비밀번호 변경, 이메일 변경, 탈퇴
-- 학습 이력 다운로드 — 출시 후
+### 5.2 회원관리 페이지 🔴 (3주차) — §X Phase 3 통합
+- 비밀번호 변경 (C1), 이메일 변경 (C2), 탈퇴 (C4 = GDPR·PIPA 의무)
+- 학습 이력 다운로드 (C5) — 출시 후
+- → §X. Phase 3 (계정 관리 C 영역) 진입 박음
 
-### 5.3 닉네임 중복 체크 검증 🔴 (1주차)
+### 5.3 닉네임 중복 체크 검증 🔴 (1주차) — §X Phase 1 A4 통합
 - 이메일 중복 ✅ 확인됨
-- 닉네임 중복은 가입 시점에 적용되는지 확인
+- 닉네임 중복: DB 레벨 unique 제약 + UI 즉시 피드백
+- → §X. Phase 1 A4 (가입 영역) 진입 박음
 
 ### 5.4 가입자 대시보드 부분 잠금 🔴 (3주차)
 **설계 §5.나**: 간략 보고서 외 잠금
@@ -1609,4 +1664,5 @@ Claude가 출시 임박 시 자동 고지.
 - 2026-05-09 (Sonnet 4.6): **Group A 코드 완료** (commits e6ed7b2·b232dcd·1848391, 470/470 PASS) — A1: `canAccessSublevel` guest/free 재작성 + `getProgressGatePrev` 신규 (Sub1 순차 진도 게이트). A2: `20260509_pass_criteria_v2.sql` + `useLevelProgress` avgReactionRatio 파라미터 + NoteGame endSession→recordAttempt 순차 체인. A3: `Pricing.tsx` freeFeatures/compareRows 갱신. §B-0.2·§B.1·§B.2 ✅. 다음: Group B (daily_sessions 테이블·useDailyLimit·DailyLimitModal, ~4h).
 - 2026-05-09 오후 (Opus 4.7): **Group B 코드 완료** (commits 7167977·0cbd5ac·b81937e·f4265df, 497/497 PASS, tsc 0) — B1: `20260509_daily_sessions.sql` (테이블 + RLS + RPC 2개, tier_snapshot 컬럼 두지 않음). B2: `useDailyLimit` 훅 (guest=localStorage / free=RPC / pro=Infinity, UTC 자정 카운트다운, 11/11 PASS). B3: `DailyLimitModal` (ko/en, 메모리 #19 backdrop·ESC 닫기 X, animate-pop-in, 12/12 PASS). B4: NoteGame 마운트 게이트 + 통합 테스트 4 케이스. 사용자 결정 Q1=UTC / Q2=localStorage / Q3=tier_snapshot 두지 않음 / Q4=마운트 시점. §B.4 ✅. 다음: 5/10 11일차 블로그 → Group C (~5h).
 - 2026-05-09 오후~ (Opus 4.7): **Group B Fix Sprint** (commits b58d873·fbe4d29, 512/512 PASS, tsc 0) — 사용자 검증 발견 영역 정정. F1+F3: 게이트 위치 NoteGame 마운트 → LevelSelect 단계 클릭 시점 이동 (백그라운드 게임 진행 차단). NoteGame = 안전망 (한도 도달 시 onLevelSelect 콜백). 6개 NoteGame.*.test.tsx useDailyLimit 모킹 추가 (테스트 안정화). LevelSelect.dailyLimit 신규 7케이스. F2: DailyLimitModal 컨텐츠 재작성 — Guest 가치 3개·Free 가치 4개·Free 가격 표시 ($2.99/mo·$24.99/yr 30% 절약). Quick Mastery 영역 제거 (사용자 정정). "모든 단계 열림" 표현 정정 (Premium=21단계 전체, Free=Sub1만).
+- 2026-05-09 (Opus 4.7): **§X 사용자 등록·관리 영역 신규 박음** — 4 Phase 분할 (~5일 sprint): A 가입(이메일 OTP·중복검증·비밀번호 강도·OAuth 사실추적) / B 로그인·세션(비밀번호 재설정·refresh token) / C 계정관리(비번변경·이메일변경·탈퇴 GDPR/PIPA) / D 보안(이메일 confirm·전 테이블 RLS). C4 탈퇴=법적 의무 출시 전 필수, D2 RLS=§0-2.1 스키마 표류 통합. 기존 §5.2 회원관리·§5.3 닉네임 중복 → §X로 통합 마킹. 진행 시점: 5/10 11일차 블로그 또는 Group C 후. 의존성: §0-2.1·§10.1·§3.5/§5.4/§1.1.
 - 2026-05-03 (Sonnet 4.6): **§7.3 device 변경 자동 재측정 + A2 이벤트 로깅** — `onDeviceChange` 시그니처 갱신 (kinds 전달), `setIsCalibrated(false)` → 다음 게임 자동 모달 (메모리 #19 옵션 C). `device_change_events` 테이블 + migration SQL. `logDeviceChangeEvent`·`updateDeviceChangeEvent` 신규. 단위 테스트 8건 신규. vitest 433/433 PASS. PENDING: 출시 후 false positive 분석 → audio output 전용 감지 보강.
