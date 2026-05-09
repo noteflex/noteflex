@@ -57,104 +57,124 @@ describe("computeMasteryScore", () => {
     expect(computeMasteryScore(null)).toBe(0);
   });
 
-  it("play_count=5, best_streak=5, accuracy=0.85, reaction=0.30 → 50 + 25 + 25 = ...", () => {
-    const prog: SublevelProgress = {
-      ...baseProg,
-      play_count: 5,
-    };
-    // count_score = min(5/10,1)*25 = 12.5; others unchanged
-    const score = computeMasteryScore(prog);
-    expect(score).toBe(Math.round(25 + 25 + 12.5 + 25)); // = 88
+  it("play_count=5, 나머지 동일 → count 점수 반영", () => {
+    const prog: SublevelProgress = { ...baseProg, play_count: 5 };
+    expect(computeMasteryScore(prog)).toBe(Math.round(25 + 25 + 12.5 + 25));
   });
 
-  it("avg_reaction_ratio undefined → reaction 점수 0", () => {
-    const prog: SublevelProgress = {
-      ...baseProg,
-      avg_reaction_ratio: undefined,
-      play_count: 10,
-      best_streak: 5,
-      total_attempts: 100,
-      total_correct: 85,
-    };
-    // reaction=99 → LEAST(0.35/99,1)*25 ≈ 0; others: acc=25, count=25, streak=25
-    const score = computeMasteryScore(prog);
-    expect(score).toBe(Math.round(25 + 0.09 + 25 + 25)); // ≈ 75
+  it("avg_reaction_ratio undefined → reaction 점수 ≈0", () => {
+    const prog: SublevelProgress = { ...baseProg, avg_reaction_ratio: undefined };
+    expect(computeMasteryScore(prog)).toBe(Math.round(25 + 0.09 + 25 + 25));
   });
 });
 
-describe("MasteryScoreCard — 렌더", () => {
+describe("MasteryScoreCard — Layer 1 (score + progress bar)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockUseLang.mockReturnValue({ lang: "ko" });
   });
 
-  it("score 숫자 표시", () => {
+  it("progress 있을 때 score 숫자 표시", () => {
     renderCard("free");
     expect(screen.getByTestId("score-number")).toHaveTextContent("100");
   });
 
-  it("progress bar 표시", () => {
+  it("progress bar 항상 표시", () => {
     renderCard("free");
     expect(screen.getByTestId("score-progress-bar")).toBeInTheDocument();
   });
 
-  it("progress null → '아직 기록 없음', progress bar 없음", () => {
+  it("progress null → score '—' + '첫 세션을 시작해보세요' + progress bar 0%", () => {
     renderCard("free", null);
-    expect(screen.getByText("아직 기록 없음")).toBeInTheDocument();
-    expect(screen.queryByTestId("score-progress-bar")).not.toBeInTheDocument();
+    expect(screen.getByTestId("score-number")).toHaveTextContent("—");
+    expect(screen.getByTestId("no-data-hint")).toHaveTextContent("첫 세션을 시작해보세요");
+    expect(screen.getByTestId("score-progress-bar")).toBeInTheDocument();
   });
 
-  it("expand toggle 클릭 → metrics-layer 표시", async () => {
-    renderCard("free");
-    expect(screen.queryByTestId("metrics-layer")).not.toBeInTheDocument();
-    await userEvent.click(screen.getByTestId("expand-toggle"));
-    expect(screen.getByTestId("metrics-layer")).toBeInTheDocument();
-  });
-
-  it("collapse 클릭 → metrics-layer 숨김", async () => {
-    renderCard("free");
-    await userEvent.click(screen.getByTestId("expand-toggle"));
-    expect(screen.getByTestId("metrics-layer")).toBeInTheDocument();
-    await userEvent.click(screen.getByTestId("expand-toggle"));
-    expect(screen.queryByTestId("metrics-layer")).not.toBeInTheDocument();
+  it("progress null 영어 → 'Start your first session'", () => {
+    mockUseLang.mockReturnValue({ lang: "en" });
+    renderCard("free", null);
+    expect(screen.getByTestId("no-data-hint")).toHaveTextContent("Start your first session");
   });
 });
 
-describe("MasteryScoreCard — tier blur", () => {
+describe("MasteryScoreCard — default 펼침 + 토글", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockUseLang.mockReturnValue({ lang: "ko" });
   });
 
-  it("free → expand 시 PremiumBlurCard blur-layer 표시", async () => {
+  it("마운트 시 metrics-layer 이미 노출 (default 펼침)", () => {
+    renderCard("free");
+    expect(screen.getByTestId("metrics-layer")).toBeInTheDocument();
+  });
+
+  it("토글 클릭 → metrics-layer 접힘", async () => {
+    renderCard("free");
+    expect(screen.getByTestId("metrics-layer")).toBeInTheDocument();
+    await userEvent.click(screen.getByTestId("expand-toggle"));
+    expect(screen.queryByTestId("metrics-layer")).not.toBeInTheDocument();
+  });
+
+  it("토글 다시 클릭 → metrics-layer 펼침", async () => {
     renderCard("free");
     await userEvent.click(screen.getByTestId("expand-toggle"));
+    await userEvent.click(screen.getByTestId("expand-toggle"));
+    expect(screen.getByTestId("metrics-layer")).toBeInTheDocument();
+  });
+
+  it("progress null 이어도 toggle + metrics-layer 노출", () => {
+    renderCard("free", null);
+    expect(screen.getByTestId("expand-toggle")).toBeInTheDocument();
+    expect(screen.getByTestId("metrics-layer")).toBeInTheDocument();
+  });
+
+  it("progress null 4지표 0 값 표시", () => {
+    renderCard("pro", null);
+    const rows = screen.getAllByTestId("metric-row");
+    expect(rows).toHaveLength(4);
+    // accuracy = 0%, playCount = 0, bestStreak = 0
+    expect(rows[0]).toHaveTextContent("0%");
+    expect(rows[2]).toHaveTextContent("0");
+    expect(rows[3]).toHaveTextContent("0");
+  });
+});
+
+describe("MasteryScoreCard — tier blur (default 펼침)", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockUseLang.mockReturnValue({ lang: "ko" });
+  });
+
+  it("free — 마운트 시 즉시 blur-layer 인지 (클릭 불필요)", () => {
+    renderCard("free");
     expect(screen.getByTestId("blur-layer")).toBeInTheDocument();
     expect(screen.getByTestId("upgrade-overlay")).toBeInTheDocument();
   });
 
-  it("guest → expand 시 PremiumBlurCard blur-layer 표시", async () => {
+  it("guest — 마운트 시 즉시 blur-layer 인지", () => {
     renderCard("guest");
-    await userEvent.click(screen.getByTestId("expand-toggle"));
     expect(screen.getByTestId("blur-layer")).toBeInTheDocument();
   });
 
-  it("pro → expand 시 blur 없음, 4개 metric-row 노출", async () => {
+  it("free null progress — blur 여전히 표시", () => {
+    renderCard("free", null);
+    expect(screen.getByTestId("blur-layer")).toBeInTheDocument();
+  });
+
+  it("pro — blur 없음, 4개 metric-row 즉시 노출", () => {
     renderCard("pro");
-    await userEvent.click(screen.getByTestId("expand-toggle"));
     expect(screen.queryByTestId("blur-layer")).not.toBeInTheDocument();
     expect(screen.getAllByTestId("metric-row")).toHaveLength(4);
   });
 
-  it("premium → expand 시 blur 없음", async () => {
+  it("premium — blur 없음", () => {
     renderCard("premium");
-    await userEvent.click(screen.getByTestId("expand-toggle"));
     expect(screen.queryByTestId("blur-layer")).not.toBeInTheDocument();
   });
 
-  it("admin → expand 시 blur 없음", async () => {
+  it("admin — blur 없음", () => {
     renderCard("admin");
-    await userEvent.click(screen.getByTestId("expand-toggle"));
     expect(screen.queryByTestId("blur-layer")).not.toBeInTheDocument();
   });
 });

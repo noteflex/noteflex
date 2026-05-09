@@ -6,6 +6,7 @@ import {
   formatSublevel,
   getCompletion,
   PASS_CRITERIA,
+  type SublevelCompletion,
   type SublevelProgress,
   type SubscriptionTier,
 } from "@/lib/levelSystem";
@@ -30,28 +31,36 @@ export function computeMasteryScore(prog: SublevelProgress | null): number {
   return Math.round(accScore + reactScore + countScore + streakScore);
 }
 
+const ZERO_COMPLETION: SublevelCompletion = {
+  accuracy: { current: 0, required: PASS_CRITERIA.MIN_ACCURACY, satisfied: false },
+  avgReactionRatio: { current: null, required: PASS_CRITERIA.MIN_AVG_REACTION_RATIO, satisfied: false },
+  playCount: { current: 0, required: PASS_CRITERIA.MIN_PLAY_COUNT, satisfied: false },
+  bestStreak: { current: 0, required: PASS_CRITERIA.MIN_BEST_STREAK, satisfied: false },
+  allSatisfied: false,
+};
+
 // ── i18n ──────────────────────────────────────────────────────
 const STRINGS = {
   ko: {
     masteryScore: "마스터리 점수",
-    expand: "상세 보기",
     collapse: "접기",
+    expand: "상세 보기",
     accuracy: "정확도",
     reaction: "반응 비율",
     playCount: "플레이 수",
     bestStreak: "최고 연속",
-    noData: "아직 기록 없음",
+    noDataHint: "첫 세션을 시작해보세요",
     upgrade: "Premium으로 보기",
   },
   en: {
     masteryScore: "Mastery Score",
-    expand: "Show details",
     collapse: "Collapse",
+    expand: "Show details",
     accuracy: "Accuracy",
     reaction: "Reaction ratio",
     playCount: "Play count",
     bestStreak: "Best streak",
-    noData: "No data yet",
+    noDataHint: "Start your first session",
     upgrade: "Unlock with Premium",
   },
 } as const;
@@ -73,13 +82,15 @@ export default function MasteryScoreCard({
   sublevel,
   onUpgrade,
 }: MasteryScoreCardProps) {
-  const [expanded, setExpanded] = useState(false);
+  // default 펼침 — 첫 진입 시 4지표 blur 즉시 인지 (메모리 #18 + #25)
+  const [expanded, setExpanded] = useState(true);
   const navigate = useNavigate();
   const { lang } = useLang();
   const s = STRINGS[lang as keyof typeof STRINGS] ?? STRINGS.ko;
 
   const score = computeMasteryScore(progress);
   const label = formatSublevel(level, sublevel as 1 | 2 | 3);
+  const hasData = !!progress;
 
   // map SubscriptionTier "pro" → "premium" for PremiumBlurCard
   const blurTier =
@@ -89,7 +100,7 @@ export default function MasteryScoreCard({
 
   const handleUpgrade = onUpgrade ?? (() => navigate("/pricing"));
 
-  const completion = progress ? getCompletion(progress) : null;
+  const completion = hasData ? getCompletion(progress) : ZERO_COMPLETION;
 
   return (
     <div
@@ -104,53 +115,50 @@ export default function MasteryScoreCard({
             className="text-4xl font-bold tabular-nums text-foreground leading-none"
             data-testid="score-number"
           >
-            {score}
+            {hasData ? score : "—"}
           </span>
-        </div>
-
-        {/* progress bar */}
-        <div className="flex-1 flex flex-col gap-1">
-          {progress ? (
-            <>
-              <div
-                className="w-full bg-muted rounded-full h-2 overflow-hidden"
-                role="progressbar"
-                aria-valuenow={score}
-                aria-valuemin={0}
-                aria-valuemax={100}
-                aria-label={`${s.masteryScore} ${score}/100`}
-                data-testid="score-progress-bar"
-              >
-                <div
-                  className="h-2 rounded-full transition-all bg-primary"
-                  style={{ width: `${score}%` }}
-                />
-              </div>
-              <span className="text-[10px] text-muted-foreground text-right">
-                {score} / 100
-              </span>
-            </>
-          ) : (
-            <span className="text-xs text-muted-foreground">{s.noData}</span>
+          {!hasData && (
+            <span className="text-xs text-muted-foreground" data-testid="no-data-hint">
+              {s.noDataHint}
+            </span>
           )}
         </div>
 
-        {/* toggle */}
-        {progress && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setExpanded((v) => !v)}
-            aria-expanded={expanded}
-            data-testid="expand-toggle"
+        {/* progress bar — always shown (0% when no data) */}
+        <div className="flex-1 flex flex-col gap-1">
+          <div
+            className="w-full bg-muted rounded-full h-2 overflow-hidden"
+            role="progressbar"
+            aria-valuenow={score}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-label={`${s.masteryScore} ${score}/100`}
+            data-testid="score-progress-bar"
           >
-            {expanded ? s.collapse : s.expand}
-          </Button>
-        )}
+            <div
+              className="h-2 rounded-full transition-all bg-primary"
+              style={{ width: `${score}%` }}
+            />
+          </div>
+          <span className="text-[10px] text-muted-foreground text-right">
+            {hasData ? score : 0} / 100
+          </span>
+        </div>
+
+        {/* toggle — always visible */}
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setExpanded((v) => !v)}
+          aria-expanded={expanded}
+          data-testid="expand-toggle"
+        >
+          {expanded ? s.collapse : s.expand}
+        </Button>
       </div>
 
-      {/* ── Layer 2: 4 metrics (blur for free/guest) ── */}
-      {expanded && completion && (
+      {/* ── Layer 2: 4 metrics (blur for free/guest, always shown when expanded) ── */}
+      {expanded && (
         <div className="mt-3" data-testid="metrics-layer">
           <PremiumBlurCard
             tier={blurTier}
