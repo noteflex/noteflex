@@ -6,10 +6,15 @@ keywords: ["피아노 초견", "그랜드 오선지", "양손 초견", "bass cle
 slug: "piano-sight-reading-guide"
 category: "악기별 가이드"
 day: 11
+coverImage: "https://upload.wikimedia.org/wikipedia/commons/e/e7/Beethoven_Klaviersonate_Nr_30.jpg"
+coverImageAlt: "베토벤 피아노 소나타 30번 Op. 109 Vivace 자필 악보 (1820) — treble과 bass clef가 함께 기보된 피아노 대보표"
+coverImageSource: "https://commons.wikimedia.org/wiki/File:Beethoven_Klaviersonate_Nr_30.jpg"
+coverImageLicense: "Public Domain"
+coverImageCredit: "Ludwig van Beethoven (1770–1827)"
 ---
 
-![피아노 앞에서 악보를 펼친 연습 장면](https://images.pexels.com/photos/4709822/pexels-photo-4709822.jpeg?auto=compress&cs=tinysrgb&w=640)
-*그림 1: 피아노 악보 읽기. 출처: Pexels / Free to use*
+![베토벤 피아노 소나타 30번 Op. 109 Vivace 악장 자필 악보 (1820) — 높은음자리표(treble)와 낮은음자리표(bass)가 함께 기보된 피아노 대보표의 실제 예시](https://upload.wikimedia.org/wikipedia/commons/e/e7/Beethoven_Klaviersonate_Nr_30.jpg)
+*그림 1: Ludwig van Beethoven, 피아노 소나타 30번 Op. 109 Vivace 자필 악보 (1820). [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Beethoven_Klaviersonate_Nr_30.jpg) — Public Domain*
 
 처음으로 그랜드 오선지(grand staff)를 마주하는 순간이 있다. 오선 두 줄이 위아래로 나란히 있고, 위는 높은음자리표(treble clef), 아래는 낮은음자리표(bass clef). 단선 악보에서 읽던 것과 전혀 다른 밀도다. 이 순간 많은 피아노 학습자가 "악보 읽기가 어렵다"는 결론에 도달한다.
 
@@ -41,8 +46,8 @@ Karpinski(2000)는 악보 읽기의 인지 과정을 분석하면서, 처리할 
 
 이 패턴 인식은 반복 노출로만 형성된다. 같은 화음 모양이 충분히 반복된 후에야 개별 번역 없이 전체 인식이 가능해진다.
 
-![피아노 건반 위에 올린 양손](https://images.pexels.com/photos/3823039/pexels-photo-3823039.jpeg?auto=compress&cs=tinysrgb&w=640)
-*그림 2: 피아노 양손 연주. 출처: Pexels / Free to use*
+![차일드 하삼의 «피아노 앞에서» (1902–1908), 유화 — 피아노 앞에 앉아 악보를 읽는 여성의 모습, 신시내티 미술관 소장](https://upload.wikimedia.org/wikipedia/commons/thumb/f/fc/%27At_the_Piano%27_by_Childe_Hassam%2C_Cincinnati_Art_Museum.JPG/960px-%27At_the_Piano%27_by_Childe_Hassam%2C_Cincinnati_Art_Museum.JPG)
+*그림 2: Childe Hassam, «피아노 앞에서» (1902–1908), 유화. [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:%27At_the_Piano%27_by_Childe_Hassam,_Cincinnati_Art_Museum.JPG) — Public Domain. 신시내티 미술관 소장.*
 
 ## 피아노 초견 훈련의 실용 원칙 🔍
 
@@ -63,5 +68,5 @@ Noteflex의 레벨 5~7은 그랜드 오선지를 사용한다. treble과 bass를
 2. Lehmann, A. C., & McArthur, V. (2002). Sight-reading. In R. Parncutt & G. E. McPherson (Eds.), *The Science and Psychology of Music Performance* (pp. 135–150). Oxford University Press.
 
 ### 이미지 출처
-- 그림 1: Pexels / Free to use
-- 그림 2: Pexels / Free to use
+- 그림 1: Beethoven, 피아노 소나타 30번 Op. 109 Vivace 자필 악보 (1820). [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Beethoven_Klaviersonate_Nr_30.jpg) — Public Domain.
+- 그림 2: Childe Hassam, «피아노 앞에서» (1902–1908), 유화. [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:%27At_the_Piano%27_by_Childe_Hassam,_Cincinnati_Art_Museum.JPG) — Public Domain. 신시내티 미술관 소장.

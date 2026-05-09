@@ -6,10 +6,15 @@ keywords: ["piano sight-reading", "grand staff", "bass clef reading", "two-hand 
 slug: "piano-sight-reading-guide"
 category: "Instrument Guides"
 day: 11
+coverImage: "https://upload.wikimedia.org/wikipedia/commons/e/e7/Beethoven_Klaviersonate_Nr_30.jpg"
+coverImageAlt: "Beethoven's autograph manuscript of Piano Sonata No. 30 Op. 109, Vivace (1820), showing piano grand staff with treble and bass clefs"
+coverImageSource: "https://commons.wikimedia.org/wiki/File:Beethoven_Klaviersonate_Nr_30.jpg"
+coverImageLicense: "Public Domain"
+coverImageCredit: "Ludwig van Beethoven (1770–1827)"
 ---
 
-![Pianist reading sheet music at the keyboard](https://images.pexels.com/photos/4709822/pexels-photo-4709822.jpeg?auto=compress&cs=tinysrgb&w=640)
-*Figure 1: Reading sheet music at the piano. Source: Pexels / Free to use*
+![Beethoven's autograph manuscript of Piano Sonata No. 30 Op. 109, Vivace movement (1820), showing piano grand staff with both treble and bass clefs — the two-staff system that defines piano sight-reading](https://upload.wikimedia.org/wikipedia/commons/e/e7/Beethoven_Klaviersonate_Nr_30.jpg)
+*Figure 1: Ludwig van Beethoven, autograph manuscript of Piano Sonata No. 30 Op. 109, Vivace (1820). [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Beethoven_Klaviersonate_Nr_30.jpg) — Public Domain*
 
 There is a specific moment in piano learning when the grand staff appears for the first time. Two lines of notation stacked one above the other — treble clef on top, bass clef below — with more information packed into a single measure than any single-staff instrument requires. Many learners arrive at a conclusion here: "reading music is hard."
 
@@ -41,8 +46,8 @@ Chords can be read in one of two ways: note by note, identifying each pitch indi
 
 Pattern recognition of this kind only develops through repetition. The same chord shape needs to appear enough times to register as a unit before whole-chord reading becomes possible.
 
-![Two hands positioned on piano keys](https://images.pexels.com/photos/3823039/pexels-photo-3823039.jpeg?auto=compress&cs=tinysrgb&w=640)
-*Figure 2: Two-handed piano playing. Source: Pexels / Free to use*
+!["At the Piano" (1902–1908) by Childe Hassam, oil on canvas — a woman seated at the piano, Cincinnati Art Museum](https://upload.wikimedia.org/wikipedia/commons/thumb/f/fc/%27At_the_Piano%27_by_Childe_Hassam%2C_Cincinnati_Art_Museum.JPG/960px-%27At_the_Piano%27_by_Childe_Hassam%2C_Cincinnati_Art_Museum.JPG)
+*Figure 2: Childe Hassam, "At the Piano" (1902–1908), oil on canvas. [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:%27At_the_Piano%27_by_Childe_Hassam,_Cincinnati_Art_Museum.JPG) — Public Domain. Cincinnati Art Museum.*
 
 ## 🔍 Practical Principles for Piano Sight-Reading
 
@@ -63,5 +68,5 @@ The first encounter with the grand staff is the beginning of the adaptation, not
 2. Lehmann, A. C., & McArthur, V. (2002). Sight-reading. In R. Parncutt & G. E. McPherson (Eds.), *The Science and Psychology of Music Performance* (pp. 135–150). Oxford University Press.
 
 ### Image Sources
-- Figure 1: Pexels / Free to use
-- Figure 2: Pexels / Free to use
+- Figure 1: Beethoven, autograph manuscript of Piano Sonata No. 30 Op. 109, Vivace (1820). [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Beethoven_Klaviersonate_Nr_30.jpg) — Public Domain.
+- Figure 2: Childe Hassam, "At the Piano" (1902–1908), oil on canvas. [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:%27At_the_Piano%27_by_Childe_Hassam,_Cincinnati_Art_Museum.JPG) — Public Domain. Cincinnati Art Museum.
