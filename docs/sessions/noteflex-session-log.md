@@ -4,6 +4,25 @@
 
 ---
 
+## 2026-05-11 (월) — §X-2 로그인·세션·계정 sprint ✅
+
+### Commits
+- B2: `feat(auth): B2 비밀번호 재설정 흐름` (`8171627`)
+- C1/C2/C3: `feat(auth): C1/C2/C3 비밀번호 변경·닉네임 23505·회원 탈퇴` (`99eb90e`)
+- docs: `docs: §X-2 로그인·세션·계정 sprint ✅`
+
+### 완료 내역
+- **B2 비밀번호 재설정**: AuthModal forgot mode (헤더·이메일 폼·발송 확인 UI·푸터 분기) + /reset-password 페이지 (PASSWORD_RECOVERY 이벤트 수신 + 강도 미터 + 비밀번호 확인)
+- **C1 비밀번호 변경**: ProfilePage에 현재 비밀번호 검증(signInWithPassword) → updateUser + strength meter
+- **C2 닉네임 23505**: ProfilePage save 시 DB 23505 즉시 인라인 피드백 (기존 useNicknameAvailability도 유지)
+- **C3 회원 탈퇴**: GDPR/PIPA soft delete — deleted_at/is_deleted/deletion_reason 컬럼 + request_account_deletion RPC(SECURITY DEFINER) + 비밀번호 재확인 모달
+- **password.ts**: analyzePassword + strength constants 공용 라이브러리 분리 (AuthModal 하위 호환 re-export 포함)
+- **테스트**: AuthModal.test.tsx B2 4개 추가(총 36개) + ProfilePage.test.tsx C1 5개·C2 1개·C3 5개 추가(총 22개). 전체 PASS.
+- **Production Apply 필요**: `20260511_account_deletion.sql`
+- 이메일 변경 = 읽기 전용 식별자 정책으로 구현 제외.
+
+---
+
 ## 2026-05-11 (월) — 12일차 블로그 3편 ✅
 
 ### Commits

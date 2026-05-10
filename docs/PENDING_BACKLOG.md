@@ -701,12 +701,14 @@ Claude Code 코드 분석 발견.
 - **D2** 전 테이블 RLS 검증 + 정정 (is_admin() 함수, core 4 직접 DDL + optional 5 DO block) ✅
 - Production Apply 필요: `20260510_rls_audit.sql` + `20260510_check_email_v2.sql`
 
-### §X-2 PENDING (로그인·세션·계정)
-- **B2** 비밀번호 재설정 (forget password, resetPasswordForEmail)
-- **B4** Refresh token 기간 검증
-- **C1** 비밀번호 변경 (계정 설정 UI)
-- **C2** 이메일 변경 (OTP 확인 후 확정)
-- **C4** 탈퇴 (GDPR/PIPA, 계정 삭제 + 데이터 처리) 🔴 출시 전 필수
+### §X-2 ✅ 로그인·세션·계정 sprint (2026-05-11)
+- **B2** 비밀번호 재설정 ✅ — AuthModal forgot mode + /reset-password page (PASSWORD_RECOVERY)
+- **C1** 비밀번호 변경 ✅ — ProfilePage 현재 비밀번호 검증 → updateUser + strength meter
+- **C2** 닉네임 변경 ✅ — 23505 즉시 인라인 피드백 + 추천 닉네임
+- **C3** 회원 탈퇴 ✅ — GDPR/PIPA soft delete (request_account_deletion RPC + 비밀번호 재확인 모달)
+- **Production Apply 필요**: `20260511_account_deletion.sql`
+- **B4** Refresh token 기간 검증 — 아직 PENDING
+- **C2(이메일 변경)** = 박지 X (이메일은 읽기 전용 식별자)
 
 ### 점검 결과 (2026-05-09)
 
