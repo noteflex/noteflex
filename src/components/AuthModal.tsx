@@ -70,6 +70,7 @@ export default function AuthModal({ onClose }: AuthModalProps) {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [nickname, setNickname] = useState("");
+  const [nicknameConflict, setNicknameConflict] = useState(false);
   const nicknameStatus = useNicknameAvailability(
     mode === "signup" && signupStep === 3 ? nickname : ""
   );
@@ -248,7 +249,7 @@ export default function AuthModal({ onClose }: AuthModalProps) {
       if (updateError) throw updateError;
       if (!updatedUser) throw new Error("사용자 정보를 불러올 수 없어요");
 
-      await completeProfile(updatedUser.id, {
+      const { error: profileError, code: profileErrorCode } = await completeProfile(updatedUser.id, {
         nickname,
         birth_year:       year,
         birth_month:      month,
@@ -260,6 +261,14 @@ export default function AuthModal({ onClose }: AuthModalProps) {
         privacy_agreed:   privacyAgreed,
         marketing_agreed: marketingAgreed,
       });
+
+      if (profileError) {
+        if (profileErrorCode === "23505") {
+          setNicknameConflict(true);
+          return;
+        }
+        console.warn("[AuthModal] Profile update failed:", profileError);
+      }
 
       const age = calculateAge(year, month, day);
       toast({
@@ -587,7 +596,7 @@ export default function AuthModal({ onClose }: AuthModalProps) {
                     <input
                       type="text"
                       value={nickname}
-                      onChange={e => setNickname(e.target.value.toLowerCase())}
+                      onChange={e => { setNickname(e.target.value.toLowerCase()); setNicknameConflict(false); }}
                       placeholder="3~20자, 영문 소문자/숫자/밑줄"
                       maxLength={20}
                       required
@@ -601,6 +610,11 @@ export default function AuthModal({ onClose }: AuthModalProps) {
                     )}
                     {nicknameStatus.state === "invalid_format" && (
                       <p className="text-xs text-destructive ml-1">{nicknameStatus.reason}</p>
+                    )}
+                    {nicknameConflict && (
+                      <p className="text-xs text-destructive ml-1" data-testid="nickname-conflict-error">
+                        이미 사용 중인 닉네임이에요. 다른 닉네임을 입력해주세요.
+                      </p>
                     )}
                     {nicknameStatus.state === "taken" && (
                       <div className="space-y-1">

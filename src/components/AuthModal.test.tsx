@@ -395,4 +395,16 @@ describe("Profile step (Step 3)", () => {
 
     await waitFor(() => expect(onClose).toHaveBeenCalled());
   });
+
+  it("shows nickname conflict error on 23505 from completeProfile", async () => {
+    mockCompleteProfile.mockResolvedValueOnce({ error: "duplicate key", code: "23505" });
+    const { user } = await goToProfileStep();
+    await submitProfileStep(user);
+
+    await waitFor(() =>
+      expect(screen.getByTestId("nickname-conflict-error")).toBeInTheDocument()
+    );
+    // 모달은 Step 3에 머무름 (onClose 미호출)
+    expect(screen.getByRole("button", { name: /가입 완료/ })).toBeInTheDocument();
+  });
 });

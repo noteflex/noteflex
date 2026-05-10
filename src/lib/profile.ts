@@ -49,7 +49,7 @@ export interface ProfileCompletionInput {
 export async function completeProfile(
   userId: string,
   input: ProfileCompletionInput
-): Promise<{ error: string | null }> {
+): Promise<{ error: string | null; code?: string }> {
   const now = new Date().toISOString();
 
   const { error } = await supabase
@@ -71,7 +71,7 @@ export async function completeProfile(
 
   if (error) {
     console.error("[profile] Update error:", error);
-    return { error: error.message };
+    return { error: error.message, code: error.code };
   }
   return { error: null };
 }
