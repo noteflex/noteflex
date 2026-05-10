@@ -13,9 +13,6 @@ coverImageLicense: "Public Domain"
 coverImageCredit: "J.S. Bach; Bach Digital archive, Leipzig"
 ---
 
-![J.S. Bach's autograph manuscript of the opening bass aria from Cantata BWV 56 (1726), showing bass clef notation in Bach's own hand — the bass clef positions that represent a common weak zone for learners trained primarily in treble clef](https://upload.wikimedia.org/wikipedia/commons/thumb/8/8f/BWV56-autograph-manuscript-first-page-Bach-1726.jpg/960px-BWV56-autograph-manuscript-first-page-Bach-1726.jpg)
-*Figure 1: J.S. Bach, autograph manuscript of bass aria, Cantata BWV 56 (1726). [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:BWV56-autograph-manuscript-first-page-Bach-1726.jpg) — Public Domain. Bach Digital archive, Leipzig.*
-
 Five run-throughs of the same piece and the hand still stops at the same note. Low F in the bass clef. The C above the treble staff. A sudden E♭ that keeps catching the eye. The hesitation doesn't diminish across sessions.
 
 That's not a willpower problem. It means the recognition pipeline — from seeing a note to knowing its name — is slower at that specific note than the surrounding ones. Repeating the full piece doesn't address it, because most of the piece is composed of notes that are already fluent.
@@ -27,6 +24,9 @@ Reading a single note requires three stages in quick sequence: visual position i
 Bass clef notes present this challenge for learners who started in treble clef. The same visual position on the staff corresponds to a different pitch name: the second space from the bottom is A in treble and C in bass. Until that remapping is automatic, each bass clef note requires a conscious translation step — and consciousness is slow.
 
 Ledger-line notes are the same problem in a different location. Notes that sit outside the five staff lines don't benefit from the pattern recognition that builds up for in-staff notes. Each encounter requires counting out from the nearest staff line until enough repetitions turn the position into direct recognition.
+
+![J.S. Bach's autograph manuscript of the opening bass aria from Cantata BWV 56 (1726), showing bass clef notation in Bach's own hand — the bass clef positions that represent a common weak zone for learners trained primarily in treble clef](https://upload.wikimedia.org/wikipedia/commons/thumb/8/8f/BWV56-autograph-manuscript-first-page-Bach-1726.jpg/960px-BWV56-autograph-manuscript-first-page-Bach-1726.jpg)
+*Figure 1: J.S. Bach, autograph manuscript of bass aria, Cantata BWV 56 (1726). [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:BWV56-autograph-manuscript-first-page-Bach-1726.jpg) — Public Domain. Bach Digital archive, Leipzig.*
 
 ## 💡 Deliberate Practice Closes the Gap
 

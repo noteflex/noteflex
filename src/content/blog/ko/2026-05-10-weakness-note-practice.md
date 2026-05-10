@@ -13,9 +13,6 @@ coverImageLicense: "Public Domain"
 coverImageCredit: "J.S. Bach; 라이프치히 Bach Digital 아카이브"
 ---
 
-![J.S. Bach의 칸타타 BWV 56 바스 아리아 자필 악보 (1726) — 바흐 자신의 손으로 기보된 낮은음자리표(bass clef) 악보, treble clef 위주 학습자에게 약점이 되는 음역대를 직접 보여줌](https://upload.wikimedia.org/wikipedia/commons/thumb/8/8f/BWV56-autograph-manuscript-first-page-Bach-1726.jpg/960px-BWV56-autograph-manuscript-first-page-Bach-1726.jpg)
-*그림 1: J.S. Bach, 칸타타 BWV 56 바스 아리아 자필 악보 (1726). [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:BWV56-autograph-manuscript-first-page-Bach-1726.jpg) — Public Domain. 라이프치히 Bach Digital 아카이브 소장.*
-
 같은 악보를 다섯 번 통주해도 여전히 같은 자리에서 손가락이 멈춘다. bass clef 오선 아래 낮은 F, 덧줄 두 개 위의 C, 갑자기 나타난 E♭. 그 음표들은 세션을 거듭해도 사라지지 않는다.
 
 이것은 의지의 문제가 아니다. 특정 음표에서 인식 속도가 느리다는 신호다. 그 신호를 무시하고 전체 악보를 반복하면, 이미 잘 읽히는 음표만 반복하게 된다.
@@ -27,6 +24,9 @@ coverImageCredit: "J.S. Bach; 라이프치히 Bach Digital 아카이브"
 bass clef 음표가 많은 학습자에게 어려운 이유도 여기에 있다. treble clef로 먼저 학습한 경우, bass clef는 같은 시각 위치에 다른 음이름이 대응된다. 오선 두 번째 칸이 treble에서는 A, bass에서는 C다. 이 번역이 자동화되지 않은 상태에서는 매번 의식적 계산이 필요하다.
 
 덧줄(ledger line) 음표도 같은 구조다. 오선 바깥에 있는 음표는 위치 계산을 다시 해야 한다. 오선 안 음표는 경험이 쌓이면 직관적 인식이 가능하지만, 덧줄 음표는 반복 노출이 충분하지 않으면 매번 계산이 필요하다.
+
+![J.S. Bach의 칸타타 BWV 56 바스 아리아 자필 악보 (1726) — 바흐 자신의 손으로 기보된 낮은음자리표(bass clef) 악보, treble clef 위주 학습자에게 약점이 되는 음역대를 직접 보여줌](https://upload.wikimedia.org/wikipedia/commons/thumb/8/8f/BWV56-autograph-manuscript-first-page-Bach-1726.jpg/960px-BWV56-autograph-manuscript-first-page-Bach-1726.jpg)
+*그림 1: J.S. Bach, 칸타타 BWV 56 바스 아리아 자필 악보 (1726). [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:BWV56-autograph-manuscript-first-page-Bach-1726.jpg) — Public Domain. 라이프치히 Bach Digital 아카이브 소장.*
 
 ## 💡 의도적 연습이 약점을 바꾼다
 
