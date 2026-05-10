@@ -300,9 +300,20 @@ export default function AuthModal({ onClose }: AuthModalProps) {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 animate-pop-in">
       <div className="bg-card border border-border rounded-2xl shadow-2xl w-full max-w-sm mx-4 max-h-[90vh] overflow-y-auto">
 
-        {/* ━━━━━━━━━━━━━━━━ Step 2: OTP (인증 완료 전 닫기 X) ━━━━━━━━━━━━━━━━ */}
+        {/* ━━━━━━━━━━━━━━━━ Step 2: OTP ━━━━━━━━━━━━━━━━ */}
         {mode === "signup" && signupStep === 2 ? (
-          <div className="px-6 py-8 flex flex-col items-center gap-5">
+          <div className="px-6 py-8 flex flex-col items-center gap-5 relative">
+            {/* 명시적 닫기 (로그인 복귀) */}
+            <button
+              type="button"
+              onClick={() => switchMode("login")}
+              className="absolute top-4 right-4 p-1.5 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
+              data-testid="otp-close-button"
+            >
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M12 4L4 12M4 4L12 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </button>
             <div className="text-5xl">📧</div>
             <div className="text-center">
               <h3 className="text-lg font-bold text-foreground">이메일 인증</h3>
@@ -354,6 +365,16 @@ export default function AuthModal({ onClose }: AuthModalProps) {
               </button>
               <p className="text-xs text-muted-foreground">스팸함도 확인해보세요 📁</p>
             </div>
+
+            <button
+              type="button"
+              onClick={() => switchMode("login")}
+              className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+              data-testid="otp-goto-login"
+            >
+              이미 가입했나요?{" "}
+              <span className="text-primary font-semibold underline underline-offset-2">로그인</span>
+            </button>
           </div>
         ) : (
           <>

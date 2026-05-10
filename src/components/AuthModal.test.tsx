@@ -408,3 +408,37 @@ describe("Profile step (Step 3)", () => {
     expect(screen.getByRole("button", { name: /가입 완료/ })).toBeInTheDocument();
   });
 });
+
+// ─────────────────────────────────────────────────────────────────────────
+// OTP 모달 닫기 버튼 (Step 2)
+// ─────────────────────────────────────────────────────────────────────────
+
+describe("OTP step close button", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockCheckEmailExists.mockResolvedValue({ exists: false, confirmed: false });
+    mockSignInWithOtp.mockResolvedValue({ error: null });
+  });
+
+  it("shows close button during OTP step", async () => {
+    await goToOtpStep();
+    expect(screen.getByTestId("otp-close-button")).toBeInTheDocument();
+  });
+
+  it("clicking close button switches to login mode", async () => {
+    const { user } = await goToOtpStep();
+    await user.click(screen.getByTestId("otp-close-button"));
+    expect(screen.getByText("로그인")).toBeInTheDocument();
+  });
+
+  it("shows login link during OTP step", async () => {
+    await goToOtpStep();
+    expect(screen.getByTestId("otp-goto-login")).toBeInTheDocument();
+  });
+
+  it("clicking login link switches to login mode", async () => {
+    const { user } = await goToOtpStep();
+    await user.click(screen.getByTestId("otp-goto-login"));
+    expect(screen.getByText("로그인")).toBeInTheDocument();
+  });
+});
