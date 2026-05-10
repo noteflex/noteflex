@@ -13,9 +13,6 @@ coverImageLicense: "Public Domain"
 coverImageCredit: "Ludwig van Beethoven (1770–1827)"
 ---
 
-![베토벤 피아노 소나타 30번 Op. 109 Vivace 악장 자필 악보 (1820) — 높은음자리표(treble)와 낮은음자리표(bass)가 함께 기보된 피아노 대보표의 실제 예시](https://upload.wikimedia.org/wikipedia/commons/e/e7/Beethoven_Klaviersonate_Nr_30.jpg)
-*그림 1: Ludwig van Beethoven, 피아노 소나타 30번 Op. 109 Vivace 자필 악보 (1820). [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Beethoven_Klaviersonate_Nr_30.jpg) — Public Domain*
-
 처음으로 그랜드 오선지(grand staff)를 마주하는 순간이 있다. 오선 두 줄이 위아래로 나란히 있고, 위는 높은음자리표(treble clef), 아래는 낮은음자리표(bass clef). 단선 악보에서 읽던 것과 전혀 다른 밀도다. 이 순간 많은 피아노 학습자가 "악보 읽기가 어렵다"는 결론에 도달한다.
 
 그 어려움은 사실이다. 그러나 그것은 피아노 학습자만이 직면하는 고유한 인지 과제이기도 하다. 구체적으로 파악하면, 단계를 나눠 극복할 수 있다.
@@ -27,6 +24,9 @@ coverImageCredit: "Ludwig van Beethoven (1770–1827)"
 이 동시 처리 요구가 피아노 초견의 핵심 난이도다.
 
 Karpinski(2000)는 악보 읽기의 인지 과정을 분석하면서, 처리할 정보량이 늘어날수록 전체 처리 속도가 느려진다고 설명했다. 두 성부를 동시에 해독하는 것은 구조적으로 단일 성부보다 인지 부담이 크다. 그 부담이 양손 동시 시도에서 학습자를 막는다.
+
+![베토벤 피아노 소나타 30번 Op. 109 Vivace 악장 자필 악보 (1820) — 높은음자리표(treble)와 낮은음자리표(bass)가 함께 기보된 피아노 대보표의 실제 예시](https://upload.wikimedia.org/wikipedia/commons/e/e7/Beethoven_Klaviersonate_Nr_30.jpg)
+*그림 1: Ludwig van Beethoven, 피아노 소나타 30번 Op. 109 Vivace 자필 악보 (1820). [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Beethoven_Klaviersonate_Nr_30.jpg) — Public Domain*
 
 ## 💡 인지 부담을 나누는 단계
 

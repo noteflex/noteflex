@@ -13,9 +13,6 @@ coverImageLicense: "Public Domain"
 coverImageCredit: "Ludwig van Beethoven (1770–1827)"
 ---
 
-![Beethoven's autograph manuscript of Piano Sonata No. 30 Op. 109, Vivace movement (1820), showing piano grand staff with both treble and bass clefs — the two-staff system that defines piano sight-reading](https://upload.wikimedia.org/wikipedia/commons/e/e7/Beethoven_Klaviersonate_Nr_30.jpg)
-*Figure 1: Ludwig van Beethoven, autograph manuscript of Piano Sonata No. 30 Op. 109, Vivace (1820). [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Beethoven_Klaviersonate_Nr_30.jpg) — Public Domain*
-
 There is a specific moment in piano learning when the grand staff appears for the first time. Two lines of notation stacked one above the other — treble clef on top, bass clef below — with more information packed into a single measure than any single-staff instrument requires. Many learners arrive at a conclusion here: "reading music is hard."
 
 The difficulty is real. But it is also a specific, identifiable problem with a structure that can be worked through step by step.
@@ -27,6 +24,9 @@ A violinist or flutist reads a single voice: one staff, one clef, one note at a 
 This simultaneous processing requirement is what separates piano sight-reading from most other instruments.
 
 Karpinski (2000) analyzed the cognitive demands of score reading and described how increasing the volume of information to process reduces the speed available for each piece of it. Two voices to decode at once is structurally more demanding than one. That structural load is what makes the first encounter with the grand staff feel so different from single-staff reading.
+
+![Beethoven's autograph manuscript of Piano Sonata No. 30 Op. 109, Vivace movement (1820), showing piano grand staff with both treble and bass clefs — the two-staff system that defines piano sight-reading](https://upload.wikimedia.org/wikipedia/commons/e/e7/Beethoven_Klaviersonate_Nr_30.jpg)
+*Figure 1: Ludwig van Beethoven, autograph manuscript of Piano Sonata No. 30 Op. 109, Vivace (1820). [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Beethoven_Klaviersonate_Nr_30.jpg) — Public Domain*
 
 ## 💡 Breaking the Load Into Stages
 
