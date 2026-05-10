@@ -23,11 +23,18 @@ vi.mock("react-router-dom", async (importOriginal) => {
 
 const mockSupabaseUpdateEq = vi.fn().mockResolvedValue({ error: null });
 const mockSupabaseUpdate = vi.fn().mockReturnValue({ eq: mockSupabaseUpdateEq });
+const mockSignInWithPassword = vi.fn().mockResolvedValue({ error: null });
+const mockUpdateUser = vi.fn().mockResolvedValue({ error: null });
+const mockRpc = vi.fn().mockResolvedValue({ data: true, error: null });
 
 vi.mock("@/integrations/supabase/client", () => ({
   supabase: {
+    auth: {
+      signInWithPassword: (...args: any[]) => mockSignInWithPassword(...args),
+      updateUser:         (...args: any[]) => mockUpdateUser(...args),
+    },
     from: () => ({ update: mockSupabaseUpdate }),
-    rpc: vi.fn().mockResolvedValue({ data: true, error: null }),
+    rpc:  (...args: any[]) => mockRpc(...args),
   },
 }));
 
@@ -247,5 +254,130 @@ describe("ProfilePage", () => {
   it("계정 이메일이 읽기전용으로 표시됨", () => {
     renderProfilePage();
     expect(screen.getByText("test@example.com")).toBeInTheDocument();
+  });
+});
+
+// ─────────────────────────────────────────────────────────
+// C1: 비밀번호 변경
+// ─────────────────────────────────────────────────────────
+
+describe("C1 비밀번호 변경", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockSignInWithPassword.mockResolvedValue({ error: null });
+    mockUpdateUser.mockResolvedValue({ error: null });
+  });
+
+  it("비밀번호 변경 폼이 렌더링됨", () => {
+    renderProfilePage();
+    expect(screen.getByTestId("current-password-input")).toBeInTheDocument();
+    expect(screen.getByTestId("new-password-input")).toBeInTheDocument();
+    expect(screen.getByTestId("confirm-password-input")).toBeInTheDocument();
+  });
+
+  it("필드가 비어있으면 변경 버튼 비활성화", () => {
+    renderProfilePage();
+    expect(screen.getByTestId("change-password-button")).toBeDisabled();
+  });
+
+  it("현재 비밀번호 검증을 위해 signInWithPassword 호출", async () => {
+    const user = userEvent.setup();
+    renderProfilePage();
+    await user.type(screen.getByTestId("current-password-input"), "OldPass1!");
+    await user.type(screen.getByTestId("new-password-input"), "NewPass1!");
+    await user.type(screen.getByTestId("confirm-password-input"), "NewPass1!");
+    await user.click(screen.getByTestId("change-password-button"));
+
+    await waitFor(() =>
+      expect(mockSignInWithPassword).toHaveBeenCalledWith({
+        email: "test@example.com",
+        password: "OldPass1!",
+      })
+    );
+  });
+
+  it("현재 비밀번호 맞으면 updateUser 호출", async () => {
+    const user = userEvent.setup();
+    renderProfilePage();
+    await user.type(screen.getByTestId("current-password-input"), "OldPass1!");
+    await user.type(screen.getByTestId("new-password-input"), "NewPass1!");
+    await user.type(screen.getByTestId("confirm-password-input"), "NewPass1!");
+    await user.click(screen.getByTestId("change-password-button"));
+
+    await waitFor(() =>
+      expect(mockUpdateUser).toHaveBeenCalledWith({ password: "NewPass1!" })
+    );
+  });
+
+  it("현재 비밀번호 틀리면 updateUser 미호출", async () => {
+    mockSignInWithPassword.mockResolvedValueOnce({ error: { message: "Invalid credentials" } });
+    const user = userEvent.setup();
+    renderProfilePage();
+    await user.type(screen.getByTestId("current-password-input"), "WrongPass1!");
+    await user.type(screen.getByTestId("new-password-input"), "NewPass1!");
+    await user.type(screen.getByTestId("confirm-password-input"), "NewPass1!");
+    await user.click(screen.getByTestId("change-password-button"));
+
+    await waitFor(() => expect(mockSignInWithPassword).toHaveBeenCalled());
+    expect(mockUpdateUser).not.toHaveBeenCalled();
+  });
+});
+
+// ─────────────────────────────────────────────────────────
+// C3: 회원 탈퇴
+// ─────────────────────────────────────────────────────────
+
+describe("C3 회원 탈퇴", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockSignInWithPassword.mockResolvedValue({ error: null });
+    mockRpc.mockResolvedValue({ error: null });
+  });
+
+  it("탈퇴 버튼이 렌더링됨", () => {
+    renderProfilePage();
+    expect(screen.getByTestId("open-delete-modal-button")).toBeInTheDocument();
+  });
+
+  it("탈퇴 버튼 클릭 시 확인 모달 열림", async () => {
+    const user = userEvent.setup();
+    renderProfilePage();
+    await user.click(screen.getByTestId("open-delete-modal-button"));
+    expect(screen.getByTestId("delete-modal")).toBeInTheDocument();
+  });
+
+  it("취소 클릭 시 모달 닫힘", async () => {
+    const user = userEvent.setup();
+    renderProfilePage();
+    await user.click(screen.getByTestId("open-delete-modal-button"));
+    await user.click(screen.getByTestId("cancel-delete-button"));
+    expect(screen.queryByTestId("delete-modal")).not.toBeInTheDocument();
+  });
+
+  it("비밀번호 재확인 후 request_account_deletion RPC 호출", async () => {
+    const user = userEvent.setup();
+    renderProfilePage();
+    await user.click(screen.getByTestId("open-delete-modal-button"));
+    await user.type(screen.getByTestId("delete-password-input"), "MyPass1!");
+    await user.type(screen.getByTestId("delete-reason-input"), "서비스 불만");
+    await user.click(screen.getByTestId("confirm-delete-button"));
+
+    await waitFor(() =>
+      expect(mockRpc).toHaveBeenCalledWith("request_account_deletion", {
+        reason: "서비스 불만",
+      })
+    );
+  });
+
+  it("비밀번호 틀리면 RPC 미호출", async () => {
+    mockSignInWithPassword.mockResolvedValueOnce({ error: { message: "Invalid credentials" } });
+    const user = userEvent.setup();
+    renderProfilePage();
+    await user.click(screen.getByTestId("open-delete-modal-button"));
+    await user.type(screen.getByTestId("delete-password-input"), "WrongPass1!");
+    await user.click(screen.getByTestId("confirm-delete-button"));
+
+    await waitFor(() => expect(mockSignInWithPassword).toHaveBeenCalled());
+    expect(mockRpc).not.toHaveBeenCalled();
   });
 });
