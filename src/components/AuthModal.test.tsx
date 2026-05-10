@@ -25,7 +25,7 @@ vi.mock("@/integrations/supabase/client", () => ({
   },
 }));
 
-const mockCheckEmailExists = vi.fn().mockResolvedValue(false);
+const mockCheckEmailExists = vi.fn().mockResolvedValue({ exists: false, confirmed: false });
 const mockCompleteProfile  = vi.fn().mockResolvedValue({ error: null });
 
 vi.mock("@/lib/profile", () => ({
@@ -142,7 +142,7 @@ describe("analyzePassword", () => {
 describe("Password strength UI", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockCheckEmailExists.mockResolvedValue(false);
+    mockCheckEmailExists.mockResolvedValue({ exists: false, confirmed: false });
     mockSignInWithOtp.mockResolvedValue({ error: null });
     mockVerifyOtp.mockResolvedValue({
       data: { user: { id: "uid-1" }, session: {} },
@@ -185,10 +185,13 @@ describe("Password strength UI", () => {
 // ─────────────────────────────────────────────────────────────────────────
 
 describe("Email duplicate handling", () => {
-  beforeEach(() => vi.clearAllMocks());
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockSignInWithOtp.mockResolvedValue({ error: null });
+  });
 
-  it("shows email-exists error when checkEmailExists returns true", async () => {
-    mockCheckEmailExists.mockResolvedValueOnce(true);
+  it("shows email-exists error when email is confirmed", async () => {
+    mockCheckEmailExists.mockResolvedValueOnce({ exists: true, confirmed: true });
     const { user } = await enterSignupMode();
 
     await user.type(screen.getByPlaceholderText(/사용할 이메일/), "dup@example.com");
@@ -200,8 +203,24 @@ describe("Email duplicate handling", () => {
     expect(screen.getByText(/이미 가입된 이메일/)).toBeInTheDocument();
   });
 
+  it("proceeds to OTP step when email exists but unconfirmed", async () => {
+    mockCheckEmailExists.mockResolvedValueOnce({ exists: true, confirmed: false });
+    const { user } = await enterSignupMode();
+
+    await user.type(screen.getByPlaceholderText(/사용할 이메일/), "pending@example.com");
+    await user.click(screen.getByRole("button", { name: "다음" }));
+
+    await waitFor(() =>
+      expect(screen.getByPlaceholderText("000000")).toBeInTheDocument()
+    );
+    expect(mockSignInWithOtp).toHaveBeenCalledWith({
+      email: "pending@example.com",
+      options: { shouldCreateUser: true },
+    });
+  });
+
   it("switches to login mode when 로그인하기 CTA is clicked", async () => {
-    mockCheckEmailExists.mockResolvedValueOnce(true);
+    mockCheckEmailExists.mockResolvedValueOnce({ exists: true, confirmed: true });
     const { user } = await enterSignupMode();
 
     await user.type(screen.getByPlaceholderText(/사용할 이메일/), "dup@example.com");
@@ -213,7 +232,7 @@ describe("Email duplicate handling", () => {
   });
 
   it("clears email-exists error when email is changed", async () => {
-    mockCheckEmailExists.mockResolvedValueOnce(true);
+    mockCheckEmailExists.mockResolvedValueOnce({ exists: true, confirmed: true });
     const { user } = await enterSignupMode();
 
     await user.type(screen.getByPlaceholderText(/사용할 이메일/), "dup@example.com");
@@ -235,7 +254,7 @@ describe("Email duplicate handling", () => {
 describe("OTP step", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockCheckEmailExists.mockResolvedValue(false);
+    mockCheckEmailExists.mockResolvedValue({ exists: false, confirmed: false });
     mockSignInWithOtp.mockResolvedValue({ error: null });
   });
 
@@ -344,7 +363,7 @@ describe("OTP step", () => {
 describe("Profile step (Step 3)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockCheckEmailExists.mockResolvedValue(false);
+    mockCheckEmailExists.mockResolvedValue({ exists: false, confirmed: false });
     mockSignInWithOtp.mockResolvedValue({ error: null });
     mockVerifyOtp.mockResolvedValue({
       data: { user: { id: "uid-1" }, session: {} },

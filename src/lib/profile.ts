@@ -131,31 +131,41 @@ export function calculateAge(
 }
 
 // ═════════════════════════════════════════════════════════════
-// 이메일 중복 체크
+// 이메일 중복 체크 (v2 — 미인증 분기)
 // ═════════════════════════════════════════════════════════════
 
+export interface EmailCheckResult {
+  exists: boolean;
+  confirmed: boolean;
+}
+
 /**
- * profiles 테이블에서 해당 이메일로 이미 가입된 사용자가 있는지 확인.
- * 가입 전 UX 개선용 (Step 1에서 먼저 거르기).
+ * auth.users에서 이메일 존재 여부 + 인증 완료 여부를 반환.
+ * RPC check_email_exists v2 (user_exists, is_confirmed).
  *
- * Note: auth.users 직접 조회는 보안상 불가 → profiles.email로 조회.
- * 트리거(handle_new_user)가 가입 시 profiles.email도 채워주므로 정확.
+ * exists=false           → 신규 가입 가능
+ * exists & !confirmed    → 미인증 = 차단 X, OTP 재전송
+ * exists & confirmed     → 이미 가입 완료 → 로그인 CTA
  */
-export async function checkEmailExists(email: string): Promise<boolean> {
-    const normalized = email.trim().toLowerCase();
-    if (!normalized) return false;
-  
-    const { data, error } = await supabase.rpc("check_email_exists", {
-      p_email: normalized,
-    });
-  
-    if (error) {
-      console.warn("[profile] Email check error:", error);
-      return false;
-    }
-  
-    return !!data;
+export async function checkEmailExists(email: string): Promise<EmailCheckResult> {
+  const normalized = email.trim().toLowerCase();
+  if (!normalized) return { exists: false, confirmed: false };
+
+  const { data, error } = await supabase.rpc("check_email_exists", {
+    p_email: normalized,
+  });
+
+  if (error) {
+    console.warn("[profile] Email check error:", error);
+    return { exists: false, confirmed: false };
   }
+
+  const row = Array.isArray(data) ? data[0] : data;
+  return {
+    exists: !!row?.user_exists,
+    confirmed: !!row?.is_confirmed,
+  };
+}
   
   // ═════════════════════════════════════════════════════════════
   // 국가 감지 (타임존 기반) — 브라우저 언어보다 정확

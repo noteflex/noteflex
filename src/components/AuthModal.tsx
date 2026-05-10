@@ -142,12 +142,14 @@ export default function AuthModal({ onClose }: AuthModalProps) {
     }
     setLoading(true);
     try {
-      const exists = await checkEmailExists(email);
-      if (exists) {
+      const { exists, confirmed } = await checkEmailExists(email);
+      if (exists && confirmed) {
+        // 이미 인증 완료된 계정 → 차단 + 로그인 CTA
         setEmailExistsError(true);
         setLoading(false);
         return;
       }
+      // exists=false (신규) 또는 exists && !confirmed (미인증 재시도) → OTP 전송
       const { error } = await supabase.auth.signInWithOtp({
         email,
         options: { shouldCreateUser: true },
