@@ -4,6 +4,22 @@
 
 ---
 
+## 2026-05-11 (월) — 12일차 블로그 3편 ✅
+
+### Commits
+- C1·C2·C3: 12일차 블로그 6편 (ko+en)
+- C4: docs 갱신
+
+### 완료 내역
+- §4-47 음정 인식의 신경과학 (Zatorre & Salimpoor 2013 DOI:10.1073/pnas.1301228110). 이미지: Helmholtz 초상 + Guido d'Arezzo 초상 (PD).
+- §5-58 교회 반주자의 초견 (McPherson 1994 DOI:10.2307/3345701). 이미지: Praha St. Nicholas 파이프 오르간 (CC BY-SA 4.0) + BWV614 자필악보 (PD).
+- §3-43 초견을 게임처럼 만들기 (Ryan & Deci 2000 DOI:10.1037/0003-066X.55.1.68). 이미지: Mozart Family Croce (PD) + Guidonian Hand (PD). ← 13일차 advance write.
+- 이미지 6개 모두 curl HTTP 200 PASS. Wikimedia Commons API로 파일명 확인.
+- 누적 58편 (한 29 + 영 29). ※PENDING 이력 "49편" = 52편 오기.
+- §1.1 표 11·12일차 ✅ 갱신, §6 v16·v17 박음.
+
+---
+
 ## 2026-05-10 (낮~저녁) — §X-1 가입+보안 sprint ✅ + 흐름 정정
 
 ### Supabase Dashboard 설정 (사용자 직접 완료)
