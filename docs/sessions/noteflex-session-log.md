@@ -4,6 +4,37 @@
 
 ---
 
+## 2026-05-10 (야간) — 12 .md 파일 첫 이미지 위치 정정 sprint ✅
+
+### 작업 내용
+- 6편 × 한+영 = 12 .md 파일 본문 첫 이미지 위치 이동
+- Hook 영역(첫 1~2 단락) = 텍스트 전용으로 정정
+- Figure 1 → Scene·Insight 섹션 (첫 번째 H2 마지막 단락 직후) 이동
+
+### 이동 결과 (6쌍 × 2언어)
+| 포스트 | 이동 전 | 이동 후 |
+|--------|---------|---------|
+| §3-37 초견 실수 | 본문 첫 줄 | `## 🎼 Where Errors Concentrate` 마지막 줄 |
+| §2-24 쉼표 읽기 | 본문 첫 줄 | `## 🎼 What Rests Are` 마지막 줄 |
+| §8-87 21단계 | 본문 첫 줄 | `## 📐 Why 7 Levels and 21 Stages` 마지막 줄 |
+| §3-38 약점 음표 | 본문 첫 줄 | `## 🎼 Why Weak Notes Don't Disappear` 마지막 줄 |
+| §5-56 피아노 초견 | 본문 첫 줄 | `## 🎼 What Makes Piano Sight-Reading Different` 마지막 줄 |
+| §7-79 가중치 학습 | 본문 첫 줄 | `## 💡 The Science of Frequency and Spacing` 마지막 줄 |
+
+### Commits (C1–C6 + C7 docs)
+- `aa983f1` §3-37 sight-reading-mistake-patterns (EN+KO)
+- `3aa9b5a` §2-24 reading-rests-musical-silence (EN+KO)
+- `27793f4` §8-87 seven-level-twenty-one-stage-system (EN+KO)
+- `e961de0` §3-38 weakness-note-practice (EN+KO)
+- `55a2ff6` §5-56 piano-sight-reading-guide (EN+KO)
+- `c9d7904` §7-79 weighted-practice-algorithm (EN+KO)
+
+### 다음 세션 시작점
+- Group C (§X 사용자 등록·관리 Phase C) 또는
+- /admin/staff-preview 시각 검증
+
+---
+
 ## 2026-05-10 (새벽) — BlogPost coverImage 자동 렌더링 영역 조사 ✅
 
 ### 사용자 검증 발견
