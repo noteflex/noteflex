@@ -46,7 +46,7 @@ interface AuthModalProps {
 }
 
 type Mode = "login" | "signup";
-type SignupStep = 1 | 2;
+type SignupStep = 1 | 2 | 3;
 
 // ─── Component ───────────────────────────────────────────────────────────
 
@@ -55,16 +55,23 @@ export default function AuthModal({ onClose }: AuthModalProps) {
   const [signupStep, setSignupStep] = useState<SignupStep>(1);
   const [loading, setLoading] = useState(false);
 
-  // Step 1 (계정)
+  // 공통
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
   const [emailExistsError, setEmailExistsError] = useState(false);
 
-  // Step 2 (프로필)
+  // Step 2 — OTP
+  const [otpCode, setOtpCode] = useState("");
+  const [otpLoading, setOtpLoading] = useState(false);
+  const [otpError, setOtpError] = useState("");
+  const [resendCooldown, setResendCooldown] = useState(0);
+  const cooldownRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Step 3 — 비밀번호 + 프로필
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [nickname, setNickname] = useState("");
   const nicknameStatus = useNicknameAvailability(
-    mode === "signup" && signupStep === 2 ? nickname : ""
+    mode === "signup" && signupStep === 3 ? nickname : ""
   );
   const [birthYear, setBirthYear] = useState("");
   const [birthMonth, setBirthMonth] = useState("");
@@ -73,14 +80,6 @@ export default function AuthModal({ onClose }: AuthModalProps) {
   const [tosAgreed, setTosAgreed] = useState(false);
   const [privacyAgreed, setPrivacyAgreed] = useState(false);
   const [marketingAgreed, setMarketingAgreed] = useState(false);
-
-  // OTP 모달
-  const [showOtpModal, setShowOtpModal] = useState(false);
-  const [otpCode, setOtpCode] = useState("");
-  const [otpLoading, setOtpLoading] = useState(false);
-  const [otpError, setOtpError] = useState("");
-  const [resendCooldown, setResendCooldown] = useState(0);
-  const cooldownRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     return () => { if (cooldownRef.current) clearInterval(cooldownRef.current); };
@@ -100,7 +99,6 @@ export default function AuthModal({ onClose }: AuthModalProps) {
     }, 1000);
   };
 
-  // Password strength (derived, no state)
   const pwAnalysis = analyzePassword(password);
   const pwValid = pwAnalysis.score === 5;
 
@@ -135,19 +133,13 @@ export default function AuthModal({ onClose }: AuthModalProps) {
     }
   };
 
-  // ───────── 회원가입 Step 1 → Step 2 ─────────
-  const handleSignupNext = async (e: React.FormEvent) => {
+  // ───────── Step 1: 이메일 → OTP 전송 ─────────
+  const handleStep1Next = async (e: React.FormEvent) => {
     e.preventDefault();
-
     if (!email.includes("@")) {
       toast({ title: "이메일을 확인해주세요", variant: "destructive" });
       return;
     }
-    if (!pwValid) {
-      toast({ title: "비밀번호 요구사항을 모두 충족해주세요", variant: "destructive" });
-      return;
-    }
-
     setLoading(true);
     try {
       const exists = await checkEmailExists(email);
@@ -156,120 +148,36 @@ export default function AuthModal({ onClose }: AuthModalProps) {
         setLoading(false);
         return;
       }
-    } catch (err: any) {
-      console.warn("[AuthModal] Email check skipped:", err);
-    }
-    setLoading(false);
-    setSignupStep(2);
-  };
-
-  // ───────── 회원가입 Step 2: signUp + OTP 모달 ─────────
-  const handleSignupSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    const nicknameValidation = validateNicknameFormat(nickname);
-    if (!nicknameValidation.valid) {
-      toast({ title: nicknameErrorMessage(nicknameValidation.reason), variant: "destructive" });
-      return;
-    }
-
-    const year  = parseInt(birthYear,  10);
-    const month = parseInt(birthMonth, 10);
-    const day   = parseInt(birthDay,   10);
-    const birthError = validateBirthDate(year, month, day);
-    if (birthError) {
-      toast({ title: birthError, variant: "destructive" });
-      return;
-    }
-
-    if (!tosAgreed || !privacyAgreed) {
-      toast({ title: "필수 약관에 동의해주세요", variant: "destructive" });
-      return;
-    }
-
-    setLoading(true);
-
-    try {
-      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+      const { error } = await supabase.auth.signInWithOtp({
         email,
-        password,
-        options: { emailRedirectTo: window.location.origin },
+        options: { shouldCreateUser: true },
       });
-
-      if (signUpError) {
-        const msg = signUpError.message?.toLowerCase() ?? "";
-        if (
-          msg.includes("already registered") ||
-          msg.includes("user already exists") ||
-          msg.includes("email_address_taken") ||
-          (signUpError as any).code === "user_already_exists"
-        ) {
-          setEmailExistsError(true);
-          setSignupStep(1);
-          setLoading(false);
-          return;
-        }
-        throw signUpError;
-      }
-
-      if (!signUpData.user) throw new Error("계정 생성 실패");
-
-      // OTP 모달 표시 (completeProfile은 verifyOtp 성공 후 호출)
-      setShowOtpModal(true);
+      if (error) throw error;
+      setSignupStep(2);
       startCooldown();
     } catch (err: any) {
-      toast({ title: "회원가입 실패", description: err.message, variant: "destructive" });
+      toast({ title: "오류가 발생했어요", description: err.message, variant: "destructive" });
     } finally {
       setLoading(false);
     }
   };
 
-  // ───────── OTP 인증 ─────────
+  // ───────── Step 2: OTP 인증 → Step 3 ─────────
   const handleOtpVerify = async (e: React.FormEvent) => {
     e.preventDefault();
     if (otpCode.length !== 6) return;
-
     setOtpLoading(true);
     setOtpError("");
-
     try {
       const { data, error } = await supabase.auth.verifyOtp({
         email,
         token: otpCode,
-        type: "signup",
+        type: "email",
       });
-
       if (error) throw error;
       if (!data.user) throw new Error("인증 실패");
-
-      const year  = parseInt(birthYear,  10);
-      const month = parseInt(birthMonth, 10);
-      const day   = parseInt(birthDay,   10);
-
-      const { error: profileError } = await completeProfile(data.user.id, {
-        nickname,
-        birth_year:        year,
-        birth_month:       month,
-        birth_day:         day,
-        country_code:      countryCode,
-        locale:            detectLocale(),
-        timezone:          detectTimezone(),
-        tos_agreed:        tosAgreed,
-        privacy_agreed:    privacyAgreed,
-        marketing_agreed:  marketingAgreed,
-      });
-
-      if (profileError) {
-        console.warn("[AuthModal] Profile update failed:", profileError);
-      }
-
-      const age = calculateAge(year, month, day);
-      toast({
-        title: "회원가입 완료!",
-        description: age < 14 ? "보호자 동의가 필요한 연령입니다." : "환영합니다 🎼",
-      });
-
-      onClose();
+      setOtpCode("");
+      setSignupStep(3);
     } catch (err: any) {
       const msg = (err.message ?? "").toLowerCase();
       if (msg.includes("expired") || (err as any).code === "otp_expired") {
@@ -288,12 +196,11 @@ export default function AuthModal({ onClose }: AuthModalProps) {
     }
   };
 
-  // ───────── 코드 재전송 ─────────
+  // ───────── Step 2: 재전송 ─────────
   const handleResendOtp = async () => {
     if (resendCooldown > 0) return;
-
     try {
-      const { error } = await supabase.auth.resend({ type: "signup", email });
+      const { error } = await supabase.auth.resend({ type: "email", email });
       if (error) throw error;
       setOtpCode("");
       setOtpError("");
@@ -304,12 +211,72 @@ export default function AuthModal({ onClose }: AuthModalProps) {
     }
   };
 
+  // ───────── Step 3: 비밀번호+프로필 제출 ─────────
+  const handleSignupSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const nicknameValidation = validateNicknameFormat(nickname);
+    if (!nicknameValidation.valid) {
+      toast({ title: nicknameErrorMessage(nicknameValidation.reason), variant: "destructive" });
+      return;
+    }
+    if (!pwValid) {
+      toast({ title: "비밀번호 요구사항을 모두 충족해주세요", variant: "destructive" });
+      return;
+    }
+
+    const year  = parseInt(birthYear,  10);
+    const month = parseInt(birthMonth, 10);
+    const day   = parseInt(birthDay,   10);
+    const birthError = validateBirthDate(year, month, day);
+    if (birthError) {
+      toast({ title: birthError, variant: "destructive" });
+      return;
+    }
+
+    if (!tosAgreed || !privacyAgreed) {
+      toast({ title: "필수 약관에 동의해주세요", variant: "destructive" });
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const { data: { user: updatedUser }, error: updateError } =
+        await supabase.auth.updateUser({ password });
+      if (updateError) throw updateError;
+      if (!updatedUser) throw new Error("사용자 정보를 불러올 수 없어요");
+
+      await completeProfile(updatedUser.id, {
+        nickname,
+        birth_year:       year,
+        birth_month:      month,
+        birth_day:        day,
+        country_code:     countryCode,
+        locale:           detectLocale(),
+        timezone:         detectTimezone(),
+        tos_agreed:       tosAgreed,
+        privacy_agreed:   privacyAgreed,
+        marketing_agreed: marketingAgreed,
+      });
+
+      const age = calculateAge(year, month, day);
+      toast({
+        title: "회원가입 완료!",
+        description: age < 14 ? "보호자 동의가 필요한 연령입니다." : "환영합니다 🎼",
+      });
+      onClose();
+    } catch (err: any) {
+      toast({ title: "가입 완료에 실패했어요", description: err.message, variant: "destructive" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // ───────── 모드 전환 ─────────
   const switchMode = (next: Mode) => {
     setMode(next);
     setSignupStep(1);
     setEmailExistsError(false);
-    setShowOtpModal(false);
     setOtpCode("");
     setOtpError("");
   };
@@ -322,8 +289,8 @@ export default function AuthModal({ onClose }: AuthModalProps) {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 animate-pop-in">
       <div className="bg-card border border-border rounded-2xl shadow-2xl w-full max-w-sm mx-4 max-h-[90vh] overflow-y-auto">
 
-        {/* ━━━━━━━━━━━━━━━━ OTP 모달 (인증 완료 전 닫기 X) ━━━━━━━━━━━━━━━━ */}
-        {showOtpModal ? (
+        {/* ━━━━━━━━━━━━━━━━ Step 2: OTP (인증 완료 전 닫기 X) ━━━━━━━━━━━━━━━━ */}
+        {mode === "signup" && signupStep === 2 ? (
           <div className="px-6 py-8 flex flex-col items-center gap-5">
             <div className="text-5xl">📧</div>
             <div className="text-center">
@@ -397,15 +364,17 @@ export default function AuthModal({ onClose }: AuthModalProps) {
                   <p className="text-xs text-muted-foreground text-center">
                     {signupStep === 1
                       ? "계정을 만들고 첫 걸음을 시작해요"
-                      : "거의 다 왔어요! 프로필만 완성해주세요"}
+                      : "거의 다 왔어요! 비밀번호와 프로필을 완성해주세요"}
                   </p>
                   <div className="w-full mt-3 flex items-center gap-2">
                     <div className="flex-1 h-1.5 rounded-full bg-primary" />
-                    <div className={`flex-1 h-1.5 rounded-full transition-colors ${signupStep === 2 ? "bg-primary" : "bg-muted"}`} />
+                    <div className={`flex-1 h-1.5 rounded-full transition-colors ${signupStep === 3 ? "bg-primary" : "bg-muted"}`} />
+                    <div className={`flex-1 h-1.5 rounded-full transition-colors ${signupStep === 3 ? "bg-primary" : "bg-muted"}`} />
                   </div>
                   <div className="w-full flex justify-between text-[10px] font-medium">
-                    <span className={signupStep === 1 ? "text-primary font-bold" : "text-muted-foreground"}>① 계정</span>
-                    <span className={signupStep === 2 ? "text-primary font-bold" : "text-muted-foreground"}>② 프로필</span>
+                    <span className={signupStep === 1 ? "text-primary font-bold" : "text-muted-foreground"}>① 이메일</span>
+                    <span className="text-muted-foreground">② 인증</span>
+                    <span className={signupStep === 3 ? "text-primary font-bold" : "text-muted-foreground"}>③ 프로필</span>
                   </div>
                 </div>
               </div>
@@ -472,7 +441,7 @@ export default function AuthModal({ onClose }: AuthModalProps) {
                 </>
               )}
 
-              {/* ━━━━━━━━━━━━━━━━ 회원가입 Step 1 ━━━━━━━━━━━━━━━━ */}
+              {/* ━━━━━━━━━━━━━━━━ 회원가입 Step 1: 이메일 ━━━━━━━━━━━━━━━━ */}
               {mode === "signup" && signupStep === 1 && (
                 <>
                   <div className="mb-4 p-3 rounded-xl bg-muted/50 border border-border">
@@ -504,7 +473,7 @@ export default function AuthModal({ onClose }: AuthModalProps) {
                     <div className="flex-1 h-px bg-border" />
                   </div>
 
-                  <form onSubmit={handleSignupNext} className="flex flex-col gap-3">
+                  <form onSubmit={handleStep1Next} className="flex flex-col gap-3">
                     <input
                       type="email"
                       value={email}
@@ -514,7 +483,6 @@ export default function AuthModal({ onClose }: AuthModalProps) {
                       className="w-full px-4 py-2.5 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                     />
 
-                    {/* C2: 이메일 중복 인라인 에러 + 로그인 CTA */}
                     {emailExistsError && (
                       <div className="p-3 rounded-xl bg-destructive/10 border border-destructive/30" data-testid="email-exists-error">
                         <p className="text-sm font-semibold text-destructive">이미 가입된 이메일이에요</p>
@@ -532,6 +500,25 @@ export default function AuthModal({ onClose }: AuthModalProps) {
                       </div>
                     )}
 
+                    <button
+                      type="submit"
+                      disabled={loading}
+                      className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-semibold text-sm shadow hover:shadow-md transition-all active:scale-95 disabled:opacity-50"
+                    >
+                      {loading ? "전송 중..." : "다음"}
+                    </button>
+                  </form>
+                </>
+              )}
+
+              {/* ━━━━━━━━━━━━━━━━ 회원가입 Step 3: 비밀번호 + 프로필 ━━━━━━━━━━━━━━━━ */}
+              {mode === "signup" && signupStep === 3 && (
+                <form onSubmit={handleSignupSubmit} className="flex flex-col gap-4">
+                  {/* 비밀번호 */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-semibold text-foreground block mb-1.5 ml-1">
+                      비밀번호 <span className="text-destructive">*</span>
+                    </label>
                     <div className="relative">
                       <input
                         type={showPassword ? "text" : "password"}
@@ -551,7 +538,6 @@ export default function AuthModal({ onClose }: AuthModalProps) {
                       </button>
                     </div>
 
-                    {/* C3: 비밀번호 강도 표시 */}
                     {password.length > 0 && (
                       <div className="space-y-2" data-testid="password-strength">
                         <div className="flex items-center gap-2">
@@ -589,21 +575,8 @@ export default function AuthModal({ onClose }: AuthModalProps) {
                         </div>
                       </div>
                     )}
+                  </div>
 
-                    <button
-                      type="submit"
-                      disabled={loading || !pwValid}
-                      className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-semibold text-sm shadow hover:shadow-md transition-all active:scale-95 disabled:opacity-50"
-                    >
-                      {loading ? "확인 중..." : "다음"}
-                    </button>
-                  </form>
-                </>
-              )}
-
-              {/* ━━━━━━━━━━━━━━━━ 회원가입 Step 2 ━━━━━━━━━━━━━━━━ */}
-              {mode === "signup" && signupStep === 2 && (
-                <form onSubmit={handleSignupSubmit} className="flex flex-col gap-4">
                   {/* 닉네임 */}
                   <div className="space-y-1">
                     <label className="text-sm font-semibold text-foreground block mb-1.5 ml-1">
@@ -694,29 +667,19 @@ export default function AuthModal({ onClose }: AuthModalProps) {
                     </label>
                   </div>
 
-                  {/* 버튼 */}
-                  <div className="flex gap-2 mt-2">
-                    <button
-                      type="button"
-                      onClick={() => setSignupStep(1)}
-                      disabled={loading}
-                      className="flex-1 py-3 rounded-xl border border-border text-sm font-semibold hover:bg-muted transition-colors disabled:opacity-50"
-                    >
-                      이전
-                    </button>
-                    <button
-                      type="submit"
-                      disabled={
-                        loading ||
-                        nicknameStatus.state === "checking" ||
-                        nicknameStatus.state === "taken" ||
-                        nicknameStatus.state === "invalid_format"
-                      }
-                      className="flex-1 py-3 rounded-xl bg-primary text-primary-foreground font-semibold text-sm shadow hover:shadow-md transition-all active:scale-95 disabled:opacity-50"
-                    >
-                      {loading ? "처리 중..." : "🎼 시작하기"}
-                    </button>
-                  </div>
+                  <button
+                    type="submit"
+                    disabled={
+                      loading ||
+                      !pwValid ||
+                      nicknameStatus.state === "checking" ||
+                      nicknameStatus.state === "taken" ||
+                      nicknameStatus.state === "invalid_format"
+                    }
+                    className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-semibold text-sm shadow hover:shadow-md transition-all active:scale-95 disabled:opacity-50"
+                  >
+                    {loading ? "처리 중..." : "가입 완료"}
+                  </button>
                 </form>
               )}
 
