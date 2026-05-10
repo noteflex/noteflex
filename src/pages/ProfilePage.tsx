@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
 import { useAuth } from "@/contexts/AuthContext";
@@ -51,6 +51,18 @@ export default function ProfilePage() {
     locale: profile?.locale ?? "ko",
   });
   const [saving, setSaving] = useState(false);
+
+  // profile이 컴포넌트 마운트 후 로드될 때(null → 값) formData를 한 번만 동기화
+  const profileSynced = useRef(!!profile);
+  useEffect(() => {
+    if (profile && !profileSynced.current) {
+      setFormData({
+        nickname: profile.nickname ?? "",
+        locale: profile.locale ?? "ko",
+      });
+      profileSynced.current = true;
+    }
+  }, [profile]);
 
   const isDirty = useMemo(
     () =>
@@ -419,10 +431,10 @@ export default function ProfilePage() {
                   className="w-full px-4 py-2.5 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                 />
                 {confirmPw.length > 0 && !pwMatch && (
-                  <p className="text-xs text-destructive mt-1">비밀번호가 일치하지 않아요</p>
+                  <p className="text-xs text-destructive mt-1" data-testid="pw-mismatch-error">비밀번호가 일치하지 않습니다</p>
                 )}
                 {pwMatch && (
-                  <p className="text-xs text-green-600 mt-1">✓ 비밀번호가 일치해요</p>
+                  <p className="text-xs text-green-600 mt-1" data-testid="pw-match-ok">✓ 비밀번호가 일치합니다</p>
                 )}
               </div>
 

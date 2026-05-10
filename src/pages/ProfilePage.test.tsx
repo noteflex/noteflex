@@ -321,6 +321,28 @@ describe("C1 비밀번호 변경", () => {
     await waitFor(() => expect(mockSignInWithPassword).toHaveBeenCalled());
     expect(mockUpdateUser).not.toHaveBeenCalled();
   });
+
+  it("현재+새(강도충족)+확인(일치) 모두 입력 시 변경 버튼 활성화", async () => {
+    const user = userEvent.setup();
+    renderProfilePage();
+    // 처음엔 비활성화
+    expect(screen.getByTestId("change-password-button")).toBeDisabled();
+    await user.type(screen.getByTestId("current-password-input"), "OldPass1!");
+    await user.type(screen.getByTestId("new-password-input"), "NewPass1!");
+    await user.type(screen.getByTestId("confirm-password-input"), "NewPass1!");
+    // 모두 충족 → 활성화
+    expect(screen.getByTestId("change-password-button")).not.toBeDisabled();
+  });
+
+  it("새 비번과 확인 불일치 시 버튼 비활성화 + 피드백 표시", async () => {
+    const user = userEvent.setup();
+    renderProfilePage();
+    await user.type(screen.getByTestId("current-password-input"), "OldPass1!");
+    await user.type(screen.getByTestId("new-password-input"), "NewPass1!");
+    await user.type(screen.getByTestId("confirm-password-input"), "DifferentPass1!");
+    expect(screen.getByTestId("change-password-button")).toBeDisabled();
+    expect(screen.getByTestId("pw-mismatch-error")).toBeInTheDocument();
+  });
 });
 
 // ─────────────────────────────────────────────────────────
