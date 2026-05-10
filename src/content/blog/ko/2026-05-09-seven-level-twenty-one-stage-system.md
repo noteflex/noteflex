@@ -13,9 +13,6 @@ coverImageLicense: "CC0 Public Domain"
 coverImageCredit: "Manuela Gößnitzer (LilyPond 악보); Carl Czerny 작곡 (Public Domain)"
 ---
 
-![Carl Czerny Op. 337 «40가지 일과 연습» 피아노 악보 — 운지법 표기와 함께 단계적 난이도 구조가 명확히 보이는 체계적 연습곡집의 전형](https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/CCzernyOp337Teil1.png/960px-CCzernyOp337Teil1.png)
-*그림 1: Carl Czerny, Op. 337 «40가지 일과 연습» 1부, LilyPond 악보 (M. Gößnitzer 편). [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:CCzernyOp337Teil1.png) — CC0 Public Domain*
-
 악기를 처음 배우는 사람에게 바흐의 평균율 클라비어곡집 첫 페이지를 펼쳐주는 것은 교육이 아니다. 반대로, 2년째 연습 중인 학습자에게 매일 같은 첫 마디만 반복시키는 것도 발전이 아니다. 학습이 일어나는 조건은 현재 능력보다 조금 어렵고, 그러나 완전히 손이 닿지 않는 수준은 아닌 영역에 있다.
 
 Noteflex의 7레벨 21단계 구조는 이 원리를 악보 읽기 훈련에 적용한 결과다.
@@ -27,6 +24,9 @@ Noteflex의 7레벨 21단계 구조는 이 원리를 악보 읽기 훈련에 적
 Vygotsky(1978)는 이 영역을 "근접 발달 영역(Zone of Proximal Development, ZPD)"이라 불렀다. 혼자서는 풀기 어렵지만 약간의 지원이나 반복이 있으면 해낼 수 있는 범위. 그 범위 안에서 학습이 가장 빠르고 깊이 일어난다는 이론이다. 악보 읽기 훈련에서 그 범위를 정확히 설정하려면 단계 사이의 간격이 적절해야 한다.
 
 21단계라는 수는 7개 레벨 × 3개 서브레벨로 구성된다. 서브레벨은 동일한 음역 범위와 조표를 유지하면서 리듬 복잡도와 동시 음표 수를 조금씩 높인다. 레벨이 올라가면 새로운 음역과 조표가 도입된다.
+
+![Carl Czerny Op. 337 «40가지 일과 연습» 피아노 악보 — 운지법 표기와 함께 단계적 난이도 구조가 명확히 보이는 체계적 연습곡집의 전형](https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/CCzernyOp337Teil1.png/960px-CCzernyOp337Teil1.png)
+*그림 1: Carl Czerny, Op. 337 «40가지 일과 연습» 1부, LilyPond 악보 (M. Gößnitzer 편). [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:CCzernyOp337Teil1.png) — CC0 Public Domain*
 
 ## 💡 플로 상태와 난이도 설계
 

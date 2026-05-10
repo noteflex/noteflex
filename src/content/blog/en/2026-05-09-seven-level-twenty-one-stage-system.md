@@ -13,9 +13,6 @@ coverImageLicense: "CC0 Public Domain"
 coverImageCredit: "Manuela Gößnitzer (LilyPond engraving); based on Carl Czerny's public domain composition"
 ---
 
-![Carl Czerny's Op. 337 "40 Daily Exercises" Part 1 piano score, showing graded exercise progression with fingering markings — a foundational example of systematic difficulty structuring in piano pedagogy](https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/CCzernyOp337Teil1.png/960px-CCzernyOp337Teil1.png)
-*Figure 1: Carl Czerny, Op. 337 "40 Daily Exercises" Part 1, LilyPond engraving by M. Gößnitzer. [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:CCzernyOp337Teil1.png) — CC0 Public Domain*
-
 Putting Bach's *Well-Tempered Clavier* in front of someone on their first day of music study is not education — it is discouragement. Conversely, having a two-year student repeat the same opening bar every day is not growth — it is stagnation. Learning happens in a specific zone: just above current ability, but not so far above that the task becomes unreachable.
 
 Noteflex's 7-level, 21-stage structure is an attempt to apply this principle to sight-reading training.
@@ -27,6 +24,9 @@ When sight-reading difficulty is broken into its components — clef, pitch rang
 Vygotsky (1978) named the learning-productive zone the "Zone of Proximal Development" (ZPD): the range of tasks a learner cannot yet do independently but can accomplish with appropriate support and repetition. Learning is fastest and deepest when it operates within this zone. Calibrating that zone in sight-reading training requires that the distance between stages be appropriate — neither too large nor too trivially small.
 
 The 21-stage number comes from 7 levels × 3 sublevels. Each sublevel holds the same pitch range and key signature as the others in its level, while incrementally raising rhythmic complexity and the number of simultaneous notes. Moving from one level to the next introduces a new pitch range and key signature.
+
+![Carl Czerny's Op. 337 "40 Daily Exercises" Part 1 piano score, showing graded exercise progression with fingering markings — a foundational example of systematic difficulty structuring in piano pedagogy](https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/CCzernyOp337Teil1.png/960px-CCzernyOp337Teil1.png)
+*Figure 1: Carl Czerny, Op. 337 "40 Daily Exercises" Part 1, LilyPond engraving by M. Gößnitzer. [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:CCzernyOp337Teil1.png) — CC0 Public Domain*
 
 ## 💡 Flow State and Difficulty Calibration
 
