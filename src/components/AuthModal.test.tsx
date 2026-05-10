@@ -5,22 +5,24 @@ import AuthModal, { analyzePassword } from "./AuthModal";
 
 // ─── Mocks ────────────────────────────────────────────────────────────────
 
-const mockSignInWithOtp   = vi.fn().mockResolvedValue({ error: null });
-const mockVerifyOtp       = vi.fn();
-const mockResend          = vi.fn();
-const mockSignInOAuth     = vi.fn();
-const mockSignInPassword  = vi.fn();
-const mockUpdateUser      = vi.fn().mockResolvedValue({ data: { user: { id: "uid-1" } }, error: null });
+const mockSignInWithOtp         = vi.fn().mockResolvedValue({ error: null });
+const mockVerifyOtp             = vi.fn();
+const mockResend                = vi.fn();
+const mockSignInOAuth           = vi.fn();
+const mockSignInPassword        = vi.fn();
+const mockUpdateUser            = vi.fn().mockResolvedValue({ data: { user: { id: "uid-1" } }, error: null });
+const mockResetPasswordForEmail = vi.fn().mockResolvedValue({ error: null });
 
 vi.mock("@/integrations/supabase/client", () => ({
   supabase: {
     auth: {
-      signInWithOAuth:    (...args: any[]) => mockSignInOAuth(...args),
-      signInWithPassword: (...args: any[]) => mockSignInPassword(...args),
-      signInWithOtp:      (...args: any[]) => mockSignInWithOtp(...args),
-      verifyOtp:          (...args: any[]) => mockVerifyOtp(...args),
-      resend:             (...args: any[]) => mockResend(...args),
-      updateUser:         (...args: any[]) => mockUpdateUser(...args),
+      signInWithOAuth:         (...args: any[]) => mockSignInOAuth(...args),
+      signInWithPassword:      (...args: any[]) => mockSignInPassword(...args),
+      signInWithOtp:           (...args: any[]) => mockSignInWithOtp(...args),
+      verifyOtp:               (...args: any[]) => mockVerifyOtp(...args),
+      resend:                  (...args: any[]) => mockResend(...args),
+      updateUser:              (...args: any[]) => mockUpdateUser(...args),
+      resetPasswordForEmail:   (...args: any[]) => mockResetPasswordForEmail(...args),
     },
   },
 }));
@@ -440,5 +442,61 @@ describe("OTP step close button", () => {
     const { user } = await goToOtpStep();
     await user.click(screen.getByTestId("otp-goto-login"));
     expect(screen.getByText("로그인")).toBeInTheDocument();
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────
+// B2: 비밀번호 재설정 (forgot mode)
+// ─────────────────────────────────────────────────────────────────────────
+
+describe("B2 비밀번호 재설정 (forgot mode)", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockResetPasswordForEmail.mockResolvedValue({ error: null });
+  });
+
+  async function enterForgotMode() {
+    const user = userEvent.setup({ delay: null });
+    const onClose = vi.fn();
+    render(<AuthModal onClose={onClose} />);
+    // "비밀번호를 잊으셨나요?" link is in login mode
+    await user.click(screen.getByTestId("forgot-password-link"));
+    return { user, onClose };
+  }
+
+  it("shows 비밀번호 재설정 header when forgot mode is active", async () => {
+    await enterForgotMode();
+    expect(screen.getByText("비밀번호 재설정")).toBeInTheDocument();
+  });
+
+  it("calls resetPasswordForEmail with correct email and redirectTo", async () => {
+    const { user } = await enterForgotMode();
+    await user.type(screen.getByTestId("forgot-email-input"), "user@example.com");
+    await user.click(screen.getByRole("button", { name: "재설정 메일 전송" }));
+
+    await waitFor(() =>
+      expect(mockResetPasswordForEmail).toHaveBeenCalledWith(
+        "user@example.com",
+        expect.objectContaining({ redirectTo: expect.stringContaining("/reset-password") })
+      )
+    );
+  });
+
+  it("shows confirmation UI after successful email send", async () => {
+    const { user } = await enterForgotMode();
+    await user.type(screen.getByTestId("forgot-email-input"), "user@example.com");
+    await user.click(screen.getByRole("button", { name: "재설정 메일 전송" }));
+
+    await waitFor(() =>
+      expect(screen.getByTestId("forgot-sent-confirmation")).toBeInTheDocument()
+    );
+  });
+
+  it("shows 로그인으로 돌아가기 and clicking it returns to login", async () => {
+    const { user } = await enterForgotMode();
+    const backLink = screen.getByTestId("back-to-login-link");
+    expect(backLink).toBeInTheDocument();
+    await user.click(backLink);
+    expect(screen.getByText("돌아오신 것을 환영해요")).toBeInTheDocument();
   });
 });

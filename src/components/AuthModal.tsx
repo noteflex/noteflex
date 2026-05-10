@@ -13,31 +13,17 @@ import {
 } from "@/lib/profile";
 import { useNicknameAvailability } from "@/hooks/useNicknameAvailability";
 import { nicknameErrorMessage, validateNicknameFormat } from "@/lib/nicknameValidation";
+import {
+  analyzePassword,
+  STRENGTH_LABEL,
+  STRENGTH_BAR_CL,
+  STRENGTH_TXT_CL,
+} from "@/lib/password";
+import type { PasswordChecks } from "@/lib/password";
 
-// ─── Password strength ─────────────────────────────────────────────────────
-
-export interface PasswordChecks {
-  length: boolean;
-  uppercase: boolean;
-  lowercase: boolean;
-  digit: boolean;
-  special: boolean;
-}
-
-export function analyzePassword(pw: string): { score: number; checks: PasswordChecks } {
-  const checks: PasswordChecks = {
-    length:    pw.length >= 8,
-    uppercase: /[A-Z]/.test(pw),
-    lowercase: /[a-z]/.test(pw),
-    digit:     /[0-9]/.test(pw),
-    special:   /[^A-Za-z0-9]/.test(pw),
-  };
-  return { score: Object.values(checks).filter(Boolean).length, checks };
-}
-
-const STRENGTH_LABEL  = ["", "약함", "보통", "강함", "강함", "매우 강함"] as const;
-const STRENGTH_BAR_CL = ["", "bg-red-500", "bg-yellow-400", "bg-blue-400", "bg-blue-500", "bg-green-500"] as const;
-const STRENGTH_TXT_CL = ["", "text-red-500", "text-yellow-500", "text-blue-400", "text-blue-500", "text-green-500"] as const;
+// re-export for backward compatibility
+export { analyzePassword } from "@/lib/password";
+export type { PasswordChecks } from "@/lib/password";
 
 // ─── Types ────────────────────────────────────────────────────────────────
 
@@ -45,7 +31,7 @@ interface AuthModalProps {
   onClose: () => void;
 }
 
-type Mode = "login" | "signup";
+type Mode = "login" | "signup" | "forgot";
 type SignupStep = 1 | 2 | 3;
 
 // ─── Component ───────────────────────────────────────────────────────────
@@ -58,6 +44,9 @@ export default function AuthModal({ onClose }: AuthModalProps) {
   // 공통
   const [email, setEmail] = useState("");
   const [emailExistsError, setEmailExistsError] = useState(false);
+
+  // Forgot password
+  const [forgotSent, setForgotSent] = useState(false);
 
   // Step 2 — OTP
   const [otpCode, setOtpCode] = useState("");
@@ -283,6 +272,27 @@ export default function AuthModal({ onClose }: AuthModalProps) {
     }
   };
 
+  // ───────── 비밀번호 재설정 이메일 전송 ─────────
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email.includes("@")) {
+      toast({ title: "이메일을 확인해주세요", variant: "destructive" });
+      return;
+    }
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      if (error) throw error;
+      setForgotSent(true);
+    } catch (err: any) {
+      toast({ title: "메일 전송 실패", description: err.message, variant: "destructive" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // ───────── 모드 전환 ─────────
   const switchMode = (next: Mode) => {
     setMode(next);
@@ -290,6 +300,7 @@ export default function AuthModal({ onClose }: AuthModalProps) {
     setEmailExistsError(false);
     setOtpCode("");
     setOtpError("");
+    setForgotSent(false);
   };
 
   // ─────────────────────────────────────────────────────────────────
@@ -385,6 +396,12 @@ export default function AuthModal({ onClose }: AuthModalProps) {
                 <h2 className="text-xl font-bold text-foreground">로그인</h2>
                 <p className="text-xs text-muted-foreground">돌아오신 것을 환영해요</p>
               </div>
+            ) : mode === "forgot" ? (
+              <div className="flex flex-col items-center gap-2 pt-6 pb-5 px-6">
+                <span className="text-4xl">🔐</span>
+                <h2 className="text-xl font-bold text-foreground">비밀번호 재설정</h2>
+                <p className="text-xs text-muted-foreground">가입한 이메일로 재설정 링크를 보내드려요</p>
+              </div>
             ) : (
               <div className="px-6 pt-6 pb-5 bg-gradient-to-br from-primary/15 via-primary/10 to-accent/10 border-b border-border rounded-t-2xl">
                 <div className="flex flex-col items-center gap-2">
@@ -468,6 +485,14 @@ export default function AuthModal({ onClose }: AuthModalProps) {
                       className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-semibold text-sm shadow hover:shadow-md transition-all active:scale-95 disabled:opacity-50"
                     >
                       {loading ? "처리 중..." : "이메일로 로그인"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => switchMode("forgot")}
+                      className="text-xs text-muted-foreground hover:text-foreground text-center w-full mt-1 transition-colors"
+                      data-testid="forgot-password-link"
+                    >
+                      비밀번호를 잊으셨나요?
                     </button>
                   </form>
                 </>
@@ -720,21 +745,72 @@ export default function AuthModal({ onClose }: AuthModalProps) {
                 </form>
               )}
 
+              {/* ━━━━━━━━━━━━━━━━ forgot 모드 ━━━━━━━━━━━━━━━━ */}
+              {mode === "forgot" && (
+                <>
+                  {!forgotSent ? (
+                    <form onSubmit={handleForgotPassword} className="flex flex-col gap-3">
+                      <input
+                        type="email"
+                        value={email}
+                        onChange={e => setEmail(e.target.value)}
+                        placeholder="가입한 이메일을 입력해주세요"
+                        required
+                        autoFocus
+                        data-testid="forgot-email-input"
+                        className="w-full px-4 py-2.5 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                      />
+                      <button
+                        type="submit"
+                        disabled={loading}
+                        className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-semibold text-sm shadow hover:shadow-md transition-all active:scale-95 disabled:opacity-50"
+                      >
+                        {loading ? "전송 중..." : "재설정 메일 전송"}
+                      </button>
+                    </form>
+                  ) : (
+                    <div className="text-center space-y-3 py-4" data-testid="forgot-sent-confirmation">
+                      <div className="text-5xl">📧</div>
+                      <p className="font-semibold text-foreground">메일을 보냈어요</p>
+                      <p className="text-sm text-muted-foreground leading-relaxed">
+                        <span className="font-medium text-foreground">{email}</span>으로<br />
+                        재설정 링크를 보냈어요. 이메일을 확인해주세요.
+                      </p>
+                    </div>
+                  )}
+                </>
+              )}
+
               {/* ━━━━━━━━━━━━━━━━ Footer ━━━━━━━━━━━━━━━━ */}
-              <div className="mt-5 pt-4 border-t border-border">
-                <button
-                  type="button"
-                  onClick={() => switchMode(mode === "login" ? "signup" : "login")}
-                  className="w-full text-center text-sm py-1 group"
-                >
-                  <span className="text-muted-foreground">
-                    {mode === "login" ? "아직 계정이 없으신가요? " : "이미 계정이 있으신가요? "}
-                  </span>
-                  <span className="font-bold text-primary underline underline-offset-2 group-hover:text-primary/80 transition-colors">
-                    {mode === "login" ? "회원가입" : "로그인"}
-                  </span>
-                </button>
-              </div>
+              {mode === "forgot" ? (
+                <div className="mt-5 pt-4 border-t border-border">
+                  <button
+                    type="button"
+                    onClick={() => switchMode("login")}
+                    className="w-full text-center text-sm py-1 group"
+                    data-testid="back-to-login-link"
+                  >
+                    <span className="font-bold text-primary underline underline-offset-2 group-hover:text-primary/80 transition-colors">
+                      로그인으로 돌아가기
+                    </span>
+                  </button>
+                </div>
+              ) : (
+                <div className="mt-5 pt-4 border-t border-border">
+                  <button
+                    type="button"
+                    onClick={() => switchMode(mode === "login" ? "signup" : "login")}
+                    className="w-full text-center text-sm py-1 group"
+                  >
+                    <span className="text-muted-foreground">
+                      {mode === "login" ? "아직 계정이 없으신가요? " : "이미 계정이 있으신가요? "}
+                    </span>
+                    <span className="font-bold text-primary underline underline-offset-2 group-hover:text-primary/80 transition-colors">
+                      {mode === "login" ? "회원가입" : "로그인"}
+                    </span>
+                  </button>
+                </div>
+              )}
 
               <button
                 type="button"

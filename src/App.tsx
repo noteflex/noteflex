@@ -28,6 +28,7 @@ import About from "./pages/About.tsx";
 import Contact from "./pages/Contact.tsx";
 import CookieBanner from "./components/CookieBanner.tsx";
 import ComingSoonGate from "./components/ComingSoonGate.tsx";
+import ResetPasswordPage from "./pages/ResetPasswordPage.tsx";
 
 const queryClient = new QueryClient();
 
@@ -58,6 +59,9 @@ const App = () => (
               <Route path="/faq" element={<FAQ />} />
               <Route path="/about" element={<About />} />
               <Route path="/contact" element={<Contact />} />
+
+              {/* 비밀번호 재설정 — Coming Soon 차단 없음 */}
+              <Route path="/reset-password" element={<ResetPasswordPage />} />
 
               {/* 게임·인증·결제 라우트 — Coming Soon 모드에서 차단 */}
               <Route
