@@ -28,6 +28,14 @@
 - `supabase/migrations/20260510_rls_audit.sql` Supabase Dashboard > SQL Editor 실행
 - is_admin() 함수 + 9개 테이블 정책 추가·보완
 
+### RLS 마이그레이션 정정 (2026-05-10 오후)
+- **커밋**: `4670b58` fix(rls): RLS 마이그레이션 production 테이블만 박음
+- **원인**: production에 없는 테이블(payment_events 등)에 직접 DDL → 에러
+- **정정**: optional 5개 테이블 `DO $block$ BEGIN ... EXCEPTION WHEN undefined_table THEN RAISE NOTICE; END $block$;` 패턴으로 감쌈
+  - Core 4 (직접 DDL): profiles · user_note_logs · user_sublevel_progress · daily_sessions
+  - Optional 5 (DO block): user_custom_scores · payment_events · device_change_events · user_scores · practice_logs
+- **향후**: optional 테이블 생성 시 해당 마이그레이션에 RLS 함께 박음
+
 ### PENDING §X-2
 - B2 비밀번호 재설정 · B4 Refresh token
 - C1 비밀번호 변경 · C2 이메일 변경 · C4 탈퇴 (GDPR/PIPA 법적 의무 🔴)
