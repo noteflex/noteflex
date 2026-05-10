@@ -4,6 +4,40 @@
 
 ---
 
+## 2026-05-10 (낮) — §X-1 가입+보안 sprint ✅
+
+### Supabase Dashboard 설정 (사용자 직접 완료)
+- Confirm email = ON
+- Secure email change = ON
+- Email OTP expiration = 3600초
+- Confirm signup 템플릿 = OTP 방식 ({{ .Token }})
+
+### Commits
+- `6d606d7` feat(auth): 이메일 OTP 가입 인증 + 6자리 코드 모달 (§X-1 C1)
+- `4731e67` feat(auth): 이메일 중복 검증 + 로그인 redirect 안내 (§X-1 C2)
+- `606ce6b` feat(auth): 비밀번호 강도 검증 + 실시간 UI (§X-1 C3)
+- `6b917a0` fix(rls): 전 테이블 RLS 정책 검증 + 정정 (§X-1 C4)
+
+### 검증
+- 744/744 PASS, tsc 0 errors
+- AuthModal 22 tests (analyzePassword 6·UI 5·C2 3·OTP flow 8)
+- 가입 흐름: Step1(이메일+PW강도) → Step2(프로필) → OTP 모달 → verifyOtp → completeProfile
+- 중복·강도·만료·불일치 에러 케이스 모두 검증
+
+### RLS Production Apply 필요
+- `supabase/migrations/20260510_rls_audit.sql` Supabase Dashboard > SQL Editor 실행
+- is_admin() 함수 + 9개 테이블 정책 추가·보완
+
+### PENDING §X-2
+- B2 비밀번호 재설정 · B4 Refresh token
+- C1 비밀번호 변경 · C2 이메일 변경 · C4 탈퇴 (GDPR/PIPA 법적 의무 🔴)
+
+### 다음 세션 시작점
+- §X-2 로그인·세션·계정 sprint
+- 또는 Group C (출시 직전 다른 영역)
+
+---
+
 ## 2026-05-10 (야간) — 12 .md 파일 첫 이미지 위치 정정 sprint ✅
 
 ### 작업 내용
