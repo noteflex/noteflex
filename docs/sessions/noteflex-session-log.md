@@ -4,6 +4,34 @@
 
 ---
 
+## 2026-05-10 (새벽) — BlogPost coverImage 자동 렌더링 영역 조사 ✅
+
+### 사용자 검증 발견
+- 이미지가 글 시작 직후 박힌 영역 → 원인 조사 의뢰
+
+### 조사 결과
+컴포넌트 자동 렌더링 없음. **원인 = .md 파일 본문 첫 줄 이미지 (Case 2)**
+
+- `BlogPost.tsx`: coverImage 관련 `<img>` 렌더링 없음. `<MarkdownContent>{post.content}</MarkdownContent>` 단순 패스스루
+- `MarkdownContent.tsx`: ReactMarkdown 그대로 렌더링. 이미지 특별 처리 없음
+- `markdownLoader.ts`: parseFrontmatter = frontmatter 제거 후 나머지 전체가 content. .md 파일 첫 줄 `![]()` = 그대로 body에 렌더링됨
+
+### 사용자 결정
+- C1 컴포넌트 정정 = 불필요 (자동 렌더링 없음)
+- .md 파일 박은 영역 정정 = **낮에 한 번에 박음 (PENDING)**
+  - 12 .md 파일 본문 첫 이미지 위치 조정 (Scene·Insight 섹션 이후로 이동 또는 제거)
+
+### Commits
+- 코드 변경 없음 (컴포넌트 정정 불필요)
+- (docs 커밋만)
+
+### 다음 세션 시작점
+- 12 .md 파일 이미지 위치 정정 (낮)
+- Group C (§X 사용자 등록·관리 Phase C, ~5h)
+- /admin/staff-preview 시각 검증
+
+---
+
 ## 2026-05-10 (저녁) — 블로그 이미지 전수 정정 sprint ✅
 
 ### 작업 내용
