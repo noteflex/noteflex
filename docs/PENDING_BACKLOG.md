@@ -692,14 +692,14 @@ Claude Code 코드 분석 발견.
 ## §X. 사용자 등록·관리 영역 (출시 전 sprint, ~5일) 🔴
 
 ### §X-1 완료 (2026-05-10) ✅
-- **A1** 이메일 OTP 가입 3단계 흐름 ✅
-  - Step 1: 이메일 → signInWithOtp({ shouldCreateUser: true })
-  - Step 2: verifyOtp({ type: 'email' }) — 이메일 인증 완료
-  - Step 3: updateUser({ password }) + completeProfile
-- **A3** 이메일 중복 검증 + 로그인 redirect CTA ✅
+- **A1** 이메일 OTP 가입 3단계 흐름 ✅ (정합 완료)
+  - Step 1: 이메일 → check_email_exists v2 (미인증 분기) → signInWithOtp
+  - Step 2: verifyOtp({ type: 'email' }) + 닫기 버튼(X) + 로그인 복귀 링크
+  - Step 3: updateUser({ password }) + completeProfile (23505 즉시 피드백)
+- **A3** 이메일 중복 검증 + 로그인 redirect CTA ✅ (confirmed만 차단)
 - **A5** 비밀번호 강도 검증 (8자+대소문자·숫자·특수문자, 실시간 바) ✅
 - **D2** 전 테이블 RLS 검증 + 정정 (is_admin() 함수, core 4 직접 DDL + optional 5 DO block) ✅
-- RLS 마이그레이션 production apply 필요: `20260510_rls_audit.sql`
+- Production Apply 필요: `20260510_rls_audit.sql` + `20260510_check_email_v2.sql`
 
 ### §X-2 PENDING (로그인·세션·계정)
 - **B2** 비밀번호 재설정 (forget password, resetPasswordForEmail)

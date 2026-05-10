@@ -20,15 +20,27 @@
 - `4670b58` fix(rls): RLS 마이그레이션 production 테이블만 박음
 - `4eaa9e2` fix(auth): 가입 흐름 3단계 분리 — 이메일 검증 먼저 박음 (§X-1 C1 정정)
 
-### 최종 가입 흐름 (정정 후)
-- **Step 1**: 이메일 입력 → signInWithOtp({ shouldCreateUser: true }) → OTP 전송
-- **Step 2**: 6자리 OTP 입력 → verifyOtp({ type: 'email' }) → 이메일 검증 완료
-- **Step 3**: 비밀번호 + 닉네임 입력 → updateUser({ password }) + completeProfile → 자동 로그인
+### 최종 가입 흐름 (정정 완료)
+- **Step 1**: 이메일 입력 → checkEmailExists(v2) → signInWithOtp({ shouldCreateUser: true })
+  - confirmed=true → 차단 + 로그인 CTA / confirmed=false → OTP 재전송 (미인증 통과)
+- **Step 2**: 6자리 OTP 입력 → verifyOtp({ type: 'email' }) → 이메일 인증 완료
+  - X 버튼(우상단) + "이미 가입했나요? 로그인" 링크 → switchMode('login')
+  - backdrop·ESC = 닫기 X
+- **Step 3**: 비밀번호(강도 검증) + 닉네임(중복 즉시 피드백) 입력 → updateUser + completeProfile
+  - 23505(unique) → nicknameConflict 인라인 에러 → Step 3 유지
+
+### 정합 정정 커밋
+- `440dd0e` fix(auth): check_email_exists 미인증 분기 (RPC v2 + 마이그레이션)
+- `37ad923` fix(auth): Step 3 nickname 중복 23505 즉시 피드백
+- `e911e49` fix(auth): OTP 모달 닫기 버튼 + 로그인 복귀
 
 ### 검증
-- 748/748 PASS, tsc 0 errors
-- AuthModal 26 tests (analyzePassword 6·PW강도 UI 5·이메일중복 3·OTP 8·프로필 3)
-- 중복·만료·불일치·네트워크 에러 케이스 모두 검증
+- 754/754 PASS, tsc 0 errors
+- AuthModal 32 tests (analyzePassword 6·PW강도 5·이메일중복 4·OTP 8+4·프로필 3+1·OTP닫기 4)
+
+### 마이그레이션 Production Apply 필요
+- `20260510_rls_audit.sql` — is_admin() + RLS 9개 테이블
+- `20260510_check_email_v2.sql` — check_email_exists v2 (user_exists, is_confirmed)
 
 ### RLS Production Apply 필요
 - `supabase/migrations/20260510_rls_audit.sql` Supabase Dashboard > SQL Editor 실행
