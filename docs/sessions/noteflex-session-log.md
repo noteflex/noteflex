@@ -4,6 +4,19 @@
 
 ---
 
+## 2026-05-11 (월) — §X-2 계정 설정 버그 정정 ✅
+
+### Commits
+- `fix(settings): 저장 버튼 활성화 + 비번 확인 검증` (`bfb8dac`)
+- `docs: 계정 설정 버그 정정 ✅`
+
+### 완료 내역
+- **닉네임 저장 버튼 버그**: profile이 null로 마운트 후 로드될 때 formData가 `""`로 초기화 → `isDirty=true`이지만 `nicknameCheckInput=""`이라 hook이 `"idle"` 반환 → `canSave=false`. `profileSynced` ref + `useEffect`로 프로필 첫 로드 시 한 번만 동기화해 해결.
+- **비번 확인 피드백**: `data-testid` 추가(pw-mismatch-error, pw-match-ok), 메시지 "일치하지 않습니다/일치합니다"로 통일.
+- **테스트 2케이스 추가**: 현재+새+확인 충족 시 버튼 활성화 + 불일치 시 비활성화+피드백 (ProfilePage.test.tsx 총 24개 PASS).
+
+---
+
 ## 2026-05-11 (월) — §X-2 로그인·세션·계정 sprint ✅
 
 ### Commits
