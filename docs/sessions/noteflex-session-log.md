@@ -4,7 +4,7 @@
 
 ---
 
-## 2026-05-10 (낮) — §X-1 가입+보안 sprint ✅
+## 2026-05-10 (낮~저녁) — §X-1 가입+보안 sprint ✅ + 흐름 정정
 
 ### Supabase Dashboard 설정 (사용자 직접 완료)
 - Confirm email = ON
@@ -13,16 +13,22 @@
 - Confirm signup 템플릿 = OTP 방식 ({{ .Token }})
 
 ### Commits
-- `6d606d7` feat(auth): 이메일 OTP 가입 인증 + 6자리 코드 모달 (§X-1 C1)
+- `6d606d7` feat(auth): 이메일 OTP 가입 인증 + 6자리 코드 모달 (§X-1 C1 초기)
 - `4731e67` feat(auth): 이메일 중복 검증 + 로그인 redirect 안내 (§X-1 C2)
 - `606ce6b` feat(auth): 비밀번호 강도 검증 + 실시간 UI (§X-1 C3)
 - `6b917a0` fix(rls): 전 테이블 RLS 정책 검증 + 정정 (§X-1 C4)
+- `4670b58` fix(rls): RLS 마이그레이션 production 테이블만 박음
+- `4eaa9e2` fix(auth): 가입 흐름 3단계 분리 — 이메일 검증 먼저 박음 (§X-1 C1 정정)
+
+### 최종 가입 흐름 (정정 후)
+- **Step 1**: 이메일 입력 → signInWithOtp({ shouldCreateUser: true }) → OTP 전송
+- **Step 2**: 6자리 OTP 입력 → verifyOtp({ type: 'email' }) → 이메일 검증 완료
+- **Step 3**: 비밀번호 + 닉네임 입력 → updateUser({ password }) + completeProfile → 자동 로그인
 
 ### 검증
-- 744/744 PASS, tsc 0 errors
-- AuthModal 22 tests (analyzePassword 6·UI 5·C2 3·OTP flow 8)
-- 가입 흐름: Step1(이메일+PW강도) → Step2(프로필) → OTP 모달 → verifyOtp → completeProfile
-- 중복·강도·만료·불일치 에러 케이스 모두 검증
+- 748/748 PASS, tsc 0 errors
+- AuthModal 26 tests (analyzePassword 6·PW강도 UI 5·이메일중복 3·OTP 8·프로필 3)
+- 중복·만료·불일치·네트워크 에러 케이스 모두 검증
 
 ### RLS Production Apply 필요
 - `supabase/migrations/20260510_rls_audit.sql` Supabase Dashboard > SQL Editor 실행
