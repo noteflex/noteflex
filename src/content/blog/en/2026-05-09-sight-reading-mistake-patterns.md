@@ -13,9 +13,6 @@ coverImageLicense: "Public Domain"
 coverImageCredit: "J.S. Bach; Bach Digital archive"
 ---
 
-![J.S. Bach's autograph manuscript of Violin Sonata No. 1 in G minor BWV 1001, showing dense notation with ledger lines and complex accidentals](https://upload.wikimedia.org/wikipedia/commons/thumb/e/e2/BWV1001-cropped.jpg/960px-BWV1001-cropped.jpg)
-*Figure 1: J.S. Bach, autograph manuscript of Violin Sonata No. 1 in G minor BWV 1001. [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:BWV1001-cropped.jpg) — Public Domain*
-
 If you open a new piece of music and find yourself stopping at the same kinds of passages every time, that experience is almost certainly not random. Researchers studying sight-reading have long known that errors in music reading do not distribute evenly across a score. They cluster. Certain note positions, certain rhythmic structures, and certain melodic intervals produce errors at consistently higher rates.
 
 Understanding where those clusters tend to form can shift the direction of practice in a useful way.
@@ -23,6 +20,9 @@ Understanding where those clusters tend to form can shift the direction of pract
 ## 🎼 Where Errors Concentrate
 
 Kopiez and Lee (2008), synthesizing a broad body of research on the skills involved in sight-reading, identified recurring conditions that raise error rates — independent of overall skill level. Three categories stand out.
+
+![J.S. Bach's autograph manuscript of Violin Sonata No. 1 in G minor BWV 1001, showing dense notation with ledger lines and complex accidentals](https://upload.wikimedia.org/wikipedia/commons/thumb/e/e2/BWV1001-cropped.jpg/960px-BWV1001-cropped.jpg)
+*Figure 1: J.S. Bach, autograph manuscript of Violin Sonata No. 1 in G minor BWV 1001. [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:BWV1001-cropped.jpg) — Public Domain*
 
 **Note position and register.** Notes that require ledger lines above or below the staff produce more errors than notes sitting within the staff. The more ledger lines, the higher the error rate. The register around middle C (C4) tends to have the lowest error density for most readers; the extremes of the range are where recognition slows.
 

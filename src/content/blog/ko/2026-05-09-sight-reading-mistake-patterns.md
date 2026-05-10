@@ -13,9 +13,6 @@ coverImageLicense: "Public Domain"
 coverImageCredit: "J.S. Bach; Bach Digital 아카이브"
 ---
 
-![J.S. Bach의 바이올린 소나타 1번 g단조 BWV 1001 자필 악보 — 덧줄과 복잡한 임시표가 선명히 보이는 밀도 높은 기보](https://upload.wikimedia.org/wikipedia/commons/thumb/e/e2/BWV1001-cropped.jpg/960px-BWV1001-cropped.jpg)
-*그림 1: J.S. Bach, 바이올린 소나타 1번 BWV 1001 자필 악보. [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:BWV1001-cropped.jpg) — Public Domain*
-
 새 악보를 처음 펼칠 때마다 같은 구절에서 멈추는 경험이 있다면, 그것은 우연이 아닐 가능성이 높다. 초견 연구자들은 오래전부터 실수가 무작위로 분포하지 않는다는 사실을 알고 있었다. 특정 음표, 특정 리듬 구조, 특정 선율의 위치에서 오류가 집중된다.
 
 그 패턴을 파악하는 것이 연습의 출발점이 될 수 있다.
@@ -23,6 +20,9 @@ coverImageCredit: "J.S. Bach; Bach Digital 아카이브"
 ## 🎼 실수는 어디서 집중되는가
 
 Kopiez와 Lee(2008)는 초견에 관한 광범위한 연구를 분석하면서, 숙련도와 무관하게 특정 조건에서 오류율이 높아진다는 점을 정리했다. 그 조건들은 크게 세 가지 범주로 묶인다.
+
+![J.S. Bach의 바이올린 소나타 1번 g단조 BWV 1001 자필 악보 — 덧줄과 복잡한 임시표가 선명히 보이는 밀도 높은 기보](https://upload.wikimedia.org/wikipedia/commons/thumb/e/e2/BWV1001-cropped.jpg/960px-BWV1001-cropped.jpg)
+*그림 1: J.S. Bach, 바이올린 소나타 1번 BWV 1001 자필 악보. [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:BWV1001-cropped.jpg) — Public Domain*
 
 **음역대와 음표 위치.** 오선 밖 덧줄(ledger line)에 놓인 음표는 오선 안 음표보다 오류율이 높다. 덧줄 수가 늘어날수록 오류는 증가한다. 피아노에서 가온다(C4) 주변의 가온 음역은 오류가 가장 적고, 극고음이나 극저음으로 갈수록 오류가 늘어나는 경향이 있다.
 
