@@ -13,9 +13,6 @@ coverImageLicense: "Public Domain"
 coverImageCredit: "Ludwig van Beethoven; Universal Edition, 1918–1921"
 ---
 
-![First page of Beethoven's Piano Sonata No. 8 "Pathétique" Op. 13, first movement — piano grand staff showing treble and bass clef notation with rests](https://upload.wikimedia.org/wikipedia/commons/thumb/b/b0/Beethoven_Sonata_piano_no8_mov1_01.JPG/960px-Beethoven_Sonata_piano_no8_mov1_01.JPG)
-*Figure 1: Ludwig van Beethoven, Piano Sonata No. 8 "Pathétique" Op. 13, first movement (Universal Edition, 1918–1921). [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Beethoven_Sonata_piano_no8_mov1_01.JPG) — Public Domain*
-
 Picture opening Beethoven's Piano Sonata No. 8 ("Pathétique") for the first time and working through the first movement. There is a moment when the hands stop — a whole rest, or a half rest, sits in the bar. The sound has ended, but the music has not. The internal pulse must keep moving forward, evenly, through that silence. When the internal reference is missing, the rest becomes a gap rather than a musical event.
 
 Reading rests well means maintaining the pulse even when both hands are still.
@@ -25,6 +22,9 @@ Reading rests well means maintaining the pulse even when both hands are still.
 In music notation, a rest marks a specific duration of silence — an instruction to produce no sound for the indicated time value. Every note value has a corresponding rest: whole rest, half rest, quarter rest, eighth rest, sixteenth rest, each filling its exact duration in the metric structure.
 
 The codification of rests in Western music notation developed alongside note symbols and reflects the same understanding. Cooper and Meyer (1960), in their foundational study of rhythmic structure, observed that the metrical architecture of music is expressed through silence as much as through sound. Rests are not placeholders for missing notes — they are structural elements of the same rhythmic fabric.
+
+![First page of Beethoven's Piano Sonata No. 8 "Pathétique" Op. 13, first movement — piano grand staff showing treble and bass clef notation with rests](https://upload.wikimedia.org/wikipedia/commons/thumb/b/b0/Beethoven_Sonata_piano_no8_mov1_01.JPG/960px-Beethoven_Sonata_piano_no8_mov1_01.JPG)
+*Figure 1: Ludwig van Beethoven, Piano Sonata No. 8 "Pathétique" Op. 13, first movement (Universal Edition, 1918–1921). [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Beethoven_Sonata_piano_no8_mov1_01.JPG) — Public Domain*
 
 ## 💡 Why Silence Is Musical
 

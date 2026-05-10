@@ -13,9 +13,6 @@ coverImageLicense: "Public Domain"
 coverImageCredit: "Ludwig van Beethoven; Universal Edition, 1918–1921"
 ---
 
-![베토벤 피아노 소나타 8번 «비창» Op. 13 1악장 악보 첫 페이지 — 피아노 대보표(treble + bass)의 음표와 쉼표가 선명히 기보됨](https://upload.wikimedia.org/wikipedia/commons/thumb/b/b0/Beethoven_Sonata_piano_no8_mov1_01.JPG/960px-Beethoven_Sonata_piano_no8_mov1_01.JPG)
-*그림 1: Ludwig van Beethoven, 피아노 소나타 8번 «비창» Op. 13 1악장 (Universal Edition, 1918–1921). [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Beethoven_Sonata_piano_no8_mov1_01.JPG) — Public Domain*
-
 베토벤의 피아노 소나타 8번 "비창" 1악장을 처음 연습한다고 상상해 보자. 첫 마디에서 손이 멈추는 순간이 온다. 음표가 없는 자리, 온쉼표나 2분쉼표가 놓인 그 자리에서 박자를 어디에 걸어둘지 몰라 흔들린다. 손이 없어도 음악은 계속되어야 하는데, 그 계속의 기준이 내면에 없을 때 쉼표는 공백이 된다.
 
 쉼표를 잘 읽는다는 것은 그 침묵 안에서도 박자를 유지하는 것이다.
@@ -25,6 +22,9 @@ coverImageCredit: "Ludwig van Beethoven; Universal Edition, 1918–1921"
 악보에서 쉼표(rest)는 특정 음가 동안 소리를 내지 않는 것을 지시하는 기호다. 음표와 1:1로 대응되는 쉼표가 있다 — 온쉼표(whole rest), 2분쉼표(half rest), 4분쉼표(quarter rest), 8분쉼표(eighth rest), 16분쉼표(sixteenth rest)가 각각 해당 음가를 채운다.
 
 기보법의 역사에서 쉼표가 체계화된 것은 음표 자체만큼 오래됐다. Cooper와 Meyer(1960)는 "리듬의 구조"에 관한 연구에서 음악의 메트리컬 구조가 소리뿐 아니라 침묵을 통해서도 표현된다고 설명했다. 쉼표가 단순한 비움이 아니라 리듬의 능동적 요소임을 짚은 것이다.
+
+![베토벤 피아노 소나타 8번 «비창» Op. 13 1악장 악보 첫 페이지 — 피아노 대보표(treble + bass)의 음표와 쉼표가 선명히 기보됨](https://upload.wikimedia.org/wikipedia/commons/thumb/b/b0/Beethoven_Sonata_piano_no8_mov1_01.JPG/960px-Beethoven_Sonata_piano_no8_mov1_01.JPG)
+*그림 1: Ludwig van Beethoven, 피아노 소나타 8번 «비창» Op. 13 1악장 (Universal Edition, 1918–1921). [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Beethoven_Sonata_piano_no8_mov1_01.JPG) — Public Domain*
 
 ## 💡 침묵이 음악적인 이유
 
