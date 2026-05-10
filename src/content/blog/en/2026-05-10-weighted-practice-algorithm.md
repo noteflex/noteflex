@@ -13,9 +13,6 @@ coverImageLicense: "CC BY-SA 3.0"
 coverImageCredit: "Nheise (Wikimedia Commons)"
 ---
 
-![The Ebbinghaus Forgetting Curve diagram showing memory retention percentage declining over time without review — the scientific foundation underpinning spaced repetition and weighted practice systems](https://upload.wikimedia.org/wikipedia/commons/d/dc/Ebbinghaus_Forgetting_Curve.jpg)
-*Figure 1: The Ebbinghaus Forgetting Curve. [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Ebbinghaus_Forgetting_Curve.jpg) — CC BY-SA 3.0. Credit: Nheise.*
-
 The same note appears again in today's session. Low F in the bass clef — the same one that appeared yesterday, and the day before. It keeps coming back.
 
 This is not random. That note returned because it was slow, or wrong, or both — and a system that routes more repetitions toward weak items sent it back. This is the core of weighted practice: assigning more repetitions to the notes that need them, and fewer to the ones that don't.
@@ -37,6 +34,9 @@ First, **frequency matters**. For the same total practice time, shorter and more
 Second, **weak items need more repetitions than strong ones to reach the same performance level**. Items that are already fast can be maintained with less frequent repetition; items that are slow require more encounters to reach the same threshold of automaticity.
 
 These two findings together form the logic of weighted practice: route more frequent repetitions toward weak items, and fewer toward strong ones.
+
+![The Ebbinghaus Forgetting Curve diagram showing memory retention percentage declining over time without review — the scientific foundation underpinning spaced repetition and weighted practice systems](https://upload.wikimedia.org/wikipedia/commons/d/dc/Ebbinghaus_Forgetting_Curve.jpg)
+*Figure 1: The Ebbinghaus Forgetting Curve. [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Ebbinghaus_Forgetting_Curve.jpg) — CC BY-SA 3.0. Credit: Nheise.*
 
 ## 🎹 How Weighted Practice Is Structured
 
