@@ -30,6 +30,8 @@ export type { PasswordChecks } from "@/lib/password";
 interface AuthModalProps {
   onClose: () => void;
   initialSignupStep?: 1 | 3;
+  open?: boolean;
+  isOAuthUser?: boolean;
 }
 
 type Mode = "login" | "signup" | "forgot";
@@ -37,7 +39,7 @@ type SignupStep = 1 | 2 | 3;
 
 // ─── Component ───────────────────────────────────────────────────────────
 
-export default function AuthModal({ onClose, initialSignupStep }: AuthModalProps) {
+export default function AuthModal({ onClose, initialSignupStep, open = true, isOAuthUser = false }: AuthModalProps) {
   const [mode, setMode] = useState<Mode>(initialSignupStep === 3 ? "signup" : "login");
   const [signupStep, setSignupStep] = useState<SignupStep>(initialSignupStep ?? 1);
   const [loading, setLoading] = useState(false);
@@ -79,6 +81,30 @@ export default function AuthModal({ onClose, initialSignupStep }: AuthModalProps
     };
   }, [onClose]);
 
+  // open 또는 initialSignupStep 변경 시 form state 초기화
+  // — open: false→true 전환 (모달 재오픈)
+  // — initialSignupStep 변경: BroadcastChannel 수신 후 URL 파라미터가 step 3으로 바뀔 때
+  useEffect(() => {
+    if (!open) return;
+    setEmail("");
+    setPassword("");
+    setShowPassword(false);
+    setEmailExistsError(false);
+    setForgotSent(false);
+    setResendCooldown(0);
+    if (cooldownRef.current) { clearInterval(cooldownRef.current); cooldownRef.current = null; }
+    setNickname("");
+    setNicknameConflict(false);
+    setBirthYear("");
+    setBirthMonth("");
+    setBirthDay("");
+    setTosAgreed(false);
+    setPrivacyAgreed(false);
+    setMarketingAgreed(false);
+    setMode(initialSignupStep === 3 ? "signup" : "login");
+    setSignupStep(initialSignupStep ?? 1);
+  }, [open, initialSignupStep]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const startCooldown = () => {
     if (cooldownRef.current) clearInterval(cooldownRef.current);
     setResendCooldown(60);
@@ -102,7 +128,7 @@ export default function AuthModal({ onClose, initialSignupStep }: AuthModalProps
     try {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
-        options: { redirectTo: window.location.origin },
+        options: { redirectTo: `${window.location.origin}/auth/callback` },
       });
       if (error) throw error;
     } catch (err: any) {
@@ -189,7 +215,8 @@ export default function AuthModal({ onClose, initialSignupStep }: AuthModalProps
       toast({ title: nicknameErrorMessage(nicknameValidation.reason), variant: "destructive" });
       return;
     }
-    if (!pwValid) {
+    // 비밀번호 검증 (이메일 가입자만)
+    if (!isOAuthUser && !pwValid) {
       toast({ title: "비밀번호 요구사항을 모두 충족해주세요", variant: "destructive" });
       return;
     }
@@ -210,12 +237,22 @@ export default function AuthModal({ onClose, initialSignupStep }: AuthModalProps
 
     setLoading(true);
     try {
-      const { data: { user: updatedUser }, error: updateError } =
-        await supabase.auth.updateUser({ password });
-      if (updateError) throw updateError;
-      if (!updatedUser) throw new Error("사용자 정보를 불러올 수 없어요");
+      let userId: string;
+      if (!isOAuthUser) {
+        // 이메일 가입자: 비밀번호 설정
+        const { data: { user: updatedUser }, error: updateError } =
+          await supabase.auth.updateUser({ password });
+        if (updateError) throw updateError;
+        if (!updatedUser) throw new Error("사용자 정보를 불러올 수 없어요");
+        userId = updatedUser.id;
+      } else {
+        // OAuth 가입자: 비밀번호 없음, 현재 세션에서 userId 획득
+        const { data: { user: currentUser } } = await supabase.auth.getUser();
+        if (!currentUser) throw new Error("사용자 정보를 불러올 수 없어요");
+        userId = currentUser.id;
+      }
 
-      const { error: profileError, code: profileErrorCode } = await completeProfile(updatedUser.id, {
+      const { error: profileError, code: profileErrorCode } = await completeProfile(userId, {
         nickname,
         birth_year:       year,
         birth_month:      month,
@@ -281,6 +318,8 @@ export default function AuthModal({ onClose, initialSignupStep }: AuthModalProps
   // ─────────────────────────────────────────────────────────────────
   // JSX
   // ─────────────────────────────────────────────────────────────────
+
+  if (!open) return null;
 
   return (
     <div
@@ -510,8 +549,8 @@ export default function AuthModal({ onClose, initialSignupStep }: AuthModalProps
               {/* ━━━━━━━━━━━━━━━━ 회원가입 Step 3: 비밀번호 + 프로필 ━━━━━━━━━━━━━━━━ */}
               {mode === "signup" && signupStep === 3 && (
                 <form onSubmit={handleSignupSubmit} className="flex flex-col gap-4">
-                  {/* 비밀번호 */}
-                  <div className="space-y-2">
+                  {/* 비밀번호 — 이메일 가입자만 */}
+                  {!isOAuthUser && <div className="space-y-2">
                     <label className="text-sm font-semibold text-foreground block mb-1.5 ml-1">
                       비밀번호 <span className="text-destructive">*</span>
                     </label>
@@ -571,7 +610,7 @@ export default function AuthModal({ onClose, initialSignupStep }: AuthModalProps
                         </div>
                       </div>
                     )}
-                  </div>
+                  </div>}
 
                   {/* 닉네임 */}
                   <div className="space-y-1">
@@ -672,7 +711,7 @@ export default function AuthModal({ onClose, initialSignupStep }: AuthModalProps
                     type="submit"
                     disabled={
                       loading ||
-                      !pwValid ||
+                      (!isOAuthUser && !pwValid) ||
                       nicknameStatus.state === "checking" ||
                       nicknameStatus.state === "taken" ||
                       nicknameStatus.state === "invalid_format"

@@ -107,6 +107,18 @@ export default function ProfilePage() {
   const [deleteReason, setDeleteReason]       = useState("");
   const [deleting, setDeleting]               = useState(false);
 
+  // 탈퇴 모달 재오픈 시 비밀번호 초기화
+  useEffect(() => {
+    if (showDeleteModal) { setDeletePw(""); setDeleteReason(""); }
+  }, [showDeleteModal]);
+
+  // 사용자 변경(다른 계정 로그인) 시 비밀번호 폼 초기화
+  useEffect(() => {
+    setCurrentPw("");
+    setNewPw("");
+    setConfirmPw("");
+  }, [user?.id]);
+
   if (!user) {
     navigate("/");
     return null;

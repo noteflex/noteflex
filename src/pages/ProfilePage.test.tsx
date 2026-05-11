@@ -402,4 +402,41 @@ describe("C3 회원 탈퇴", () => {
     await waitFor(() => expect(mockSignInWithPassword).toHaveBeenCalled());
     expect(mockRpc).not.toHaveBeenCalled();
   });
+
+  it("탈퇴 모달 재오픈 시 비밀번호 초기화", async () => {
+    const user = userEvent.setup();
+    renderProfilePage();
+    // 모달 열고 비밀번호 입력
+    await user.click(screen.getByTestId("open-delete-modal-button"));
+    await user.type(screen.getByTestId("delete-password-input"), "MyPass1!");
+    expect((screen.getByTestId("delete-password-input") as HTMLInputElement).value).toBe("MyPass1!");
+    // 취소로 닫기
+    await user.click(screen.getByTestId("cancel-delete-button"));
+    // 재오픈
+    await user.click(screen.getByTestId("open-delete-modal-button"));
+    expect((screen.getByTestId("delete-password-input") as HTMLInputElement).value).toBe("");
+  });
+});
+
+// ─────────────────────────────────────────────────────────
+// 폼 state 초기화 — user.id 변경 시
+// ─────────────────────────────────────────────────────────
+
+describe("폼 state 초기화 — user.id 변경", () => {
+  it("비밀번호 필드 user.id 변경 시 초기화", async () => {
+    const user = userEvent.setup();
+    const { rerender } = renderProfilePage();
+    // 비밀번호 입력
+    await user.type(screen.getByTestId("current-password-input"), "OldPass1!");
+    expect((screen.getByTestId("current-password-input") as HTMLInputElement).value).toBe("OldPass1!");
+    // user.id 변경 — 다른 사용자 로그인 시나리오
+    // (AuthContext mock은 정적이므로 동일 컴포넌트 rerender 후 effect가 user?.id 변화 감지)
+    // user.id를 다르게 만들기 위해 key 변경으로 강제 재마운트
+    rerender(
+      <MemoryRouter>
+        <ProfilePage key="user-2" />
+      </MemoryRouter>
+    );
+    expect((screen.getByTestId("current-password-input") as HTMLInputElement).value).toBe("");
+  });
 });

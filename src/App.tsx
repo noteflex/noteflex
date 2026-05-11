@@ -1,9 +1,11 @@
+import { useEffect } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes, useNavigate } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import Index from "./pages/Index.tsx";
 import PlayPage from "./pages/PlayPage.tsx";
@@ -32,6 +34,28 @@ import ResetPasswordPage from "./pages/ResetPasswordPage.tsx";
 import AuthCallback from "./pages/AuthCallback.tsx";
 
 const queryClient = new QueryClient();
+
+// Magic Link 콜백 탭이 전송한 AUTH_COMPLETE 메시지를 원본 탭에서 수신
+function AuthBroadcastListener() {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!("BroadcastChannel" in window)) return;
+    const channel = new BroadcastChannel("noteflex_auth");
+    channel.onmessage = async (e: MessageEvent) => {
+      if (e.data.type !== "AUTH_COMPLETE") return;
+      await supabase.auth.refreshSession();
+      if (!e.data.profile_completed) {
+        navigate("/?complete_profile=1", { replace: true });
+      } else {
+        navigate("/", { replace: true });
+      }
+    };
+    return () => channel.close();
+  }, [navigate]);
+
+  return null;
+}
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -130,6 +154,7 @@ const App = () => (
               <Route path="*" element={<NotFound />} />
             </Routes>
             <CookieBanner />
+            <AuthBroadcastListener />
           </BrowserRouter>
         </TooltipProvider>
       </AuthProvider>

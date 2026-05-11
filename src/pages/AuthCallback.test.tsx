@@ -28,6 +28,19 @@ vi.mock("react-router-dom", async () => {
   };
 });
 
+// BroadcastChannel mock
+const mockBcPostMessage = vi.fn();
+const mockBcClose       = vi.fn();
+class MockBroadcastChannel {
+  constructor(_: string) {}
+  postMessage = mockBcPostMessage;
+  close       = mockBcClose;
+}
+vi.stubGlobal("BroadcastChannel", MockBroadcastChannel);
+
+// window.close mock
+const mockWindowClose = vi.spyOn(window, "close").mockImplementation(() => {});
+
 // ─── Helpers ─────────────────────────────────────────────────────────────
 
 function setupProfileQuery(profileCompleted: boolean | null) {
@@ -35,6 +48,14 @@ function setupProfileQuery(profileCompleted: boolean | null) {
   mockEq.mockReturnValue({ single: mockSingle });
   mockSelect.mockReturnValue({ eq: mockEq });
   mockFrom.mockReturnValue({ select: mockSelect });
+}
+
+function withSession(profileCompleted: boolean | null) {
+  mockGetSession.mockResolvedValue({
+    data: { session: { user: { id: "uid-1" } } },
+    error: null,
+  });
+  setupProfileQuery(profileCompleted);
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -68,39 +89,49 @@ describe("AuthCallback", () => {
     );
   });
 
-  it("navigates to /?complete_profile=1 when profile_completed is false", async () => {
-    mockGetSession.mockResolvedValue({
-      data: { session: { user: { id: "uid-1" } } },
-      error: null,
-    });
-    setupProfileQuery(false);
+  it("BroadcastChannel.postMessage 호출 — profile_completed=false", async () => {
+    withSession(false);
     render(<AuthCallback />);
     await waitFor(() =>
-      expect(mockNavigate).toHaveBeenCalledWith("/?complete_profile=1", { replace: true })
+      expect(mockBcPostMessage).toHaveBeenCalledWith({
+        type: "AUTH_COMPLETE",
+        profile_completed: false,
+      })
     );
   });
 
-  it("navigates to / when profile_completed is true", async () => {
-    mockGetSession.mockResolvedValue({
-      data: { session: { user: { id: "uid-1" } } },
-      error: null,
-    });
-    setupProfileQuery(true);
+  it("BroadcastChannel.postMessage 호출 — profile_completed=true", async () => {
+    withSession(true);
     render(<AuthCallback />);
     await waitFor(() =>
-      expect(mockNavigate).toHaveBeenCalledWith("/", { replace: true })
+      expect(mockBcPostMessage).toHaveBeenCalledWith({
+        type: "AUTH_COMPLETE",
+        profile_completed: true,
+      })
     );
   });
 
-  it("navigates to /?complete_profile=1 when profile row is null", async () => {
-    mockGetSession.mockResolvedValue({
-      data: { session: { user: { id: "uid-1" } } },
-      error: null,
-    });
-    setupProfileQuery(null);
+  it("profile row null 이면 profile_completed=false 로 전송", async () => {
+    withSession(null);
     render(<AuthCallback />);
     await waitFor(() =>
-      expect(mockNavigate).toHaveBeenCalledWith("/?complete_profile=1", { replace: true })
+      expect(mockBcPostMessage).toHaveBeenCalledWith({
+        type: "AUTH_COMPLETE",
+        profile_completed: false,
+      })
     );
+  });
+
+  it("window.close() 호출", async () => {
+    withSession(true);
+    render(<AuthCallback />);
+    await waitFor(() => expect(mockWindowClose).toHaveBeenCalled());
+  });
+
+  it("BroadcastChannel NOT called when no session", async () => {
+    mockGetSession.mockResolvedValue({ data: { session: null }, error: null });
+    render(<AuthCallback />);
+    await waitFor(() => expect(mockNavigate).toHaveBeenCalled());
+    expect(mockBcPostMessage).not.toHaveBeenCalled();
   });
 });
