@@ -4,6 +4,29 @@
 
 ---
 
+## 2026-05-11 (월) — OTP → Magic Link 변경 ✅
+
+### Commits
+- C1: `feat(auth): OTP → Magic Link 변경` (`252a21c`)
+
+### 완료 내역
+- **AuthModal Step 2 교체**: 6자리 OTP 입력 폼 → "메일을 확인해주세요" 안내 화면 (magic-link-screen)
+- **signInWithOtp emailRedirectTo 추가**: `${origin}/auth/callback` — Supabase Magic Link 방식
+- **/auth/callback 신규 페이지**: getSession() → profile_completed 분기 → `/?complete_profile=1` 또는 `/` 리다이렉트
+- **Index.tsx `?complete_profile=1` 감지**: useSearchParams + useEffect → showAuth=true + initialSignupStep=3 자동 오픈
+- **App.tsx**: /auth/callback 라우트 등록 (ComingSoonGate 외부, reset-password와 동일 레벨)
+- **백드롭·ESC 닫기**: Magic Link 단계에서는 모달 외부 클릭·ESC로 닫기 허용 (OTP 단계는 불가 → 이제 불필요)
+- **재전송 cooldown**: 60초 setInterval, 재전송 버튼 disabled + "X초 후 재전송" 텍스트
+- **테스트**: AuthModal 테스트 전면 교체 (OTP 12개 삭제 → Magic Link 6개 + AuthCallback 6개 신규) — 769/769 PASS, tsc 0 errors
+
+### Supabase Dashboard 사용자 직접 완료 필요
+- 메일 템플릿 "Confirm signup": `{{ .Token }}` → `{{ .ConfirmationURL }}` 교체 (Magic Link 방식 전환 필수)
+
+### Apple 로그인 PENDING
+- Apple OAuth = Apple Developer 계정($99/년) 등록 후, iOS 출시 시점에 박음
+
+---
+
 ## 2026-05-11 (월) — §X-2 계정 설정 버그 정정 ✅
 
 ### Commits

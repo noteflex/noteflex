@@ -691,11 +691,13 @@ Claude Code 코드 분석 발견.
 
 ## §X. 사용자 등록·관리 영역 (출시 전 sprint, ~5일) 🔴
 
-### §X-1 완료 (2026-05-10) ✅
-- **A1** 이메일 OTP 가입 3단계 흐름 ✅ (정합 완료)
-  - Step 1: 이메일 → check_email_exists v2 (미인증 분기) → signInWithOtp
-  - Step 2: verifyOtp({ type: 'email' }) + 닫기 버튼(X) + 로그인 복귀 링크
+### §X-1 완료 (2026-05-10) ✅ + Magic Link 전환 (2026-05-11)
+- **A1** 이메일 Magic Link 가입 3단계 흐름 ✅ (OTP → Magic Link 전환 완료)
+  - Step 1: 이메일 → check_email_exists v2 (미인증 분기) → signInWithOtp(emailRedirectTo=/auth/callback)
+  - Step 2: "메일을 확인해주세요" 안내 화면 (magic-link-screen) + 60초 cooldown 재전송
+  - /auth/callback: getSession() → profile_completed 분기 → Step 3 또는 메인
   - Step 3: updateUser({ password }) + completeProfile (23505 즉시 피드백)
+  - ⚠️ Supabase 메일 템플릿 "Confirm signup": `{{ .Token }}` → `{{ .ConfirmationURL }}` 교체 필요
 - **A3** 이메일 중복 검증 + 로그인 redirect CTA ✅ (confirmed만 차단)
 - **A5** 비밀번호 강도 검증 (8자+대소문자·숫자·특수문자, 실시간 바) ✅
 - **D2** 전 테이블 RLS 검증 + 정정 (is_admin() 함수, core 4 직접 DDL + optional 5 DO block) ✅
@@ -717,7 +719,7 @@ Claude Code 코드 분석 발견.
 ### 4 Phase 분할 (각 Phase ~1일)
 
 #### Phase 1: 가입 영역 (A)
-- **A1**. 이메일 OTP 인증 (외부 이메일 가입자, 비밀번호 + OTP 조합) — Supabase `signInWithOtp`/`verifyOtp`
+- **A1**. 이메일 Magic Link 인증 ✅ — Supabase `signInWithOtp(emailRedirectTo)` + /auth/callback
 - **A3**. 이메일 중복 검증 — Supabase 기본 동작 검증 + UX 개선
 - **A4**. 닉네임 중복 검증 — DB 레벨 unique 제약 + UI 즉시 피드백 (§5.3과 통합)
 - **A5**. 비밀번호 강도 검증 — 최소 8자·대소문자·숫자 (zxcvbn 또는 자체 룰)
@@ -742,7 +744,7 @@ Claude Code 코드 분석 발견.
 - C3 닉네임 변경
 - C5 학습 이력 다운로드
 - D3 Auth events 로깅
-- Apple OAuth (iOS 출시 영역과 함께)
+- Apple OAuth (iOS 출시 영역과 함께) — Apple Developer $99/년 등록 후
 
 ### 우선순위 영역
 - **C4 탈퇴** = GDPR·PIPA 법적 의무 — 출시 전 필수
