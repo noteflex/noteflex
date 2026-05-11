@@ -107,6 +107,14 @@ export default function ProfilePage() {
   const [deleteReason, setDeleteReason]       = useState("");
   const [deleting, setDeleting]               = useState(false);
 
+  // 탈퇴 모달 비번 input name — 비표준 이름으로 password manager 자동완성 차단
+  const deletePwName  = useRef(`dpw_${Math.random().toString(36).slice(2)}`);
+  const deleteFormRef = useRef<HTMLFormElement>(null);
+
+  useEffect(() => {
+    if (showDeleteModal) deleteFormRef.current?.reset();
+  }, [showDeleteModal]);
+
   // 사용자 변경(다른 계정 로그인) 시 비밀번호 폼 초기화
   useEffect(() => {
     setCurrentPw("");
@@ -362,6 +370,7 @@ export default function ProfilePage() {
                     onChange={e => setCurrentPw(e.target.value)}
                     placeholder="현재 비밀번호"
                     required
+                    autoComplete="current-password"
                     data-testid="current-password-input"
                     className="w-full px-4 py-2.5 pr-16 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                   />
@@ -384,6 +393,7 @@ export default function ProfilePage() {
                   placeholder="새 비밀번호 (8자+·대소문자·숫자·특수문자)"
                   required
                   minLength={8}
+                  autoComplete="new-password"
                   data-testid="new-password-input"
                   className="w-full px-4 py-2.5 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                 />
@@ -556,7 +566,7 @@ export default function ProfilePage() {
               </p>
             </div>
 
-            <form onSubmit={handleDeleteAccount} className="px-6 pb-6 space-y-3">
+            <form ref={deleteFormRef} onSubmit={handleDeleteAccount} className="px-6 pb-6 space-y-3">
               <div>
                 <label className="text-sm font-semibold text-foreground block mb-1.5">
                   비밀번호 재입력
@@ -567,6 +577,8 @@ export default function ProfilePage() {
                   onChange={e => setDeletePw(e.target.value)}
                   placeholder="비밀번호를 입력해주세요"
                   required
+                  autoComplete="off"
+                  name={deletePwName.current}
                   data-testid="delete-password-input"
                   className="w-full px-4 py-2.5 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                 />

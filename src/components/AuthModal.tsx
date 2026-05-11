@@ -52,7 +52,9 @@ export default function AuthModal({ onClose, initialSignupStep, isOAuthUser = fa
 
   // Step 2 — Magic Link 재전송 cooldown
   const [resendCooldown, setResendCooldown] = useState(0);
-  const cooldownRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const cooldownRef  = useRef<ReturnType<typeof setInterval> | null>(null);
+  const loginFormRef = useRef<HTMLFormElement>(null);
+  const step3FormRef = useRef<HTMLFormElement>(null);
 
   // Step 3 — 비밀번호 + 프로필
   const [password, setPassword] = useState("");
@@ -69,6 +71,12 @@ export default function AuthModal({ onClose, initialSignupStep, isOAuthUser = fa
   const [tosAgreed, setTosAgreed] = useState(false);
   const [privacyAgreed, setPrivacyAgreed] = useState(false);
   const [marketingAgreed, setMarketingAgreed] = useState(false);
+
+  // 마운트 시 브라우저 자동완성 차단 — password manager가 채운 값을 DOM 수준에서 제거
+  useEffect(() => {
+    loginFormRef.current?.reset();
+    step3FormRef.current?.reset();
+  }, []);
 
   // ESC 닫기
   useEffect(() => {
@@ -404,13 +412,14 @@ export default function AuthModal({ onClose, initialSignupStep, isOAuthUser = fa
                     <div className="flex-1 h-px bg-border" />
                   </div>
 
-                  <form onSubmit={handleLogin} className="flex flex-col gap-3">
+                  <form ref={loginFormRef} onSubmit={handleLogin} className="flex flex-col gap-3">
                     <input
                       type="email"
                       value={email}
                       onChange={e => setEmail(e.target.value)}
                       placeholder="이메일을 입력해주세요"
                       required
+                      autoComplete="email"
                       className="w-full px-4 py-2.5 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                     />
                     <div className="relative">
@@ -420,6 +429,7 @@ export default function AuthModal({ onClose, initialSignupStep, isOAuthUser = fa
                         onChange={e => setPassword(e.target.value)}
                         placeholder="비밀번호를 입력해주세요"
                         required
+                        autoComplete="current-password"
                         className="w-full px-4 py-2.5 pr-16 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                       />
                       <button
@@ -521,7 +531,7 @@ export default function AuthModal({ onClose, initialSignupStep, isOAuthUser = fa
 
               {/* ━━━━━━━━━━━━━━━━ 회원가입 Step 3: 비밀번호 + 프로필 ━━━━━━━━━━━━━━━━ */}
               {mode === "signup" && signupStep === 3 && (
-                <form onSubmit={handleSignupSubmit} className="flex flex-col gap-4">
+                <form ref={step3FormRef} onSubmit={handleSignupSubmit} className="flex flex-col gap-4">
                   {/* 비밀번호 — 이메일 가입자만 */}
                   {!isOAuthUser && <div className="space-y-2">
                     <label className="text-sm font-semibold text-foreground block mb-1.5 ml-1">
@@ -535,6 +545,7 @@ export default function AuthModal({ onClose, initialSignupStep, isOAuthUser = fa
                         placeholder="비밀번호 (8자+·대소문자·숫자·특수문자)"
                         required
                         minLength={8}
+                        autoComplete="new-password"
                         className="w-full px-4 py-2.5 pr-16 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                       />
                       <button
