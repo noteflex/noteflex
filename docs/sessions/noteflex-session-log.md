@@ -4,6 +4,38 @@
 
 ---
 
+## 2026-05-11 (월) — 검증 영역 5건 정정 sprint ✅
+
+### Commits
+- C1: `fix(auth): 모달·폼 state 열림/사용자 변경 시 초기화` (`1e188b4`)
+
+### 검증 영역 발견 5건 → 정정
+
+| # | 영역 | 버그 | 정정 |
+|---|---|---|---|
+| 1 | AuthModal | open 시 form state 초기화 X | open prop + useEffect 초기화 |
+| 2 | 탈퇴 모달 | deletePw 재오픈 시 잔존 | showDeleteModal 변화 시 리셋 |
+| 3 | Magic Link | 새 탭 열림, 원본 탭 미인식 | BroadcastChannel(noteflex_auth) + AuthBroadcastListener |
+| 4 | Google OAuth | redirectTo = origin (callback 미통과) | redirectTo = /auth/callback |
+| 5 | ProfilePage | 이전 사용자 비번 잔존 | user.id 변화 시 pw 필드 초기화 |
+
+### 세부 내역
+- **AuthModal `open` prop**: `false→true` 전환 시 모든 form state 초기화. `initialSignupStep` 변경 시에도 초기화 (BroadcastChannel 수신 후 Step 2→Step 3 전환 지원).
+- **`isOAuthUser` prop**: Step 3 비번 필드 숨김 + `updateUser` 스킵 + `getUser`로 userId 획득.
+- **Google OAuth `redirectTo`**: `window.location.origin` → `/auth/callback` 으로 변경 (profile_completed 분기 경유).
+- **AuthCallback BroadcastChannel**: 인증 완료 → `postMessage({ type: 'AUTH_COMPLETE', profile_completed })` → `window.close()` 시도 → 실패 시 "이 탭을 닫아주세요" 안내 UI.
+- **App.tsx `AuthBroadcastListener`**: `AUTH_COMPLETE` 수신 → `refreshSession()` → `/?complete_profile=1` 또는 `/` navigate.
+- **ProfilePage 탈퇴 모달**: `showDeleteModal=true` 시 `deletePw` 초기화.
+- **ProfilePage 비밀번호 폼**: `user?.id` 변경 시 `currentPw/newPw/confirmPw` 초기화.
+
+### 검증
+- 780/780 PASS (AuthModal +7, AuthCallback 8개 전면 교체, ProfilePage +2), tsc 0 errors
+
+### PENDING
+- BroadcastChannel Safari < 15.4 미지원 — 출시 후 fallback 검증 필요 (현재 안내 메시지로 커버)
+
+---
+
 ## 2026-05-11 (월) — OTP → Magic Link 변경 ✅
 
 ### Commits

@@ -712,6 +712,14 @@ Claude Code 코드 분석 발견.
 - **B4** Refresh token 기간 검증 — 아직 PENDING
 - **C2(이메일 변경)** = 박지 X (이메일은 읽기 전용 식별자)
 
+### §X-3 ✅ 검증 영역 5건 정정 (2026-05-11)
+- **1** 모달 form state 초기화 ✅ — AuthModal `open` prop + useEffect 초기화
+- **2** 탈퇴 모달 비번 잔존 ✅ — `showDeleteModal=true` 시 deletePw 리셋
+- **3** Magic Link 새 탭 미연동 ✅ — BroadcastChannel(noteflex_auth) + AuthBroadcastListener
+- **4** Google OAuth redirectTo ✅ — `/auth/callback` 경유 (profile_completed 분기)
+- **5** ProfilePage 이전 유저 비번 잔존 ✅ — user.id 변경 시 pw 필드 초기화
+- BroadcastChannel Safari < 15.4 fallback = 출시 후 PENDING
+
 ### 점검 결과 (2026-05-09)
 
 사용자 의도: 출시 전까지 사용자 등록·관리 영역 다듬어야 함. 결제 시스템·약관과 함께 출시 신뢰의 기둥.
