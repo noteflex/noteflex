@@ -30,7 +30,6 @@ export type { PasswordChecks } from "@/lib/password";
 interface AuthModalProps {
   onClose: () => void;
   initialSignupStep?: 1 | 3;
-  open?: boolean;
   isOAuthUser?: boolean;
 }
 
@@ -39,7 +38,7 @@ type SignupStep = 1 | 2 | 3;
 
 // ─── Component ───────────────────────────────────────────────────────────
 
-export default function AuthModal({ onClose, initialSignupStep, open = true, isOAuthUser = false }: AuthModalProps) {
+export default function AuthModal({ onClose, initialSignupStep, isOAuthUser = false }: AuthModalProps) {
   const [mode, setMode] = useState<Mode>(initialSignupStep === 3 ? "signup" : "login");
   const [signupStep, setSignupStep] = useState<SignupStep>(initialSignupStep ?? 1);
   const [loading, setLoading] = useState(false);
@@ -80,30 +79,6 @@ export default function AuthModal({ onClose, initialSignupStep, open = true, isO
       if (cooldownRef.current) clearInterval(cooldownRef.current);
     };
   }, [onClose]);
-
-  // open 또는 initialSignupStep 변경 시 form state 초기화
-  // — open: false→true 전환 (모달 재오픈)
-  // — initialSignupStep 변경: BroadcastChannel 수신 후 URL 파라미터가 step 3으로 바뀔 때
-  useEffect(() => {
-    if (!open) return;
-    setEmail("");
-    setPassword("");
-    setShowPassword(false);
-    setEmailExistsError(false);
-    setForgotSent(false);
-    setResendCooldown(0);
-    if (cooldownRef.current) { clearInterval(cooldownRef.current); cooldownRef.current = null; }
-    setNickname("");
-    setNicknameConflict(false);
-    setBirthYear("");
-    setBirthMonth("");
-    setBirthDay("");
-    setTosAgreed(false);
-    setPrivacyAgreed(false);
-    setMarketingAgreed(false);
-    setMode(initialSignupStep === 3 ? "signup" : "login");
-    setSignupStep(initialSignupStep ?? 1);
-  }, [open, initialSignupStep]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const startCooldown = () => {
     if (cooldownRef.current) clearInterval(cooldownRef.current);
@@ -318,8 +293,6 @@ export default function AuthModal({ onClose, initialSignupStep, open = true, isO
   // ─────────────────────────────────────────────────────────────────
   // JSX
   // ─────────────────────────────────────────────────────────────────
-
-  if (!open) return null;
 
   return (
     <div

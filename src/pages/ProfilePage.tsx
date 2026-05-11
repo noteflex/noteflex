@@ -107,11 +107,6 @@ export default function ProfilePage() {
   const [deleteReason, setDeleteReason]       = useState("");
   const [deleting, setDeleting]               = useState(false);
 
-  // 탈퇴 모달 재오픈 시 비밀번호 초기화
-  useEffect(() => {
-    if (showDeleteModal) { setDeletePw(""); setDeleteReason(""); }
-  }, [showDeleteModal]);
-
   // 사용자 변경(다른 계정 로그인) 시 비밀번호 폼 초기화
   useEffect(() => {
     setCurrentPw("");
@@ -535,7 +530,7 @@ export default function ProfilePage() {
             <Button
               variant="destructive"
               className="w-full"
-              onClick={() => setShowDeleteModal(true)}
+              onClick={() => { setDeletePw(""); setDeleteReason(""); setShowDeleteModal(true); }}
               data-testid="open-delete-modal-button"
             >
               회원 탈퇴

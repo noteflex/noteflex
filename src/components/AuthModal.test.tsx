@@ -433,41 +433,34 @@ describe("B2 비밀번호 재설정 (forgot mode)", () => {
 });
 
 // ─────────────────────────────────────────────────────────────────────────
-// open prop — form state 초기화
+// 마운트 초기 상태
 // ─────────────────────────────────────────────────────────────────────────
 
-describe("open prop — form state 초기화", () => {
+describe("마운트 초기 상태", () => {
   beforeEach(() => { vi.clearAllMocks(); });
 
-  it("open=false 이면 모달 렌더링 안 함", () => {
-    render(<AuthModal onClose={vi.fn()} open={false} />);
-    expect(screen.queryByText("로그인")).not.toBeInTheDocument();
-    expect(screen.queryByText("돌아오신 것을 환영해요")).not.toBeInTheDocument();
+  it("기본 마운트 시 로그인 모드로 렌더링", () => {
+    render(<AuthModal onClose={vi.fn()} />);
+    expect(screen.getByText("돌아오신 것을 환영해요")).toBeInTheDocument();
   });
 
-  it("open false→true 전환 시 이메일 필드 초기화", async () => {
+  it("unmount→remount 시 이메일 필드 초기화", async () => {
     const user = userEvent.setup({ delay: null });
     const onClose = vi.fn();
-    const { rerender } = render(<AuthModal onClose={onClose} open={true} />);
-    // 이메일 입력 후 회원가입 모드 진입
+    const { unmount } = render(<AuthModal onClose={onClose} />);
+    // 회원가입 모드 진입 후 이메일 입력
     await user.click(screen.getByText("회원가입"));
     await user.type(screen.getByPlaceholderText(/사용할 이메일/), "typed@example.com");
     expect((screen.getByPlaceholderText(/사용할 이메일/) as HTMLInputElement).value).toBe("typed@example.com");
-    // 닫기
-    rerender(<AuthModal onClose={onClose} open={false} />);
-    // 다시 열기
-    rerender(<AuthModal onClose={onClose} open={true} />);
-    // 이메일 초기화
+    // 언마운트 후 재마운트 (Index.tsx가 showAuth=false→true 시 key prop으로 처리)
+    unmount();
+    render(<AuthModal onClose={onClose} />);
+    // 로그인 모드로 fresh mount — 이메일 필드 비어있음
     expect((screen.getByPlaceholderText(/이메일을 입력/) as HTMLInputElement).value).toBe("");
   });
 
-  it("initialSignupStep=3 으로 변경 시 Step 3 로 전환되고 닉네임 초기화", async () => {
-    const onClose = vi.fn();
-    const { rerender } = render(<AuthModal onClose={onClose} open={true} />);
-    // 기본: 로그인 모드
-    expect(screen.getByText("돌아오신 것을 환영해요")).toBeInTheDocument();
-    // Step 3으로 전환 (BroadcastChannel 수신 시나리오)
-    rerender(<AuthModal onClose={onClose} open={true} initialSignupStep={3} />);
+  it("initialSignupStep=3 으로 마운트 시 Step 3 렌더링, 닉네임 필드 비어있음", async () => {
+    render(<AuthModal onClose={vi.fn()} initialSignupStep={3} />);
     await waitFor(() =>
       expect(screen.getByPlaceholderText(/3~20자/)).toBeInTheDocument()
     );
@@ -487,20 +480,20 @@ describe("isOAuthUser — Step 3 비번 필드", () => {
   });
 
   it("isOAuthUser=true 이면 Step 3에 비밀번호 필드 없음", async () => {
-    render(<AuthModal onClose={vi.fn()} open={true} initialSignupStep={3} isOAuthUser={true} />);
+    render(<AuthModal onClose={vi.fn()} initialSignupStep={3} isOAuthUser={true} />);
     await waitFor(() => expect(screen.getByPlaceholderText(/3~20자/)).toBeInTheDocument());
     expect(screen.queryByPlaceholderText(/비밀번호.*8자/)).not.toBeInTheDocument();
   });
 
   it("isOAuthUser=false 이면 Step 3에 비밀번호 필드 있음", async () => {
-    render(<AuthModal onClose={vi.fn()} open={true} initialSignupStep={3} isOAuthUser={false} />);
+    render(<AuthModal onClose={vi.fn()} initialSignupStep={3} isOAuthUser={false} />);
     await waitFor(() => expect(screen.getByPlaceholderText(/비밀번호.*8자/)).toBeInTheDocument());
   });
 
   it("isOAuthUser=true 제출 시 getUser 호출하고 updateUser 미호출", async () => {
     const user = userEvent.setup({ delay: null });
     const onClose = vi.fn();
-    render(<AuthModal onClose={onClose} open={true} initialSignupStep={3} isOAuthUser={true} />);
+    render(<AuthModal onClose={onClose} initialSignupStep={3} isOAuthUser={true} />);
     await waitFor(() => expect(screen.getByPlaceholderText(/3~20자/)).toBeInTheDocument());
     await user.type(screen.getByPlaceholderText(/3~20자/), "oauthuser");
     await user.type(screen.getAllByPlaceholderText(/YYYY/)[0], "1998");
@@ -516,7 +509,7 @@ describe("isOAuthUser — Step 3 비번 필드", () => {
 
   it("Google OAuth redirectTo includes /auth/callback", async () => {
     const user = userEvent.setup({ delay: null });
-    render(<AuthModal onClose={vi.fn()} open={true} />);
+    render(<AuthModal onClose={vi.fn()} />);
     await user.click(screen.getByText("Google로 계속하기"));
     await waitFor(() =>
       expect(mockSignInOAuth).toHaveBeenCalledWith(

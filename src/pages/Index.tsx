@@ -108,9 +108,9 @@ export default function Index() {
       style={{ background: "radial-gradient(circle at top, #ffffff 0%, #f8f5e4 100%)" }}
     >
       <Header right={pageHeaderRight} />
-      {GAME_ENABLED && (
+      {showAuth && GAME_ENABLED && (
         <AuthModal
-          open={showAuth}
+          key={completeProfile ? "auth-step3" : "auth-normal"}
           onClose={handleAuthClose}
           initialSignupStep={completeProfile ? 3 : undefined}
           isOAuthUser={user?.app_metadata?.provider === "google"}
