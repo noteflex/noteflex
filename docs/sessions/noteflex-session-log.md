@@ -4,6 +4,35 @@
 
 ---
 
+## 2026-05-12 (화) — 13일차 블로그 3편 ✅
+
+### Commits
+- C1: `feat(blog): §5-65 취미 연주자 (ko·en)` (`c71917d`)
+- C2: `feat(blog): §4-48 빠른 음표 인식 (ko·en) — 14일차 차용` (`9265b35`)
+- C3: `feat(blog): §1-7 어른의 초견 (ko·en) — 14일차 차용` (`db1a06d`)
+- C4: `docs: 13일차 블로그 3편 ✅`
+
+### 완료 내역
+- §5-65 취미 연주자 (Bonneville-Roussy et al. 2011 DOI:10.1177/0305735609352441). 이미지: Renoir «Young Girls at the Piano» (1892) + Adolph Menzel «Das Flötenkonzert Friedrichs des Großen» (1850-52). 둘 다 PD.
+- §4-48 빠른 음표 인식 (Goolsby 1994 DOI:10.2307/40285757 + Rayner 1998 DOI:10.1037/0033-2909.124.3.372). 이미지: Reading Fixations & Saccades diagram + Wilhelm Wundt 초상. ← 14일차 차용.
+- §1-7 어른의 초견 (Bugos et al. 2007 DOI:10.1080/13607860601086504 + Wan & Schlaug 2010 DOI:10.1177/1073858410377805). 이미지: Manet «Madame Manet au Piano» (1868) + Vermeer «The Music Lesson» (1662-65). ← 14일차 차용.
+- 13일차 신규 작성 슬롯 = §5-65 단 1개. §3-43(12일차 차용)·§8-87(10일차 차용) advance write 박혀있어 14일차 §4-48·§1-7 두 개 차용.
+
+### 검증
+- 6 이미지 curl HTTP 200 ✓ (Wikimedia Commons API로 파일명 확인 + UA 헤더로 429 회피)
+- 모든 이미지 = Wikimedia Commons (메모리 #13 인증·공인 사이트)
+- Hook 영역 = 텍스트만, 첫 이미지 = Scene 영역 (메모리 #13 패턴)
+- 학술 인용 5개 DOI 박음
+- 누적 64편 (한 32 + 영 32)
+- §1.1 표 13·14일차 ✅ 갱신, §6 v18 박음
+
+### 다음 세션
+- §X-1 검증 정정 sprint (autofill·Step 3 흐름·trigger·코드) — audit 문서 §6 정정 우선순위 기반
+- Pro 업그레이드 + Resend SMTP 연동 (audit 문서 §5 검증 환경 권장)
+- profile_completed 마이그레이션 drift 정정 (audit 문서 Bug #4)
+
+---
+
 ## 2026-05-11 (월) — 검증 영역 5건 정정 sprint ✅
 
 ### Commits
