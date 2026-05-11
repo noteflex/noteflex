@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import Header from "@/components/Header";
 import { initSound } from "@/lib/sound";
 import AuthModal from "@/components/AuthModal";
@@ -38,8 +38,25 @@ export default function Index() {
   const { user, profile, loading: authLoading, signOut } = useAuth();
   const t = useT();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
 
+  // Magic Link callback: ?complete_profile=1 → AuthModal Step 3 자동 오픈
+  const completeProfile = searchParams.get("complete_profile") === "1";
   const [showAuth, setShowAuth] = useState(false);
+
+  useEffect(() => {
+    if (completeProfile && GAME_ENABLED) {
+      setShowAuth(true);
+    }
+  }, [completeProfile]);
+
+  const handleAuthClose = () => {
+    setShowAuth(false);
+    if (completeProfile) {
+      searchParams.delete("complete_profile");
+      setSearchParams(searchParams, { replace: true });
+    }
+  };
 
   const handleStart = async () => {
     initSound().catch(() => {});
@@ -91,7 +108,12 @@ export default function Index() {
       style={{ background: "radial-gradient(circle at top, #ffffff 0%, #f8f5e4 100%)" }}
     >
       <Header right={pageHeaderRight} />
-      {showAuth && GAME_ENABLED && <AuthModal onClose={() => setShowAuth(false)} />}
+      {showAuth && GAME_ENABLED && (
+        <AuthModal
+          onClose={handleAuthClose}
+          initialSignupStep={completeProfile ? 3 : undefined}
+        />
+      )}
 
       <div className="safe-area-page flex-1 flex flex-col items-center justify-center px-4">
         <h1

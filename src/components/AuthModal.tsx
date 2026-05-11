@@ -29,6 +29,7 @@ export type { PasswordChecks } from "@/lib/password";
 
 interface AuthModalProps {
   onClose: () => void;
+  initialSignupStep?: 1 | 3;
 }
 
 type Mode = "login" | "signup" | "forgot";
@@ -36,9 +37,9 @@ type SignupStep = 1 | 2 | 3;
 
 // ─── Component ───────────────────────────────────────────────────────────
 
-export default function AuthModal({ onClose }: AuthModalProps) {
-  const [mode, setMode] = useState<Mode>("login");
-  const [signupStep, setSignupStep] = useState<SignupStep>(1);
+export default function AuthModal({ onClose, initialSignupStep }: AuthModalProps) {
+  const [mode, setMode] = useState<Mode>(initialSignupStep === 3 ? "signup" : "login");
+  const [signupStep, setSignupStep] = useState<SignupStep>(initialSignupStep ?? 1);
   const [loading, setLoading] = useState(false);
 
   // 공통
@@ -48,10 +49,7 @@ export default function AuthModal({ onClose }: AuthModalProps) {
   // Forgot password
   const [forgotSent, setForgotSent] = useState(false);
 
-  // Step 2 — OTP
-  const [otpCode, setOtpCode] = useState("");
-  const [otpLoading, setOtpLoading] = useState(false);
-  const [otpError, setOtpError] = useState("");
+  // Step 2 — Magic Link 재전송 cooldown
   const [resendCooldown, setResendCooldown] = useState(0);
   const cooldownRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -71,9 +69,15 @@ export default function AuthModal({ onClose }: AuthModalProps) {
   const [privacyAgreed, setPrivacyAgreed] = useState(false);
   const [marketingAgreed, setMarketingAgreed] = useState(false);
 
+  // ESC 닫기
   useEffect(() => {
-    return () => { if (cooldownRef.current) clearInterval(cooldownRef.current); };
-  }, []);
+    const onKeyDown = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+      if (cooldownRef.current) clearInterval(cooldownRef.current);
+    };
+  }, [onClose]);
 
   const startCooldown = () => {
     if (cooldownRef.current) clearInterval(cooldownRef.current);
@@ -139,10 +143,13 @@ export default function AuthModal({ onClose }: AuthModalProps) {
         setLoading(false);
         return;
       }
-      // exists=false (신규) 또는 exists && !confirmed (미인증 재시도) → OTP 전송
+      // exists=false (신규) 또는 exists && !confirmed (미인증 재시도) → Magic Link 전송
       const { error } = await supabase.auth.signInWithOtp({
         email,
-        options: { shouldCreateUser: true },
+        options: {
+          shouldCreateUser: true,
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
+        },
       });
       if (error) throw error;
       setSignupStep(2);
@@ -154,50 +161,20 @@ export default function AuthModal({ onClose }: AuthModalProps) {
     }
   };
 
-  // ───────── Step 2: OTP 인증 → Step 3 ─────────
-  const handleOtpVerify = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (otpCode.length !== 6) return;
-    setOtpLoading(true);
-    setOtpError("");
-    try {
-      const { data, error } = await supabase.auth.verifyOtp({
-        email,
-        token: otpCode,
-        type: "email",
-      });
-      if (error) throw error;
-      if (!data.user) throw new Error("인증 실패");
-      setOtpCode("");
-      setSignupStep(3);
-    } catch (err: any) {
-      const msg = (err.message ?? "").toLowerCase();
-      if (msg.includes("expired") || (err as any).code === "otp_expired") {
-        setOtpError("코드가 만료됐어요. 재전송 버튼을 눌러주세요.");
-      } else if (
-        msg.includes("invalid") ||
-        msg.includes("token") ||
-        (err as any).code === "otp_disabled"
-      ) {
-        setOtpError("코드가 맞지 않아요. 다시 확인해주세요.");
-      } else {
-        setOtpError("인증에 실패했어요. 잠시 후 다시 시도해주세요.");
-      }
-    } finally {
-      setOtpLoading(false);
-    }
-  };
-
-  // ───────── Step 2: 재전송 ─────────
-  const handleResendOtp = async () => {
+  // ───────── Step 2: Magic Link 재전송 ─────────
+  const handleResendMagicLink = async () => {
     if (resendCooldown > 0) return;
     try {
-      const { error } = await supabase.auth.resend({ type: "email", email });
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options: {
+          shouldCreateUser: true,
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
+        },
+      });
       if (error) throw error;
-      setOtpCode("");
-      setOtpError("");
       startCooldown();
-      toast({ title: "코드를 재전송했어요", description: "이메일함을 확인해주세요." });
+      toast({ title: "메일을 재전송했어요", description: "이메일함을 확인해주세요." });
     } catch (err: any) {
       toast({ title: "재전송 실패", description: err.message, variant: "destructive" });
     }
@@ -298,8 +275,6 @@ export default function AuthModal({ onClose }: AuthModalProps) {
     setMode(next);
     setSignupStep(1);
     setEmailExistsError(false);
-    setOtpCode("");
-    setOtpError("");
     setForgotSent(false);
   };
 
@@ -308,80 +283,44 @@ export default function AuthModal({ onClose }: AuthModalProps) {
   // ─────────────────────────────────────────────────────────────────
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 animate-pop-in">
-      <div className="bg-card border border-border rounded-2xl shadow-2xl w-full max-w-sm mx-4 max-h-[90vh] overflow-y-auto">
-
-        {/* ━━━━━━━━━━━━━━━━ Step 2: OTP ━━━━━━━━━━━━━━━━ */}
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 animate-pop-in"
+      onClick={onClose}
+    >
+      <div
+        className="bg-card border border-border rounded-2xl shadow-2xl w-full max-w-sm mx-4 max-h-[90vh] overflow-y-auto"
+        onClick={e => e.stopPropagation()}
+      >
+        {/* ━━━━━━━━━━━━━━━━ Step 2: Magic Link 안내 ━━━━━━━━━━━━━━━━ */}
         {mode === "signup" && signupStep === 2 ? (
-          <div className="px-6 py-8 flex flex-col items-center gap-5 relative">
-            {/* 명시적 닫기 (로그인 복귀) */}
-            <button
-              type="button"
-              onClick={() => switchMode("login")}
-              className="absolute top-4 right-4 p-1.5 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
-              data-testid="otp-close-button"
-            >
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                <path d="M12 4L4 12M4 4L12 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            </button>
-            <div className="text-5xl">📧</div>
-            <div className="text-center">
-              <h3 className="text-lg font-bold text-foreground">이메일 인증</h3>
-              <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
-                <span className="font-medium text-foreground">{email}</span>로<br />
-                6자리 인증 코드를 보냈어요
+          <div className="px-6 py-10 flex flex-col items-center gap-5" data-testid="magic-link-screen">
+            <div className="text-5xl">✉️</div>
+            <div className="text-center space-y-2">
+              <h3 className="text-lg font-bold text-foreground">메일을 확인해주세요</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                <span className="font-medium text-foreground" data-testid="magic-link-email">{email}</span>로<br />
+                인증 메일을 보냈어요.<br />
+                메일 속 링크를 클릭하면 가입이 이어집니다.
               </p>
             </div>
 
-            <form onSubmit={handleOtpVerify} className="w-full flex flex-col gap-3">
-              <input
-                type="text"
-                inputMode="numeric"
-                value={otpCode}
-                onChange={e => {
-                  setOtpCode(e.target.value.replace(/\D/g, "").slice(0, 6));
-                  setOtpError("");
-                }}
-                placeholder="000000"
-                maxLength={6}
-                autoFocus
-                autoComplete="one-time-code"
-                className="w-full px-4 py-3 rounded-xl border border-input bg-background text-2xl text-center tracking-[0.4em] font-mono focus:outline-none focus:ring-2 focus:ring-ring"
-              />
+            <p className="text-xs text-muted-foreground">스팸함도 확인해보세요 📁</p>
 
-              {otpError && (
-                <p className="text-xs text-destructive text-center">{otpError}</p>
-              )}
-
-              <button
-                type="submit"
-                disabled={otpCode.length !== 6 || otpLoading}
-                className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-semibold text-sm shadow hover:shadow-md transition-all active:scale-95 disabled:opacity-50"
-              >
-                {otpLoading ? "확인 중..." : "인증하기"}
-              </button>
-            </form>
-
-            <div className="text-center space-y-1.5">
-              <p className="text-xs text-muted-foreground">코드를 받지 못했나요?</p>
-              <button
-                type="button"
-                onClick={handleResendOtp}
-                disabled={resendCooldown > 0}
-                className="text-sm font-semibold text-primary disabled:text-muted-foreground disabled:cursor-not-allowed transition-colors"
-                data-testid="resend-button"
-              >
-                {resendCooldown > 0 ? `${resendCooldown}초 후 재전송` : "코드 재전송"}
-              </button>
-              <p className="text-xs text-muted-foreground">스팸함도 확인해보세요 📁</p>
-            </div>
+            <button
+              type="button"
+              onClick={handleResendMagicLink}
+              disabled={resendCooldown > 0}
+              className="text-sm font-semibold text-primary disabled:text-muted-foreground disabled:cursor-not-allowed transition-colors"
+              data-testid="resend-button"
+            >
+              {resendCooldown > 0 ? `${resendCooldown}초 후 재전송` : "메일 재전송"}
+            </button>
 
             <button
               type="button"
               onClick={() => switchMode("login")}
               className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-              data-testid="otp-goto-login"
+              data-testid="magic-link-goto-login"
             >
               이미 가입했나요?{" "}
               <span className="text-primary font-semibold underline underline-offset-2">로그인</span>
@@ -422,7 +361,7 @@ export default function AuthModal({ onClose }: AuthModalProps) {
                   </div>
                   <div className="w-full flex justify-between text-[10px] font-medium">
                     <span className={signupStep === 1 ? "text-primary font-bold" : "text-muted-foreground"}>① 이메일</span>
-                    <span className="text-muted-foreground">② 인증</span>
+                    <span className="text-muted-foreground">② 메일 확인</span>
                     <span className={signupStep === 3 ? "text-primary font-bold" : "text-muted-foreground"}>③ 프로필</span>
                   </div>
                 </div>

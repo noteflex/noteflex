@@ -1,13 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, act, fireEvent } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import AuthModal, { analyzePassword } from "./AuthModal";
 
 // ─── Mocks ────────────────────────────────────────────────────────────────
 
 const mockSignInWithOtp         = vi.fn().mockResolvedValue({ error: null });
-const mockVerifyOtp             = vi.fn();
-const mockResend                = vi.fn();
 const mockSignInOAuth           = vi.fn();
 const mockSignInPassword        = vi.fn();
 const mockUpdateUser            = vi.fn().mockResolvedValue({ data: { user: { id: "uid-1" } }, error: null });
@@ -19,8 +17,6 @@ vi.mock("@/integrations/supabase/client", () => ({
       signInWithOAuth:         (...args: any[]) => mockSignInOAuth(...args),
       signInWithPassword:      (...args: any[]) => mockSignInPassword(...args),
       signInWithOtp:           (...args: any[]) => mockSignInWithOtp(...args),
-      verifyOtp:               (...args: any[]) => mockVerifyOtp(...args),
-      resend:                  (...args: any[]) => mockResend(...args),
       updateUser:              (...args: any[]) => mockUpdateUser(...args),
       resetPasswordForEmail:   (...args: any[]) => mockResetPasswordForEmail(...args),
     },
@@ -54,7 +50,6 @@ vi.mock("@/hooks/use-toast", () => ({ toast: vi.fn() }));
 
 // ─── Helpers ─────────────────────────────────────────────────────────────
 
-// 회원가입 모드 진입 (Step 1)
 async function enterSignupMode() {
   const user = userEvent.setup({ delay: null });
   const onClose = vi.fn();
@@ -63,20 +58,20 @@ async function enterSignupMode() {
   return { user, onClose };
 }
 
-// Step 1 이메일 제출 → OTP 화면 (Step 2)
-async function goToOtpStep() {
+// Step 1 이메일 제출 → Magic Link 안내 화면 (Step 2)
+async function goToMagicLinkStep() {
   const { user, onClose } = await enterSignupMode();
   await user.type(screen.getByPlaceholderText(/사용할 이메일/), "test@example.com");
   await user.click(screen.getByRole("button", { name: "다음" }));
-  await waitFor(() => expect(screen.getByPlaceholderText("000000")).toBeInTheDocument());
+  await waitFor(() => expect(screen.getByTestId("magic-link-screen")).toBeInTheDocument());
   return { user, onClose };
 }
 
-// OTP 인증 → 프로필+비밀번호 폼 (Step 3)
-async function goToProfileStep() {
-  const { user, onClose } = await goToOtpStep();
-  await user.type(screen.getByPlaceholderText("000000"), "123456");
-  await user.click(screen.getByRole("button", { name: "인증하기" }));
+// Step 3 직접 렌더 (initialSignupStep=3, callback 흐름)
+async function renderAtStep3() {
+  const user = userEvent.setup({ delay: null });
+  const onClose = vi.fn();
+  render(<AuthModal onClose={onClose} initialSignupStep={3} />);
   await waitFor(() => expect(screen.getByPlaceholderText(/3~20자/)).toBeInTheDocument());
   return { user, onClose };
 }
@@ -138,45 +133,37 @@ describe("analyzePassword", () => {
 });
 
 // ─────────────────────────────────────────────────────────────────────────
-// Password strength UI (Step 3)
+// Password strength UI (Step 3 — initialSignupStep=3)
 // ─────────────────────────────────────────────────────────────────────────
 
 describe("Password strength UI", () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-    mockCheckEmailExists.mockResolvedValue({ exists: false, confirmed: false });
-    mockSignInWithOtp.mockResolvedValue({ error: null });
-    mockVerifyOtp.mockResolvedValue({
-      data: { user: { id: "uid-1" }, session: {} },
-      error: null,
-    });
-  });
+  beforeEach(() => { vi.clearAllMocks(); });
 
   it("does not show strength bar when password is empty", async () => {
-    await goToProfileStep();
+    await renderAtStep3();
     expect(screen.queryByTestId("password-strength")).not.toBeInTheDocument();
   });
 
   it("shows strength section when password has characters", async () => {
-    const { user } = await goToProfileStep();
+    const { user } = await renderAtStep3();
     await user.type(screen.getByPlaceholderText(/비밀번호.*8자/), "a");
     expect(screen.getByTestId("password-strength")).toBeInTheDocument();
   });
 
   it("disables 가입완료 button when password is weak", async () => {
-    const { user } = await goToProfileStep();
+    const { user } = await renderAtStep3();
     await user.type(screen.getByPlaceholderText(/비밀번호.*8자/), "weak");
     expect(screen.getByRole("button", { name: /가입 완료/ })).toBeDisabled();
   });
 
   it("enables 가입완료 button when password meets all 5 criteria", async () => {
-    const { user } = await goToProfileStep();
+    const { user } = await renderAtStep3();
     await user.type(screen.getByPlaceholderText(/비밀번호.*8자/), "Test1234!");
     expect(screen.getByRole("button", { name: /가입 완료/ })).not.toBeDisabled();
   });
 
   it("shows 매우 강함 label for score 5 password", async () => {
-    const { user } = await goToProfileStep();
+    const { user } = await renderAtStep3();
     await user.type(screen.getByPlaceholderText(/비밀번호.*8자/), "Test1234!");
     expect(screen.getByText("매우 강함")).toBeInTheDocument();
   });
@@ -205,7 +192,7 @@ describe("Email duplicate handling", () => {
     expect(screen.getByText(/이미 가입된 이메일/)).toBeInTheDocument();
   });
 
-  it("proceeds to OTP step when email exists but unconfirmed", async () => {
+  it("proceeds to magic link step when email exists but unconfirmed", async () => {
     mockCheckEmailExists.mockResolvedValueOnce({ exists: true, confirmed: false });
     const { user } = await enterSignupMode();
 
@@ -213,12 +200,11 @@ describe("Email duplicate handling", () => {
     await user.click(screen.getByRole("button", { name: "다음" }));
 
     await waitFor(() =>
-      expect(screen.getByPlaceholderText("000000")).toBeInTheDocument()
+      expect(screen.getByTestId("magic-link-screen")).toBeInTheDocument()
     );
-    expect(mockSignInWithOtp).toHaveBeenCalledWith({
-      email: "pending@example.com",
-      options: { shouldCreateUser: true },
-    });
+    expect(mockSignInWithOtp).toHaveBeenCalledWith(
+      expect.objectContaining({ email: "pending@example.com" })
+    );
   });
 
   it("switches to login mode when 로그인하기 CTA is clicked", async () => {
@@ -250,133 +236,112 @@ describe("Email duplicate handling", () => {
 });
 
 // ─────────────────────────────────────────────────────────────────────────
-// OTP 인증 흐름 (Step 2)
+// Magic Link Step 2 흐름
 // ─────────────────────────────────────────────────────────────────────────
 
-describe("OTP step", () => {
+describe("Magic Link step", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockCheckEmailExists.mockResolvedValue({ exists: false, confirmed: false });
     mockSignInWithOtp.mockResolvedValue({ error: null });
   });
 
-  it("shows OTP step after signInWithOtp succeeds", async () => {
-    await goToOtpStep();
-    expect(screen.getByText("이메일 인증")).toBeInTheDocument();
-    expect(screen.getByPlaceholderText("000000")).toBeInTheDocument();
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
-  it("hides 닫기 button during OTP step", async () => {
-    await goToOtpStep();
-    expect(screen.queryByRole("button", { name: "닫기" })).not.toBeInTheDocument();
+  it("signInWithOtp 호출 시 emailRedirectTo /auth/callback 포함", async () => {
+    await goToMagicLinkStep();
+    expect(mockSignInWithOtp).toHaveBeenCalledWith(
+      expect.objectContaining({
+        email: "test@example.com",
+        options: expect.objectContaining({
+          emailRedirectTo: expect.stringContaining("/auth/callback"),
+        }),
+      })
+    );
   });
 
-  it("shows cooldown text immediately after OTP step appears", async () => {
-    await goToOtpStep();
+  it("이메일 제출 후 magic-link-screen 표시", async () => {
+    await goToMagicLinkStep();
+    expect(screen.getByTestId("magic-link-screen")).toBeInTheDocument();
+    expect(screen.getByText("메일을 확인해주세요")).toBeInTheDocument();
+  });
+
+  it("magic link 안내 화면에 입력한 이메일 주소 표시", async () => {
+    await goToMagicLinkStep();
+    expect(screen.getByTestId("magic-link-email").textContent).toBe("test@example.com");
+  });
+
+  it("resennd 버튼 cooldown 직후 비활성화", async () => {
+    await goToMagicLinkStep();
     await waitFor(() => screen.getByTestId("resend-button"));
+    expect(screen.getByTestId("resend-button")).toBeDisabled();
     expect(screen.getByTestId("resend-button").textContent).toMatch(/초 후 재전송/);
   });
 
-  it("disables resend button during cooldown", async () => {
-    await goToOtpStep();
-    await waitFor(() => screen.getByTestId("resend-button"));
-    expect(screen.getByTestId("resend-button")).toBeDisabled();
-  });
+  it("재전송 시 signInWithOtp 재호출 + emailRedirectTo 포함", async () => {
+    // fake timers를 render 전에 설정해야 setInterval도 fake로 생성됨
+    vi.useFakeTimers();
+    render(<AuthModal onClose={vi.fn()} />);
 
-  it("calls verifyOtp with type 'email' on code submit", async () => {
-    mockVerifyOtp.mockResolvedValueOnce({
-      data: { user: { id: "uid-1" }, session: {} },
-      error: null,
-    });
-    const { user } = await goToOtpStep();
-    await user.type(screen.getByPlaceholderText("000000"), "123456");
-    await user.click(screen.getByRole("button", { name: "인증하기" }));
-
-    await waitFor(() => {
-      expect(mockVerifyOtp).toHaveBeenCalledWith({
-        email: "test@example.com",
-        token: "123456",
-        type: "email",
+    // fireEvent를 사용하면 fake timer 환경에서도 userEvent 호환성 문제 없음
+    await act(async () => { fireEvent.click(screen.getByText("회원가입")); });
+    await act(async () => {
+      fireEvent.change(screen.getByPlaceholderText(/사용할 이메일/), {
+        target: { value: "test@example.com" },
       });
     });
-  });
-
-  it("advances to profile step after OTP verified", async () => {
-    mockVerifyOtp.mockResolvedValueOnce({
-      data: { user: { id: "uid-1" }, session: {} },
-      error: null,
+    // "다음" 버튼 클릭 → handleStep1Next(checkEmailExists + signInWithOtp) 실행
+    await act(async () => {
+      fireEvent.submit(screen.getByRole("button", { name: "다음" }).closest("form")!);
     });
-    const { user } = await goToOtpStep();
-    await user.type(screen.getByPlaceholderText("000000"), "123456");
-    await user.click(screen.getByRole("button", { name: "인증하기" }));
+    // checkEmailExists → signInWithOtp → setSignupStep(2) + startCooldown() 순차 resolve
+    await act(async () => { await Promise.resolve(); });
+    await act(async () => { await Promise.resolve(); });
 
-    await waitFor(() =>
-      expect(screen.getByPlaceholderText(/3~20자/)).toBeInTheDocument()
+    expect(screen.getByTestId("magic-link-screen")).toBeInTheDocument();
+
+    // cooldown 60초 해제
+    await act(async () => { vi.advanceTimersByTime(61_000); });
+
+    expect(screen.getByTestId("resend-button")).not.toBeDisabled();
+
+    await act(async () => {
+      fireEvent.click(screen.getByTestId("resend-button"));
+    });
+    await act(async () => { await Promise.resolve(); });
+
+    expect(mockSignInWithOtp).toHaveBeenCalledTimes(2);
+    expect(mockSignInWithOtp).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        options: expect.objectContaining({
+          emailRedirectTo: expect.stringContaining("/auth/callback"),
+        }),
+      })
     );
   });
 
-  it("shows expiry error when verifyOtp returns expired message", async () => {
-    mockVerifyOtp.mockResolvedValueOnce({
-      data: { user: null, session: null },
-      error: { message: "OTP has expired", code: "otp_expired" },
-    });
-    const { user } = await goToOtpStep();
-    await user.type(screen.getByPlaceholderText("000000"), "999999");
-    await user.click(screen.getByRole("button", { name: "인증하기" }));
-
-    await waitFor(() =>
-      expect(screen.getByText(/만료됐어요/)).toBeInTheDocument()
-    );
-  });
-
-  it("shows invalid-code error when verifyOtp returns invalid token", async () => {
-    mockVerifyOtp.mockResolvedValueOnce({
-      data: { user: null, session: null },
-      error: { message: "invalid token" },
-    });
-    const { user } = await goToOtpStep();
-    await user.type(screen.getByPlaceholderText("000000"), "000000");
-    await user.click(screen.getByRole("button", { name: "인증하기" }));
-
-    await waitFor(() =>
-      expect(screen.getByText(/맞지 않아요/)).toBeInTheDocument()
-    );
-  });
-
-  it("shows generic error on network failure", async () => {
-    mockVerifyOtp.mockResolvedValueOnce({
-      data: { user: null, session: null },
-      error: { message: "network error" },
-    });
-    const { user } = await goToOtpStep();
-    await user.type(screen.getByPlaceholderText("000000"), "111111");
-    await user.click(screen.getByRole("button", { name: "인증하기" }));
-
-    await waitFor(() =>
-      expect(screen.getByText(/다시 시도해주세요/)).toBeInTheDocument()
-    );
+  it("로그인 링크 클릭 시 login 모드 전환", async () => {
+    const { user } = await goToMagicLinkStep();
+    await user.click(screen.getByTestId("magic-link-goto-login"));
+    expect(screen.getByText("돌아오신 것을 환영해요")).toBeInTheDocument();
   });
 });
 
 // ─────────────────────────────────────────────────────────────────────────
-// 프로필 완성 (Step 3)
+// 프로필 완성 (Step 3 — initialSignupStep=3)
 // ─────────────────────────────────────────────────────────────────────────
 
 describe("Profile step (Step 3)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockCheckEmailExists.mockResolvedValue({ exists: false, confirmed: false });
-    mockSignInWithOtp.mockResolvedValue({ error: null });
-    mockVerifyOtp.mockResolvedValue({
-      data: { user: { id: "uid-1" }, session: {} },
-      error: null,
-    });
     mockUpdateUser.mockResolvedValue({ data: { user: { id: "uid-1" } }, error: null });
     mockCompleteProfile.mockResolvedValue({ error: null });
   });
 
   it("calls updateUser with password on submit", async () => {
-    const { user } = await goToProfileStep();
+    const { user } = await renderAtStep3();
     await submitProfileStep(user);
 
     await waitFor(() =>
@@ -385,14 +350,14 @@ describe("Profile step (Step 3)", () => {
   });
 
   it("calls completeProfile after updateUser succeeds", async () => {
-    const { user } = await goToProfileStep();
+    const { user } = await renderAtStep3();
     await submitProfileStep(user);
 
     await waitFor(() => expect(mockCompleteProfile).toHaveBeenCalledTimes(1));
   });
 
   it("calls onClose after successful submit", async () => {
-    const { user, onClose } = await goToProfileStep();
+    const { user, onClose } = await renderAtStep3();
     await submitProfileStep(user);
 
     await waitFor(() => expect(onClose).toHaveBeenCalled());
@@ -400,48 +365,13 @@ describe("Profile step (Step 3)", () => {
 
   it("shows nickname conflict error on 23505 from completeProfile", async () => {
     mockCompleteProfile.mockResolvedValueOnce({ error: "duplicate key", code: "23505" });
-    const { user } = await goToProfileStep();
+    const { user } = await renderAtStep3();
     await submitProfileStep(user);
 
     await waitFor(() =>
       expect(screen.getByTestId("nickname-conflict-error")).toBeInTheDocument()
     );
-    // 모달은 Step 3에 머무름 (onClose 미호출)
     expect(screen.getByRole("button", { name: /가입 완료/ })).toBeInTheDocument();
-  });
-});
-
-// ─────────────────────────────────────────────────────────────────────────
-// OTP 모달 닫기 버튼 (Step 2)
-// ─────────────────────────────────────────────────────────────────────────
-
-describe("OTP step close button", () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-    mockCheckEmailExists.mockResolvedValue({ exists: false, confirmed: false });
-    mockSignInWithOtp.mockResolvedValue({ error: null });
-  });
-
-  it("shows close button during OTP step", async () => {
-    await goToOtpStep();
-    expect(screen.getByTestId("otp-close-button")).toBeInTheDocument();
-  });
-
-  it("clicking close button switches to login mode", async () => {
-    const { user } = await goToOtpStep();
-    await user.click(screen.getByTestId("otp-close-button"));
-    expect(screen.getByText("로그인")).toBeInTheDocument();
-  });
-
-  it("shows login link during OTP step", async () => {
-    await goToOtpStep();
-    expect(screen.getByTestId("otp-goto-login")).toBeInTheDocument();
-  });
-
-  it("clicking login link switches to login mode", async () => {
-    const { user } = await goToOtpStep();
-    await user.click(screen.getByTestId("otp-goto-login"));
-    expect(screen.getByText("로그인")).toBeInTheDocument();
   });
 });
 
@@ -459,7 +389,6 @@ describe("B2 비밀번호 재설정 (forgot mode)", () => {
     const user = userEvent.setup({ delay: null });
     const onClose = vi.fn();
     render(<AuthModal onClose={onClose} />);
-    // "비밀번호를 잊으셨나요?" link is in login mode
     await user.click(screen.getByTestId("forgot-password-link"));
     return { user, onClose };
   }
