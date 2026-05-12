@@ -50,6 +50,11 @@
   - URL 접두사: https://noteflex.app
   - HTML 파일 인증 (public/google8962581177005031.html)
   - 메인·블로그 글 URL 색인 요청 (데이터 처리 중)
+- **SEO 인프라 sprint (3 commits: 777946f·ea7e7f8·14f52ad)**
+  - index.html 메타 태그 보강 (OG·Twitter Card·canonical·apple-mobile-web-app)
+  - sitemap.xml 자동 생성 (vite-plugin-sitemap, 빌드 시점, 74 URLs)
+  - robots.txt 박음 (공개 Allow + 보호 Disallow + Sitemap 위치)
+  - PENDING: public/og-image.png (1200×630) 디자인
 
 ### 검증 결과
 - 신규 가입 → 매직링크 → 자동 로그인 ✓

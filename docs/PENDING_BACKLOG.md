@@ -7,6 +7,16 @@
 
 ---
 
+## 2026-05-12 추가 (SEO 인프라)
+
+### 디자인 영역
+- [ ] **OG 이미지 디자인** (1200×630, public/og-image.png)
+  - 소셜 공유 시 표시 (Twitter Card·Facebook·KakaoTalk)
+  - 로고 + 슬로건 + 시각 요소
+  - 현재 og:image 태그는 박혀있음 — 파일만 없음
+
+---
+
 ## 2026-05-12 추가 (Auth 마라톤 + 이메일 시스템 + hard_delete)
 
 ### 출시 후 1~2주
