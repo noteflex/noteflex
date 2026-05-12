@@ -21,14 +21,12 @@ vi.mock("react-router-dom", async (importOriginal) => {
 const mockSupabaseUpdateEq = vi.fn().mockResolvedValue({ error: null });
 const mockSupabaseUpdate   = vi.fn().mockReturnValue({ eq: mockSupabaseUpdateEq });
 const mockSignInWithOtp    = vi.fn().mockResolvedValue({ error: null });
-const mockVerifyOtp        = vi.fn().mockResolvedValue({ error: null });
 const mockRpc              = vi.fn().mockResolvedValue({ data: true, error: null });
 
 vi.mock("@/integrations/supabase/client", () => ({
   supabase: {
     auth: {
       signInWithOtp: (...args: any[]) => mockSignInWithOtp(...args),
-      verifyOtp:     (...args: any[]) => mockVerifyOtp(...args),
     },
     from: () => ({ update: mockSupabaseUpdate }),
     rpc:  (...args: any[]) => mockRpc(...args),
@@ -215,11 +213,10 @@ describe("ProfilePage", () => {
 // 회원 탈퇴 (OTP 재인증)
 // ─────────────────────────────────────────────────────────
 
-describe("회원 탈퇴 (이메일 OTP)", () => {
+describe("회원 탈퇴 (매직링크 재인증)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockSignInWithOtp.mockResolvedValue({ error: null });
-    mockVerifyOtp.mockResolvedValue({ error: null });
     mockRpc.mockResolvedValue({ error: null });
   });
 
@@ -243,7 +240,7 @@ describe("회원 탈퇴 (이메일 OTP)", () => {
     expect(screen.queryByTestId("delete-modal")).not.toBeInTheDocument();
   });
 
-  it("'탈퇴 인증 코드 받기' 클릭 시 signInWithOtp 호출 (shouldCreateUser: false)", async () => {
+  it("'탈퇴 확인 메일 보내기' 클릭 시 signInWithOtp shouldCreateUser:false + ?action=confirm_deletion", async () => {
     const user = userEvent.setup();
     renderProfilePage();
     await user.click(screen.getByTestId("open-delete-modal-button"));
@@ -252,74 +249,42 @@ describe("회원 탈퇴 (이메일 OTP)", () => {
       expect(mockSignInWithOtp).toHaveBeenCalledWith(
         expect.objectContaining({
           email: "test@example.com",
-          options: expect.objectContaining({ shouldCreateUser: false }),
+          options: expect.objectContaining({
+            shouldCreateUser: false,
+            emailRedirectTo: expect.stringContaining("action=confirm_deletion"),
+          }),
         })
       )
     );
   });
 
-  it("OTP 전송 후 코드 입력 필드 표시됨", async () => {
+  it("탈퇴 메일 발송 후 이메일 전송 완료 화면 표시됨", async () => {
     const user = userEvent.setup();
     renderProfilePage();
     await user.click(screen.getByTestId("open-delete-modal-button"));
     await user.click(screen.getByTestId("send-delete-otp-button"));
-    await waitFor(() => expect(screen.getByTestId("delete-otp-input")).toBeInTheDocument());
-  });
-
-  it("6자리 코드 미입력 시 탈퇴 완료 버튼 비활성화", async () => {
-    const user = userEvent.setup();
-    renderProfilePage();
-    await user.click(screen.getByTestId("open-delete-modal-button"));
-    await user.click(screen.getByTestId("send-delete-otp-button"));
-    await waitFor(() => expect(screen.getByTestId("delete-otp-input")).toBeInTheDocument());
-    expect(screen.getByTestId("confirm-delete-button")).toBeDisabled();
-  });
-
-  it("6자리 코드 입력 후 verifyOtp + request_account_deletion RPC 호출", async () => {
-    const user = userEvent.setup();
-    renderProfilePage();
-    await user.click(screen.getByTestId("open-delete-modal-button"));
-    await user.click(screen.getByTestId("send-delete-otp-button"));
-    await waitFor(() => expect(screen.getByTestId("delete-otp-input")).toBeInTheDocument());
-    await user.type(screen.getByTestId("delete-otp-input"), "123456");
-    await user.click(screen.getByTestId("confirm-delete-button"));
     await waitFor(() =>
-      expect(mockVerifyOtp).toHaveBeenCalledWith(
-        expect.objectContaining({
-          email: "test@example.com",
-          token: "123456",
-          type: "email",
-        })
-      )
-    );
-    await waitFor(() =>
-      expect(mockRpc).toHaveBeenCalledWith("request_account_deletion", expect.any(Object))
+      expect(screen.getByTestId("delete-email-sent-screen")).toBeInTheDocument()
     );
   });
 
-  it("verifyOtp 실패 시 RPC 미호출", async () => {
-    mockVerifyOtp.mockResolvedValueOnce({ error: { message: "Invalid OTP" } });
+  it("탈퇴 모달 재오픈 시 이메일 발송 화면 초기화", async () => {
     const user = userEvent.setup();
     renderProfilePage();
     await user.click(screen.getByTestId("open-delete-modal-button"));
     await user.click(screen.getByTestId("send-delete-otp-button"));
-    await waitFor(() => expect(screen.getByTestId("delete-otp-input")).toBeInTheDocument());
-    await user.type(screen.getByTestId("delete-otp-input"), "000000");
-    await user.click(screen.getByTestId("confirm-delete-button"));
-    await waitFor(() => expect(mockVerifyOtp).toHaveBeenCalled());
-    expect(mockRpc).not.toHaveBeenCalled();
-  });
-
-  it("탈퇴 모달 재오픈 시 OTP 상태 초기화", async () => {
-    const user = userEvent.setup();
-    renderProfilePage();
-    await user.click(screen.getByTestId("open-delete-modal-button"));
-    await user.click(screen.getByTestId("send-delete-otp-button"));
-    await waitFor(() => expect(screen.getByTestId("delete-otp-input")).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByTestId("delete-email-sent-screen")).toBeInTheDocument());
     await user.click(screen.getByTestId("cancel-delete-button"));
     await user.click(screen.getByTestId("open-delete-modal-button"));
-    expect(screen.queryByTestId("delete-otp-input")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("delete-email-sent-screen")).not.toBeInTheDocument();
     expect(screen.getByTestId("send-delete-otp-button")).toBeInTheDocument();
+  });
+
+  it("모달에 OTP 코드 입력 필드 없음", async () => {
+    const user = userEvent.setup();
+    renderProfilePage();
+    await user.click(screen.getByTestId("open-delete-modal-button"));
+    expect(screen.queryByTestId("delete-otp-input")).not.toBeInTheDocument();
   });
 
   it("모달에 비밀번호 입력 필드 없음", async () => {

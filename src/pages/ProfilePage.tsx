@@ -108,9 +108,8 @@ export default function ProfilePage() {
   // ── 탈퇴 ──
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteReason, setDeleteReason]       = useState("");
-  const [deleteOtpSent, setDeleteOtpSent]     = useState(false);
-  const [deleteOtpCode, setDeleteOtpCode]     = useState("");
-  const [deleting, setDeleting]               = useState(false);
+  const [deleteEmailSent, setDeleteEmailSent] = useState(false);
+  const [deleteSending, setDeleteSending]     = useState(false);
 
   if (!user) {
     navigate("/");
@@ -165,64 +164,33 @@ export default function ProfilePage() {
 
   const openDeleteModal = () => {
     setDeleteReason("");
-    setDeleteOtpSent(false);
-    setDeleteOtpCode("");
+    setDeleteEmailSent(false);
     setShowDeleteModal(true);
   };
 
   const closeDeleteModal = () => {
     setShowDeleteModal(false);
     setDeleteReason("");
-    setDeleteOtpSent(false);
-    setDeleteOtpCode("");
+    setDeleteEmailSent(false);
   };
 
-  const handleSendDeleteOtp = async () => {
-    setDeleting(true);
+  const handleRequestDeletion = async () => {
+    setDeleteSending(true);
     try {
+      const reasonParam = deleteReason ? `&reason=${encodeURIComponent(deleteReason)}` : "";
       const { error } = await supabase.auth.signInWithOtp({
         email: user.email!,
-        options: { shouldCreateUser: false },
+        options: {
+          shouldCreateUser: false,
+          emailRedirectTo: `${window.location.origin}/auth/callback?action=confirm_deletion${reasonParam}`,
+        },
       });
       if (error) throw error;
-      setDeleteOtpSent(true);
-      toast({ title: "인증 코드를 보냈어요", description: "이메일에서 6자리 코드를 확인해주세요." });
+      setDeleteEmailSent(true);
     } catch (err: any) {
-      toast({ title: "인증 코드 전송 실패", description: err.message, variant: "destructive" });
+      toast({ title: "전송 실패", description: err.message, variant: "destructive" });
     } finally {
-      setDeleting(false);
-    }
-  };
-
-  const handleDeleteAccount = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setDeleting(true);
-    try {
-      const { error: verifyError } = await supabase.auth.verifyOtp({
-        email: user.email!,
-        token: deleteOtpCode,
-        type: "email",
-      });
-      if (verifyError) {
-        toast({ title: "인증 코드가 올바르지 않아요", variant: "destructive" });
-        return;
-      }
-
-      const { error } = await supabase.rpc("request_account_deletion", {
-        reason: deleteReason || null,
-      });
-      if (error) throw error;
-
-      await signOut();
-      toast({
-        title: "탈퇴가 완료됐어요",
-        description: "그동안 NoteFlex를 이용해 주셔서 감사합니다.",
-      });
-      navigate("/");
-    } catch (err: any) {
-      toast({ title: "탈퇴 실패", description: err.message, variant: "destructive" });
-    } finally {
-      setDeleting(false);
+      setDeleteSending(false);
     }
   };
 
@@ -511,15 +479,19 @@ export default function ProfilePage() {
         >
           <div className="bg-card border border-border rounded-2xl shadow-2xl w-full max-w-sm mx-4">
             <div className="flex flex-col items-center gap-2 pt-6 pb-4 px-6">
-              <span className="text-4xl">⚠️</span>
-              <h2 className="text-xl font-bold text-foreground">정말 탈퇴하시겠어요?</h2>
-              <p className="text-xs text-muted-foreground text-center">
-                탈퇴 후 30일 내 복구 가능합니다.
-              </p>
+              <span className="text-4xl">{deleteEmailSent ? "✉️" : "⚠️"}</span>
+              <h2 className="text-xl font-bold text-foreground">
+                {deleteEmailSent ? "탈퇴 확인 메일을 보냈습니다" : "정말 탈퇴하시겠어요?"}
+              </h2>
+              {!deleteEmailSent && (
+                <p className="text-xs text-muted-foreground text-center">
+                  탈퇴 후 30일 내 복구 가능합니다.
+                </p>
+              )}
             </div>
 
             <div className="px-6 pb-6 space-y-3">
-              {!deleteOtpSent ? (
+              {!deleteEmailSent ? (
                 <>
                   <div>
                     <label className="text-sm font-medium text-muted-foreground block mb-1.5">
@@ -538,40 +510,24 @@ export default function ProfilePage() {
                     </select>
                   </div>
                   <Button
-                    onClick={handleSendDeleteOtp}
-                    disabled={deleting}
+                    onClick={handleRequestDeletion}
+                    disabled={deleteSending}
                     className="w-full"
                     data-testid="send-delete-otp-button"
                   >
-                    {deleting ? "처리 중..." : "탈퇴 인증 코드 받기"}
+                    {deleteSending ? "처리 중..." : "탈퇴 확인 메일 보내기"}
                   </Button>
                 </>
               ) : (
-                <form onSubmit={handleDeleteAccount} className="space-y-3">
-                  <p className="text-sm text-muted-foreground">
-                    <span className="font-medium text-foreground">{user.email}</span>으로<br />
-                    발송된 6자리 코드를 입력해주세요.
+                <div className="space-y-3" data-testid="delete-email-sent-screen">
+                  <p className="text-sm text-muted-foreground text-center leading-relaxed">
+                    <span className="font-medium text-foreground">{user.email}</span>에 도착한 메일에서<br />
+                    "탈퇴 확인" 링크를 클릭하면 탈퇴가 완료됩니다.
                   </p>
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    maxLength={6}
-                    value={deleteOtpCode}
-                    onChange={e => setDeleteOtpCode(e.target.value.replace(/\D/g, ""))}
-                    placeholder="6자리 코드"
-                    data-testid="delete-otp-input"
-                    className="w-full px-4 py-2.5 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring text-center tracking-widest"
-                  />
-                  <Button
-                    type="submit"
-                    variant="destructive"
-                    disabled={deleting || deleteOtpCode.length !== 6}
-                    className="w-full"
-                    data-testid="confirm-delete-button"
-                  >
-                    {deleting ? "처리 중..." : "탈퇴 완료"}
-                  </Button>
-                </form>
+                  <p className="text-xs text-muted-foreground text-center">
+                    • 30일 내 같은 이메일로 가입 시 복구 가능합니다.
+                  </p>
+                </div>
               )}
 
               <Button
@@ -581,7 +537,7 @@ export default function ProfilePage() {
                 onClick={closeDeleteModal}
                 data-testid="cancel-delete-button"
               >
-                취소
+                {deleteEmailSent ? "닫기" : "취소"}
               </Button>
             </div>
           </div>

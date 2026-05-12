@@ -5,6 +5,7 @@ import AuthCallback from "./AuthCallback";
 // ─── Mocks ────────────────────────────────────────────────────────────────
 
 const mockGetSession = vi.fn();
+const mockSignOut    = vi.fn().mockResolvedValue({ error: null });
 const mockNavigate   = vi.fn();
 const mockFrom       = vi.fn();
 const mockUpdate     = vi.fn();
@@ -15,6 +16,7 @@ vi.mock("@/integrations/supabase/client", () => ({
   supabase: {
     auth: {
       getSession: (...args: any[]) => mockGetSession(...args),
+      signOut:    (...args: any[]) => mockSignOut(...args),
     },
     from: (...args: any[]) => mockFrom(...args),
     rpc: (...args: any[]) => mockRpc(...args),
@@ -172,5 +174,49 @@ describe("복구 링크 콜백 (?action=restore)", () => {
     render(<AuthCallback />);
     await waitFor(() => expect(mockBcPostMessage).toHaveBeenCalled());
     expect(mockRpc).not.toHaveBeenCalled();
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────
+// 탈퇴 확인 콜백 (?action=confirm_deletion)
+// ─────────────────────────────────────────────────────────────────────────
+
+describe("탈퇴 확인 콜백 (?action=confirm_deletion)", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    localStorage.clear();
+    mockRpc.mockResolvedValue({ error: null });
+    mockSignOut.mockResolvedValue({ error: null });
+  });
+
+  afterEach(() => {
+    localStorage.clear();
+    window.history.pushState({}, "", "/");
+  });
+
+  it("?action=confirm_deletion → request_account_deletion RPC 호출 (reason 포함)", async () => {
+    withSession();
+    window.history.pushState({}, "", "?action=confirm_deletion&reason=%EA%B8%B0%ED%83%80");
+    render(<AuthCallback />);
+    await waitFor(() =>
+      expect(mockRpc).toHaveBeenCalledWith("request_account_deletion", { reason: "기타" })
+    );
+  });
+
+  it("?action=confirm_deletion → signOut 호출", async () => {
+    withSession();
+    window.history.pushState({}, "", "?action=confirm_deletion");
+    render(<AuthCallback />);
+    await waitFor(() => expect(mockSignOut).toHaveBeenCalled());
+  });
+
+  it("request_account_deletion 실패 시 /?auth_error=deletion_failed로 navigate", async () => {
+    withSession();
+    mockRpc.mockResolvedValue({ error: { message: "deletion failed" } });
+    window.history.pushState({}, "", "?action=confirm_deletion");
+    render(<AuthCallback />);
+    await waitFor(() =>
+      expect(mockNavigate).toHaveBeenCalledWith("/?auth_error=deletion_failed", { replace: true })
+    );
   });
 });

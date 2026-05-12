@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 export default function AuthCallback() {
   const navigate = useNavigate();
   const [closeFailed, setCloseFailed] = useState(false);
+  const [deletionDone, setDeletionDone] = useState(false);
 
   useEffect(() => {
     const run = async () => {
@@ -15,9 +16,25 @@ export default function AuthCallback() {
         return;
       }
 
-      // 계정 복구 magic link (?action=restore)
       const searchParams = new URLSearchParams(window.location.search);
-      if (searchParams.get("action") === "restore") {
+      const action = searchParams.get("action");
+
+      // 탈퇴 확인 magic link (?action=confirm_deletion)
+      if (action === "confirm_deletion") {
+        const reason = searchParams.get("reason") || null;
+        const { error: rpcError } = await supabase.rpc("request_account_deletion", { reason });
+        if (rpcError) {
+          navigate("/?auth_error=deletion_failed", { replace: true });
+          return;
+        }
+        await supabase.auth.signOut();
+        setDeletionDone(true);
+        setTimeout(() => navigate("/", { replace: true }), 3000);
+        return;
+      }
+
+      // 계정 복구 magic link (?action=restore)
+      if (action === "restore") {
         const { error: rpcError } = await supabase.rpc("restore_account");
         if (rpcError) {
           navigate("/?auth_error=restore_failed", { replace: true });
@@ -51,6 +68,20 @@ export default function AuthCallback() {
 
     run();
   }, [navigate]);
+
+  if (deletionDone) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4 px-4" data-testid="deletion-complete-screen">
+        <div className="text-5xl">👋</div>
+        <p className="text-lg font-semibold text-foreground">탈퇴가 완료됐어요.</p>
+        <p className="text-sm text-muted-foreground text-center leading-relaxed">
+          그동안 NoteFlex를 이용해 주셔서 감사합니다.<br />
+          30일 내 복구가 가능합니다.
+        </p>
+        <p className="text-xs text-muted-foreground">잠시 후 메인 페이지로 이동합니다...</p>
+      </div>
+    );
+  }
 
   if (closeFailed) {
     return (
