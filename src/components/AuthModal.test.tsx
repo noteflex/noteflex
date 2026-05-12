@@ -496,7 +496,7 @@ describe("계정 복구 (30일 이내 탈퇴)", () => {
     );
   });
 
-  it("hard_delete 후 signInWithOtp shouldCreateUser:false 호출", async () => {
+  it("hard_delete 후 signInWithOtp shouldCreateUser:true 호출 (auth.users 삭제 후 신규 가입)", async () => {
     const { user } = await goToRecoveryPanel();
     await user.click(screen.getByTestId("fresh-start-button"));
     await waitFor(() => expect(screen.getByTestId("fresh-start-confirm-button")).toBeInTheDocument());
@@ -505,10 +505,23 @@ describe("계정 복구 (30일 이내 탈퇴)", () => {
       expect(mockSignInWithOtp).toHaveBeenCalledWith(
         expect.objectContaining({
           email: "deleted@example.com",
-          options: expect.objectContaining({ shouldCreateUser: false }),
+          options: expect.objectContaining({ shouldCreateUser: true }),
         })
       )
     );
+  });
+
+  it("hard_delete 후 noteflex_consent localStorage에 저장됨 (AuthCallback profiles 동의일시 기록용)", async () => {
+    const { user } = await goToRecoveryPanel();
+    await user.click(screen.getByTestId("fresh-start-button"));
+    await waitFor(() => expect(screen.getByTestId("fresh-start-confirm-button")).toBeInTheDocument());
+    await user.click(screen.getByTestId("fresh-start-confirm-button"));
+    await waitFor(() => expect(mockSignInWithOtp).toHaveBeenCalled());
+    const stored = localStorage.getItem("noteflex_consent");
+    expect(stored).not.toBeNull();
+    const consent = JSON.parse(stored!);
+    expect(consent.tos_agreed_at).toBeTruthy();
+    expect(consent.privacy_agreed_at).toBeTruthy();
   });
 
   it("hard_delete 후 magic-link-screen 표시", async () => {

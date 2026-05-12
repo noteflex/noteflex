@@ -253,10 +253,18 @@ export default function AuthModal({ onClose }: AuthModalProps) {
         toast({ title: "오류가 발생했어요", description: error.message, variant: "destructive" });
         return;
       }
+      // auth.users 삭제됐으므로 shouldCreateUser: true로 신규 가입 처리
+      // AuthCallback이 profiles에 동의일시 기록하도록 localStorage에 저장
+      const now = new Date().toISOString();
+      localStorage.setItem("noteflex_consent", JSON.stringify({
+        tos_agreed_at: now,
+        privacy_agreed_at: now,
+        marketing_agreed_at: marketingAgreed ? now : null,
+      }));
       const { error: otpError } = await supabase.auth.signInWithOtp({
         email,
         options: {
-          shouldCreateUser: false,
+          shouldCreateUser: true,
           emailRedirectTo: `${window.location.origin}/auth/callback`,
         },
       });
