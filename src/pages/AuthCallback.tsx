@@ -6,6 +6,7 @@ export default function AuthCallback() {
   const navigate = useNavigate();
   const [closeFailed, setCloseFailed] = useState(false);
   const [deletionDone, setDeletionDone] = useState(false);
+  const [restoreDone, setRestoreDone] = useState(false);
 
   useEffect(() => {
     const run = async () => {
@@ -40,6 +41,15 @@ export default function AuthCallback() {
           navigate("/?auth_error=restore_failed", { replace: true });
           return;
         }
+        localStorage.setItem("noteflex_auth_complete", Date.now().toString());
+        if ("BroadcastChannel" in window) {
+          const channel = new BroadcastChannel("noteflex_auth");
+          channel.postMessage({ type: "AUTH_COMPLETE" });
+          channel.close();
+        }
+        setRestoreDone(true);
+        setTimeout(() => navigate("/", { replace: true }), 3000);
+        return;
       }
 
       // Google OAuth 가입 시 localStorage에 저장된 TOS 동의 시점을 profile에 반영
@@ -68,6 +78,20 @@ export default function AuthCallback() {
 
     run();
   }, [navigate]);
+
+  if (restoreDone) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4 px-4" data-testid="restore-complete-screen">
+        <div className="text-5xl">🎉</div>
+        <p className="text-lg font-semibold text-foreground">계정이 복구됐어요.</p>
+        <p className="text-sm text-muted-foreground text-center leading-relaxed">
+          다시 오신 것을 환영합니다.<br />
+          이전 데이터가 그대로 유지됩니다.
+        </p>
+        <p className="text-xs text-muted-foreground">잠시 후 메인 페이지로 이동합니다...</p>
+      </div>
+    );
+  }
 
   if (deletionDone) {
     return (

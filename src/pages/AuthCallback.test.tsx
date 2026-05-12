@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, act } from "@testing-library/react";
 import AuthCallback from "./AuthCallback";
 
 // ─── Mocks ────────────────────────────────────────────────────────────────
@@ -174,6 +174,38 @@ describe("복구 링크 콜백 (?action=restore)", () => {
     render(<AuthCallback />);
     await waitFor(() => expect(mockBcPostMessage).toHaveBeenCalled());
     expect(mockRpc).not.toHaveBeenCalled();
+  });
+
+  it("restore 성공 시 restore-complete-screen 표시", async () => {
+    withSession();
+    window.history.pushState({}, "", "?action=restore");
+    render(<AuthCallback />);
+    await waitFor(() =>
+      expect(screen.getByTestId("restore-complete-screen")).toBeInTheDocument()
+    );
+  });
+
+  it("restore 성공 시 3초 후 navigate('/') 호출", async () => {
+    vi.useFakeTimers();
+    withSession();
+    window.history.pushState({}, "", "?action=restore");
+    render(<AuthCallback />);
+    await act(async () => { await Promise.resolve(); });
+    await act(async () => { await Promise.resolve(); });
+    vi.advanceTimersByTime(3000);
+    await act(async () => { await Promise.resolve(); });
+    expect(mockNavigate).toHaveBeenCalledWith("/", { replace: true });
+    vi.useRealTimers();
+  });
+
+  it("restore 성공 시 localStorage noteflex_auth_complete 설정", async () => {
+    withSession();
+    window.history.pushState({}, "", "?action=restore");
+    render(<AuthCallback />);
+    await waitFor(() => expect(mockRpc).toHaveBeenCalledWith("restore_account"));
+    await waitFor(() =>
+      expect(localStorage.getItem("noteflex_auth_complete")).not.toBeNull()
+    );
   });
 });
 
