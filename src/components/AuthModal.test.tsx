@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, waitFor, act, fireEvent } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import AuthModal from "./AuthModal";
+import { toast } from "@/hooks/use-toast";
 
 // ─── Mocks ────────────────────────────────────────────────────────────────
 
@@ -527,6 +528,56 @@ describe("계정 복구 (30일 이내 탈퇴)", () => {
     await waitFor(() => expect(screen.getByTestId("fresh-start-confirm-button")).toBeInTheDocument());
     await user.click(screen.getByTestId("fresh-start-confirm-button"));
     await waitFor(() => expect(mockRpc).toHaveBeenCalled());
+    expect(mockSignInWithOtp).not.toHaveBeenCalled();
+  });
+
+  // ── hard_delete_account 에러 시나리오 (RPC 안전장치 검증) ─────────────
+
+  it("30일 내 탈퇴 계정 → RPC 호출 성공 후 magic-link-screen (정상 경로)", async () => {
+    mockRpc.mockResolvedValueOnce({ error: null });
+    const { user } = await goToRecoveryPanel();
+    await user.click(screen.getByTestId("fresh-start-button"));
+    await waitFor(() => expect(screen.getByTestId("fresh-start-confirm-button")).toBeInTheDocument());
+    await user.click(screen.getByTestId("fresh-start-confirm-button"));
+    await waitFor(() =>
+      expect(mockRpc).toHaveBeenCalledWith("hard_delete_account", { p_email: "deleted@example.com" })
+    );
+    await waitFor(() => expect(screen.getByTestId("magic-link-screen")).toBeInTheDocument());
+  });
+
+  it("활성 계정 RPC 에러('Account not eligible') → toast 에러 + signInWithOtp 미호출", async () => {
+    mockRpc.mockResolvedValueOnce({ error: { message: "Account not eligible for hard delete" } });
+    const { user } = await goToRecoveryPanel();
+    await user.click(screen.getByTestId("fresh-start-button"));
+    await waitFor(() => expect(screen.getByTestId("fresh-start-confirm-button")).toBeInTheDocument());
+    await user.click(screen.getByTestId("fresh-start-confirm-button"));
+    await waitFor(() => expect(vi.mocked(toast)).toHaveBeenCalledWith(
+      expect.objectContaining({ variant: "destructive" })
+    ));
+    expect(mockSignInWithOtp).not.toHaveBeenCalled();
+  });
+
+  it("30일 경과 계정 RPC 에러('Account not eligible') → toast 에러 + signInWithOtp 미호출", async () => {
+    mockRpc.mockResolvedValueOnce({ error: { message: "Account not eligible for hard delete" } });
+    const { user } = await goToRecoveryPanel();
+    await user.click(screen.getByTestId("fresh-start-button"));
+    await waitFor(() => expect(screen.getByTestId("fresh-start-confirm-button")).toBeInTheDocument());
+    await user.click(screen.getByTestId("fresh-start-confirm-button"));
+    await waitFor(() => expect(vi.mocked(toast)).toHaveBeenCalledWith(
+      expect.objectContaining({ variant: "destructive" })
+    ));
+    expect(mockSignInWithOtp).not.toHaveBeenCalled();
+  });
+
+  it("존재하지 않는 이메일 RPC 에러('User not found') → toast 에러 + signInWithOtp 미호출", async () => {
+    mockRpc.mockResolvedValueOnce({ error: { message: "User not found" } });
+    const { user } = await goToRecoveryPanel();
+    await user.click(screen.getByTestId("fresh-start-button"));
+    await waitFor(() => expect(screen.getByTestId("fresh-start-confirm-button")).toBeInTheDocument());
+    await user.click(screen.getByTestId("fresh-start-confirm-button"));
+    await waitFor(() => expect(vi.mocked(toast)).toHaveBeenCalledWith(
+      expect.objectContaining({ variant: "destructive" })
+    ));
     expect(mockSignInWithOtp).not.toHaveBeenCalled();
   });
 });
