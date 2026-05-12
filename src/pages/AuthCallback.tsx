@@ -15,22 +15,24 @@ export default function AuthCallback() {
         return;
       }
 
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("profile_completed")
-        .eq("id", session.user.id)
-        .single();
+      // Google OAuth 가입 시 localStorage에 저장된 TOS 동의 시점을 profile에 반영
+      const stored = localStorage.getItem("noteflex_consent");
+      if (stored) {
+        try {
+          const consent = JSON.parse(stored);
+          await supabase.from("profiles").update(consent).eq("id", session.user.id);
+        } catch {
+          // 실패해도 인증 흐름 차단 안 함
+        }
+        localStorage.removeItem("noteflex_consent");
+      }
 
-      const profileCompleted = profile?.profile_completed ?? false;
-
-      // 원본 탭(Magic Link Step 2 대기 중)에 인증 완료 알림
       if ("BroadcastChannel" in window) {
         const channel = new BroadcastChannel("noteflex_auth");
-        channel.postMessage({ type: "AUTH_COMPLETE", profile_completed: profileCompleted });
+        channel.postMessage({ type: "AUTH_COMPLETE" });
         channel.close();
       }
 
-      // 새 탭 닫기 시도 (보안 정책상 실패 시 안내 메시지 표시)
       window.close();
       setTimeout(() => setCloseFailed(true), 500);
     };

@@ -1,15 +1,14 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import AuthCallback from "./AuthCallback";
 
 // ─── Mocks ────────────────────────────────────────────────────────────────
 
-const mockGetSession    = vi.fn();
-const mockNavigate      = vi.fn();
-const mockFrom          = vi.fn();
-const mockSelect        = vi.fn();
-const mockEq            = vi.fn();
-const mockSingle        = vi.fn();
+const mockGetSession = vi.fn();
+const mockNavigate   = vi.fn();
+const mockFrom       = vi.fn();
+const mockUpdate     = vi.fn();
+const mockEq         = vi.fn();
 
 vi.mock("@/integrations/supabase/client", () => ({
   supabase: {
@@ -22,13 +21,9 @@ vi.mock("@/integrations/supabase/client", () => ({
 
 vi.mock("react-router-dom", async () => {
   const actual = await vi.importActual<typeof import("react-router-dom")>("react-router-dom");
-  return {
-    ...actual,
-    useNavigate: () => mockNavigate,
-  };
+  return { ...actual, useNavigate: () => mockNavigate };
 });
 
-// BroadcastChannel mock
 const mockBcPostMessage = vi.fn();
 const mockBcClose       = vi.fn();
 class MockBroadcastChannel {
@@ -38,24 +33,18 @@ class MockBroadcastChannel {
 }
 vi.stubGlobal("BroadcastChannel", MockBroadcastChannel);
 
-// window.close mock
 const mockWindowClose = vi.spyOn(window, "close").mockImplementation(() => {});
 
 // ─── Helpers ─────────────────────────────────────────────────────────────
 
-function setupProfileQuery(profileCompleted: boolean | null) {
-  mockSingle.mockResolvedValue({ data: profileCompleted !== null ? { profile_completed: profileCompleted } : null });
-  mockEq.mockReturnValue({ single: mockSingle });
-  mockSelect.mockReturnValue({ eq: mockEq });
-  mockFrom.mockReturnValue({ select: mockSelect });
-}
-
-function withSession(profileCompleted: boolean | null) {
+function withSession() {
   mockGetSession.mockResolvedValue({
     data: { session: { user: { id: "uid-1" } } },
     error: null,
   });
-  setupProfileQuery(profileCompleted);
+  mockEq.mockResolvedValue({ error: null });
+  mockUpdate.mockReturnValue({ eq: mockEq });
+  mockFrom.mockReturnValue({ update: mockUpdate });
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -65,6 +54,11 @@ function withSession(profileCompleted: boolean | null) {
 describe("AuthCallback", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    localStorage.clear();
+  });
+
+  afterEach(() => {
+    localStorage.clear();
   });
 
   it("renders 인증 처리 중 loading text", () => {
@@ -73,7 +67,7 @@ describe("AuthCallback", () => {
     expect(screen.getByText("인증 처리 중...")).toBeInTheDocument();
   });
 
-  it("navigates to /?auth_error=session when no session", async () => {
+  it("세션 없으면 /?auth_error=session으로 navigate", async () => {
     mockGetSession.mockResolvedValue({ data: { session: null }, error: null });
     render(<AuthCallback />);
     await waitFor(() =>
@@ -81,7 +75,7 @@ describe("AuthCallback", () => {
     );
   });
 
-  it("navigates to /?auth_error=session on getSession error", async () => {
+  it("getSession 오류 시 /?auth_error=session으로 navigate", async () => {
     mockGetSession.mockResolvedValue({ data: { session: null }, error: new Error("network") });
     render(<AuthCallback />);
     await waitFor(() =>
@@ -89,49 +83,40 @@ describe("AuthCallback", () => {
     );
   });
 
-  it("BroadcastChannel.postMessage 호출 — profile_completed=false", async () => {
-    withSession(false);
+  it("세션 있으면 BroadcastChannel.postMessage 호출 (type: AUTH_COMPLETE)", async () => {
+    withSession();
     render(<AuthCallback />);
     await waitFor(() =>
-      expect(mockBcPostMessage).toHaveBeenCalledWith({
-        type: "AUTH_COMPLETE",
-        profile_completed: false,
-      })
-    );
-  });
-
-  it("BroadcastChannel.postMessage 호출 — profile_completed=true", async () => {
-    withSession(true);
-    render(<AuthCallback />);
-    await waitFor(() =>
-      expect(mockBcPostMessage).toHaveBeenCalledWith({
-        type: "AUTH_COMPLETE",
-        profile_completed: true,
-      })
-    );
-  });
-
-  it("profile row null 이면 profile_completed=false 로 전송", async () => {
-    withSession(null);
-    render(<AuthCallback />);
-    await waitFor(() =>
-      expect(mockBcPostMessage).toHaveBeenCalledWith({
-        type: "AUTH_COMPLETE",
-        profile_completed: false,
-      })
+      expect(mockBcPostMessage).toHaveBeenCalledWith({ type: "AUTH_COMPLETE" })
     );
   });
 
   it("window.close() 호출", async () => {
-    withSession(true);
+    withSession();
     render(<AuthCallback />);
     await waitFor(() => expect(mockWindowClose).toHaveBeenCalled());
   });
 
-  it("BroadcastChannel NOT called when no session", async () => {
+  it("세션 없으면 BroadcastChannel 미호출", async () => {
     mockGetSession.mockResolvedValue({ data: { session: null }, error: null });
     render(<AuthCallback />);
     await waitFor(() => expect(mockNavigate).toHaveBeenCalled());
     expect(mockBcPostMessage).not.toHaveBeenCalled();
+  });
+
+  it("localStorage에 noteflex_consent 있으면 profiles.update 호출", async () => {
+    withSession();
+    const consent = { tos_agreed_at: "2026-05-12T00:00:00Z", privacy_agreed_at: "2026-05-12T00:00:00Z", marketing_agreed_at: null };
+    localStorage.setItem("noteflex_consent", JSON.stringify(consent));
+    render(<AuthCallback />);
+    await waitFor(() => expect(mockUpdate).toHaveBeenCalledWith(consent));
+    expect(localStorage.getItem("noteflex_consent")).toBeNull();
+  });
+
+  it("localStorage에 noteflex_consent 없으면 profiles.update 미호출", async () => {
+    withSession();
+    render(<AuthCallback />);
+    await waitFor(() => expect(mockBcPostMessage).toHaveBeenCalled());
+    expect(mockUpdate).not.toHaveBeenCalled();
   });
 });
