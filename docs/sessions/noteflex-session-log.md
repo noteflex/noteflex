@@ -67,6 +67,7 @@
 - **이메일 발송 시스템**: 출시 = Supabase 표준 (한·영 동시 표기). 출시 후 1~2주 PENDING = 자체 발송 시스템 전환 (시나리오별·언어별 분기).
 - **새 탭 자동 활성화**: PC = 브라우저 보안 제약으로 JS 해결 불가. 모바일 = 같은 탭이라 자연 처리. 매직링크 서비스 공통 한계.
 - **hard_delete 전략**: profiles + auth.users 모두 DELETE. SECURITY DEFINER + search_path=public,auth. 30일 내 탈퇴 계정만 허용. 익명 호출 가능.
+- **블로그 자동화 전략**: 지금 = 옵션 A 유지 (Claude Code 수동, Claude Pro/Max 구독 추가 비용 X). 출시 후 1주 이내 = 옵션 C 전환 (GitHub Actions + Anthropic API, ~$5/월). 옵션 B (로컬 cron) = 스킵 (PC 켜져있어야 함). 품질 게이트 (이미지·DOI·출처·글자 수) 자체 검증으로 무인 발행 안전성 확보.
 
 ### 다음 액션
 1. "새로 시작" 시나리오 재검증 (auth.users 삭제 정정 후)

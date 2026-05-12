@@ -9,6 +9,26 @@
 
 ## 2026-05-12 추가 (SEO 인프라)
 
+### 출시 후 1주 이내
+- [ ] **블로그 글 작성 완전 자동화 (옵션 C)**
+  - 현재: 옵션 A (Claude Code 수동, 사용자가 프롬프트 박고 yes 누름)
+  - 전환: GitHub Actions + Anthropic API (완전 무인)
+  - 구성:
+    - `.github/workflows/daily-blog.yml` (매일 06:00 KST cron)
+    - `scripts/generate-blog.ts` (API 호출 + 파싱 + 검증 + commit)
+    - 모델: Claude Sonnet 4.6 (월 ~$5, 매일 1편 기준)
+    - 한국어 + 영어 동시 작성 (메모리 #11 정합)
+  - 품질 게이트 (자동 검증):
+    - 이미지 2개 이상 + 모두 HTTP 200 (curl)
+    - 학술 인용 1개 이상 + DOI 형식 검증
+    - frontmatter 필수 필드 (title·slug·date·image·sources)
+    - 글자 수 1500~3000자
+    - 허용 출처만 (Wikimedia·LoC·Met·BnF·NYPL·Smithsonian·IMSLP·Mutopia·PLOS·PMC)
+  - 검증 통과 → 자동 commit + push (main)
+  - 검증 실패 → PR로 열고 이메일 알림 (사용자 검토 후 merge)
+  - 작업량: ~3h
+  - 비용: 월 ~$5 (Sonnet 4.6 + 매일 1편) 또는 격일·주 3회로 빈도 조정 가능
+
 ### 디자인 영역
 - [ ] **OG 이미지 디자인** (1200×630, public/og-image.png)
   - 소셜 공유 시 표시 (Twitter Card·Facebook·KakaoTalk)
