@@ -6,13 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useSolfegeSystem } from "@/hooks/useSolfegeSystem";
 import { useNicknameAvailability } from "@/hooks/useNicknameAvailability";
 import { nicknameErrorMessage } from "@/lib/nicknameValidation";
-import {
-  analyzePassword,
-  STRENGTH_LABEL,
-  STRENGTH_BAR_CL,
-  STRENGTH_TXT_CL,
-} from "@/lib/password";
-import type { PasswordChecks } from "@/lib/password";
+import { COUNTRY_OPTIONS, detectCountryCodeSmart } from "@/lib/profile";
 import type { SolfegeSystem } from "@/lib/solfege";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -39,26 +33,42 @@ const SOLFEGE_OPTIONS: { value: SolfegeSystem; label: string; example: string }[
   { value: "latin", label: "라틴 계이름", example: "Do-Re-Mi-Fa-Sol-La-Si" },
 ];
 
+const DELETE_REASONS = [
+  "사용 빈도 낮음",
+  "서비스 불만",
+  "개인정보 보호",
+  "기타",
+] as const;
+
 export default function ProfilePage() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user, profile, signOut, refreshProfile } = useAuth();
   const { system, setSystem } = useSolfegeSystem();
 
-  // ── C2: 닉네임 + 언어 ──
+  // ── 프로필 폼 (닉네임 + 언어 + 생년월일 + 국적 + 마케팅) ──
   const [formData, setFormData] = useState({
-    nickname: profile?.nickname ?? "",
-    locale: profile?.locale ?? "ko",
+    nickname:         profile?.nickname ?? "",
+    locale:           profile?.locale ?? "ko",
+    birth_year:       profile?.birth_year?.toString() ?? "",
+    birth_month:      profile?.birth_month?.toString() ?? "",
+    birth_day:        profile?.birth_day?.toString() ?? "",
+    country_code:     profile?.country_code ?? detectCountryCodeSmart(),
+    marketing_agreed: !!profile?.marketing_agreed_at,
   });
   const [saving, setSaving] = useState(false);
 
-  // profile이 컴포넌트 마운트 후 로드될 때(null → 값) formData를 한 번만 동기화
   const profileSynced = useRef(!!profile);
   useEffect(() => {
     if (profile && !profileSynced.current) {
       setFormData({
-        nickname: profile.nickname ?? "",
-        locale: profile.locale ?? "ko",
+        nickname:         profile.nickname ?? "",
+        locale:           profile.locale ?? "ko",
+        birth_year:       profile.birth_year?.toString() ?? "",
+        birth_month:      profile.birth_month?.toString() ?? "",
+        birth_day:        profile.birth_day?.toString() ?? "",
+        country_code:     profile.country_code ?? detectCountryCodeSmart(),
+        marketing_agreed: !!profile.marketing_agreed_at,
       });
       profileSynced.current = true;
     }
@@ -66,8 +76,13 @@ export default function ProfilePage() {
 
   const isDirty = useMemo(
     () =>
-      formData.nickname !== (profile?.nickname ?? "") ||
-      formData.locale !== (profile?.locale ?? "ko"),
+      formData.nickname     !== (profile?.nickname ?? "") ||
+      formData.locale       !== (profile?.locale ?? "ko") ||
+      formData.birth_year   !== (profile?.birth_year?.toString() ?? "") ||
+      formData.birth_month  !== (profile?.birth_month?.toString() ?? "") ||
+      formData.birth_day    !== (profile?.birth_day?.toString() ?? "") ||
+      formData.country_code !== (profile?.country_code ?? detectCountryCodeSmart()) ||
+      formData.marketing_agreed !== !!profile?.marketing_agreed_at,
     [formData, profile]
   );
 
@@ -90,37 +105,12 @@ export default function ProfilePage() {
     return () => window.removeEventListener("beforeunload", handler);
   }, [isDirty]);
 
-  // ── C1: 비밀번호 변경 ──
-  const [currentPw, setCurrentPw]   = useState("");
-  const [newPw, setNewPw]           = useState("");
-  const [confirmPw, setConfirmPw]   = useState("");
-  const [showPw, setShowPw]         = useState(false);
-  const [pwSaving, setPwSaving]     = useState(false);
-
-  const newPwAnalysis = analyzePassword(newPw);
-  const newPwValid    = newPwAnalysis.score === 5;
-  const pwMatch       = newPw === confirmPw && confirmPw.length > 0;
-
-  // ── C3: 탈퇴 ──
+  // ── 탈퇴 ──
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [deletePw, setDeletePw]               = useState("");
   const [deleteReason, setDeleteReason]       = useState("");
+  const [deleteOtpSent, setDeleteOtpSent]     = useState(false);
+  const [deleteOtpCode, setDeleteOtpCode]     = useState("");
   const [deleting, setDeleting]               = useState(false);
-
-  // 탈퇴 모달 비번 input name — 비표준 이름으로 password manager 자동완성 차단
-  const deletePwName  = useRef(`dpw_${Math.random().toString(36).slice(2)}`);
-  const deleteFormRef = useRef<HTMLFormElement>(null);
-
-  useEffect(() => {
-    if (showDeleteModal) deleteFormRef.current?.reset();
-  }, [showDeleteModal]);
-
-  // 사용자 변경(다른 계정 로그인) 시 비밀번호 폼 초기화
-  useEffect(() => {
-    setCurrentPw("");
-    setNewPw("");
-    setConfirmPw("");
-  }, [user?.id]);
 
   if (!user) {
     navigate("/");
@@ -132,12 +122,23 @@ export default function ProfilePage() {
   const handleSave = async () => {
     setSaving(true);
     try {
+      const updates: Record<string, any> = {
+        nickname:     formData.nickname,
+        locale:       formData.locale,
+        country_code: formData.country_code,
+      };
+      if (formData.birth_year)  updates.birth_year  = parseInt(formData.birth_year, 10);
+      if (formData.birth_month) updates.birth_month = parseInt(formData.birth_month, 10);
+      if (formData.birth_day)   updates.birth_day   = parseInt(formData.birth_day, 10);
+      if (formData.marketing_agreed && !profile?.marketing_agreed_at) {
+        updates.marketing_agreed_at = new Date().toISOString();
+      } else if (!formData.marketing_agreed) {
+        updates.marketing_agreed_at = null;
+      }
+
       const { error } = await supabase
         .from("profiles")
-        .update({
-          nickname: formData.nickname,
-          locale: formData.locale,
-        })
+        .update(updates)
         .eq("id", user.id);
 
       if (error) {
@@ -162,39 +163,34 @@ export default function ProfilePage() {
     }
   };
 
-  const handleChangePassword = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newPwValid) {
-      toast({ title: "비밀번호 요구사항을 모두 충족해주세요", variant: "destructive" });
-      return;
-    }
-    if (!pwMatch) {
-      toast({ title: "새 비밀번호가 일치하지 않아요", variant: "destructive" });
-      return;
-    }
-    setPwSaving(true);
+  const openDeleteModal = () => {
+    setDeleteReason("");
+    setDeleteOtpSent(false);
+    setDeleteOtpCode("");
+    setShowDeleteModal(true);
+  };
+
+  const closeDeleteModal = () => {
+    setShowDeleteModal(false);
+    setDeleteReason("");
+    setDeleteOtpSent(false);
+    setDeleteOtpCode("");
+  };
+
+  const handleSendDeleteOtp = async () => {
+    setDeleting(true);
     try {
-      // 현재 비밀번호 검증
-      const { error: signInError } = await supabase.auth.signInWithPassword({
+      const { error } = await supabase.auth.signInWithOtp({
         email: user.email!,
-        password: currentPw,
+        options: { shouldCreateUser: false },
       });
-      if (signInError) {
-        toast({ title: "현재 비밀번호가 틀렸어요", variant: "destructive" });
-        return;
-      }
-
-      const { error } = await supabase.auth.updateUser({ password: newPw });
       if (error) throw error;
-
-      toast({ title: "비밀번호가 변경됐어요" });
-      setCurrentPw("");
-      setNewPw("");
-      setConfirmPw("");
+      setDeleteOtpSent(true);
+      toast({ title: "인증 코드를 보냈어요", description: "이메일에서 6자리 코드를 확인해주세요." });
     } catch (err: any) {
-      toast({ title: "비밀번호 변경 실패", description: err.message, variant: "destructive" });
+      toast({ title: "인증 코드 전송 실패", description: err.message, variant: "destructive" });
     } finally {
-      setPwSaving(false);
+      setDeleting(false);
     }
   };
 
@@ -202,13 +198,13 @@ export default function ProfilePage() {
     e.preventDefault();
     setDeleting(true);
     try {
-      // 비밀번호 재확인
-      const { error: signInError } = await supabase.auth.signInWithPassword({
+      const { error: verifyError } = await supabase.auth.verifyOtp({
         email: user.email!,
-        password: deletePw,
+        token: deleteOtpCode,
+        type: "email",
       });
-      if (signInError) {
-        toast({ title: "비밀번호가 틀렸어요", variant: "destructive" });
+      if (verifyError) {
+        toast({ title: "인증 코드가 올바르지 않아요", variant: "destructive" });
         return;
       }
 
@@ -260,7 +256,7 @@ export default function ProfilePage() {
 
         <h1 className="text-xl font-bold text-foreground">프로필 설정</h1>
 
-        {/* ━━━━━━━━━━━━━━━━ C2: 닉네임 + 언어 ━━━━━━━━━━━━━━━━ */}
+        {/* ━━━━━━━━━━━━━━━━ 계정 설정 ━━━━━━━━━━━━━━━━ */}
         <Card>
           <CardHeader>
             <CardTitle className="text-base">계정 설정</CardTitle>
@@ -289,17 +285,17 @@ export default function ProfilePage() {
                 <p className="text-xs text-green-600">✅ 사용 가능한 닉네임입니다</p>
               )}
               {nicknameStatus.state === "invalid_format" && (
-                <p className="text-xs text-destructive">{nicknameStatus.reason}</p>
+                <p className="text-xs text-destructive">{(nicknameStatus as any).reason}</p>
               )}
               {nicknameStatus.state === "taken" && (
                 <div className="space-y-1">
                   <p className="text-xs text-destructive" data-testid="nickname-taken-error">
                     이미 사용 중인 닉네임입니다
                   </p>
-                  {nicknameStatus.suggestions.length > 0 && (
+                  {(nicknameStatus as any).suggestions?.length > 0 && (
                     <div className="flex flex-wrap gap-2 items-center">
                       <span className="text-xs text-muted-foreground">추천:</span>
-                      {nicknameStatus.suggestions.map((s) => (
+                      {(nicknameStatus as any).suggestions.map((s: string) => (
                         <button
                           key={s}
                           type="button"
@@ -313,6 +309,61 @@ export default function ProfilePage() {
                   )}
                 </div>
               )}
+            </div>
+
+            {/* 생년월일 */}
+            <div className="space-y-1.5">
+              <Label>생년월일 (선택)</Label>
+              <div className="grid grid-cols-3 gap-2">
+                <input
+                  type="number"
+                  value={formData.birth_year}
+                  onChange={e => setFormData(prev => ({ ...prev, birth_year: e.target.value }))}
+                  placeholder="YYYY"
+                  min="1900"
+                  max={new Date().getFullYear()}
+                  data-testid="birth-year-input"
+                  className="px-3 py-2.5 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring text-center"
+                />
+                <input
+                  type="number"
+                  value={formData.birth_month}
+                  onChange={e => setFormData(prev => ({ ...prev, birth_month: e.target.value }))}
+                  placeholder="MM"
+                  min="1"
+                  max="12"
+                  data-testid="birth-month-input"
+                  className="px-3 py-2.5 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring text-center"
+                />
+                <input
+                  type="number"
+                  value={formData.birth_day}
+                  onChange={e => setFormData(prev => ({ ...prev, birth_day: e.target.value }))}
+                  placeholder="DD"
+                  min="1"
+                  max="31"
+                  data-testid="birth-day-input"
+                  className="px-3 py-2.5 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring text-center"
+                />
+              </div>
+            </div>
+
+            {/* 국적 */}
+            <div className="space-y-1.5">
+              <Label>국적</Label>
+              <Select
+                value={formData.country_code}
+                onValueChange={(value) => setFormData((prev) => ({ ...prev, country_code: value }))}
+              >
+                <SelectTrigger data-testid="country-select">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {COUNTRY_OPTIONS.map((c) => (
+                    <SelectItem key={c.code} value={c.code}>{c.flag} {c.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             {/* 표시 언어 */}
@@ -337,6 +388,20 @@ export default function ProfilePage() {
               </Select>
             </div>
 
+            {/* 마케팅 동의 */}
+            <div className="flex items-center gap-3">
+              <label className="flex items-center gap-2.5 cursor-pointer text-sm">
+                <input
+                  type="checkbox"
+                  checked={formData.marketing_agreed}
+                  onChange={e => setFormData(prev => ({ ...prev, marketing_agreed: e.target.checked }))}
+                  className="w-4 h-4 accent-primary cursor-pointer"
+                  data-testid="marketing-toggle"
+                />
+                <span className="text-foreground">마케팅 정보 수신 동의</span>
+              </label>
+            </div>
+
             {isDirty && (
               <p className="text-sm text-amber-600">
                 변경 사항이 있습니다. 저장 버튼을 눌러주세요.
@@ -351,119 +416,6 @@ export default function ProfilePage() {
               {saving ? "저장 중..." : "저장"}
             </Button>
 
-          </CardContent>
-        </Card>
-
-        {/* ━━━━━━━━━━━━━━━━ C1: 비밀번호 변경 ━━━━━━━━━━━━━━━━ */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">비밀번호 변경</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleChangePassword} className="space-y-3">
-              <div>
-                <Label className="mb-1.5 block">현재 비밀번호</Label>
-                <div className="relative">
-                  <input
-                    type={showPw ? "text" : "password"}
-                    value={currentPw}
-                    onChange={e => setCurrentPw(e.target.value)}
-                    placeholder="현재 비밀번호"
-                    required
-                    autoComplete="current-password"
-                    data-testid="current-password-input"
-                    className="w-full px-4 py-2.5 pr-16 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPw(v => !v)}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 text-xs font-semibold text-primary hover:text-primary/80 px-2 py-1 rounded-md hover:bg-primary/5 transition-colors"
-                  >
-                    {showPw ? "숨기기" : "보기"}
-                  </button>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label className="mb-1.5 block">새 비밀번호</Label>
-                <input
-                  type={showPw ? "text" : "password"}
-                  value={newPw}
-                  onChange={e => setNewPw(e.target.value)}
-                  placeholder="새 비밀번호 (8자+·대소문자·숫자·특수문자)"
-                  required
-                  minLength={8}
-                  autoComplete="new-password"
-                  data-testid="new-password-input"
-                  className="w-full px-4 py-2.5 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                />
-
-                {newPw.length > 0 && (
-                  <div className="space-y-2" data-testid="password-strength">
-                    <div className="flex items-center gap-2">
-                      <div className="flex gap-1 flex-1">
-                        {[1, 2, 3, 4, 5].map(i => (
-                          <div
-                            key={i}
-                            className={`h-1.5 flex-1 rounded-full transition-colors duration-200 ${
-                              i <= newPwAnalysis.score ? STRENGTH_BAR_CL[newPwAnalysis.score] : "bg-muted"
-                            }`}
-                          />
-                        ))}
-                      </div>
-                      {newPwAnalysis.score > 0 && (
-                        <span className={`text-xs font-medium ${STRENGTH_TXT_CL[newPwAnalysis.score]}`}>
-                          {STRENGTH_LABEL[newPwAnalysis.score]}
-                        </span>
-                      )}
-                    </div>
-                    <div className="grid grid-cols-2 gap-x-4 gap-y-0.5 text-xs">
-                      {([
-                        { key: "length",    label: "8자 이상" },
-                        { key: "uppercase", label: "대문자" },
-                        { key: "lowercase", label: "소문자" },
-                        { key: "digit",     label: "숫자" },
-                        { key: "special",   label: "특수문자" },
-                      ] as { key: keyof PasswordChecks; label: string }[]).map(({ key, label }) => {
-                        const ok = newPwAnalysis.checks[key];
-                        return (
-                          <span key={key} className={ok ? "text-green-600" : "text-muted-foreground"}>
-                            {ok ? "✓" : "✗"} {label}
-                          </span>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              <div>
-                <input
-                  type={showPw ? "text" : "password"}
-                  value={confirmPw}
-                  onChange={e => setConfirmPw(e.target.value)}
-                  placeholder="새 비밀번호 확인"
-                  required
-                  data-testid="confirm-password-input"
-                  className="w-full px-4 py-2.5 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                />
-                {confirmPw.length > 0 && !pwMatch && (
-                  <p className="text-xs text-destructive mt-1" data-testid="pw-mismatch-error">비밀번호가 일치하지 않습니다</p>
-                )}
-                {pwMatch && (
-                  <p className="text-xs text-green-600 mt-1" data-testid="pw-match-ok">✓ 비밀번호가 일치합니다</p>
-                )}
-              </div>
-
-              <Button
-                type="submit"
-                disabled={pwSaving || !currentPw || !newPwValid || !pwMatch}
-                className="w-full"
-                data-testid="change-password-button"
-              >
-                {pwSaving ? "변경 중..." : "비밀번호 변경"}
-              </Button>
-            </form>
           </CardContent>
         </Card>
 
@@ -528,19 +480,19 @@ export default function ProfilePage() {
           로그아웃
         </Button>
 
-        {/* ━━━━━━━━━━━━━━━━ C3: 탈퇴 (Danger Zone) ━━━━━━━━━━━━━━━━ */}
+        {/* ━━━━━━━━━━━━━━━━ 회원 탈퇴 (Danger Zone) ━━━━━━━━━━━━━━━━ */}
         <Card className="border-destructive/30">
           <CardHeader>
             <CardTitle className="text-base text-destructive">회원 탈퇴</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             <p className="text-sm text-muted-foreground">
-              탈퇴 시 모든 연주 기록과 통계가 삭제됩니다. 이 작업은 되돌릴 수 없습니다.
+              탈퇴 후 30일 내 복구가 가능합니다. 이후에는 모든 데이터가 삭제됩니다.
             </p>
             <Button
               variant="destructive"
               className="w-full"
-              onClick={() => { setDeletePw(""); setDeleteReason(""); setShowDeleteModal(true); }}
+              onClick={openDeleteModal}
               data-testid="open-delete-modal-button"
             >
               회원 탈퇴
@@ -551,7 +503,7 @@ export default function ProfilePage() {
       </div>
       </div>
 
-      {/* ━━━━━━━━━━━━━━━━ C3: 탈퇴 확인 모달 ━━━━━━━━━━━━━━━━ */}
+      {/* ━━━━━━━━━━━━━━━━ 탈퇴 확인 모달 ━━━━━━━━━━━━━━━━ */}
       {showDeleteModal && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 animate-pop-in"
@@ -562,62 +514,76 @@ export default function ProfilePage() {
               <span className="text-4xl">⚠️</span>
               <h2 className="text-xl font-bold text-foreground">정말 탈퇴하시겠어요?</h2>
               <p className="text-xs text-muted-foreground text-center">
-                모든 데이터가 삭제되며 복구할 수 없어요.
+                탈퇴 후 30일 내 복구 가능합니다.
               </p>
             </div>
 
-            <form ref={deleteFormRef} onSubmit={handleDeleteAccount} className="px-6 pb-6 space-y-3">
-              <div>
-                <label className="text-sm font-semibold text-foreground block mb-1.5">
-                  비밀번호 재입력
-                </label>
-                <input
-                  type="password"
-                  value={deletePw}
-                  onChange={e => setDeletePw(e.target.value)}
-                  placeholder="비밀번호를 입력해주세요"
-                  required
-                  autoComplete="off"
-                  name={deletePwName.current}
-                  data-testid="delete-password-input"
-                  className="w-full px-4 py-2.5 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                />
-              </div>
+            <div className="px-6 pb-6 space-y-3">
+              {!deleteOtpSent ? (
+                <>
+                  <div>
+                    <label className="text-sm font-medium text-muted-foreground block mb-1.5">
+                      탈퇴 사유 (선택)
+                    </label>
+                    <select
+                      value={deleteReason}
+                      onChange={e => setDeleteReason(e.target.value)}
+                      data-testid="delete-reason-select"
+                      className="w-full px-4 py-2.5 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                    >
+                      <option value="">선택 안 함</option>
+                      {DELETE_REASONS.map(r => (
+                        <option key={r} value={r}>{r}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <Button
+                    onClick={handleSendDeleteOtp}
+                    disabled={deleting}
+                    className="w-full"
+                    data-testid="send-delete-otp-button"
+                  >
+                    {deleting ? "처리 중..." : "탈퇴 인증 코드 받기"}
+                  </Button>
+                </>
+              ) : (
+                <form onSubmit={handleDeleteAccount} className="space-y-3">
+                  <p className="text-sm text-muted-foreground">
+                    <span className="font-medium text-foreground">{user.email}</span>으로<br />
+                    발송된 6자리 코드를 입력해주세요.
+                  </p>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    maxLength={6}
+                    value={deleteOtpCode}
+                    onChange={e => setDeleteOtpCode(e.target.value.replace(/\D/g, ""))}
+                    placeholder="6자리 코드"
+                    data-testid="delete-otp-input"
+                    className="w-full px-4 py-2.5 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring text-center tracking-widest"
+                  />
+                  <Button
+                    type="submit"
+                    variant="destructive"
+                    disabled={deleting || deleteOtpCode.length !== 6}
+                    className="w-full"
+                    data-testid="confirm-delete-button"
+                  >
+                    {deleting ? "처리 중..." : "탈퇴 완료"}
+                  </Button>
+                </form>
+              )}
 
-              <div>
-                <label className="text-sm font-medium text-muted-foreground block mb-1.5">
-                  탈퇴 사유 (선택)
-                </label>
-                <textarea
-                  value={deleteReason}
-                  onChange={e => setDeleteReason(e.target.value)}
-                  placeholder="서비스 개선에 참고할게요"
-                  rows={2}
-                  maxLength={200}
-                  data-testid="delete-reason-input"
-                  className="w-full px-4 py-2.5 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring resize-none"
-                />
-              </div>
-
-              <Button
-                type="submit"
-                variant="destructive"
-                disabled={deleting || !deletePw}
-                className="w-full"
-                data-testid="confirm-delete-button"
-              >
-                {deleting ? "처리 중..." : "탈퇴하기"}
-              </Button>
               <Button
                 type="button"
                 variant="outline"
                 className="w-full"
-                onClick={() => { setShowDeleteModal(false); setDeletePw(""); setDeleteReason(""); }}
+                onClick={closeDeleteModal}
                 data-testid="cancel-delete-button"
               >
                 취소
               </Button>
-            </form>
+            </div>
           </div>
         </div>
       )}
