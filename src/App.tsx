@@ -35,19 +35,34 @@ import AuthCallback from "./pages/AuthCallback.tsx";
 
 const queryClient = new QueryClient();
 
-// Magic Link 콜백 탭이 전송한 AUTH_COMPLETE 메시지를 원본 탭에서 수신
+// Magic Link 콜백 탭이 전송한 AUTH_COMPLETE 신호를 원본 탭에서 수신
+// 이중 채널: BroadcastChannel(Primary) + localStorage storage event(Fallback)
 function AuthBroadcastListener() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!("BroadcastChannel" in window)) return;
-    const channel = new BroadcastChannel("noteflex_auth");
-    channel.onmessage = async (e: MessageEvent) => {
-      if (e.data.type !== "AUTH_COMPLETE") return;
+    const handleAuthComplete = async () => {
       await supabase.auth.refreshSession();
       navigate("/", { replace: true });
     };
-    return () => channel.close();
+
+    let channel: BroadcastChannel | null = null;
+    if ("BroadcastChannel" in window) {
+      channel = new BroadcastChannel("noteflex_auth");
+      channel.onmessage = async (e: MessageEvent) => {
+        if (e.data.type === "AUTH_COMPLETE") await handleAuthComplete();
+      };
+    }
+
+    const onStorage = async (e: StorageEvent) => {
+      if (e.key === "noteflex_auth_complete") await handleAuthComplete();
+    };
+    window.addEventListener("storage", onStorage);
+
+    return () => {
+      channel?.close();
+      window.removeEventListener("storage", onStorage);
+    };
   }, [navigate]);
 
   return null;

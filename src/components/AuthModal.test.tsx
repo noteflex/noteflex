@@ -453,6 +453,40 @@ describe("계정 복구 (30일 이내 탈퇴)", () => {
 });
 
 // ─────────────────────────────────────────────────────────────────────────
+// 매직링크 탭 싱크 (Step 2 자동 닫기)
+// ─────────────────────────────────────────────────────────────────────────
+
+describe("매직링크 탭 싱크", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockCheckEmailExists.mockResolvedValue({ accountStatus: "new", exists: false, confirmed: false });
+    mockSignInWithOtp.mockResolvedValue({ error: null });
+  });
+
+  it("Step 2에서 '인증 대기 중...' 표시", async () => {
+    await goToMagicLinkStep();
+    expect(screen.getByTestId("auth-waiting-indicator")).toBeInTheDocument();
+    expect(screen.getByText("인증 대기 중...")).toBeInTheDocument();
+  });
+
+  it("Step 2에서 localStorage storage 이벤트 수신 시 onClose 호출", async () => {
+    const { onClose } = await goToMagicLinkStep();
+    window.dispatchEvent(
+      new StorageEvent("storage", { key: "noteflex_auth_complete", newValue: "12345" })
+    );
+    await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1));
+  });
+
+  it("Step 2에서 BroadcastChannel AUTH_COMPLETE 수신 시 onClose 호출", async () => {
+    const { onClose } = await goToMagicLinkStep();
+    const channel = new BroadcastChannel("noteflex_auth");
+    channel.postMessage({ type: "AUTH_COMPLETE" });
+    await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1));
+    channel.close();
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────
 // Google OAuth
 // ─────────────────────────────────────────────────────────────────────────
 

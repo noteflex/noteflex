@@ -66,6 +66,30 @@ export default function AuthModal({ onClose }: AuthModalProps) {
     };
   }, [onClose]);
 
+  // Step 2: 다른 탭에서 매직링크 클릭 시 자동 닫기
+  // 이중 채널: localStorage storage event + BroadcastChannel
+  useEffect(() => {
+    if (step !== 2) return;
+
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === "noteflex_auth_complete") onClose();
+    };
+    window.addEventListener("storage", onStorage);
+
+    let channel: BroadcastChannel | null = null;
+    if ("BroadcastChannel" in window) {
+      channel = new BroadcastChannel("noteflex_auth");
+      channel.onmessage = (e: MessageEvent) => {
+        if (e.data.type === "AUTH_COMPLETE") onClose();
+      };
+    }
+
+    return () => {
+      window.removeEventListener("storage", onStorage);
+      channel?.close();
+    };
+  }, [step, onClose]);
+
   const startCooldown = () => {
     if (cooldownRef.current) clearInterval(cooldownRef.current);
     setResendCooldown(60);
@@ -319,6 +343,10 @@ export default function AuthModal({ onClose }: AuthModalProps) {
               </p>
             </div>
             <p className="text-xs text-muted-foreground">스팸함도 확인해보세요 📁</p>
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground animate-pulse" data-testid="auth-waiting-indicator">
+              <span>⏳</span>
+              <span>인증 대기 중...</span>
+            </div>
             <button
               type="button"
               onClick={handleResend}

@@ -37,6 +37,8 @@ export default function AuthCallback() {
         localStorage.removeItem("noteflex_consent");
       }
 
+      // 원본 탭에 인증 완료 신호 전달 (BroadcastChannel + localStorage 이중 채널)
+      localStorage.setItem("noteflex_auth_complete", Date.now().toString());
       if ("BroadcastChannel" in window) {
         const channel = new BroadcastChannel("noteflex_auth");
         channel.postMessage({ type: "AUTH_COMPLETE" });
