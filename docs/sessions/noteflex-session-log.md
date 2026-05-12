@@ -4,6 +4,53 @@
 
 ---
 
+## 2026-05-12 (화) — Auth Sprint 2: 복구 UX + 탭 싱크 ✅
+
+### Commits
+- C1: `feat(auth): 30일 이내 탈퇴 계정 복구 UX` (`fe979dc`)
+- C2: `feat(auth): 탈퇴 시 닉네임·아바타 보존 + 부분 유니크 인덱스` (`b1ffa88`)
+- C3: `feat(auth): 매직링크 탭 싱크 이중 채널 + 자동 닫기` (`abce786`)
+
+### 완료 내역
+
+**C1 — 계정 복구 UX (30일 이내 탈퇴)**
+- `check_email_exists` v3: `account_status` TEXT + `recovery_days_left` INT 반환
+  - `'new'` → 미가입/미인증, `'active'` → 정상, `'deleted_recoverable'` → 탈퇴 30일 이내, `'deleted_expired'` → 탈퇴 30일 경과
+- `restore_account()` RPC: magic link 클릭 후 `auth.uid()` 기반 soft-delete 플래그 초기화 + email 복원
+- `hard_delete_expired_accounts()` RPC: 서비스 롤 배치 작업용 대상 목록 반환 (anon/authenticated 실행 불가)
+- `AuthModal` Step 3 복구 패널: 남은 일수 표시 + "계정 복구하기" 버튼 → `signInWithOtp` with `?action=restore`
+- `AuthCallback`: `?action=restore` 감지 → `restore_account()` RPC 호출, 실패 시 `/?auth_error=restore_failed`
+- `profile.ts` `EmailCheckResult`: `accountStatus` + `recoveryDaysLeft` 필드 추가, `exists`/`confirmed` 하위 호환 유지
+- 단위 테스트 5개 (AuthModal.test.tsx)
+
+**C2 — 탈퇴 시 닉네임·아바타 보존**
+- `request_account_deletion` 수정: 이메일만 마스킹, `nickname` · `display_name` · `avatar_url` 보존
+- `profiles_nickname_active_unique` 부분 유니크 인덱스: `WHERE is_deleted = false AND nickname IS NOT NULL`
+  → 탈퇴 계정 닉네임이 신규 가입 차단 안 함; 복구 시 닉네임 그대로 복원
+- 단위 테스트 4개 (AuthCallback.test.tsx: restore_account 호출·성공·실패·미호출)
+
+**C3 — 매직링크 탭 싱크 이중 채널**
+- `AuthCallback`: `localStorage.setItem('noteflex_auth_complete', timestamp)` 추가 (storage event fallback)
+- `App.tsx AuthBroadcastListener`: BroadcastChannel primary + localStorage `storage` event fallback
+- `AuthModal` Step 2: `storage` event 및 BroadcastChannel `AUTH_COMPLETE` 수신 시 `onClose()` 자동 호출
+- `AuthModal` Step 2: "인증 대기 중..." 대기 인디케이터 추가 (`data-testid="auth-waiting-indicator"`)
+- 단위 테스트 3개 (AuthModal.test.tsx: waiting indicator, storage event → onClose, BC → onClose)
+
+### 검증
+- AuthModal 34/34 PASS, AuthCallback 12/12 PASS, ProfilePage 22/22 PASS (총 68개)
+- tsc 오류 0
+
+### Production Apply 필요 (Supabase Dashboard > SQL Editor)
+1. `supabase/migrations/20260513_account_recovery.sql` — check_email_exists v3 + restore_account + hard_delete_expired_accounts
+2. `supabase/migrations/20260513_preserve_nickname.sql` — request_account_deletion 수정 + 부분 유니크 인덱스
+3. `supabase/migrations/20260512_profile_completed_default.sql` (Sprint 1, 아직 미적용 시)
+
+### 다음 세션
+- Sprint 2 C3 Edge Function: `hard_delete_expired_accounts()` 를 호출하는 cron job (30일 경과 계정 auth.users 영구 삭제)
+- Supabase Realtime RLS 검토 (profiles 테이블 구독 범위)
+
+---
+
 ## 2026-05-12 (화) — 13일차 블로그 3편 ✅
 
 ### Commits
