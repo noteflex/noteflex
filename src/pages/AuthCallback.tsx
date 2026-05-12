@@ -15,6 +15,16 @@ export default function AuthCallback() {
         return;
       }
 
+      // 계정 복구 magic link (?action=restore)
+      const searchParams = new URLSearchParams(window.location.search);
+      if (searchParams.get("action") === "restore") {
+        const { error: rpcError } = await supabase.rpc("restore_account");
+        if (rpcError) {
+          navigate("/?auth_error=restore_failed", { replace: true });
+          return;
+        }
+      }
+
       // Google OAuth 가입 시 localStorage에 저장된 TOS 동의 시점을 profile에 반영
       const stored = localStorage.getItem("noteflex_consent");
       if (stored) {

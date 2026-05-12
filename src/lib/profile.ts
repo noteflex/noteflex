@@ -131,25 +131,32 @@ export function calculateAge(
 }
 
 // ═════════════════════════════════════════════════════════════
-// 이메일 중복 체크 (v2 — 미인증 분기)
+// 이메일 중복 체크 (v3 — 4가지 계정 상태)
 // ═════════════════════════════════════════════════════════════
 
+export type AccountStatus = "new" | "active" | "deleted_recoverable" | "deleted_expired";
+
 export interface EmailCheckResult {
+  accountStatus: AccountStatus;
+  recoveryDaysLeft?: number;
+  /** @deprecated v2 backward-compat */
   exists: boolean;
+  /** @deprecated v2 backward-compat */
   confirmed: boolean;
 }
 
 /**
- * auth.users에서 이메일 존재 여부 + 인증 완료 여부를 반환.
- * RPC check_email_exists v2 (user_exists, is_confirmed).
+ * auth.users에서 이메일의 계정 상태를 반환.
+ * RPC check_email_exists v3 (account_status, recovery_days_left).
  *
- * exists=false           → 신규 가입 가능
- * exists & !confirmed    → 미인증 = 차단 X, OTP 재전송
- * exists & confirmed     → 이미 가입 완료 → 로그인 CTA
+ * 'new'                 → 미가입 또는 미인증 (가입 진행)
+ * 'active'              → 정상 활성 계정 → 로그인 CTA
+ * 'deleted_recoverable' → 탈퇴 30일 이내 → 복구 패널
+ * 'deleted_expired'     → 탈퇴 30일 경과 → 에러 표시
  */
 export async function checkEmailExists(email: string): Promise<EmailCheckResult> {
   const normalized = email.trim().toLowerCase();
-  if (!normalized) return { exists: false, confirmed: false };
+  if (!normalized) return { accountStatus: "new", exists: false, confirmed: false };
 
   const { data, error } = await supabase.rpc("check_email_exists", {
     p_email: normalized,
@@ -157,13 +164,17 @@ export async function checkEmailExists(email: string): Promise<EmailCheckResult>
 
   if (error) {
     console.warn("[profile] Email check error:", error);
-    return { exists: false, confirmed: false };
+    return { accountStatus: "new", exists: false, confirmed: false };
   }
 
   const row = Array.isArray(data) ? data[0] : data;
+  const status: AccountStatus = (row?.account_status as AccountStatus) ?? "new";
+
   return {
-    exists: !!row?.user_exists,
-    confirmed: !!row?.is_confirmed,
+    accountStatus: status,
+    recoveryDaysLeft: row?.recovery_days_left ?? undefined,
+    exists: status !== "new",
+    confirmed: status === "active" || status === "deleted_recoverable" || status === "deleted_expired",
   };
 }
   

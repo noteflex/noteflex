@@ -38,7 +38,7 @@ function Divider() {
 
 export default function AuthModal({ onClose }: AuthModalProps) {
   const [mode, setMode] = useState<Mode>("login");
-  const [step, setStep] = useState(1); // 1: 이메일 폼, 2: 매직링크 전송 완료
+  const [step, setStep] = useState(1); // 1: 이메일 폼, 2: 매직링크 전송 완료, 3: 복구 패널
 
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
@@ -47,6 +47,10 @@ export default function AuthModal({ onClose }: AuthModalProps) {
   // Step 1 (signup) — 약관 동의
   const [tosAgreed, setTosAgreed] = useState(false);
   const [marketingAgreed, setMarketingAgreed] = useState(false);
+
+  // Step 3 — 복구 UX
+  const [recoveryDaysLeft, setRecoveryDaysLeft] = useState<number | null>(null);
+  const [isRecovery, setIsRecovery] = useState(false);
 
   // Step 2 — 재전송 cooldown
   const [resendCooldown, setResendCooldown] = useState(0);
@@ -83,6 +87,8 @@ export default function AuthModal({ onClose }: AuthModalProps) {
     setEmailError(null);
     setTosAgreed(false);
     setMarketingAgreed(false);
+    setRecoveryDaysLeft(null);
+    setIsRecovery(false);
   };
 
   // ───────── Google OAuth ─────────
@@ -148,9 +154,22 @@ export default function AuthModal({ onClose }: AuthModalProps) {
     }
     setLoading(true);
     try {
-      const { exists, confirmed } = await checkEmailExists(email);
-      if (exists && confirmed) {
+      const result = await checkEmailExists(email);
+      // accountStatus takes precedence; fall back to v2 exists/confirmed for mock compat
+      const status = result.accountStatus ?? ((result.exists && result.confirmed) ? "active" : "new");
+      if (status === "active") {
         setEmailError("이미 가입된 이메일이에요.");
+        setLoading(false);
+        return;
+      }
+      if (status === "deleted_recoverable") {
+        setRecoveryDaysLeft(result.recoveryDaysLeft ?? 30);
+        setStep(3);
+        setLoading(false);
+        return;
+      }
+      if (status === "deleted_expired") {
+        setEmailError("이 계정은 완전히 삭제되었습니다. 다른 이메일로 가입해주세요.");
         setLoading(false);
         return;
       }
@@ -177,11 +196,42 @@ export default function AuthModal({ onClose }: AuthModalProps) {
     }
   };
 
+  // ───────── Step 3: 계정 복구 링크 전송 ─────────
+  const handleRecoverAccount = async () => {
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options: {
+          shouldCreateUser: false,
+          emailRedirectTo: `${window.location.origin}/auth/callback?action=restore`,
+        },
+      });
+      if (error) throw error;
+      setIsRecovery(true);
+      setStep(2);
+      startCooldown();
+    } catch (err: any) {
+      toast({ title: "오류가 발생했어요", description: err.message, variant: "destructive" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // ───────── Step 2: 재전송 ─────────
   const handleResend = async () => {
     if (resendCooldown > 0) return;
     try {
-      if (mode === "login") {
+      if (isRecovery) {
+        const { error } = await supabase.auth.signInWithOtp({
+          email,
+          options: {
+            shouldCreateUser: false,
+            emailRedirectTo: `${window.location.origin}/auth/callback?action=restore`,
+          },
+        });
+        if (error) throw error;
+      } else if (mode === "login") {
         const { error } = await supabase.auth.signInWithOtp({
           email,
           options: {
@@ -226,8 +276,38 @@ export default function AuthModal({ onClose }: AuthModalProps) {
         className="bg-card border border-border rounded-2xl shadow-2xl w-full max-w-sm mx-4 max-h-[90vh] overflow-y-auto"
         onClick={e => e.stopPropagation()}
       >
-        {/* ━━━━━━━━━━━━━━━━ Step 2: 매직링크 안내 ━━━━━━━━━━━━━━━━ */}
-        {step === 2 ? (
+        {/* ━━━━━━━━━━━━━━━━ Step 3: 계정 복구 패널 ━━━━━━━━━━━━━━━━ */}
+        {step === 3 ? (
+          <div className="px-6 py-10 flex flex-col items-center gap-5" data-testid="recovery-panel">
+            <div className="text-5xl">⏳</div>
+            <div className="text-center space-y-2">
+              <h3 className="text-lg font-bold text-foreground">계정 복구 가능</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                <span className="font-medium text-foreground">{email}</span>은<br />
+                삭제 처리 중인 계정이에요.<br />
+                <span className="font-semibold text-primary">{recoveryDaysLeft}일 이내</span>에 복구할 수 있어요.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={handleRecoverAccount}
+              disabled={loading}
+              className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-semibold text-sm shadow hover:shadow-md transition-all active:scale-95 disabled:opacity-50"
+              data-testid="recover-account-button"
+            >
+              {loading ? "전송 중..." : "계정 복구하기"}
+            </button>
+            <button
+              type="button"
+              onClick={() => { setStep(1); setRecoveryDaysLeft(null); setIsRecovery(false); }}
+              className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+              data-testid="recovery-cancel-button"
+            >
+              취소
+            </button>
+          </div>
+        ) : step === 2 ? (
+        /* ━━━━━━━━━━━━━━━━ Step 2: 매직링크 안내 ━━━━━━━━━━━━━━━━ */
           <div className="px-6 py-10 flex flex-col items-center gap-5" data-testid="magic-link-screen">
             <div className="text-5xl">✉️</div>
             <div className="text-center space-y-2">
@@ -235,7 +315,7 @@ export default function AuthModal({ onClose }: AuthModalProps) {
               <p className="text-sm text-muted-foreground leading-relaxed">
                 <span className="font-medium text-foreground" data-testid="magic-link-email">{email}</span>로<br />
                 인증 메일을 보냈어요.<br />
-                메일 속 링크를 클릭하면 {mode === "login" ? "로그인이" : "가입이"} 이어집니다.
+                메일 속 링크를 클릭하면 {isRecovery ? "계정 복구가" : mode === "login" ? "로그인이" : "가입이"} 이어집니다.
               </p>
             </div>
             <p className="text-xs text-muted-foreground">스팸함도 확인해보세요 📁</p>

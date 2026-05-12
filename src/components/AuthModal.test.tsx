@@ -350,6 +350,109 @@ describe("로그인 모드 (매직링크)", () => {
 });
 
 // ─────────────────────────────────────────────────────────────────────────
+// 계정 복구 (30일 이내 탈퇴)
+// ─────────────────────────────────────────────────────────────────────────
+
+describe("계정 복구 (30일 이내 탈퇴)", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockSignInWithOtp.mockResolvedValue({ error: null });
+  });
+
+  it("deleted_recoverable → 복구 패널 표시", async () => {
+    mockCheckEmailExists.mockResolvedValueOnce({
+      accountStatus: "deleted_recoverable",
+      recoveryDaysLeft: 25,
+      exists: true,
+      confirmed: true,
+    });
+    const { user } = await enterSignupMode();
+    await user.type(screen.getByPlaceholderText(/사용할 이메일/), "deleted@example.com");
+    await user.click(screen.getByTestId("tos-checkbox"));
+    await user.click(screen.getByTestId("signup-submit-button"));
+    await waitFor(() =>
+      expect(screen.getByTestId("recovery-panel")).toBeInTheDocument()
+    );
+  });
+
+  it("복구 패널에 남은 복구 기간(일) 표시", async () => {
+    mockCheckEmailExists.mockResolvedValueOnce({
+      accountStatus: "deleted_recoverable",
+      recoveryDaysLeft: 25,
+      exists: true,
+      confirmed: true,
+    });
+    const { user } = await enterSignupMode();
+    await user.type(screen.getByPlaceholderText(/사용할 이메일/), "deleted@example.com");
+    await user.click(screen.getByTestId("tos-checkbox"));
+    await user.click(screen.getByTestId("signup-submit-button"));
+    await waitFor(() => expect(screen.getByTestId("recovery-panel")).toBeInTheDocument());
+    expect(screen.getByText(/25/)).toBeInTheDocument();
+  });
+
+  it("'계정 복구하기' 클릭 시 signInWithOtp shouldCreateUser:false + ?action=restore", async () => {
+    mockCheckEmailExists.mockResolvedValueOnce({
+      accountStatus: "deleted_recoverable",
+      recoveryDaysLeft: 25,
+      exists: true,
+      confirmed: true,
+    });
+    const { user } = await enterSignupMode();
+    await user.type(screen.getByPlaceholderText(/사용할 이메일/), "deleted@example.com");
+    await user.click(screen.getByTestId("tos-checkbox"));
+    await user.click(screen.getByTestId("signup-submit-button"));
+    await waitFor(() => expect(screen.getByTestId("recovery-panel")).toBeInTheDocument());
+    await user.click(screen.getByTestId("recover-account-button"));
+    await waitFor(() =>
+      expect(mockSignInWithOtp).toHaveBeenCalledWith(
+        expect.objectContaining({
+          email: "deleted@example.com",
+          options: expect.objectContaining({
+            shouldCreateUser: false,
+            emailRedirectTo: expect.stringContaining("action=restore"),
+          }),
+        })
+      )
+    );
+  });
+
+  it("복구 링크 전송 후 magic-link-screen 표시", async () => {
+    mockCheckEmailExists.mockResolvedValueOnce({
+      accountStatus: "deleted_recoverable",
+      recoveryDaysLeft: 25,
+      exists: true,
+      confirmed: true,
+    });
+    const { user } = await enterSignupMode();
+    await user.type(screen.getByPlaceholderText(/사용할 이메일/), "deleted@example.com");
+    await user.click(screen.getByTestId("tos-checkbox"));
+    await user.click(screen.getByTestId("signup-submit-button"));
+    await waitFor(() => expect(screen.getByTestId("recovery-panel")).toBeInTheDocument());
+    await user.click(screen.getByTestId("recover-account-button"));
+    await waitFor(() =>
+      expect(screen.getByTestId("magic-link-screen")).toBeInTheDocument()
+    );
+  });
+
+  it("deleted_expired → 만료 에러 메시지 표시", async () => {
+    mockCheckEmailExists.mockResolvedValueOnce({
+      accountStatus: "deleted_expired",
+      recoveryDaysLeft: 0,
+      exists: true,
+      confirmed: true,
+    });
+    const { user } = await enterSignupMode();
+    await user.type(screen.getByPlaceholderText(/사용할 이메일/), "expired@example.com");
+    await user.click(screen.getByTestId("tos-checkbox"));
+    await user.click(screen.getByTestId("signup-submit-button"));
+    await waitFor(() =>
+      expect(screen.getByTestId("email-exists-error")).toBeInTheDocument()
+    );
+    expect(screen.getByText(/완전히 삭제/)).toBeInTheDocument();
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────
 // Google OAuth
 // ─────────────────────────────────────────────────────────────────────────
 
