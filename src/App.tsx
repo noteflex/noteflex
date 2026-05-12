@@ -45,11 +45,7 @@ function AuthBroadcastListener() {
     channel.onmessage = async (e: MessageEvent) => {
       if (e.data.type !== "AUTH_COMPLETE") return;
       await supabase.auth.refreshSession();
-      if (!e.data.profile_completed) {
-        navigate("/?complete_profile=1", { replace: true });
-      } else {
-        navigate("/", { replace: true });
-      }
+      navigate("/", { replace: true });
     };
     return () => channel.close();
   }, [navigate]);
