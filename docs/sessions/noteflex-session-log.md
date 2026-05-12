@@ -4,50 +4,71 @@
 
 ---
 
-## 2026-05-12 (화) — Auth Sprint 2: 복구 UX + 탭 싱크 ✅
+## 2026-05-12 — Auth 인증 흐름 마라톤 + Resend SMTP + Search Console + hard_delete 정정
 
-### Commits
-- C1: `feat(auth): 30일 이내 탈퇴 계정 복구 UX` (`fe979dc`)
-- C2: `feat(auth): 탈퇴 시 닉네임·아바타 보존 + 부분 유니크 인덱스` (`b1ffa88`)
-- C3: `feat(auth): 매직링크 탭 싱크 이중 채널 + 자동 닫기` (`abce786`)
+### 작업 누적
+- **Resend SMTP 연동 완료**
+  - 도메인 noteflex.app 검증 (DKIM·SPF·MX·DMARC)
+  - 리전 = us-east-1 (영어 기본 출시 전략에 맞춤, ap-northeast-1 → us-east-1 전환)
+  - Supabase Custom SMTP 설정 (smtp.resend.com:465, Sender: noreply@noteflex.app)
+- **Supabase Email Templates 정정**
+  - Confirm Signup = "가입을 완료" + "가입하기 / Sign Up" 버튼 (한·영 동시)
+  - Magic Link = "계속하세요" + "계속하기 / Continue" 버튼 (한·영 동시)
+  - 자체 발송 시스템 = 출시 후 PENDING
+- **Auth Sprint 1 (7 commits, ba17423~3876c65)**
+  - Magic Link only 전환 (OTP·비밀번호 제거)
+  - Step 3 제거 (닉네임·생년월일·비밀번호 입력)
+  - 가입 흐름 = 이메일 + TOS·만14세 동의 + 마케팅 (Step 1 통합)
+  - 닉네임 = 자동 생성 (user_ + UUID 앞 8자리)
+  - 마이페이지 = 생년월일·국적·마케팅 선택 입력
+  - 탈퇴 = 이메일 OTP 재인증 → 매직링크 재인증으로 변경
+  - /reset-password → 메인 redirect
+- **Auth Sprint 2 (4 commits, fe979dc~642cbca)**
+  - 30일 내 탈퇴 계정 복구 UX (복구 vs 새로 시작 모달)
+  - check_email_exists v3 (is_deleted·deleted_at 반환)
+  - restore_account·hard_delete_expired_accounts RPC
+  - 탈퇴 시 닉네임·아바타 보존 + partial unique index
+  - 매직링크 탭 동기화 (BroadcastChannel + localStorage event)
+- **탈퇴 정정 (341a8c0)** — 매직링크 재인증으로 단순화 (OTP 풀 개발 X)
+- **복구 UX 정정 (ad22e04)** — 복구 완료 화면 + 기존 탭 동기화
+- **새 탭 닫기 정정 (fda734e)** — PC window.close + 모바일 navigate fallback
+- **"새로 시작" 시나리오 구현 (769f833)** — hard_delete_account RPC + AuthModal 확인 모달 + 6 단위 테스트
+- **hard_delete_account 시그니처 정정 (43ab239)** — `hard_delete_account(p_email TEXT)` 이메일 인수 버전
+  - 마이그레이션 20260513_hard_delete_by_email.sql
+- **hard_delete_account = auth.users도 삭제 (db3abcb)** — 진짜 신규 가입 처리 정합
+  - 기존 = profiles만 삭제 → auth.users 그대로 → 옛 user_id 로그인 + trigger 미작동
+  - 신규 = profiles + auth.users 모두 DELETE → 새 user_id + 새 닉네임 + 새 created_at
+  - AuthModal: shouldCreateUser false→true + noteflex_consent localStorage 저장
+  - 마이그레이션 20260513_hard_delete_with_auth.sql
+- **Production 마이그레이션 적용 ✅**
+  - 20260512_profile_completed_default.sql
+  - 20260513_account_recovery.sql
+  - 20260513_preserve_nickname.sql
+  - 20260513_hard_delete_by_email.sql
+  - 20260513_hard_delete_with_auth.sql
+- **Google Search Console 인증 완료**
+  - URL 접두사: https://noteflex.app
+  - HTML 파일 인증 (public/google8962581177005031.html)
+  - 메인·블로그 글 URL 색인 요청 (데이터 처리 중)
 
-### 완료 내역
+### 검증 결과
+- 신규 가입 → 매직링크 → 자동 로그인 ✓
+- 탈퇴 → 매직링크 → 탈퇴 완료 ✓
+- 복구하기 → 옛 데이터 유지 ✓
+- "새로 시작" → 데이터 삭제 + 신규 닉네임·가입일 (auth.users 삭제 정정 후 검증 예정)
+- 단위 테스트 45/45 PASS (AuthModal), 19/19 PASS (AuthCallback), 20/20 PASS (ProfilePage)
 
-**C1 — 계정 복구 UX (30일 이내 탈퇴)**
-- `check_email_exists` v3: `account_status` TEXT + `recovery_days_left` INT 반환
-  - `'new'` → 미가입/미인증, `'active'` → 정상, `'deleted_recoverable'` → 탈퇴 30일 이내, `'deleted_expired'` → 탈퇴 30일 경과
-- `restore_account()` RPC: magic link 클릭 후 `auth.uid()` 기반 soft-delete 플래그 초기화 + email 복원
-- `hard_delete_expired_accounts()` RPC: 서비스 롤 배치 작업용 대상 목록 반환 (anon/authenticated 실행 불가)
-- `AuthModal` Step 3 복구 패널: 남은 일수 표시 + "계정 복구하기" 버튼 → `signInWithOtp` with `?action=restore`
-- `AuthCallback`: `?action=restore` 감지 → `restore_account()` RPC 호출, 실패 시 `/?auth_error=restore_failed`
-- `profile.ts` `EmailCheckResult`: `accountStatus` + `recoveryDaysLeft` 필드 추가, `exists`/`confirmed` 하위 호환 유지
-- 단위 테스트 5개 (AuthModal.test.tsx)
+### 정책 결정
+- **이메일 발송 시스템**: 출시 = Supabase 표준 (한·영 동시 표기). 출시 후 1~2주 PENDING = 자체 발송 시스템 전환 (시나리오별·언어별 분기).
+- **새 탭 자동 활성화**: PC = 브라우저 보안 제약으로 JS 해결 불가. 모바일 = 같은 탭이라 자연 처리. 매직링크 서비스 공통 한계.
+- **hard_delete 전략**: profiles + auth.users 모두 DELETE. SECURITY DEFINER + search_path=public,auth. 30일 내 탈퇴 계정만 허용. 익명 호출 가능.
 
-**C2 — 탈퇴 시 닉네임·아바타 보존**
-- `request_account_deletion` 수정: 이메일만 마스킹, `nickname` · `display_name` · `avatar_url` 보존
-- `profiles_nickname_active_unique` 부분 유니크 인덱스: `WHERE is_deleted = false AND nickname IS NOT NULL`
-  → 탈퇴 계정 닉네임이 신규 가입 차단 안 함; 복구 시 닉네임 그대로 복원
-- 단위 테스트 4개 (AuthCallback.test.tsx: restore_account 호출·성공·실패·미호출)
-
-**C3 — 매직링크 탭 싱크 이중 채널**
-- `AuthCallback`: `localStorage.setItem('noteflex_auth_complete', timestamp)` 추가 (storage event fallback)
-- `App.tsx AuthBroadcastListener`: BroadcastChannel primary + localStorage `storage` event fallback
-- `AuthModal` Step 2: `storage` event 및 BroadcastChannel `AUTH_COMPLETE` 수신 시 `onClose()` 자동 호출
-- `AuthModal` Step 2: "인증 대기 중..." 대기 인디케이터 추가 (`data-testid="auth-waiting-indicator"`)
-- 단위 테스트 3개 (AuthModal.test.tsx: waiting indicator, storage event → onClose, BC → onClose)
-
-### 검증
-- AuthModal 34/34 PASS, AuthCallback 12/12 PASS, ProfilePage 22/22 PASS (총 68개)
-- tsc 오류 0
-
-### Production Apply 필요 (Supabase Dashboard > SQL Editor)
-1. `supabase/migrations/20260513_account_recovery.sql` — check_email_exists v3 + restore_account + hard_delete_expired_accounts
-2. `supabase/migrations/20260513_preserve_nickname.sql` — request_account_deletion 수정 + 부분 유니크 인덱스
-3. `supabase/migrations/20260512_profile_completed_default.sql` (Sprint 1, 아직 미적용 시)
-
-### 다음 세션
-- Sprint 2 C3 Edge Function: `hard_delete_expired_accounts()` 를 호출하는 cron job (30일 경과 계정 auth.users 영구 삭제)
-- Supabase Realtime RLS 검토 (profiles 테이블 구독 범위)
+### 다음 액션
+1. "새로 시작" 시나리오 재검증 (auth.users 삭제 정정 후)
+2. 누적 commit push
+3. SEO sprint (sitemap·robots·메타 태그)
+4. Pricing·Footer·About·Contact (Phase 2 잔여)
+5. Apple OAuth = 출시 후 PENDING
 
 ---
 

@@ -7,6 +7,45 @@
 
 ---
 
+## 2026-05-12 추가 (Auth 마라톤 + 이메일 시스템 + hard_delete)
+
+### 출시 후 1~2주
+- [ ] **이메일 발송 자체 시스템 구축**
+  - Vercel Serverless Function 또는 Supabase Edge Function
+  - Supabase Admin API로 OTP/토큰 생성 + Resend Admin API 직접 호출
+  - 시나리오별 분기: 가입·로그인·탈퇴 확인 (각각 다른 템플릿)
+  - 언어별 분기: 한국 IP = 한국어만, 그 외 = 영어만 (IP geolocation)
+  - 템플릿 6종 (가입·로그인·탈퇴 × 한·영)
+  - 사유: Supabase signInWithOtp = Confirm Signup vs Magic Link 자동 분기만 가능. 로그인·탈퇴 분기 X, 언어별 분기 X.
+
+### 출시 후 안정화 (1개월)
+- [ ] **DMARC 정책 강화**
+  - 현재: v=DMARC1; p=none; (모니터링만)
+  - 전환: p=quarantine → p=reject
+  - Gmail·Outlook 신뢰도 상승 + 도메인 스푸핑 방지
+
+### 인프라 정리
+- [ ] **30일 경과 탈퇴 계정 자동 hard delete cron**
+  - 현재 hard_delete_account = 사용자가 "새로 시작" 시 명시적 호출
+  - 30일 경과 시 자동 정리 X
+  - hard_delete_expired_accounts() RPC + 일일 cron (pg_cron 또는 Edge Function scheduled)
+- [ ] **hard_delete_account 보안 강화**
+  - 현재 = 익명 호출 허용 (탈퇴된 데이터 영구 삭제 정합)
+  - 추가: rate limit (IP당 분당 1회), CAPTCHA
+  - 30일 내 탈퇴 안전장치는 박혀있음
+
+### 검증 영역 (출시 후 사용자 데이터로)
+- [ ] **모바일 매직링크 in-app browser**
+  - Gmail·Naver 등 모바일 메일 앱 = 내장 브라우저로 매직링크 처리
+  - 세션 격리 가능성 (외부 브라우저로 강제 이동 검토)
+- [ ] **PC 매직링크 새 탭 자동 활성화 한계**
+  - 브라우저 보안 제약으로 JS 해결 불가
+  - 메시지로 안내만 ("원래 탭에서 로그인되었습니다" 추가 검토)
+
+> 중복 제외: Apple OAuth = 기존 §0-2 "출시 후 OK" 항목에 이미 박혀있음.
+
+---
+
 ## 🎯 출시 일정 (2026-05-31)
 
 오늘 (4/28) 기준 **33일 남음**. 모든 작업 우선순위는 이 마감 기준으로 정렬.
