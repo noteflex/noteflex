@@ -9,6 +9,7 @@ const mockNavigate   = vi.fn();
 const mockFrom       = vi.fn();
 const mockUpdate     = vi.fn();
 const mockEq         = vi.fn();
+const mockRpc        = vi.fn().mockResolvedValue({ error: null });
 
 vi.mock("@/integrations/supabase/client", () => ({
   supabase: {
@@ -16,6 +17,7 @@ vi.mock("@/integrations/supabase/client", () => ({
       getSession: (...args: any[]) => mockGetSession(...args),
     },
     from: (...args: any[]) => mockFrom(...args),
+    rpc: (...args: any[]) => mockRpc(...args),
   },
 }));
 
@@ -118,5 +120,57 @@ describe("AuthCallback", () => {
     render(<AuthCallback />);
     await waitFor(() => expect(mockBcPostMessage).toHaveBeenCalled());
     expect(mockUpdate).not.toHaveBeenCalled();
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────
+// 복구 링크 콜백 (?action=restore)
+// ─────────────────────────────────────────────────────────────────────────
+
+describe("복구 링크 콜백 (?action=restore)", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    localStorage.clear();
+    mockRpc.mockResolvedValue({ error: null });
+  });
+
+  afterEach(() => {
+    localStorage.clear();
+    window.history.pushState({}, "", "/");
+  });
+
+  it("?action=restore → restore_account() RPC 호출", async () => {
+    withSession();
+    window.history.pushState({}, "", "?action=restore");
+    render(<AuthCallback />);
+    await waitFor(() =>
+      expect(mockRpc).toHaveBeenCalledWith("restore_account")
+    );
+  });
+
+  it("restore_account 성공 시 BroadcastChannel AUTH_COMPLETE 전송", async () => {
+    withSession();
+    window.history.pushState({}, "", "?action=restore");
+    render(<AuthCallback />);
+    await waitFor(() =>
+      expect(mockBcPostMessage).toHaveBeenCalledWith({ type: "AUTH_COMPLETE" })
+    );
+  });
+
+  it("restore_account 실패 시 /?auth_error=restore_failed로 navigate", async () => {
+    withSession();
+    mockRpc.mockResolvedValue({ error: { message: "recovery window expired" } });
+    window.history.pushState({}, "", "?action=restore");
+    render(<AuthCallback />);
+    await waitFor(() =>
+      expect(mockNavigate).toHaveBeenCalledWith("/?auth_error=restore_failed", { replace: true })
+    );
+  });
+
+  it("action 파라미터 없으면 restore_account() 미호출", async () => {
+    withSession();
+    render(<AuthCallback />);
+    await waitFor(() => expect(mockBcPostMessage).toHaveBeenCalled());
+    expect(mockRpc).not.toHaveBeenCalled();
   });
 });
