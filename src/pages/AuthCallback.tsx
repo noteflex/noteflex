@@ -30,7 +30,10 @@ export default function AuthCallback() {
         }
         await supabase.auth.signOut();
         setDeletionDone(true);
-        setTimeout(() => navigate("/", { replace: true }), 3000);
+        setTimeout(() => {
+          window.close();
+          setTimeout(() => navigate("/", { replace: true }), 500);
+        }, 3000);
         return;
       }
 
@@ -48,7 +51,10 @@ export default function AuthCallback() {
           channel.close();
         }
         setRestoreDone(true);
-        setTimeout(() => navigate("/", { replace: true }), 3000);
+        setTimeout(() => {
+          window.close();
+          setTimeout(() => navigate("/", { replace: true }), 500);
+        }, 3000);
         return;
       }
 

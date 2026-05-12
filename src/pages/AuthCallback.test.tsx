@@ -137,6 +137,8 @@ describe("복구 링크 콜백 (?action=restore)", () => {
   });
 
   afterEach(() => {
+    vi.useRealTimers();
+    vi.clearAllTimers();
     localStorage.clear();
     window.history.pushState({}, "", "/");
   });
@@ -185,7 +187,16 @@ describe("복구 링크 콜백 (?action=restore)", () => {
     );
   });
 
-  it("restore 성공 시 3초 후 navigate('/') 호출", async () => {
+  it("restore 성공 시 localStorage noteflex_auth_complete 설정", async () => {
+    withSession();
+    window.history.pushState({}, "", "?action=restore");
+    render(<AuthCallback />);
+    await waitFor(() =>
+      expect(localStorage.getItem("noteflex_auth_complete")).not.toBeNull()
+    );
+  });
+
+  it("restore 성공 시 3000ms 후 window.close() 호출", async () => {
     vi.useFakeTimers();
     withSession();
     window.history.pushState({}, "", "?action=restore");
@@ -194,18 +205,19 @@ describe("복구 링크 콜백 (?action=restore)", () => {
     await act(async () => { await Promise.resolve(); });
     vi.advanceTimersByTime(3000);
     await act(async () => { await Promise.resolve(); });
-    expect(mockNavigate).toHaveBeenCalledWith("/", { replace: true });
-    vi.useRealTimers();
+    expect(mockWindowClose).toHaveBeenCalled();
   });
 
-  it("restore 성공 시 localStorage noteflex_auth_complete 설정", async () => {
+  it("restore 성공 시 window.close 후 500ms에 navigate('/') 호출", async () => {
+    vi.useFakeTimers();
     withSession();
     window.history.pushState({}, "", "?action=restore");
     render(<AuthCallback />);
-    await waitFor(() => expect(mockRpc).toHaveBeenCalledWith("restore_account"));
-    await waitFor(() =>
-      expect(localStorage.getItem("noteflex_auth_complete")).not.toBeNull()
-    );
+    await act(async () => { await Promise.resolve(); });
+    await act(async () => { await Promise.resolve(); });
+    vi.advanceTimersByTime(3500);
+    await act(async () => { await Promise.resolve(); });
+    expect(mockNavigate).toHaveBeenCalledWith("/", { replace: true });
   });
 });
 
