@@ -7,6 +7,7 @@ import AuthModal from "./AuthModal";
 
 const mockSignInWithOtp  = vi.fn().mockResolvedValue({ error: null });
 const mockSignInOAuth    = vi.fn().mockResolvedValue({ error: null });
+const mockRpc            = vi.fn().mockResolvedValue({ error: null });
 
 vi.mock("@/integrations/supabase/client", () => ({
   supabase: {
@@ -14,6 +15,7 @@ vi.mock("@/integrations/supabase/client", () => ({
       signInWithOAuth: (...args: any[]) => mockSignInOAuth(...args),
       signInWithOtp:   (...args: any[]) => mockSignInWithOtp(...args),
     },
+    rpc: (...args: any[]) => mockRpc(...args),
   },
 }));
 
@@ -41,6 +43,21 @@ async function goToMagicLinkStep() {
   await user.click(screen.getByTestId("tos-checkbox"));
   await user.click(screen.getByTestId("signup-submit-button"));
   await waitFor(() => expect(screen.getByTestId("magic-link-screen")).toBeInTheDocument());
+  return { user, onClose };
+}
+
+async function goToRecoveryPanel(daysLeft = 25) {
+  mockCheckEmailExists.mockResolvedValueOnce({
+    accountStatus: "deleted_recoverable",
+    recoveryDaysLeft: daysLeft,
+    exists: true,
+    confirmed: true,
+  });
+  const { user, onClose } = await enterSignupMode();
+  await user.type(screen.getByPlaceholderText(/사용할 이메일/), "deleted@example.com");
+  await user.click(screen.getByTestId("tos-checkbox"));
+  await user.click(screen.getByTestId("signup-submit-button"));
+  await waitFor(() => expect(screen.getByTestId("recovery-panel")).toBeInTheDocument());
   return { user, onClose };
 }
 
@@ -357,6 +374,7 @@ describe("계정 복구 (30일 이내 탈퇴)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockSignInWithOtp.mockResolvedValue({ error: null });
+    mockRpc.mockResolvedValue({ error: null });
   });
 
   it("deleted_recoverable → 복구 패널 표시", async () => {
@@ -449,6 +467,67 @@ describe("계정 복구 (30일 이내 탈퇴)", () => {
       expect(screen.getByTestId("email-exists-error")).toBeInTheDocument()
     );
     expect(screen.getByText(/완전히 삭제/)).toBeInTheDocument();
+  });
+
+  // ── 새로 시작 ──────────────────────────────────────────────────────────
+
+  it("복구 패널에 '새로 시작' 버튼 표시", async () => {
+    await goToRecoveryPanel();
+    expect(screen.getByTestId("fresh-start-button")).toBeInTheDocument();
+  });
+
+  it("'새로 시작' 클릭 시 확인 텍스트 노출 + '이전 데이터가 영구 삭제됩니다' 포함", async () => {
+    const { user } = await goToRecoveryPanel();
+    await user.click(screen.getByTestId("fresh-start-button"));
+    await waitFor(() =>
+      expect(screen.getByTestId("fresh-start-confirm-text")).toBeInTheDocument()
+    );
+    expect(screen.getByText(/이전 데이터가 영구 삭제됩니다/)).toBeInTheDocument();
+  });
+
+  it("확인 클릭 시 hard_delete_account RPC 호출", async () => {
+    const { user } = await goToRecoveryPanel();
+    await user.click(screen.getByTestId("fresh-start-button"));
+    await waitFor(() => expect(screen.getByTestId("fresh-start-confirm-button")).toBeInTheDocument());
+    await user.click(screen.getByTestId("fresh-start-confirm-button"));
+    await waitFor(() =>
+      expect(mockRpc).toHaveBeenCalledWith("hard_delete_account", { p_email: "deleted@example.com" })
+    );
+  });
+
+  it("hard_delete 후 signInWithOtp shouldCreateUser:false 호출", async () => {
+    const { user } = await goToRecoveryPanel();
+    await user.click(screen.getByTestId("fresh-start-button"));
+    await waitFor(() => expect(screen.getByTestId("fresh-start-confirm-button")).toBeInTheDocument());
+    await user.click(screen.getByTestId("fresh-start-confirm-button"));
+    await waitFor(() =>
+      expect(mockSignInWithOtp).toHaveBeenCalledWith(
+        expect.objectContaining({
+          email: "deleted@example.com",
+          options: expect.objectContaining({ shouldCreateUser: false }),
+        })
+      )
+    );
+  });
+
+  it("hard_delete 후 magic-link-screen 표시", async () => {
+    const { user } = await goToRecoveryPanel();
+    await user.click(screen.getByTestId("fresh-start-button"));
+    await waitFor(() => expect(screen.getByTestId("fresh-start-confirm-button")).toBeInTheDocument());
+    await user.click(screen.getByTestId("fresh-start-confirm-button"));
+    await waitFor(() =>
+      expect(screen.getByTestId("magic-link-screen")).toBeInTheDocument()
+    );
+  });
+
+  it("RPC 실패 시 signInWithOtp 미호출", async () => {
+    mockRpc.mockResolvedValueOnce({ error: { message: "deletion failed" } });
+    const { user } = await goToRecoveryPanel();
+    await user.click(screen.getByTestId("fresh-start-button"));
+    await waitFor(() => expect(screen.getByTestId("fresh-start-confirm-button")).toBeInTheDocument());
+    await user.click(screen.getByTestId("fresh-start-confirm-button"));
+    await waitFor(() => expect(mockRpc).toHaveBeenCalled());
+    expect(mockSignInWithOtp).not.toHaveBeenCalled();
   });
 });
 

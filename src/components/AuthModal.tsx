@@ -51,6 +51,7 @@ export default function AuthModal({ onClose }: AuthModalProps) {
   // Step 3 — 복구 UX
   const [recoveryDaysLeft, setRecoveryDaysLeft] = useState<number | null>(null);
   const [isRecovery, setIsRecovery] = useState(false);
+  const [freshStartConfirm, setFreshStartConfirm] = useState(false);
 
   // Step 2 — 재전송 cooldown
   const [resendCooldown, setResendCooldown] = useState(0);
@@ -113,6 +114,7 @@ export default function AuthModal({ onClose }: AuthModalProps) {
     setMarketingAgreed(false);
     setRecoveryDaysLeft(null);
     setIsRecovery(false);
+    setFreshStartConfirm(false);
   };
 
   // ───────── Google OAuth ─────────
@@ -242,6 +244,34 @@ export default function AuthModal({ onClose }: AuthModalProps) {
     }
   };
 
+  // ───────── Step 3: 새로 시작 (영구 삭제 후 신규 가입) ─────────
+  const handleFreshStart = async () => {
+    setLoading(true);
+    try {
+      const { error } = await supabase.rpc("hard_delete_account", { p_email: email });
+      if (error) {
+        toast({ title: "오류가 발생했어요", description: error.message, variant: "destructive" });
+        return;
+      }
+      const { error: otpError } = await supabase.auth.signInWithOtp({
+        email,
+        options: {
+          shouldCreateUser: false,
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
+        },
+      });
+      if (otpError) throw otpError;
+      setFreshStartConfirm(false);
+      setIsRecovery(false);
+      setStep(2);
+      startCooldown();
+    } catch (err: any) {
+      toast({ title: "오류가 발생했어요", description: err.message, variant: "destructive" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // ───────── Step 2: 재전송 ─────────
   const handleResend = async () => {
     if (resendCooldown > 0) return;
@@ -303,32 +333,74 @@ export default function AuthModal({ onClose }: AuthModalProps) {
         {/* ━━━━━━━━━━━━━━━━ Step 3: 계정 복구 패널 ━━━━━━━━━━━━━━━━ */}
         {step === 3 ? (
           <div className="px-6 py-10 flex flex-col items-center gap-5" data-testid="recovery-panel">
-            <div className="text-5xl">⏳</div>
-            <div className="text-center space-y-2">
-              <h3 className="text-lg font-bold text-foreground">계정 복구 가능</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                <span className="font-medium text-foreground">{email}</span>은<br />
-                삭제 처리 중인 계정이에요.<br />
-                <span className="font-semibold text-primary">{recoveryDaysLeft}일 이내</span>에 복구할 수 있어요.
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={handleRecoverAccount}
-              disabled={loading}
-              className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-semibold text-sm shadow hover:shadow-md transition-all active:scale-95 disabled:opacity-50"
-              data-testid="recover-account-button"
-            >
-              {loading ? "전송 중..." : "계정 복구하기"}
-            </button>
-            <button
-              type="button"
-              onClick={() => { setStep(1); setRecoveryDaysLeft(null); setIsRecovery(false); }}
-              className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-              data-testid="recovery-cancel-button"
-            >
-              취소
-            </button>
+            {freshStartConfirm ? (
+              /* ── 새로 시작 확인 화면 ── */
+              <>
+                <div className="text-5xl">⚠️</div>
+                <div className="text-center space-y-2">
+                  <h3 className="text-lg font-bold text-foreground">정말 진행하시겠어요?</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed" data-testid="fresh-start-confirm-text">
+                    이전 데이터가 영구 삭제됩니다. 진행하시겠어요?
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleFreshStart}
+                  disabled={loading}
+                  className="w-full py-3 rounded-xl bg-destructive text-destructive-foreground font-semibold text-sm shadow hover:shadow-md transition-all active:scale-95 disabled:opacity-50"
+                  data-testid="fresh-start-confirm-button"
+                >
+                  {loading ? "처리 중..." : "확인"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFreshStartConfirm(false)}
+                  className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                  data-testid="fresh-start-back-button"
+                >
+                  뒤로
+                </button>
+              </>
+            ) : (
+              /* ── 복구 / 새로 시작 선택 화면 ── */
+              <>
+                <div className="text-5xl">⏳</div>
+                <div className="text-center space-y-2">
+                  <h3 className="text-lg font-bold text-foreground">계정 복구 가능</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    <span className="font-medium text-foreground">{email}</span>은<br />
+                    삭제 처리 중인 계정이에요.<br />
+                    <span className="font-semibold text-primary">{recoveryDaysLeft}일 이내</span>에 복구할 수 있어요.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleRecoverAccount}
+                  disabled={loading}
+                  className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-semibold text-sm shadow hover:shadow-md transition-all active:scale-95 disabled:opacity-50"
+                  data-testid="recover-account-button"
+                >
+                  {loading ? "전송 중..." : "계정 복구하기"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFreshStartConfirm(true)}
+                  disabled={loading}
+                  className="text-sm text-muted-foreground hover:text-foreground transition-colors underline-offset-2 hover:underline"
+                  data-testid="fresh-start-button"
+                >
+                  새로 시작
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setStep(1); setRecoveryDaysLeft(null); setIsRecovery(false); setFreshStartConfirm(false); }}
+                  className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                  data-testid="recovery-cancel-button"
+                >
+                  취소
+                </button>
+              </>
+            )}
           </div>
         ) : step === 2 ? (
         /* ━━━━━━━━━━━━━━━━ Step 2: 매직링크 안내 ━━━━━━━━━━━━━━━━ */
