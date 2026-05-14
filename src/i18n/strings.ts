@@ -43,6 +43,7 @@ export interface Strings {
     faq: string;
     blog: string;
     companyName: string;
+    ceo: string;
     bizReg: string;
     ecommerceReg: string;
     address: string;
@@ -133,10 +134,11 @@ const ko: Strings = {
     contact: "문의",
     faq: "자주 묻는 질문",
     blog: "블로그",
-    companyName: "회사명: Donofear",
+    companyName: "상호: Donofear",
+    ceo: "대표자: 김용준",
     bizReg: "사업자 등록 번호: 367-45-01000",
-    ecommerceReg: "통신판매업: 신고 진행 중",
-    address: "사업장 주소: 서울특별시 서초구 사임당로8길 13, 4층, 402-L976호",
+    ecommerceReg: "통신판매업 신고: 제 2026-서울서초-1624호",
+    address: "사업장 주소: 서울특별시 서초구 사임당로8길 13, 4층 402-L976호 (06640)",
     email: "이메일: contact@noteflex.app",
   },
   blog: {
@@ -239,9 +241,10 @@ const en: Strings = {
     faq: "FAQ",
     blog: "Blog",
     companyName: "Company: Donofear",
-    bizReg: "Business Registration: 367-45-01000",
-    ecommerceReg: "E-commerce Registration: In Progress",
-    address: "Address: 402-L976, 4F, 13, Saimdang-ro 8-gil, Seocho-gu, Seoul, Republic of Korea",
+    ceo: "CEO: Kim Yongjun",
+    bizReg: "Business Reg.: 367-45-01000",
+    ecommerceReg: "E-commerce Reg.: 제 2026-서울서초-1624호",
+    address: "Address: 13 Saimdang-ro 8-gil, 4F Unit 402-L976, Seocho-gu, Seoul 06640, South Korea",
     email: "Email: contact@noteflex.app",
   },
   blog: {
