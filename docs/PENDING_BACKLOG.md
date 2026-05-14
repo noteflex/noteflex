@@ -7,6 +7,54 @@
 
 ---
 
+## 2026-05-14 추가 PENDING
+
+### 출시 전 필수 (5/14~31)
+
+- [ ] **Footer strings.ts 통신판매업 번호 갱신** — 5분 작업
+  - `ecommerceReg: "통신판매업 신고: 제 2026-서울서초-1624호"` (KO·EN 둘 다)
+  - 영문판도 한글 번호 유지 (정부 발급 영역)
+
+- [ ] **시스템 ↔ 약관 14세 정합 확인**
+  - 가입 흐름 만 14세 동의 체크박스 박힘 확인
+  - 약관·Privacy 14세 박힘 (5/14 완료)
+  - 두 영역 일치 박혀있는지 검증 박음
+
+- [ ] **AdSense 신청** (5/14~16, 사업자 등록 직후)
+  - 환경변수 박음: VITE_ADS_ENABLED=true, VITE_ADSENSE_PUBLISHER_ID=..., VITE_INFEED_ADS_ENABLED=true
+  - 신청 전 GAME_ENABLED 상태 + 핵심 페이지(/about, /contact) 박힘 확인
+
+- [ ] **Termly Privacy 영역 갱신** (AdSense 활성화 후)
+  - "Targeted advertising" 영역 AdSense 정합 박음
+  - 갱신 후 Termly Pro 해지 여부 결정
+
+- [ ] **Termly 영문판 Terms §17 Arbitration 갱신**
+  - "European Arbitration Chamber (Belgium)" → "KCAB Seoul"로 박음
+  - 현재 .md 파일만 수정 박힘, Termly 대시보드 영역 다음 갱신 때 박음
+
+- [ ] **/about 페이지 콘텐츠** — Paddle 심사 신뢰도 영역
+- [ ] **/contact 페이지 양식** — Florida·Nebraska·Texas 컴플라이언스 의무, Resend 통한 발송
+- [ ] **Paddle 심사 신청** — 약관 4종 게시·about·contact 박은 후
+
+### 출시 후 즉시 (6월~)
+
+- [ ] **EU GDPR 16세 정합 영역**
+  - 현재 약관 14세 박힘 → EU 일부 회원국 16세 미만 부모 동의 의무
+  - Family Plan과 함께 박을지 결정
+
+- [ ] **Termly Pro 해지** — 4종 갱신 박은 후
+- [ ] **자체 GPC 감지 코드** — Termly 해지 시 박음 (~30분)
+- [ ] **EU/UK Representative 임명 검토** — 월 €50~200
+
+### 출시 후 6~8주
+
+- [ ] **Family Plan / 부모 계정 + 자녀 프로필**
+  - 미취학~13세 시장 진입
+  - COPPA·GDPR-K·PIPA 부모 동의 검증 시스템 박음
+  - EU 16세 정합 영역 함께 박음
+
+---
+
 ## 2026-05-12 추가 (SEO 인프라)
 
 ### 출시 후 1주 이내
