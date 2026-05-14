@@ -4,6 +4,38 @@
 
 ---
 
+## 2026-05-14 — Termly 약관 4종 완성 + KO 번역 + 14세 정책 정합
+
+### 박음
+- ✅ **Cookie Policy 생성** (Termly Pro 사이트 스캔)
+  - rc::h (reCAPTCHA), test_cookie (DoubleClick) 자동 감지
+- ✅ **Terms of Service 생성** + 2개 영역 수정
+  - ⚠️ §17 Binding Arbitration = Termly default "European Arbitration Chamber (Belgium)" → **KCAB Seoul** 박음
+  - §8 USER GENERATED CONTRIBUTIONS 잔여 조항 정리 (사용자 콘텐츠 X 정합)
+- ✅ **Refund Policy 생성** + 디지털 SaaS 영역 재작성
+  - 한국 7일 청약철회 (전자상거래법 §17) + EU/UK 14일 cooling-off 박음
+  - Paddle 자동 환불 흐름 박음
+- ✅ **4종 약관 KO 번역 박음** (Termly 한국어 미지원 → Claude 직접 박음)
+  - privacy.ko.md: §1~§18 글로벌 + **§19 PIPA 특칙** 풀버전
+  - PIPA 정합 조항: 처리 목적·항목·보유 기간·제3자 제공·위탁업체 7곳·정보주체 권리·14세 미만·안전성·처리책임자·권익침해 구제 4기관
+- ✅ **14세 정책 정합** (Termly default 18세 → 14세 갱신)
+  - terms.en.md·terms.ko.md 도입부
+  - privacy.en.md·privacy.ko.md §11
+  - privacy.ko.md §19.7 PIPA (기존 14세 박힘)
+- ✅ **8개 파일 src/content/legal/ 박음 + push 박음**
+
+### 짚힌 영역
+- ⚠️ Termly 영문판 Terms §17 Arbitration 영역 다음 갱신 시 KCAB로 박는 영역 (현재 .md만 수정 박힘)
+- ⚠️ EU GDPR 16세 미만 부모 동의 영역 — 14세로 박혀서 EU 일부 회원국 영역 불완전
+- ⚠️ 시스템(가입 흐름 만 14세 동의) ↔ 약관 14세 정합 확인 필요
+
+### 결정 박힘
+- Termly Pro 1개월 박고 4종 생성 후 self-hosted .md 통합
+- 한국 사업자 등록 완료(5/13): Donofear / 367-45-01000 / 통신판매업 제 2026-서울서초-1624호 / 06640
+- 미취학~13세 시장 진입 = Family Plan (출시 후 6~8주)
+
+---
+
 ## 2026-05-12 — Auth 인증 흐름 마라톤 + Resend SMTP + Search Console + hard_delete 정정
 
 ### 작업 누적
