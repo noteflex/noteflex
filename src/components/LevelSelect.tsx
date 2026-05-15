@@ -9,6 +9,7 @@ import {
   getProgressGatePrev,
   getCompletion,
   formatSublevel,
+  findFirstUnpassedAccessibleSublevel,
   SUBLEVEL_CONFIGS,
   type Sublevel,
   type SublevelProgress,
@@ -164,6 +165,12 @@ export default function LevelSelect({
   const dailyLimitReachedRef = useRef(dailyLimit.hasReached);
   dailyLimitReachedRef.current = dailyLimit.hasReached;
 
+  // findFirstUnpassedAccessibleSublevel 호출용 ref (handleSelect 의존성 안정).
+  const tierRef = useRef(tier);
+  tierRef.current = tier;
+  const getProgressForRef = useRef(getProgressFor);
+  getProgressForRef.current = getProgressFor;
+
   const handleSelect = useCallback((level: number, sub: Sublevel) => {
     const state = cellStatesRef.current.get(`${level}-${sub}`);
     if (!state) return;
@@ -178,8 +185,20 @@ export default function LevelSelect({
       return;
     }
 
-    if (state.lockReason === "progress" && state.prevLevel !== null && state.prevSublevel !== null) {
-      setLockedTarget({ level: state.prevLevel, sublevel: state.prevSublevel });
+    if (state.lockReason === "progress") {
+      // 클릭한 단계 바로 직전이 아니라, 티어 영역 내 첫 미통과 단계로 이동.
+      // 사용자가 한 번에 여러 단계 건너뛰어 잠금 클릭한 경우에도 시작 지점 박힘.
+      const target = findFirstUnpassedAccessibleSublevel(
+        tierRef.current,
+        (lv, sub) => getProgressForRef.current(lv, sub)?.passed ?? false,
+      );
+      // 모든 영역 통과 시 target=null — 그땐 잠금 자체 안 박혀야 정상.
+      // 폴백: prevLevel·prevSublevel 박힌 영역 사용.
+      if (target) {
+        setLockedTarget(target);
+      } else if (state.prevLevel !== null && state.prevSublevel !== null) {
+        setLockedTarget({ level: state.prevLevel, sublevel: state.prevSublevel });
+      }
       return;
     }
 

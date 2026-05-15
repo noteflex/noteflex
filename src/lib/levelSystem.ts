@@ -343,6 +343,29 @@ export function formatSublevel(level: number, sublevel: Sublevel): string {
 }
 
 /**
+ * 사용자 티어 영역 내에서 가장 빠른 미통과 단계 반환.
+ *
+ *   - Guest: Lv1-1만 영역. 미통과면 Lv1-1 반환.
+ *   - Free:  Lv1-1 → Lv2-1 → ... → Lv5-1 순서.
+ *   - Pro:   Lv1-1 → Lv1-2 → Lv1-3 → Lv2-1 → ... → Lv7-3 순서.
+ *
+ * 모든 단계 통과 상태면 null 반환.
+ * isPassed(level, sublevel) = 해당 단계가 통과 박혀있는지 확인하는 콜백.
+ */
+export function findFirstUnpassedAccessibleSublevel(
+  tier: SubscriptionTier,
+  isPassed: (level: number, sublevel: Sublevel) => boolean,
+): { level: number; sublevel: Sublevel } | null {
+  for (let level = 1; level <= MAX_LEVEL; level++) {
+    for (const sublevel of [1, 2, 3] as Sublevel[]) {
+      if (!canAccessSublevel(tier, level, sublevel)) continue;
+      if (!isPassed(level, sublevel)) return { level, sublevel };
+    }
+  }
+  return null;
+}
+
+/**
  * 다음 단계 계산
  * Lv 1-3 → Lv 2-1
  * Lv 7-3 → null (최종)
