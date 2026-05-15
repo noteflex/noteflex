@@ -113,7 +113,7 @@ const ko: Strings = {
     signIn: "로그인 / 회원가입",
     signOut: "로그아웃",
     profile: "프로필",
-    dashboard: "연습 대시보드",
+    dashboard: "대시보드",
   },
   legal: {
     terms: "이용약관",
@@ -219,7 +219,7 @@ const en: Strings = {
     signIn: "Sign In / Sign Up",
     signOut: "Sign Out",
     profile: "Profile",
-    dashboard: "Practice Dashboard",
+    dashboard: "Dashboard",
   },
   legal: {
     terms: "Terms of Service",
