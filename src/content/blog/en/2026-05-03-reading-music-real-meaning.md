@@ -17,8 +17,6 @@ Ask a piano student "Can you read music?" and the answer often comes with a paus
 
 The gap appears because the two acts share a word but are cognitively rather different.
 
-![Bach autograph manuscript page](https://upload.wikimedia.org/wikipedia/commons/thumb/5/54/DwtkII-as-dur-fuga.jpg/500px-DwtkII-as-dur-fuga.jpg)
-*Figure 1: J. S. Bach, *The Well-Tempered Clavier* Book II, autograph manuscript. Source: Wikimedia Commons / Public Domain*
 
 ## 📖 What text reading and music reading share
 

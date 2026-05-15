@@ -15,8 +15,6 @@ coverImageCredit: "Wikimedia Commons"
 
 When you open a piano score for the first time, you see two staves stacked vertically. Together they form what is called the grand staff (or great stave). Why two? What is wrong with one?
 
-![Grand staff with treble and bass clefs and labeled notes](https://upload.wikimedia.org/wikipedia/commons/a/a8/Treble_clef_and_Bass_clef.svg)
-*Figure 1: The grand staff — treble clef on top, bass clef on the bottom, with labeled note positions. Source: Wikimedia Commons / CC BY-SA 4.0*
 
 ## 🎹 Why one staff is not enough
 

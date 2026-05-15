@@ -17,8 +17,6 @@ coverImageCredit: "J.S. Bach; Wikimedia Commons"
 
 이 차이는 두 행위가 같은 단어를 공유하지만 인지적으로 상당히 다른 작업이라는 점에서 출발한다.
 
-![Bach가 직접 쓴 악보 페이지](https://upload.wikimedia.org/wikipedia/commons/thumb/5/54/DwtkII-as-dur-fuga.jpg/500px-DwtkII-as-dur-fuga.jpg)
-*그림 1: J. S. Bach, *The Well-Tempered Clavier* Book II 자필 악보 일부. 출처: Wikimedia Commons / Public Domain*
 
 ## 📖 글 읽기와 악보 읽기 — 같은 점
 

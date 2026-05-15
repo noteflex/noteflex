@@ -12,8 +12,6 @@ coverImageLicense: "CC BY-SA"
 coverImageCredit: "Wikimedia Commons"
 ---
 
-![5도권과 장조 배치](https://upload.wikimedia.org/wikipedia/commons/a/a7/Cycle_des_quintes_et_tonalites_majeures.svg)
-*그림 1: 5도권과 장조의 배치. 출처: Wikimedia Commons / public domain*
 
 악보 첫머리에 ♯이나 ♭이 줄지어 붙어 있는 모습을 본 적이 있을 것이다. 이 기호 묶음을 조표라 부른다. 처음 보는 악보에서도 조표만 흘끗 확인하면 곡 전체에 흐르는 음의 중심을 먼저 파악할 수 있다. 그래서 조표 해석은 초견의 첫 단계로 다뤄진다.
 

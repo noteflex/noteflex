@@ -13,8 +13,6 @@ coverImageLicense: "Public Domain"
 coverImageCredit: "Wikimedia Commons"
 ---
 
-![박자표 예시 — 음자리표 옆 두 숫자](https://upload.wikimedia.org/wikipedia/commons/7/79/Time_signature_example.svg)
-*그림 1: 음자리표 옆 박자표 예시. 출처: Wikimedia Commons / public domain*
 
 악보 첫머리, 음자리표 바로 옆에 두 숫자가 위아래로 적혀 있는 표기를 박자표라 부른다. 4/4, 3/4, 6/8 같은 형태로 흔히 만나게 되는 이 기호는 단순한 수의 나열이 아니라 곡이 가진 시간 단위를 정의한다. 박자표를 정확히 읽을 수 있어야 같은 음표 묶음이 어떤 흐름을 만드는지를 처음 보는 악보에서도 가늠할 수 있다.
 

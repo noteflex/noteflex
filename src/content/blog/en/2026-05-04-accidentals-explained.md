@@ -15,8 +15,6 @@ coverImageCredit: "Frédéric Chopin; Wikimedia Commons"
 
 When reading a score, notes sometimes carry a small symbol to their left: a ♯, a ♭, or a ♮. These are **accidentals** — symbols that temporarily alter a note's pitch by a semitone. Unlike a key signature, which applies across an entire piece or section, an accidental modifies only its specific note within a defined scope.
 
-![Chopin score with accidentals](https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/Chopindoub.JPG/500px-Chopindoub.JPG)
-*Figure 1: An excerpt from a Chopin piano score showing double accidentals. Accidentals are more than pitch adjustments — they carry harmonic direction. Source: Wikimedia Commons / Public Domain*
 
 ## 🔑 The three main accidentals
 

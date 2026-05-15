@@ -15,8 +15,6 @@ coverImageCredit: "Frédéric Chopin; Wikimedia Commons"
 
 악보를 읽다 보면 음표 왼쪽에 ♯이나 ♭, 또는 ♮ 기호가 붙어 있는 것을 만난다. 이를 **임시표**라고 한다. 조표처럼 악보 전체에 걸쳐 적용되는 것이 아니라, 특정 음표 한 개의 높이를 일시적으로 바꾸는 기호다.
 
-![임시표가 포함된 쇼팽 악보](https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/Chopindoub.JPG/500px-Chopindoub.JPG)
-*그림 1: 겹올림표(×)가 등장하는 쇼팽 악보 발췌. 임시표는 음의 높이를 바꾸는 기호이면서 동시에 화성적 방향을 담고 있다. 출처: Wikimedia Commons / Public Domain*
 
 ## 🔑 기본 세 가지
 

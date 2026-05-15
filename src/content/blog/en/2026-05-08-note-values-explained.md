@@ -13,8 +13,6 @@ coverImageLicense: "CC BY-SA"
 coverImageCredit: "Wikimedia Commons"
 ---
 
-![A page of sheet music up close](https://upload.wikimedia.org/wikipedia/commons/8/8c/Sheet_music.jpg)
-*Figure 1: Sheet music. Source: Wikimedia Commons / CC BY-SA 3.0*
 
 When you first opened a piece of sheet music, the shapes probably looked like a code. Pitches were manageable — higher on the staff meant higher in pitch. But the different note shapes, open ovals, filled-in heads, heads with stems, heads with one flag, two flags — those were harder to read intuitively.
 

@@ -15,8 +15,6 @@ coverImageCredit: "Frédéric Chopin; Wikimedia Commons"
 
 Sight-reading is the ability to perform music from a score encountered for the first time. For a long time the judgment was informal: a teacher listened, then offered a verdict. Translating that verdict into a usable number requires deciding what exactly to measure.
 
-![Chopin Prelude 7 score](https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/Chopin_Prelude_7.png/500px-Chopin_Prelude_7.png)
-*Figure 1: The score of Chopin's Prélude, Op. 28, No. 7. Short as it is, reading it at first sight requires processing pitch, rhythm, and dynamics simultaneously. Source: Wikimedia Commons / Public Domain*
 
 ## 🎯 Pitch accuracy — the most direct metric
 

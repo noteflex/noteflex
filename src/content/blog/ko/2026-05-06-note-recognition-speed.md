@@ -12,8 +12,6 @@ coverImageLicense: "Public Domain"
 coverImageCredit: "Nicolaus Bruhns; Wikimedia Commons"
 ---
 
-![악보 패턴 예시](https://upload.wikimedia.org/wikipedia/commons/2/21/Bruhns-Choralfantasie-Thema.svg)
-*그림 1: 17세기 코랄 환상곡의 첫 마디. 출처: Wikimedia Commons / public domain*
 
 초견이 일정 수준 이상으로 빨라지지 않을 때 보통 손가락 운지나 박자 감각을 의심하기 쉽다. 그러나 음표가 무엇인지 떠올리는 시각 인식 단계가 가장 먼저 가로막을 수 있다. 음을 알지 못하면 손가락도, 박자도 작동시킬 수 없기 때문이다.
 

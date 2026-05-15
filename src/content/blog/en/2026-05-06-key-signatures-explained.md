@@ -12,8 +12,6 @@ coverImageLicense: "CC BY-SA"
 coverImageCredit: "Wikimedia Commons"
 ---
 
-![Circle of fifths with major keys](https://upload.wikimedia.org/wikipedia/commons/a/a7/Cycle_des_quintes_et_tonalites_majeures.svg)
-*Figure 1: The circle of fifths with major keys. Source: Wikimedia Commons / public domain*
 
 A row of sharps or flats sitting next to the clef is called a key signature. Even an unfamiliar piece reveals its tonal center the moment a reader checks that small cluster of symbols, which is why key signatures are usually the first thing experienced sight-readers look at.
 

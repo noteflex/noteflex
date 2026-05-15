@@ -15,8 +15,6 @@ coverImageCredit: "Wikimedia Commons"
 
 Most learners share the same experience: notes inside the staff read smoothly, but the moment a few short horizontal lines appear above or below, speed drops sharply. The common phrase is "ledger-line notes are weak." That weakness is often treated as a familiarity issue, but the actual cause sits in the structure of visual cognition.
 
-![Ledger line diagram](https://upload.wikimedia.org/wikipedia/commons/thumb/3/3c/Ledger_line.svg/250px-Ledger_line.svg.png)
-*Figure 1: Ledger lines extending above and below the staff. Source: Wikimedia Commons / Public Domain*
 
 ## 🔍 What ledger lines are
 

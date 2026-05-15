@@ -13,8 +13,6 @@ coverImageLicense: "Public Domain"
 coverImageCredit: "Frédéric Chopin; Wikimedia Commons"
 ---
 
-![Chopin Prelude Op. 28 No. 7 sheet music](https://upload.wikimedia.org/wikipedia/commons/2/2a/Chopin_Preludium_op._28_nr_7.jpg)
-*Figure 1: Chopin Prelude Op. 28 No. 7 score — reading unfamiliar notation in real time is the core challenge in sight-reading. Source: Wikimedia Commons / Public Domain*
 
 When people explain why they practice sight-reading, the most common reason is that it helps them learn new pieces more quickly. That is accurate, but it understates the range of musical activity that sight-reading ability actually touches.
 

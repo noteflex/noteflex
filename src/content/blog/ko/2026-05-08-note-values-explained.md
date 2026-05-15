@@ -13,8 +13,6 @@ coverImageLicense: "CC BY-SA"
 coverImageCredit: "Wikimedia Commons"
 ---
 
-![악보 페이지를 가까이서 찍은 모습](https://upload.wikimedia.org/wikipedia/commons/8/8c/Sheet_music.jpg)
-*그림 1: 악보 페이지. 출처: Wikimedia Commons / CC BY-SA 3.0*
 
 처음 악보를 펼쳤을 때 가장 먼저 눈에 들어오는 것은 모양이 서로 다른 음표들이다. 머리만 있는 것, 막대가 달린 것, 꼬리가 하나 붙은 것, 두 개 붙은 것. 음의 높이는 오선 위 위치로 읽을 수 있지만, 이 모양의 차이가 무엇을 가리키는지는 처음엔 생소하다.
 

@@ -12,8 +12,6 @@ coverImageLicense: "Public Domain"
 coverImageCredit: "Nicolaus Bruhns; Wikimedia Commons"
 ---
 
-![Score excerpt with dense rhythmic patterns](https://upload.wikimedia.org/wikipedia/commons/2/21/Bruhns-Choralfantasie-Thema.svg)
-*Figure 1: Opening bars of a 17th-century chorale fantasy. Source: Wikimedia Commons / public domain*
 
 When sight-reading hits a tempo wall, players often blame their fingers or their sense of rhythm. The bottleneck usually sits earlier in the chain: the visual step that turns a printed dot into a named pitch. Without a fast answer at that step, no amount of finger work can keep pace.
 

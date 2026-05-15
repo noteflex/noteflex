@@ -15,8 +15,6 @@ coverImageCredit: "Frédéric Chopin; Wikimedia Commons"
 
 초견은 처음 보는 악보를 그 자리에서 연주하는 기술이다. 오랫동안 "연습하면 늘겠지"라는 말로 뭉뚱그려졌지만, 실제로는 여러 하위 기술이 결합된 복합 능력이다. 그 능력이 어느 수준인지 측정하려면, 측정할 대상을 먼저 나눠야 한다.
 
-![Chopin Prelude 7 악보](https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/Chopin_Prelude_7.png/500px-Chopin_Prelude_7.png)
-*그림 1: 쇼팽 전주곡 7번 악보. 짧은 곡이지만 처음 보고 바로 연주하려면 음표·박자·셈여림 정보를 동시에 처리해야 한다. 출처: Wikimedia Commons / Public Domain*
 
 ## 🎯 정확도 — 가장 직관적인 지표
 

@@ -13,8 +13,6 @@ coverImageLicense: "Public Domain"
 coverImageCredit: "Wikimedia Commons"
 ---
 
-![Time signature example beside the clef](https://upload.wikimedia.org/wikipedia/commons/7/79/Time_signature_example.svg)
-*Figure 1: A time signature placed next to the clef. Source: Wikimedia Commons / public domain*
 
 The two stacked numbers next to the clef at the start of a score form the time signature. Common forms — 4/4, 3/4, 6/8 — look like fractions but are not. They define the temporal grid of the music: how many beats fit in a measure and what note value carries one beat. Reading them correctly is what allows a sight-reader to feel the pulse of an unfamiliar piece before playing a single note.
 

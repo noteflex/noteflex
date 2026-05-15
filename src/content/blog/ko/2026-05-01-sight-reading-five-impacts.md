@@ -13,8 +13,6 @@ coverImageLicense: "Public Domain"
 coverImageCredit: "Frédéric Chopin; Wikimedia Commons"
 ---
 
-![쇼팽 전주곡 Op. 28 No. 7 악보](https://upload.wikimedia.org/wikipedia/commons/2/2a/Chopin_Preludium_op._28_nr_7.jpg)
-*그림 1: 쇼팽 전주곡 Op. 28 No. 7 악보. 초견 연습에서 처음 보는 악보를 실시간으로 읽는 능력이 핵심이다. 출처: Wikimedia Commons / Public Domain*
 
 초견(sight-reading)을 따로 연습하는 이유를 묻는다면, 가장 흔한 대답은 "새 곡을 빨리 익히기 위해서"다. 틀린 말은 아니지만, 초견 능력이 실제로 영향을 미치는 범위는 그보다 넓다.
 
