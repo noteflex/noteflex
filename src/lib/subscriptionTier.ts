@@ -7,6 +7,8 @@ import type { SubscriptionTier } from "./levelSystem";
  * - profile.role === 'admin' → 'pro' (admin은 모든 레벨 접근)
  * - profile.subscription_tier === 'pro' → 'pro'
  * - profile.is_premium === true → 'pro' (Paddle webhook이 채우는 컬럼)
+ * - profile.role === 'reviewer' → 'free' (Paddle 심사관: Free tier 그대로,
+ *                                          ComingSoonGate만 우회 — 별도 처리)
  * - 그 외 로그인된 사용자 → 'free'
  */
 export function getUserTier(

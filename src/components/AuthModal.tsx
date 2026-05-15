@@ -38,7 +38,7 @@ function Divider() {
 
 export default function AuthModal({ onClose }: AuthModalProps) {
   const [mode, setMode] = useState<Mode>("login");
-  const [step, setStep] = useState(1); // 1: 이메일 폼, 2: 매직링크 전송 완료, 3: 복구 패널
+  const [step, setStep] = useState(1); // 1: 이메일 폼, 2: 매직링크 전송 완료, 3: 복구 패널, 4: Paddle 심사관 액세스
 
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
@@ -52,6 +52,11 @@ export default function AuthModal({ onClose }: AuthModalProps) {
   const [recoveryDaysLeft, setRecoveryDaysLeft] = useState<number | null>(null);
   const [isRecovery, setIsRecovery] = useState(false);
   const [freshStartConfirm, setFreshStartConfirm] = useState(false);
+
+  // Step 4 — Paddle 심사관 액세스
+  const [reviewerEmail, setReviewerEmail] = useState("");
+  const [reviewerCode, setReviewerCode] = useState("");
+  const [reviewerError, setReviewerError] = useState<string | null>(null);
 
   // Step 2 — 재전송 cooldown
   const [resendCooldown, setResendCooldown] = useState(0);
@@ -325,6 +330,44 @@ export default function AuthModal({ onClose }: AuthModalProps) {
     }
   };
 
+  // ───────── Step 4: Paddle 심사관 액세스 ─────────
+  // /api/reviewer-login 호출 → access_token + refresh_token 받아 setSession.
+  const handleReviewerLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setReviewerError(null);
+    if (!reviewerEmail.includes("@") || !reviewerCode) {
+      setReviewerError("Invalid credentials");
+      return;
+    }
+    setLoading(true);
+    try {
+      const res = await fetch("/api/reviewer-login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: reviewerEmail, code: reviewerCode }),
+      });
+      if (!res.ok) {
+        setReviewerError("Invalid credentials");
+        return;
+      }
+      const { access_token, refresh_token } = await res.json();
+      if (!access_token || !refresh_token) {
+        setReviewerError("Invalid credentials");
+        return;
+      }
+      const { error } = await supabase.auth.setSession({ access_token, refresh_token });
+      if (error) {
+        setReviewerError("Invalid credentials");
+        return;
+      }
+      onClose();
+    } catch {
+      setReviewerError("Invalid credentials");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // ─────────────────────────────────────────────────────────────────
   // JSX
   // ─────────────────────────────────────────────────────────────────
@@ -338,8 +381,61 @@ export default function AuthModal({ onClose }: AuthModalProps) {
         className="bg-card border border-border rounded-2xl shadow-2xl w-full max-w-sm mx-4 max-h-[90vh] overflow-y-auto"
         onClick={e => e.stopPropagation()}
       >
-        {/* ━━━━━━━━━━━━━━━━ Step 3: 계정 복구 패널 ━━━━━━━━━━━━━━━━ */}
-        {step === 3 ? (
+        {/* ━━━━━━━━━━━━━━━━ Step 4: Paddle 심사관 액세스 ━━━━━━━━━━━━━━━━ */}
+        {step === 4 ? (
+          <div className="px-6 py-8 flex flex-col gap-5" data-testid="reviewer-panel">
+            <div className="flex flex-col items-center gap-2">
+              <span className="text-3xl">🔐</span>
+              <h3 className="text-lg font-bold text-foreground">Paddle Reviewer Access</h3>
+              <p className="text-xs text-muted-foreground text-center">
+                심사관 전용 인증 흐름
+              </p>
+            </div>
+            <form onSubmit={handleReviewerLogin} className="flex flex-col gap-3">
+              <input
+                type="email"
+                value={reviewerEmail}
+                onChange={(e) => { setReviewerEmail(e.target.value); setReviewerError(null); }}
+                placeholder="reviewer email"
+                autoComplete="off"
+                required
+                className="w-full px-4 py-2.5 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                data-testid="reviewer-email-input"
+              />
+              <input
+                type="password"
+                value={reviewerCode}
+                onChange={(e) => { setReviewerCode(e.target.value); setReviewerError(null); }}
+                placeholder="access code"
+                autoComplete="off"
+                required
+                className="w-full px-4 py-2.5 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                data-testid="reviewer-code-input"
+              />
+              {reviewerError && (
+                <div className="p-3 rounded-xl bg-destructive/10 border border-destructive/30" data-testid="reviewer-error">
+                  <p className="text-sm text-destructive">{reviewerError}</p>
+                </div>
+              )}
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-semibold text-sm shadow hover:shadow-md transition-all active:scale-95 disabled:opacity-50"
+                data-testid="reviewer-submit-button"
+              >
+                {loading ? "Verifying..." : "Continue"}
+              </button>
+            </form>
+            <button
+              type="button"
+              onClick={() => { setStep(1); setReviewerEmail(""); setReviewerCode(""); setReviewerError(null); }}
+              className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+              data-testid="reviewer-back-button"
+            >
+              ← Back
+            </button>
+          </div>
+        ) : step === 3 ? (
           <div className="px-6 py-10 flex flex-col items-center gap-5" data-testid="recovery-panel">
             {freshStartConfirm ? (
               /* ── 새로 시작 확인 화면 ── */
@@ -636,6 +732,16 @@ export default function AuthModal({ onClose }: AuthModalProps) {
                 className="w-full text-center text-sm text-muted-foreground mt-3 py-2 rounded-lg hover:bg-muted hover:text-foreground transition-colors font-medium"
               >
                 닫기
+              </button>
+
+              {/* Paddle 심사관 액세스 (눈에 띄지 않게 박음) */}
+              <button
+                type="button"
+                onClick={() => setStep(4)}
+                className="w-full text-center text-[10px] text-muted-foreground/60 mt-2 py-1 hover:text-muted-foreground transition-colors"
+                data-testid="reviewer-access-link"
+              >
+                Paddle Reviewer Access
               </button>
             </div>
           </>
