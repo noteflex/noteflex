@@ -40,14 +40,14 @@ function AuthBar({ authLoading, user, onSignOut, onLoginRequest }: AuthBarProps)
     );
   }
 
-  // displayName: 자동 닉네임이면 이메일 prefix, 정상 닉네임이면 그대로.
-  const isAutoNickname = profile?.nickname?.startsWith("user_") ?? true;
-  const displayName = isAutoNickname
-    ? (user?.email?.split("@")[0] ?? "")
-    : (profile?.nickname ?? "");
-  const displayTitle = isAutoNickname
-    ? t.header.setNicknameHint
-    : (user?.email ?? "");
+  // displayName 박음:
+  //   - 자동 닉네임(user_xxx) → 이메일 prefix + 호버 시 "닉네임 설정하기 →"
+  //   - 정상 닉네임 → 닉네임 그대로 + 호버 시 전체 이메일
+  const nickname = profile?.nickname ?? "";
+  const email = user?.email ?? "";
+  const isAutoNickname = nickname.startsWith("user_");
+  const displayName = isAutoNickname ? email.split("@")[0] : nickname;
+  const displayTitle = isAutoNickname ? t.header.setNicknameHint : email;
 
   return (
     <div className="fixed top-0 left-0 right-0 z-40 flex items-center justify-end px-4 py-2 bg-background/80 border-b border-border/50">
@@ -209,13 +209,13 @@ export default function PlayPage() {
   const handleNextLevel = () => setScreen("levelSelect");
 
   // displayName 헬퍼 — AuthBar와 동일 패턴.
-  const isAutoNickname = profile?.nickname?.startsWith("user_") ?? true;
-  const displayName = isAutoNickname
-    ? (user?.email?.split("@")[0] ?? "")
-    : (profile?.nickname ?? "");
-  const displayTitle = isAutoNickname
-    ? t.header.setNicknameHint
-    : (user?.email ?? "");
+  //   - 자동 닉네임(user_xxx) → 이메일 prefix + 호버 시 "닉네임 설정하기 →"
+  //   - 정상 닉네임 → 닉네임 그대로 + 호버 시 전체 이메일
+  const nickname = profile?.nickname ?? "";
+  const email = user?.email ?? "";
+  const isAutoNickname = nickname.startsWith("user_");
+  const displayName = isAutoNickname ? email.split("@")[0] : nickname;
+  const displayTitle = isAutoNickname ? t.header.setNicknameHint : email;
 
   const pageHeaderRight = GAME_ENABLED && !authLoading ? (
     user ? (
