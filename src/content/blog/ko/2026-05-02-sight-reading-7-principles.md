@@ -6,6 +6,11 @@ keywords: ["초견", "sight-reading", "초견 연습", "악보 읽기", "연습 
 slug: "sight-reading-7-principles"
 category: "실전 연습 가이드"
 day: 3
+coverImage: "https://upload.wikimedia.org/wikipedia/commons/c/c9/Small_environment_of_studying_Score_KV265.jpg"
+coverImageAlt: "악보를 펼쳐 놓고 학습하는 환경 — Mozart KV 265 변주곡 악보"
+coverImageSource: "https://commons.wikimedia.org/wiki/File:Small_environment_of_studying_Score_KV265.jpg"
+coverImageLicense: "CC BY-SA"
+coverImageCredit: "Wikimedia Commons"
 ---
 
 초견 연습 시간을 늘려도 실력이 크게 늘지 않는 경우가 있다. 반대로 짧은 시간만 들여도 빠르게 향상되는 경우도 있다. 이 차이를 만드는 것은 연습 시간 자체보다 연습 방식이라는 의견이 음악 교육 연구에서 반복적으로 제기된다. Lehmann과 McArthur(2002)는 초견을 "악보 해독 + 음악적 맥락 인식 + 실시간 의사결정"의 복합 기술로 정의하며, 각 요소를 동시에 훈련하는 방식이 효과적이라고 본다.

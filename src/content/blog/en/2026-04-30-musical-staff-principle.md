@@ -6,6 +6,11 @@ keywords: ["musical staff", "score reading", "clef", "note position", "music not
 slug: "musical-staff-principle"
 category: "Theory & Harmony"
 day: 1
+coverImage: "https://images.metmuseum.org/CRDImages/ep/original/DT1387.jpg"
+coverImageAlt: "Laurent de La Hyre, «Allegory of Music» (1649) — a Baroque allegorical painting with five-line musical staff"
+coverImageSource: "https://www.metmuseum.org/art/collection/search/436836"
+coverImageLicense: "Public Domain"
+coverImageCredit: "Laurent de La Hyre; The Metropolitan Museum of Art"
 ---
 
 People learning to read music tend to accept the five-line staff as an obvious given, without stopping to ask a genuinely interesting question: why five lines? Why not four, or six?

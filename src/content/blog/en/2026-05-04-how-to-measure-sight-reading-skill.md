@@ -6,6 +6,11 @@ keywords: ["sight-reading measurement", "pitch accuracy", "eye-hand span", "resp
 slug: "how-to-measure-sight-reading-skill"
 category: "Sight-Reading Lab"
 day: 5
+coverImage: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/Chopin_Prelude_7.png/500px-Chopin_Prelude_7.png"
+coverImageAlt: "Chopin Prelude Op. 28 No. 7 — simple material often used for sight-reading assessment"
+coverImageSource: "https://commons.wikimedia.org/wiki/File:Chopin_Prelude_7.png"
+coverImageLicense: "Public Domain"
+coverImageCredit: "Frédéric Chopin; Wikimedia Commons"
 ---
 
 Sight-reading is the ability to perform music from a score encountered for the first time. For a long time the judgment was informal: a teacher listened, then offered a verdict. Translating that verdict into a usable number requires deciding what exactly to measure.

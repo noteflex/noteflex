@@ -4,9 +4,13 @@ slug: "note-values-explained"
 date: "2026-05-08"
 category: "Theory & Harmony"
 excerpt: "Whole notes, half notes, quarters, eighths, sixteenths, thirty-seconds. What each shape means, how they relate to each other, and why understanding the system matters for sight-reading."
-image: "https://upload.wikimedia.org/wikipedia/commons/8/8c/Sheet_music.jpg"
 keywords: ["note values", "whole note", "quarter note", "eighth note", "rhythm", "music notation"]
 day: 9
+coverImage: "https://upload.wikimedia.org/wikipedia/commons/8/8c/Sheet_music.jpg"
+coverImageAlt: "A sheet-music page close-up — where note values build rhythm in notation"
+coverImageSource: "https://commons.wikimedia.org/wiki/File:Sheet_music.jpg"
+coverImageLicense: "CC BY-SA"
+coverImageCredit: "Wikimedia Commons"
 ---
 
 ![A page of sheet music up close](https://upload.wikimedia.org/wikipedia/commons/8/8c/Sheet_music.jpg)

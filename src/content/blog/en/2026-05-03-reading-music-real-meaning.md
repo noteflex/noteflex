@@ -6,6 +6,11 @@ keywords: ["reading music", "sight-reading", "music cognition", "music learning"
 slug: "reading-music-real-meaning"
 category: "Sight-Reading Lab"
 day: 4
+coverImage: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/54/DwtkII-as-dur-fuga.jpg/500px-DwtkII-as-dur-fuga.jpg"
+coverImageAlt: "J.S. Bach's autograph of the A-flat major Fugue from WTC II — reading music as multi-layer translation"
+coverImageSource: "https://commons.wikimedia.org/wiki/File:DwtkII-as-dur-fuga.jpg"
+coverImageLicense: "Public Domain"
+coverImageCredit: "J.S. Bach; Wikimedia Commons"
 ---
 
 Ask a piano student "Can you read music?" and the answer often comes with a pause. "I can read it slowly, note by note" is a common reply. The same person, asked whether they can read text, would not pause at all. Both questions use the word "read." Why the different responses?

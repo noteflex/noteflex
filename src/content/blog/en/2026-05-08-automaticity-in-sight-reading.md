@@ -4,9 +4,13 @@ slug: "automaticity-in-sight-reading"
 date: "2026-05-08"
 category: "Practice Hub"
 excerpt: "The gap between decoding a score and actually reading it comes down to one word: automaticity. What it means, how it forms, and how it changes everything in sight-reading."
-image: "https://upload.wikimedia.org/wikipedia/commons/e/e6/Piano_practice.jpg"
 keywords: ["automaticity", "sight-reading", "music cognition", "music practice", "note recognition"]
 day: 9
+coverImage: "https://upload.wikimedia.org/wikipedia/commons/e/e6/Piano_practice.jpg"
+coverImageAlt: "A pianist practicing with a score — the repetitive work where automaticity forms"
+coverImageSource: "https://commons.wikimedia.org/wiki/File:Piano_practice.jpg"
+coverImageLicense: "CC BY-SA"
+coverImageCredit: "Wikimedia Commons"
 ---
 
 ![A pianist practicing with sheet music](https://upload.wikimedia.org/wikipedia/commons/e/e6/Piano_practice.jpg)

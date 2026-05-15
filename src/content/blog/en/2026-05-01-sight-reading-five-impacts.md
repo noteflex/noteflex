@@ -6,6 +6,11 @@ keywords: ["sight-reading", "sight-reading benefits", "ensemble", "music learnin
 slug: "sight-reading-five-impacts"
 category: "Sight-Reading Lab"
 day: 2
+coverImage: "https://upload.wikimedia.org/wikipedia/commons/2/2a/Chopin_Preludium_op._28_nr_7.jpg"
+coverImageAlt: "Chopin Prelude Op. 28 No. 7 — a common early sight-reading repertoire piece"
+coverImageSource: "https://commons.wikimedia.org/wiki/File:Chopin_Preludium_op._28_nr_7.jpg"
+coverImageLicense: "Public Domain"
+coverImageCredit: "Frédéric Chopin; Wikimedia Commons"
 ---
 
 ![Chopin Prelude Op. 28 No. 7 sheet music](https://upload.wikimedia.org/wikipedia/commons/2/2a/Chopin_Preludium_op._28_nr_7.jpg)

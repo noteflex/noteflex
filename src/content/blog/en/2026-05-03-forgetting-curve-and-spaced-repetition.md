@@ -6,6 +6,11 @@ keywords: ["forgetting curve", "Ebbinghaus", "spaced repetition", "music learnin
 slug: "forgetting-curve-and-spaced-repetition"
 category: "Music Tech"
 day: 4
+coverImage: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/81/Ebbinghaus_curve.png/330px-Ebbinghaus_curve.png"
+coverImageAlt: "Ebbinghaus's forgetting curve — the classic graph showing rapid memory loss over time"
+coverImageSource: "https://commons.wikimedia.org/wiki/File:Ebbinghaus_curve.png"
+coverImageLicense: "Public Domain"
+coverImageCredit: "Hermann Ebbinghaus; Wikimedia Commons"
 ---
 
 That learning fades after a delay is intuitively familiar. Words memorized yesterday don't surface today. Musical patterns rehearsed last month feel half-absent when a new piece arrives. Every learner has lived through this.

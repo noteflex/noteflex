@@ -6,6 +6,11 @@ keywords: ["음자리표", "높은음자리표", "낮은음자리표", "G clef",
 slug: "clef-guide"
 category: "음악 이론 & 화성학"
 day: 2
+coverImage: "https://upload.wikimedia.org/wikipedia/commons/d/d3/Bass_and_Treble_clef.svg"
+coverImageAlt: "높은음자리표와 낮은음자리표 도해 — 두 음자리표가 음이름을 결정하는 기준"
+coverImageSource: "https://commons.wikimedia.org/wiki/File:Bass_and_Treble_clef.svg"
+coverImageLicense: "CC BY 3.0"
+coverImageCredit: "Lthown; Wikimedia Commons"
 ---
 
 악보를 처음 배울 때 음자리표(clef)가 헷갈리는 이유는 대부분 외워야 할 것이 많아 보이기 때문이다. 하지만 음자리표의 핵심은 단순하다. 오선지 위 특정 줄이 어떤 음인지 기준음 하나를 알려주는 것이 음자리표의 역할이다.

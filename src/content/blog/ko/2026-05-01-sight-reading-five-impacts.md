@@ -6,6 +6,11 @@ keywords: ["초견", "sight-reading", "초견 효과", "합주", "음악 학습"
 slug: "sight-reading-five-impacts"
 category: "초견의 정석"
 day: 2
+coverImage: "https://upload.wikimedia.org/wikipedia/commons/2/2a/Chopin_Preludium_op._28_nr_7.jpg"
+coverImageAlt: "쇼팽 전주곡 Op. 28 No. 7 악보 — 초견 학습에서 자주 등장하는 초급 레퍼토리"
+coverImageSource: "https://commons.wikimedia.org/wiki/File:Chopin_Preludium_op._28_nr_7.jpg"
+coverImageLicense: "Public Domain"
+coverImageCredit: "Frédéric Chopin; Wikimedia Commons"
 ---
 
 ![쇼팽 전주곡 Op. 28 No. 7 악보](https://upload.wikimedia.org/wikipedia/commons/2/2a/Chopin_Preludium_op._28_nr_7.jpg)

@@ -6,6 +6,11 @@ keywords: ["임시표", "올림표", "내림표", "제자리표", "음악 이론
 slug: "accidentals-explained"
 category: "음악 이론 & 화성학"
 day: 5
+coverImage: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/Chopindoub.JPG/500px-Chopindoub.JPG"
+coverImageAlt: "겹올림표(×)가 등장하는 쇼팽 악보 발췌 — 임시표가 만들어내는 화성적 색채"
+coverImageSource: "https://commons.wikimedia.org/wiki/File:Chopindoub.JPG"
+coverImageLicense: "Public Domain"
+coverImageCredit: "Frédéric Chopin; Wikimedia Commons"
 ---
 
 악보를 읽다 보면 음표 왼쪽에 ♯이나 ♭, 또는 ♮ 기호가 붙어 있는 것을 만난다. 이를 **임시표**라고 한다. 조표처럼 악보 전체에 걸쳐 적용되는 것이 아니라, 특정 음표 한 개의 높이를 일시적으로 바꾸는 기호다.

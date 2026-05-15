@@ -4,9 +4,13 @@ slug: "note-values-explained"
 date: "2026-05-08"
 category: "음악 이론 & 화성학"
 excerpt: "온음표, 2분음표, 4분음표, 8분음표, 16분음표, 32분음표. 악보 위 각 모양이 가리키는 길이와, 그 길이들이 리듬을 만들어 내는 원리."
-image: "https://upload.wikimedia.org/wikipedia/commons/8/8c/Sheet_music.jpg"
 keywords: ["음표 길이", "온음표", "4분음표", "8분음표", "음표 종류", "악보 읽기"]
 day: 9
+coverImage: "https://upload.wikimedia.org/wikipedia/commons/8/8c/Sheet_music.jpg"
+coverImageAlt: "악보 페이지를 가까이서 찍은 모습 — 음표 길이가 리듬을 만들어내는 기보의 현장"
+coverImageSource: "https://commons.wikimedia.org/wiki/File:Sheet_music.jpg"
+coverImageLicense: "CC BY-SA"
+coverImageCredit: "Wikimedia Commons"
 ---
 
 ![악보 페이지를 가까이서 찍은 모습](https://upload.wikimedia.org/wikipedia/commons/8/8c/Sheet_music.jpg)

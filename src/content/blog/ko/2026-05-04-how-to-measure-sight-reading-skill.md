@@ -6,6 +6,11 @@ keywords: ["초견 측정", "sight-reading", "음표 인식", "아이-핸드 스
 slug: "how-to-measure-sight-reading-skill"
 category: "초견의 정석"
 day: 5
+coverImage: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/Chopin_Prelude_7.png/500px-Chopin_Prelude_7.png"
+coverImageAlt: "쇼팽 전주곡 Op. 28 No. 7 악보 — 초견 측정에서 자주 쓰이는 단순한 자료"
+coverImageSource: "https://commons.wikimedia.org/wiki/File:Chopin_Prelude_7.png"
+coverImageLicense: "Public Domain"
+coverImageCredit: "Frédéric Chopin; Wikimedia Commons"
 ---
 
 초견은 처음 보는 악보를 그 자리에서 연주하는 기술이다. 오랫동안 "연습하면 늘겠지"라는 말로 뭉뚱그려졌지만, 실제로는 여러 하위 기술이 결합된 복합 능력이다. 그 능력이 어느 수준인지 측정하려면, 측정할 대상을 먼저 나눠야 한다.

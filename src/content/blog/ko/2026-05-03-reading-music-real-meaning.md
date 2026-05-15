@@ -6,6 +6,11 @@ keywords: ["악보 읽기", "초견", "음악 인지", "음악 학습", "시각 
 slug: "reading-music-real-meaning"
 category: "초견의 정석"
 day: 4
+coverImage: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/54/DwtkII-as-dur-fuga.jpg/500px-DwtkII-as-dur-fuga.jpg"
+coverImageAlt: "Bach의 평균율 클라비어 곡집 II권 As장조 푸가 자필 악보 — 악보 읽기는 다층 변환의 과정이다"
+coverImageSource: "https://commons.wikimedia.org/wiki/File:DwtkII-as-dur-fuga.jpg"
+coverImageLicense: "Public Domain"
+coverImageCredit: "J.S. Bach; Wikimedia Commons"
 ---
 
 피아노를 배운 사람에게 "악보를 읽을 줄 아세요?"라고 물으면 대부분 잠깐 망설인다. "한 음 한 음 짚으면 읽을 수 있어요" 정도가 가장 흔한 답이다. 글을 읽을 줄 아냐는 질문에는 그런 망설임이 없다. 두 질문 모두 "읽기"라는 단어를 쓰는데, 왜 답이 다를까.

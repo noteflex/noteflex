@@ -4,9 +4,13 @@ slug: "sight-reading-practice-time"
 date: "2026-05-07"
 category: "실전 연습 가이드"
 excerpt: "하루 한 시간 몰아서 연습하는 것과 5분씩 나눠서 자주 연습하는 것 중 무엇이 더 효과적일까. 초견 연습은 양보다 분배가 결과를 좌우한다."
-image: "https://upload.wikimedia.org/wikipedia/commons/1/1a/Music_class_usa.jpg"
 keywords: ["초견 연습 시간", "분산 연습", "deliberate practice", "악보 읽기 루틴", "초견 학습"]
 day: 8
+coverImage: "https://upload.wikimedia.org/wikipedia/commons/1/1a/Music_class_usa.jpg"
+coverImageAlt: "음악 수업에서 함께 악보를 읽는 모습 — 연습 시간 분배가 결과를 가르는 현장"
+coverImageSource: "https://commons.wikimedia.org/wiki/File:Music_class_usa.jpg"
+coverImageLicense: "Public Domain"
+coverImageCredit: "U.S. National Archives; Wikimedia Commons"
 ---
 
 ![음악 수업에서 함께 악보를 읽는 모습](https://upload.wikimedia.org/wikipedia/commons/1/1a/Music_class_usa.jpg)

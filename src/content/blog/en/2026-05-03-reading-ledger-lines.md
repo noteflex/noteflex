@@ -6,6 +6,11 @@ keywords: ["ledger lines", "reading music", "sight-reading", "note recognition",
 slug: "reading-ledger-lines"
 category: "Theory & Harmony"
 day: 4
+coverImage: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3c/Ledger_line.svg/250px-Ledger_line.svg.png"
+coverImageAlt: "Ledger line diagram — short auxiliary lines drawn when notes exceed the five-line staff"
+coverImageSource: "https://commons.wikimedia.org/wiki/File:Ledger_line.svg"
+coverImageLicense: "Public Domain"
+coverImageCredit: "Wikimedia Commons"
 ---
 
 Most learners share the same experience: notes inside the staff read smoothly, but the moment a few short horizontal lines appear above or below, speed drops sharply. The common phrase is "ledger-line notes are weak." That weakness is often treated as a familiarity issue, but the actual cause sits in the structure of visual cognition.

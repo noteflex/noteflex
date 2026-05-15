@@ -6,6 +6,11 @@ keywords: ["초견", "sight-reading", "악보 읽기", "초견 연습", "음악 
 slug: "sight-reading-basics"
 category: "초견의 정석"
 day: 1
+coverImage: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e2/BWV1001-cropped.jpg/960px-BWV1001-cropped.jpg"
+coverImageAlt: "J.S. Bach의 바이올린 소나타 1번 g단조 BWV 1001 자필 악보 — 초견으로 마주하는 빽빽한 음표의 한 장면"
+coverImageSource: "https://commons.wikimedia.org/wiki/File:BWV1001-cropped.jpg"
+coverImageLicense: "Public Domain"
+coverImageCredit: "J.S. Bach; Bach Digital archive"
 ---
 
 처음 악보를 받아들고 연주를 시작할 때, 어떤 사람은 악보를 보자마자 연주를 이어가고, 어떤 사람은 한 음 한 음 확인하며 멈추기를 반복한다. 이 차이를 만드는 것이 초견(sight-reading) 능력이다.

@@ -4,8 +4,12 @@ slug: "note-recognition-speed"
 date: "2026-05-06"
 category: "초견의 정석"
 excerpt: "초견이 빨라지지 않는 가장 흔한 원인은 손도, 박자도 아닌 시각 인식 단계에 있다. 음표 하나를 떠올리는 데 걸리는 시간이 모든 후속 처리의 상한선을 결정한다."
-image: "https://upload.wikimedia.org/wikipedia/commons/2/21/Bruhns-Choralfantasie-Thema.svg"
 keywords: ["음표 인식", "초견 속도", "시각 처리", "eye-hand span", "악보 읽기"]
+coverImage: "https://upload.wikimedia.org/wikipedia/commons/2/21/Bruhns-Choralfantasie-Thema.svg"
+coverImageAlt: "Bruhns의 코랄 환상곡 주제 악보 — 음표 인식 속도가 결정되는 기보의 한 단면"
+coverImageSource: "https://commons.wikimedia.org/wiki/File:Bruhns-Choralfantasie-Thema.svg"
+coverImageLicense: "Public Domain"
+coverImageCredit: "Nicolaus Bruhns; Wikimedia Commons"
 ---
 
 ![악보 패턴 예시](https://upload.wikimedia.org/wikipedia/commons/2/21/Bruhns-Choralfantasie-Thema.svg)

@@ -4,9 +4,13 @@ slug: "automaticity-in-sight-reading"
 date: "2026-05-08"
 category: "실전 연습 가이드"
 excerpt: "악보를 의식적으로 해독하는 단계를 넘어 자동으로 읽히는 상태, 자동화. 초견에서 자동화란 무엇이고, 어떻게 형성되는가."
-image: "https://upload.wikimedia.org/wikipedia/commons/e/e6/Piano_practice.jpg"
 keywords: ["자동화", "초견 자동화", "악보 읽기 자동화", "음악 학습", "음표 인식"]
 day: 9
+coverImage: "https://upload.wikimedia.org/wikipedia/commons/e/e6/Piano_practice.jpg"
+coverImageAlt: "피아니스트가 악보를 보며 연습하는 모습 — 자동화가 형성되는 반복의 시간"
+coverImageSource: "https://commons.wikimedia.org/wiki/File:Piano_practice.jpg"
+coverImageLicense: "CC BY-SA"
+coverImageCredit: "Wikimedia Commons"
 ---
 
 ![피아니스트가 악보를 보며 연습하는 모습](https://upload.wikimedia.org/wikipedia/commons/e/e6/Piano_practice.jpg)

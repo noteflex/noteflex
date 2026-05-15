@@ -6,6 +6,11 @@ keywords: ["덧줄", "ledger lines", "악보 읽기", "초견", "음표 인식"]
 slug: "reading-ledger-lines"
 category: "음악 이론 & 화성학"
 day: 4
+coverImage: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3c/Ledger_line.svg/250px-Ledger_line.svg.png"
+coverImageAlt: "덧줄(ledger line) 도해 — 오선 위·아래로 음표가 벗어날 때 그어지는 짧은 보조선"
+coverImageSource: "https://commons.wikimedia.org/wiki/File:Ledger_line.svg"
+coverImageLicense: "Public Domain"
+coverImageCredit: "Wikimedia Commons"
 ---
 
 오선보 안의 음표는 빠르게 읽는데 오선 위·아래로 짧은 가로줄 몇 개가 추가되는 순간 속도가 뚝 떨어지는 경험은 학습자 대부분이 공유한다. 흔히 "덧줄 음표가 약하다"고 말한다. 이 약함은 익숙함의 문제로 단순화되기 쉬우나, 실제로는 시각 인지 구조의 차이에서 비롯된다.

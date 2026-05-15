@@ -6,6 +6,11 @@ keywords: ["accidentals", "sharp", "flat", "natural", "music theory", "key signa
 slug: "accidentals-explained"
 category: "Theory & Harmony"
 day: 5
+coverImage: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/Chopindoub.JPG/500px-Chopindoub.JPG"
+coverImageAlt: "A Chopin score excerpt featuring a double sharp — accidentals shaping harmonic color"
+coverImageSource: "https://commons.wikimedia.org/wiki/File:Chopindoub.JPG"
+coverImageLicense: "Public Domain"
+coverImageCredit: "Frédéric Chopin; Wikimedia Commons"
 ---
 
 When reading a score, notes sometimes carry a small symbol to their left: a ♯, a ♭, or a ♮. These are **accidentals** — symbols that temporarily alter a note's pitch by a semitone. Unlike a key signature, which applies across an entire piece or section, an accidental modifies only its specific note within a defined scope.

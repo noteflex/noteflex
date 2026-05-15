@@ -6,6 +6,11 @@ keywords: ["망각 곡선", "Ebbinghaus", "간격 반복", "spaced repetition", 
 slug: "forgetting-curve-and-spaced-repetition"
 category: "뮤직 테크 & 미래"
 day: 4
+coverImage: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/81/Ebbinghaus_curve.png/330px-Ebbinghaus_curve.png"
+coverImageAlt: "Ebbinghaus 망각 곡선 — 시간이 지나면서 기억이 빠르게 소실되는 양상을 보여주는 고전적 그래프"
+coverImageSource: "https://commons.wikimedia.org/wiki/File:Ebbinghaus_curve.png"
+coverImageLicense: "Public Domain"
+coverImageCredit: "Hermann Ebbinghaus; Wikimedia Commons"
 ---
 
 학습한 내용을 일정 시간이 지나면 잊는다는 사실은 직관적으로 익숙하다. 어제 외운 영어 단어가 오늘 안 떠오르고, 한 달 전 익혔던 음악 패턴이 새 곡을 받았을 때 머릿속에 잘 들어오지 않는 경험은 학습자 모두에게 있다.

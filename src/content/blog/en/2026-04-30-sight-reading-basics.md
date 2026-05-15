@@ -6,6 +6,11 @@ keywords: ["sight-reading", "music reading", "score reading", "sight-reading pra
 slug: "sight-reading-basics"
 category: "Sight-Reading Lab"
 day: 1
+coverImage: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e2/BWV1001-cropped.jpg/960px-BWV1001-cropped.jpg"
+coverImageAlt: "J.S. Bach's autograph manuscript of Violin Sonata No. 1 BWV 1001 — dense notation a sight-reader encounters"
+coverImageSource: "https://commons.wikimedia.org/wiki/File:BWV1001-cropped.jpg"
+coverImageLicense: "Public Domain"
+coverImageCredit: "J.S. Bach; Bach Digital archive"
 ---
 
 When a piece of sheet music is placed in front of someone for the first time, some musicians can start playing and keep going without interruption, while others stop after every note to figure out where they are. The difference comes down to sight-reading ability.

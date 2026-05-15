@@ -4,8 +4,12 @@ slug: "key-signatures-explained"
 date: "2026-05-06"
 category: "음악 이론 & 화성학"
 excerpt: "악보 첫머리에 ♯이 두 개, 또는 ♭이 세 개 붙어 있을 때 그것이 어떤 조성을 의미하는지 즉시 떠올릴 수 있을까. 조표는 무작위가 아니라 5도권에 따른 고정 순서로 나타난다."
-image: "https://upload.wikimedia.org/wikipedia/commons/a/a7/Cycle_des_quintes_et_tonalites_majeures.svg"
 keywords: ["조표", "5도권", "음악 이론", "조성 인식", "악보 읽기"]
+coverImage: "https://upload.wikimedia.org/wikipedia/commons/a/a7/Cycle_des_quintes_et_tonalites_majeures.svg"
+coverImageAlt: "5도권과 장조 배치 — ♯·♭의 순서가 조성을 결정하는 고정 패턴"
+coverImageSource: "https://commons.wikimedia.org/wiki/File:Cycle_des_quintes_et_tonalites_majeures.svg"
+coverImageLicense: "CC BY-SA"
+coverImageCredit: "Wikimedia Commons"
 ---
 
 ![5도권과 장조 배치](https://upload.wikimedia.org/wikipedia/commons/a/a7/Cycle_des_quintes_et_tonalites_majeures.svg)

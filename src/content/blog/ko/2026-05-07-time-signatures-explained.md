@@ -4,9 +4,13 @@ slug: "time-signatures-explained"
 date: "2026-05-07"
 category: "음악 이론 & 화성학"
 excerpt: "악보 첫머리에 적힌 4/4, 3/4, 6/8은 단순한 수의 표기가 아니라 곡 전체의 흐름을 결정짓는 시간 단위이다. 분자와 분모가 가리키는 것이 무엇인지를 정확히 이해하면 박자표를 보는 즉시 곡의 호흡이 머릿속에 들어온다."
-image: "https://upload.wikimedia.org/wikipedia/commons/7/79/Time_signature_example.svg"
 keywords: ["박자표", "단순박자", "복합박자", "4/4", "3/4", "6/8", "악보 읽기"]
 day: 8
+coverImage: "https://upload.wikimedia.org/wikipedia/commons/7/79/Time_signature_example.svg"
+coverImageAlt: "박자표 예시 — 음자리표 옆에 두 숫자로 박의 단위를 지정한다"
+coverImageSource: "https://commons.wikimedia.org/wiki/File:Time_signature_example.svg"
+coverImageLicense: "Public Domain"
+coverImageCredit: "Wikimedia Commons"
 ---
 
 ![박자표 예시 — 음자리표 옆 두 숫자](https://upload.wikimedia.org/wikipedia/commons/7/79/Time_signature_example.svg)

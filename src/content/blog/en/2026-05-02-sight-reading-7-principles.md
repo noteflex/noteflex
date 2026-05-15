@@ -6,6 +6,11 @@ keywords: ["sight-reading", "music practice", "score reading", "practice princip
 slug: "sight-reading-7-principles"
 category: "Practice Hub"
 day: 3
+coverImage: "https://upload.wikimedia.org/wikipedia/commons/c/c9/Small_environment_of_studying_Score_KV265.jpg"
+coverImageAlt: "A study environment with Mozart KV 265 variations open for practice"
+coverImageSource: "https://commons.wikimedia.org/wiki/File:Small_environment_of_studying_Score_KV265.jpg"
+coverImageLicense: "CC BY-SA"
+coverImageCredit: "Wikimedia Commons"
 ---
 
 Some musicians make significant sight-reading gains in a few months while others spend years with little improvement. The difference is rarely time spent — it is how that time is used. Lehmann and McArthur (2002) describe sight-reading as a composite skill combining notation decoding, musical context recognition, and real-time decision-making, and argue that practice methods which exercise all three components together tend to produce faster development.

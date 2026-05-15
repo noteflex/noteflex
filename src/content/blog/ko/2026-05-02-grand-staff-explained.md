@@ -6,6 +6,11 @@ keywords: ["그랜드 오선지", "grand staff", "피아노 악보", "오선지"
 slug: "grand-staff-explained"
 category: "음악 이론 & 화성학"
 day: 3
+coverImage: "https://upload.wikimedia.org/wikipedia/commons/a/a8/Treble_clef_and_Bass_clef.svg"
+coverImageAlt: "그랜드 오선지 — 높은음자리표와 낮은음자리표 음이름 표기"
+coverImageSource: "https://commons.wikimedia.org/wiki/File:Treble_clef_and_Bass_clef.svg"
+coverImageLicense: "Public Domain"
+coverImageCredit: "Wikimedia Commons"
 ---
 
 피아노 악보를 처음 펼치면 위·아래로 나란한 두 개의 오선지를 마주하게 된다. 합쳐서 그랜드 오선지(grand staff) 또는 큰보(big stave)라고 부른다. 왜 한 줄로 충분하지 않고 두 줄이 필요할까?
