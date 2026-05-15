@@ -6,11 +6,11 @@ keywords: ["피아노 초견", "그랜드 오선지", "양손 초견", "bass cle
 slug: "piano-sight-reading-guide"
 category: "악기별 가이드"
 day: 11
-coverImage: "https://upload.wikimedia.org/wikipedia/commons/e/e7/Beethoven_Klaviersonate_Nr_30.jpg"
-coverImageAlt: "베토벤 피아노 소나타 30번 Op. 109 Vivace 자필 악보 (1820) — treble과 bass clef가 함께 기보된 피아노 대보표"
-coverImageSource: "https://commons.wikimedia.org/wiki/File:Beethoven_Klaviersonate_Nr_30.jpg"
+coverImage: "https://images.metmuseum.org/CRDImages/mi/original/DP300941.jpg"
+coverImageAlt: "바르톨로메오 크리스토포리 그랜드 피아노 (1720) — 현존하는 가장 오래된 피아노, 메트로폴리탄 미술관 소장"
+coverImageSource: "https://www.metmuseum.org/art/collection/search/501788"
 coverImageLicense: "Public Domain"
-coverImageCredit: "Ludwig van Beethoven (1770–1827)"
+coverImageCredit: "Bartolomeo Cristofori; The Metropolitan Museum of Art"
 ---
 
 처음으로 그랜드 오선지(grand staff)를 마주하는 순간이 있다. 오선 두 줄이 위아래로 나란히 있고, 위는 높은음자리표(treble clef), 아래는 낮은음자리표(bass clef). 단선 악보에서 읽던 것과 전혀 다른 밀도다. 이 순간 많은 피아노 학습자가 "악보 읽기가 어렵다"는 결론에 도달한다.
@@ -25,8 +25,8 @@ coverImageCredit: "Ludwig van Beethoven (1770–1827)"
 
 Karpinski(2000)는 악보 읽기의 인지 과정을 분석하면서, 처리할 정보량이 늘어날수록 전체 처리 속도가 느려진다고 설명했다. 두 성부를 동시에 해독하는 것은 구조적으로 단일 성부보다 인지 부담이 크다. 그 부담이 양손 동시 시도에서 학습자를 막는다.
 
-![베토벤 피아노 소나타 30번 Op. 109 Vivace 악장 자필 악보 (1820) — 높은음자리표(treble)와 낮은음자리표(bass)가 함께 기보된 피아노 대보표의 실제 예시](https://upload.wikimedia.org/wikipedia/commons/e/e7/Beethoven_Klaviersonate_Nr_30.jpg)
-*그림 1: Ludwig van Beethoven, 피아노 소나타 30번 Op. 109 Vivace 자필 악보 (1820). [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Beethoven_Klaviersonate_Nr_30.jpg) — Public Domain*
+![프레드 베커의 목판화 «피아노 연주자» (1935–40) — 피아노 앞에 앉아 악보를 응시하는 연주자를 담은 표현주의적 흑백 목판화](https://images.metmuseum.org/CRDImages/dp/original/DP820129.jpg)
+*그림 1: Fred Becker, «Piano Player» (1935–40), 목판화. [The Metropolitan Museum of Art](https://www.metmuseum.org/art/collection/search/374224) — Public Domain*
 
 ## 💡 인지 부담을 나누는 단계
 
@@ -46,8 +46,8 @@ Karpinski(2000)는 악보 읽기의 인지 과정을 분석하면서, 처리할 
 
 이 패턴 인식은 반복 노출로만 형성된다. 같은 화음 모양이 충분히 반복된 후에야 개별 번역 없이 전체 인식이 가능해진다.
 
-![차일드 하삼의 «피아노 앞에서» (1902–1908), 유화 — 피아노 앞에 앉아 악보를 읽는 여성의 모습, 신시내티 미술관 소장](https://upload.wikimedia.org/wikipedia/commons/thumb/f/fc/%27At_the_Piano%27_by_Childe_Hassam%2C_Cincinnati_Art_Museum.JPG/960px-%27At_the_Piano%27_by_Childe_Hassam%2C_Cincinnati_Art_Museum.JPG)
-*그림 2: Childe Hassam, «피아노 앞에서» (1902–1908), 유화. [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:%27At_the_Piano%27_by_Childe_Hassam,_Cincinnati_Art_Museum.JPG) — Public Domain. 신시내티 미술관 소장.*
+![존 조지 브라운의 «음악 수업» (1870), 유화 — 음악 교사와 학생이 악보를 함께 읽으며 배우는 장면](https://images.metmuseum.org/CRDImages/ad/original/DP156440.jpg)
+*그림 2: John George Brown, «The Music Lesson» (1870), 유화. [The Metropolitan Museum of Art](https://www.metmuseum.org/art/collection/search/10240) — Public Domain*
 
 ## 피아노 초견 훈련의 실용 원칙 🔍
 
@@ -68,5 +68,6 @@ Noteflex의 레벨 5~7은 그랜드 오선지를 사용한다. treble과 bass를
 2. Lehmann, A. C., & McArthur, V. (2002). Sight-reading. In R. Parncutt & G. E. McPherson (Eds.), *The Science and Psychology of Music Performance* (pp. 135–150). Oxford University Press.
 
 ### 이미지 출처
-- 그림 1: Beethoven, 피아노 소나타 30번 Op. 109 Vivace 자필 악보 (1820). [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Beethoven_Klaviersonate_Nr_30.jpg) — Public Domain.
-- 그림 2: Childe Hassam, «피아노 앞에서» (1902–1908), 유화. [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:%27At_the_Piano%27_by_Childe_Hassam,_Cincinnati_Art_Museum.JPG) — Public Domain. 신시내티 미술관 소장.
+- 표지: Bartolomeo Cristofori, Grand Piano (1720). [The Metropolitan Museum of Art](https://www.metmuseum.org/art/collection/search/501788) — Public Domain.
+- 그림 1: Fred Becker, «Piano Player» (1935–40), 목판화. [The Metropolitan Museum of Art](https://www.metmuseum.org/art/collection/search/374224) — Public Domain.
+- 그림 2: John George Brown, «The Music Lesson» (1870), 유화. [The Metropolitan Museum of Art](https://www.metmuseum.org/art/collection/search/10240) — Public Domain.
