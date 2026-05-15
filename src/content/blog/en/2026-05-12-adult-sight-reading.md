@@ -6,11 +6,11 @@ keywords: ["adult sight-reading", "adult music learning", "adult learner", "neur
 slug: "adult-sight-reading"
 category: "Sight-Reading Lab"
 day: 13
-coverImage: "https://upload.wikimedia.org/wikipedia/commons/f/f7/%C3%89douard_Manet_-_Madame_Manet_ou_Piano.jpg"
-coverImageAlt: "Édouard Manet, «Madame Manet au Piano» (1868) — the artist's wife Suzanne Leenhoff, who took up piano as an adult"
-coverImageSource: "https://commons.wikimedia.org/wiki/File:%C3%89douard_Manet_-_Madame_Manet_ou_Piano.jpg"
+coverImage: "https://images.metmuseum.org/CRDImages/ep/original/DT1879.jpg"
+coverImageAlt: "Auguste Renoir, «The Daughters of Catulle Mendès» (1888) — three young women learning music at the piano, an Impressionist portrait of musical education"
+coverImageSource: "https://www.metmuseum.org/art/collection/search/438014"
 coverImageLicense: "Public Domain"
-coverImageCredit: "Édouard Manet; Wikimedia Commons"
+coverImageCredit: "Auguste Renoir; The Metropolitan Museum of Art"
 ---
 
 An adult learning to sight-read is not walking the same path as a child learner, just later. They are walking a different path. Neuroplasticity continues throughout life, but the mode and efficiency of plasticity change with age. Accept that difference, build the training strategy around it, and adulthood becomes not a handicap but a different kind of strength.
@@ -23,8 +23,8 @@ An adult brain differs from a child brain in two ways. First, myelination is com
 
 This asymmetry has direct implications for training design. Short, frequent sessions outperform long, infrequent ones — far more so than for younger learners. The adult brain may have the patience for an hour-long practice session, but neurologically that is not the efficient mode.
 
-![Édouard Manet, «Madame Manet au Piano» (1868) — the artist's wife Suzanne Leenhoff, who took up piano as an adult](https://upload.wikimedia.org/wikipedia/commons/f/f7/%C3%89douard_Manet_-_Madame_Manet_ou_Piano.jpg)
-*Figure 1: Édouard Manet, «Madame Manet au Piano» (1868). [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:%C3%89douard_Manet_-_Madame_Manet_ou_Piano.jpg) — Public Domain.*
+![Gabriël Metsu, "A Musical Party" (1659), oil on canvas — a seventeenth-century Dutch domestic scene of adults making music together and reading from scores](https://images.metmuseum.org/CRDImages/ep/original/DP145948.jpg)
+*Figure 1: Gabriël Metsu, "A Musical Party" (1659), oil on canvas. [The Metropolitan Museum of Art](https://www.metmuseum.org/art/collection/search/437070) — Public Domain*
 
 ## 💡 The Advantages Adults Have — Bugos et al. (2007)
 
@@ -42,8 +42,8 @@ The reason to prioritize intervals is cognitive load. A reader who converts each
 
 The training sequence is staged: the seven note names within an octave → the three core intervals (major third, perfect fifth, octave) → minor third, perfect fourth, sixth → intervals involving accidentals. Two to four weeks per stage. Patience matters; rushing this sequence produces a fragile foundation.
 
-![Johannes Vermeer, «The Music Lesson» (1662–65) — a seventeenth-century Dutch interior showing adult music learning at home, from the Royal Collection](https://upload.wikimedia.org/wikipedia/commons/b/bc/Johannes_Vermeer_-_Lady_at_the_Virginal_with_a_Gentleman%2C_%27The_Music_Lesson%27_-_Google_Art_Project.jpg)
-*Figure 2: Johannes Vermeer, «The Music Lesson» (1662–65). [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Johannes_Vermeer_-_Lady_at_the_Virginal_with_a_Gentleman,_%27The_Music_Lesson%27_-_Google_Art_Project.jpg) — Public Domain.*
+![Sir Edward Burne-Jones, "The Love Song" (1868–77), oil on canvas — a Pre-Raphaelite music scene in which a figure plays while another listens, conveying the deep inner experience of music](https://images.metmuseum.org/CRDImages/ep/original/DP323394.jpg)
+*Figure 2: Sir Edward Burne-Jones, "The Love Song" (1868–77), oil on canvas. [The Metropolitan Museum of Art](https://www.metmuseum.org/art/collection/search/435826) — Public Domain*
 
 ## 🎵 Time Allocation — The Adult Reality
 
@@ -67,5 +67,6 @@ Being an adult does not mean it is too late. It means starting as a different ki
 2. Wan, C. Y., & Schlaug, G. (2010). Music making as a tool for promoting brain plasticity across the life span. *The Neuroscientist*, 16(5), 566–577. DOI: [10.1177/1073858410377805](https://doi.org/10.1177/1073858410377805)
 
 ### Image Sources
-- Figure 1: Édouard Manet, «Madame Manet au Piano» (1868). [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:%C3%89douard_Manet_-_Madame_Manet_ou_Piano.jpg) — Public Domain.
-- Figure 2: Johannes Vermeer, «The Music Lesson» (1662–65). [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Johannes_Vermeer_-_Lady_at_the_Virginal_with_a_Gentleman,_%27The_Music_Lesson%27_-_Google_Art_Project.jpg) — Public Domain.
+- Cover: Auguste Renoir, "The Daughters of Catulle Mendès" (1888), oil on canvas. [The Metropolitan Museum of Art](https://www.metmuseum.org/art/collection/search/438014) — Public Domain.
+- Figure 1: Gabriël Metsu, "A Musical Party" (1659), oil on canvas. [The Metropolitan Museum of Art](https://www.metmuseum.org/art/collection/search/437070) — Public Domain.
+- Figure 2: Sir Edward Burne-Jones, "The Love Song" (1868–77), oil on canvas. [The Metropolitan Museum of Art](https://www.metmuseum.org/art/collection/search/435826) — Public Domain.
