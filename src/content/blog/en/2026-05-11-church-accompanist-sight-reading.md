@@ -6,11 +6,11 @@ keywords: ["church accompanist", "sight-reading accompaniment", "on-the-fly tran
 slug: "church-accompanist-sight-reading"
 category: "Practice Hub"
 day: 12
-coverImage: "https://upload.wikimedia.org/wikipedia/commons/9/96/Praha_St._Nicholas_Church_Organ_01.jpg"
-coverImageAlt: "Baroque pipe organ at St. Nicholas Church, Prague (18th century) — the instrument and space where church accompanists perform sight-reading under real conditions"
-coverImageSource: "https://commons.wikimedia.org/wiki/File:Praha_St._Nicholas_Church_Organ_01.jpg"
-coverImageLicense: "CC BY-SA 4.0"
-coverImageCredit: "Uoaei1; Wikimedia Commons"
+coverImage: "https://images.metmuseum.org/CRDImages/ep/original/DP160223.jpg"
+coverImageAlt: "Henry Lerolle, «The Organ Rehearsal» (1885) — a church organist rehearsal scene with choir and accompanist reading from scores together"
+coverImageSource: "https://www.metmuseum.org/art/collection/search/436880"
+coverImageLicense: "Public Domain"
+coverImageCredit: "Henry Lerolle; The Metropolitan Museum of Art"
 ---
 
 The service begins and a hymn number changes. The congregation finds the original key too high. The accompanist shifts down a step — on the spot — and keeps playing. The printed music says B♭ major; what comes out is G major. There is no pause to think it through.
@@ -27,8 +27,8 @@ McPherson (1994), analyzing the factors that determine sight-reading ability in 
 
 **Third: congregation-tempo matching.** Church accompaniment is congregation-centered, not performer-centered. The accompanist follows the room. Reading while actively listening — adjusting tempo in response to what the congregation is actually singing — requires a form of split attention that must be trained separately from pure notation reading.
 
-![J.S. Bach's autograph manuscript of Orgelbüchlein BWV 614 "Das alte Jahr vergangen ist" (ca. 1715) — a short chorale prelude written for liturgical use, showing the kind of music church accompanists must sight-read](https://upload.wikimedia.org/wikipedia/commons/1/1f/Autograph-Manuscript-BWV614.jpg)
-*Figure 1: J.S. Bach, Orgelbüchlein BWV 614, autograph manuscript (ca. 1715). [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Autograph-Manuscript-BWV614.jpg) — Public Domain.*
+![Thomas Appleton Pipe Organ (1830) at the Metropolitan Museum of Art — a nineteenth-century American church pipe organ, the instrument at the center of church accompaniment](https://images.metmuseum.org/CRDImages/mi/original/DP-14247-002.jpg)
+*Figure 1: Thomas Appleton, Pipe Organ (1830). [The Metropolitan Museum of Art](https://www.metmuseum.org/art/collection/search/503670) — Public Domain*
 
 ## 💡 Building Transposition Fluency
 
@@ -51,5 +51,5 @@ The service arrives with no rehearsal. A prepared accompanist plays whatever the
 1. McPherson, G. E. (1994). Factors and abilities influencing musical performance reading ability in instrumental music students. *Journal of Research in Music Education*, 42(1), 37–47. DOI: [10.2307/3345701](https://doi.org/10.2307/3345701)
 
 ### Image Sources
-- Figure 1: J.S. Bach, Orgelbüchlein BWV 614, autograph manuscript (ca. 1715). [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Autograph-Manuscript-BWV614.jpg) — Public Domain.
-- Cover: Baroque pipe organ, St. Nicholas Church, Prague. [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Praha_St._Nicholas_Church_Organ_01.jpg) — CC BY-SA 4.0 (Uoaei1).
+- Cover: Henry Lerolle, "The Organ Rehearsal" (1885), oil on canvas. [The Metropolitan Museum of Art](https://www.metmuseum.org/art/collection/search/436880) — Public Domain.
+- Figure 1: Thomas Appleton, Pipe Organ (1830). [The Metropolitan Museum of Art](https://www.metmuseum.org/art/collection/search/503670) — Public Domain.
