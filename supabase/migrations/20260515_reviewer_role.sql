@@ -109,7 +109,7 @@ BEGIN
     UPDATE public.profiles
     SET
       role = 'reviewer',
-      nickname = 'PaddleReviewer',
+      nickname = 'paddle_reviewer',
       profile_completed = true,
       tos_agreed_at = COALESCE(tos_agreed_at, now()),
       privacy_agreed_at = COALESCE(privacy_agreed_at, now())
@@ -121,7 +121,7 @@ BEGIN
     UPDATE public.profiles
     SET
       role = 'reviewer',
-      nickname = COALESCE(nickname, 'PaddleReviewer'),
+      nickname = COALESCE(nickname, 'paddle_reviewer'),
       profile_completed = true
     WHERE id = v_existing_id;
 
