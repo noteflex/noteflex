@@ -7,6 +7,12 @@ import Footer from "@/components/Footer";
 import { useAuth } from "@/contexts/AuthContext";
 import { useT } from "@/contexts/LanguageContext";
 import { GAME_ENABLED } from "@/lib/featureFlags";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 function ComingSoonNotice() {
   const t = useT();
@@ -81,14 +87,22 @@ export default function Index() {
             {t.header.dashboard}
           </Link>
         )}
-        <Link
-          to="/profile"
-          title={displayTitle}
-          className="text-xs px-3 py-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors truncate max-w-[150px]"
-          data-testid="header-display-name"
-        >
-          {displayName}
-        </Link>
+        <TooltipProvider delayDuration={150}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Link
+                to="/profile"
+                className="text-xs px-3 py-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-muted hover:underline underline-offset-4 transition-colors truncate max-w-[150px] cursor-pointer"
+                data-testid="header-display-name"
+              >
+                {displayName}
+              </Link>
+            </TooltipTrigger>
+            <TooltipContent side="bottom" sideOffset={8}>
+              <p className="text-xs">{displayTitle}</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
         <button
           onClick={handleSignOut}
           className="text-xs px-3 py-1.5 rounded-lg border border-border text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"

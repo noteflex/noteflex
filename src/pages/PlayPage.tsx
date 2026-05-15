@@ -2,6 +2,12 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
 import { PremiumBadge } from "@/components/PremiumBadge";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { initSound, ensureAudioReady } from "@/lib/sound";
 import NoteGame from "@/components/NoteGame";
 import LevelSelect from "@/components/LevelSelect";
@@ -61,14 +67,22 @@ function AuthBar({ authLoading, user, onSignOut, onLoginRequest }: AuthBarProps)
               {t.header.dashboard}
             </Link>
           )}
-          <Link
-            to="/profile"
-            title={displayTitle}
-            className="text-xs px-3 py-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors truncate max-w-[150px]"
-            data-testid="header-display-name"
-          >
-            {displayName}
-          </Link>
+          <TooltipProvider delayDuration={150}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Link
+                  to="/profile"
+                  className="text-xs px-3 py-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-muted hover:underline underline-offset-4 transition-colors truncate max-w-[150px] cursor-pointer"
+                  data-testid="header-display-name"
+                >
+                  {displayName}
+                </Link>
+              </TooltipTrigger>
+              <TooltipContent side="bottom" sideOffset={8}>
+                <p className="text-xs">{displayTitle}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
           <PremiumBadge />
           <button
             onClick={onSignOut}
