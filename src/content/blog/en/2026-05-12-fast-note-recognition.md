@@ -6,11 +6,11 @@ keywords: ["note recognition speed", "sight-reading speed", "fixation", "saccade
 slug: "fast-note-recognition"
 category: "Sight-Reading Lab"
 day: 13
-coverImage: "https://upload.wikimedia.org/wikipedia/commons/e/ef/Reading_Fixations_Saccades.jpg"
-coverImageAlt: "Eye-tracking diagram of reading — red dots mark fixations where the eye paused, lines mark saccades, the rapid jumps between"
-coverImageSource: "https://commons.wikimedia.org/wiki/File:Reading_Fixations_Saccades.jpg"
+coverImage: "https://images.metmuseum.org/CRDImages/dp/original/DP820129.jpg"
+coverImageAlt: "Fred Becker, «Piano Player» (1935–40) — an Expressionist wood engraving of a musician's gaze fixed on a score, symbolizing the fixation and cognitive processing at the core of fast note reading"
+coverImageSource: "https://www.metmuseum.org/art/collection/search/374224"
 coverImageLicense: "Public Domain"
-coverImageCredit: "Wikimedia Commons"
+coverImageCredit: "Fred Becker; The Metropolitan Museum of Art"
 ---
 
 A skilled sight-reader does not actually look at every note. Eye-tracking studies show something simpler: a fluent musician's eyes stop only two or three times per measure, jumping rapidly between those stops. A beginner stops at every note. Across the same passage, the number of fixations differs by a factor of five.
@@ -23,8 +23,8 @@ Eye motion looks continuous, but it is actually an alternation between brief pau
 
 Reading music follows the same mechanism. A note is processed during a fixation, and then the eye jumps to the next note or measure. Shorter fixations and longer jumps produce faster reading. A skilled musician processes several notes within a single fixation, then jumps an entire measure at once.
 
-![Eye-tracking diagram of reading — red dots mark fixations where the eye paused, lines mark saccades, the rapid jumps between](https://upload.wikimedia.org/wikipedia/commons/e/ef/Reading_Fixations_Saccades.jpg)
-*Figure 1: Fixation and saccade pattern during reading. [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Reading_Fixations_Saccades.jpg) — Public Domain.*
+![Gabriël Metsu, "A Musical Party" (1659), oil on canvas — a seventeenth-century Dutch scene of musicians reading from scores together, depicting fluent sight-reading where multiple notes are processed in a single glance](https://images.metmuseum.org/CRDImages/ep/original/DP145948.jpg)
+*Figure 1: Gabriël Metsu, "A Musical Party" (1659), oil on canvas. [The Metropolitan Museum of Art](https://www.metmuseum.org/art/collection/search/437070) — Public Domain*
 
 ## 💡 Skilled vs Novice — Goolsby (1994)
 
@@ -42,8 +42,8 @@ Rayner (1998) found the same pattern in general reading. Fast readers have short
 
 This determines the direction of training. Practicing to move the eye faster does not work. Practicing to convert notes into pitch information faster does.
 
-![Wilhelm Wundt (1832–1920) — founder of experimental psychology, the first researcher to precisely measure human reaction time and perceptual processing speed](https://upload.wikimedia.org/wikipedia/commons/5/56/Wilhelm_Wundt.jpg)
-*Figure 2: Wilhelm Wundt (1832–1920). [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Wilhelm_Wundt.jpg) — Public Domain.*
+![John George Brown, "The Music Lesson" (1870), oil on canvas — teacher and student focused on a score together, representing the deliberate repetition and targeted attention that builds faster note recognition](https://images.metmuseum.org/CRDImages/ad/original/DP156440.jpg)
+*Figure 2: John George Brown, "The Music Lesson" (1870), oil on canvas. [The Metropolitan Museum of Art](https://www.metmuseum.org/art/collection/search/10240) — Public Domain*
 
 ## 🎵 Training in Chunks
 
@@ -67,5 +67,6 @@ Fast reading is not the speed of the eye. It is the speed of cognition. And the 
 2. Rayner, K. (1998). Eye movements in reading and information processing: 20 years of research. *Psychological Bulletin*, 124(3), 372–422. DOI: [10.1037/0033-2909.124.3.372](https://doi.org/10.1037/0033-2909.124.3.372)
 
 ### Image Sources
-- Figure 1: Reading Fixations and Saccades diagram. [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Reading_Fixations_Saccades.jpg) — Public Domain.
-- Figure 2: Wilhelm Wundt (1832–1920). [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Wilhelm_Wundt.jpg) — Public Domain.
+- Cover: Fred Becker, "Piano Player" (1935–40), wood engraving. [The Metropolitan Museum of Art](https://www.metmuseum.org/art/collection/search/374224) — Public Domain.
+- Figure 1: Gabriël Metsu, "A Musical Party" (1659), oil on canvas. [The Metropolitan Museum of Art](https://www.metmuseum.org/art/collection/search/437070) — Public Domain.
+- Figure 2: John George Brown, "The Music Lesson" (1870), oil on canvas. [The Metropolitan Museum of Art](https://www.metmuseum.org/art/collection/search/10240) — Public Domain.
