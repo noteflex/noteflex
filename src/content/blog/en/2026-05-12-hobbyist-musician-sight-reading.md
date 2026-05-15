@@ -6,11 +6,11 @@ keywords: ["hobbyist musician", "amateur sight-reading", "adult learner", "lifel
 slug: "hobbyist-musician-sight-reading"
 category: "Learning Strategies by Role"
 day: 13
-coverImage: "https://upload.wikimedia.org/wikipedia/commons/7/73/Auguste_Renoir_-_Young_Girls_at_the_Piano_-_Google_Art_Project.jpg"
-coverImageAlt: "Auguste Renoir, «Young Girls at the Piano» (1892) — an Impressionist portrayal of everyday amateur music-making at home"
-coverImageSource: "https://commons.wikimedia.org/wiki/File:Auguste_Renoir_-_Young_Girls_at_the_Piano_-_Google_Art_Project.jpg"
+coverImage: "https://images.metmuseum.org/CRDImages/ep/original/DP146455.jpg"
+coverImageAlt: "Jan Steen, «Merry Company on a Terrace» (ca. 1670) — a lively seventeenth-century Dutch gathering with music, song, and shared pleasure, representing the culture of amateur music-making as everyday enjoyment"
+coverImageSource: "https://www.metmuseum.org/art/collection/search/437749"
 coverImageLicense: "Public Domain"
-coverImageCredit: "Auguste Renoir; Wikimedia Commons (Google Art Project)"
+coverImageCredit: "Jan Steen; The Metropolitan Museum of Art"
 ---
 
 For people who won't make music their profession, sight-reading still matters — perhaps more than they realize. The fact that a new piece of music, opened for the first time, can be played through with roughly half its content intact changes how music exists in a life over decades. It is a different unit of time from memorizing one piece at a time.
@@ -25,8 +25,8 @@ The second is repertoire breadth. A learner who relies entirely on memorization 
 
 The third is spontaneity. Two friends with scores spread on a piano — the standard form of domestic music well into the nineteenth century — becomes possible. A learner who only plays memorized repertoire never tries this.
 
-![Auguste Renoir, «Young Girls at the Piano» (1892) — an Impressionist portrayal of everyday amateur music-making at home](https://upload.wikimedia.org/wikipedia/commons/7/73/Auguste_Renoir_-_Young_Girls_at_the_Piano_-_Google_Art_Project.jpg)
-*Figure 1: Auguste Renoir, «Young Girls at the Piano» (1892). [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Auguste_Renoir_-_Young_Girls_at_the_Piano_-_Google_Art_Project.jpg) — Public Domain.*
+![Laurent de La Hyre, "Allegory of Music" (1649), oil on canvas — a Baroque allegorical painting representing music as a learned art, with scores, instruments, and laurel in a single composition](https://images.metmuseum.org/CRDImages/ep/original/DT1387.jpg)
+*Figure 1: Laurent de La Hyre, "Allegory of Music" (1649), oil on canvas. [The Metropolitan Museum of Art](https://www.metmuseum.org/art/collection/search/436836) — Public Domain*
 
 ## 💡 A Reasonable Dose — Five to Ten Minutes a Day
 
@@ -40,8 +40,8 @@ Professional sight-reading training pushes accuracy steadily upward. Hobbyists n
 
 The practice principle follows directly. When opening a new score, go through it without stopping, even when wrong notes happen. Then play it once more. Accuracy improves naturally on the second pass. Stopping at every note to correct is memorization practice, not sight-reading.
 
-![Adolph Menzel, «The Flute Concert of Frederick the Great at Sanssouci» (1850–52) — an eighteenth-century scene of an amateur musician monarch playing the flute at his court](https://upload.wikimedia.org/wikipedia/commons/6/64/Adolph_Menzel_-_Fl%C3%B6tenkonzert_Friedrichs_des_Gro%C3%9Fen_in_Sanssouci_-_Google_Art_Project.jpg)
-*Figure 2: Adolph Menzel, «Das Flötenkonzert Friedrichs des Großen in Sanssouci» (1850–52). [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Adolph_Menzel_-_Fl%C3%B6tenkonzert_Friedrichs_des_Gro%C3%9Fen_in_Sanssouci_-_Google_Art_Project.jpg) — Public Domain.*
+![Gabriël Metsu, "A Musical Party" (1659), oil on canvas — a seventeenth-century Dutch domestic scene of adults making music and reading scores together, the form of home music that lasted into the nineteenth century](https://images.metmuseum.org/CRDImages/ep/original/DP145948.jpg)
+*Figure 2: Gabriël Metsu, "A Musical Party" (1659), oil on canvas. [The Metropolitan Museum of Art](https://www.metmuseum.org/art/collection/search/437070) — Public Domain*
 
 ## 🎵 Designing Training That Preserves Pleasure
 
@@ -66,5 +66,6 @@ If music is meant to stay in a life, sight-reading may matter more to the hobbyi
 1. Bonneville-Roussy, A., Lavigne, G. L., & Vallerand, R. J. (2011). When passion leads to excellence: The case of musicians. *Psychology of Music*, 39(1), 123–138. DOI: [10.1177/0305735609352441](https://doi.org/10.1177/0305735609352441)
 
 ### Image Sources
-- Figure 1: Auguste Renoir, «Young Girls at the Piano» (1892). [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Auguste_Renoir_-_Young_Girls_at_the_Piano_-_Google_Art_Project.jpg) — Public Domain.
-- Figure 2: Adolph Menzel, «Das Flötenkonzert Friedrichs des Großen in Sanssouci» (1850–52). [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Adolph_Menzel_-_Fl%C3%B6tenkonzert_Friedrichs_des_Gro%C3%9Fen_in_Sanssouci_-_Google_Art_Project.jpg) — Public Domain.
+- Cover: Jan Steen, "Merry Company on a Terrace" (ca. 1670), oil on canvas. [The Metropolitan Museum of Art](https://www.metmuseum.org/art/collection/search/437749) — Public Domain.
+- Figure 1: Laurent de La Hyre, "Allegory of Music" (1649), oil on canvas. [The Metropolitan Museum of Art](https://www.metmuseum.org/art/collection/search/436836) — Public Domain.
+- Figure 2: Gabriël Metsu, "A Musical Party" (1659), oil on canvas. [The Metropolitan Museum of Art](https://www.metmuseum.org/art/collection/search/437070) — Public Domain.
