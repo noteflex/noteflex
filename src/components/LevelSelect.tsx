@@ -16,6 +16,7 @@ import {
 import { Button } from "@/components/ui/button";
 import UpgradeModal from "./UpgradeModal";
 import DailyLimitModal from "./DailyLimitModal";
+import LockedByProgressDialog from "./LockedByProgressDialog";
 import MasteryScoreCard from "./MasteryScoreCard";
 import { AdBanner } from "./AdBanner";
 import { getSlot } from "@/lib/adsense";
@@ -46,6 +47,8 @@ interface CellState {
   inProgress: boolean;
   lockReason: LockReason | null;
   prevLabel: string | null;
+  prevLevel: number | null;
+  prevSublevel: Sublevel | null;
   criteriaCount: number;
 }
 
@@ -64,8 +67,13 @@ export default function LevelSelect({
   const isAdmin = profile?.role === "admin";
 
   const [upgradeOpen, setUpgradeOpen]   = useState(false);
-  const [lockMsg,     setLockMsg]       = useState<string | null>(null);
   const [dailyLimitOpen, setDailyLimitOpen] = useState(false);
+
+  // 진도 잠금 다이얼로그
+  const [lockedTarget, setLockedTarget] = useState<{ level: number; sublevel: Sublevel } | null>(null);
+  // 스크롤 + 하이라이트 영역
+  const cellRefs = useRef<Map<string, HTMLButtonElement | null>>(new Map());
+  const [highlightedKey, setHighlightedKey] = useState<string | null>(null);
 
   const totalPassed = progress.filter((p) => p.passed).length;
 
@@ -94,7 +102,8 @@ export default function LevelSelect({
       if (!canAccessSublevel(tier, level, sub)) {
         return {
           passed: false, inProgress: false,
-          lockReason: "subscription", prevLabel: null, criteriaCount: 0,
+          lockReason: "subscription", prevLabel: null,
+          prevLevel: null, prevSublevel: null, criteriaCount: 0,
         };
       }
 
@@ -108,7 +117,9 @@ export default function LevelSelect({
         const pl = formatSublevel(prev!.level, prev!.sublevel as Sublevel);
         return {
           passed: false, inProgress: false,
-          lockReason: "progress", prevLabel: pl, criteriaCount: 0,
+          lockReason: "progress", prevLabel: pl,
+          prevLevel: prev!.level, prevSublevel: prev!.sublevel as Sublevel,
+          criteriaCount: 0,
         };
       }
 
@@ -128,7 +139,10 @@ export default function LevelSelect({
         ].filter(Boolean).length;
       }
 
-      return { passed, inProgress, lockReason: null, prevLabel: null, criteriaCount };
+      return {
+        passed, inProgress, lockReason: null, prevLabel: null,
+        prevLevel: null, prevSublevel: null, criteriaCount,
+      };
     }
 
     const map = new Map<string, CellState>();
@@ -154,14 +168,18 @@ export default function LevelSelect({
     const state = cellStatesRef.current.get(`${level}-${sub}`);
     if (!state) return;
 
+    // 우선순위:
+    //   1) Premium 잠금 (티어 제한)  ← 가장 외부 차단
+    //   2) 이전 단계 미통과 잠금
+    //   3) 일일 한도
+    //   4) 진입
     if (state.lockReason === "subscription") {
       setUpgradeOpen(true);
       return;
     }
 
-    if (state.lockReason === "progress") {
-      setLockMsg(`${state.prevLabel} 먼저 통과해주세요`);
-      setTimeout(() => setLockMsg(null), 3000);
+    if (state.lockReason === "progress" && state.prevLevel !== null && state.prevSublevel !== null) {
+      setLockedTarget({ level: state.prevLevel, sublevel: state.prevSublevel });
       return;
     }
 
@@ -173,6 +191,19 @@ export default function LevelSelect({
 
     onSelectSublevel(level, sub);
   }, [onSelectSublevel]);
+
+  // 진도 잠금 CTA "Lv X-Y로 이동" 클릭 시 동작.
+  // 1) 해당 셀 위치로 스크롤 (smooth)
+  // 2) 1.5s 동안 ring 하이라이트
+  const handleGoToRequired = useCallback((level: number, sub: Sublevel) => {
+    const key = `${level}-${sub}`;
+    const el = cellRefs.current.get(key);
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+    setHighlightedKey(key);
+    setTimeout(() => setHighlightedKey(null), 1500);
+  }, []);
 
   // ── Render ──────────────────────────────────────────────────
   return (
@@ -199,16 +230,6 @@ export default function LevelSelect({
           메인
         </Button>
       </div>
-
-      {/* 진도 잠금 메시지 (inline) */}
-      {lockMsg && (
-        <div
-          role="alert"
-          className="text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded-xl px-4 py-2 w-full text-center"
-        >
-          🔒 {lockMsg}
-        </div>
-      )}
 
       {/* 로딩 */}
       {loading && (
@@ -248,7 +269,8 @@ export default function LevelSelect({
               {/* 서브레벨 3개 */}
               <div className="grid grid-cols-3 gap-2">
                 {([1, 2, 3] as Sublevel[]).map((sub) => {
-                  const state = cellStates.get(`${level}-${sub}`)!;
+                  const key = `${level}-${sub}`;
+                  const state = cellStates.get(key)!;
                   return (
                     <SublevelCell
                       key={sub}
@@ -256,6 +278,8 @@ export default function LevelSelect({
                       sublevel={sub}
                       state={state}
                       onSelect={handleSelect}
+                      highlighted={highlightedKey === key}
+                      cellRef={(el) => { cellRefs.current.set(key, el); }}
                     />
                   );
                 })}
@@ -282,6 +306,16 @@ export default function LevelSelect({
 
       <UpgradeModal open={upgradeOpen} onClose={() => setUpgradeOpen(false)} />
 
+      {lockedTarget && (
+        <LockedByProgressDialog
+          open={true}
+          requiredLevel={lockedTarget.level}
+          requiredSublevel={lockedTarget.sublevel}
+          onClose={() => setLockedTarget(null)}
+          onGoToRequired={() => handleGoToRequired(lockedTarget.level, lockedTarget.sublevel)}
+        />
+      )}
+
       {dailyLimitOpen && (
         <DailyLimitModal
           open={true}
@@ -303,23 +337,39 @@ interface SublevelCellProps {
   sublevel: Sublevel;
   state: CellState;
   onSelect: (level: number, sublevel: Sublevel) => void;
+  highlighted?: boolean;
+  cellRef?: (el: HTMLButtonElement | null) => void;
 }
 
-const SublevelCell = memo(function SublevelCell({ level, sublevel, state, onSelect }: SublevelCellProps) {
+const SublevelCell = memo(function SublevelCell({
+  level,
+  sublevel,
+  state,
+  onSelect,
+  highlighted = false,
+  cellRef,
+}: SublevelCellProps) {
   const onClick = () => onSelect(level, sublevel);
   const config    = SUBLEVEL_CONFIGS[sublevel];
   const label     = formatSublevel(level, sublevel);
   const shortLabel = `${level}-${sublevel}`;
   const configStr = `${config.timeLimit}s · ♥${config.lives}`;
 
+  // LockedByProgressDialog CTA로 이동 시 1.5s 동안 ring 강조 박음.
+  const highlightClass = highlighted
+    ? "ring-4 ring-primary ring-offset-2 animate-pulse"
+    : "";
+
   const baseClass =
     "flex flex-col items-center gap-0.5 rounded-xl border-2 p-2 min-h-[72px] " +
-    "transition-all duration-200 active:scale-95 text-center w-full";
+    "transition-all duration-200 active:scale-95 text-center w-full " +
+    highlightClass;
 
   // ── 구독 잠금 (Pro 전용) ────────────────────────────────────
   if (state.lockReason === "subscription") {
     return (
       <button
+        ref={cellRef}
         aria-label={`${label} Pro 전용`}
         onClick={onClick}
         className={
@@ -342,6 +392,7 @@ const SublevelCell = memo(function SublevelCell({ level, sublevel, state, onSele
   if (state.lockReason === "progress") {
     return (
       <button
+        ref={cellRef}
         aria-label={`${label} 잠금`}
         onClick={onClick}
         className={
@@ -360,6 +411,7 @@ const SublevelCell = memo(function SublevelCell({ level, sublevel, state, onSele
   if (state.passed) {
     return (
       <button
+        ref={cellRef}
         aria-label={`${label} 통과 (재플레이 가능)`}
         onClick={onClick}
         className={
@@ -385,6 +437,7 @@ const SublevelCell = memo(function SublevelCell({ level, sublevel, state, onSele
     const pct = Math.round((state.criteriaCount / 4) * 100);
     return (
       <button
+        ref={cellRef}
         aria-label={`${label} 진행 중`}
         onClick={onClick}
         className={
@@ -413,6 +466,7 @@ const SublevelCell = memo(function SublevelCell({ level, sublevel, state, onSele
   // ── 미시작 (이용 가능) ──────────────────────────────────────
   return (
     <button
+      ref={cellRef}
       aria-label={`${label} 선택`}
       onClick={onClick}
       className={
