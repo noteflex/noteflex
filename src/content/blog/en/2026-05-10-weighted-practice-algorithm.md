@@ -6,11 +6,11 @@ keywords: ["weighted practice", "spaced repetition", "sight-reading algorithm", 
 slug: "weighted-practice-algorithm"
 category: "Learning Science"
 day: 11
-coverImage: "https://upload.wikimedia.org/wikipedia/commons/d/dc/Ebbinghaus_Forgetting_Curve.jpg"
-coverImageAlt: "The Ebbinghaus Forgetting Curve showing memory retention declining over time without review"
-coverImageSource: "https://commons.wikimedia.org/wiki/File:Ebbinghaus_Forgetting_Curve.jpg"
-coverImageLicense: "CC BY-SA 3.0"
-coverImageCredit: "Nheise (Wikimedia Commons)"
+coverImage: "https://images.metmuseum.org/CRDImages/ep/original/DT1387.jpg"
+coverImageAlt: "Laurent de La Hyre, «Allegory of Music» (1649) — a Baroque allegorical painting representing the art of music through scores, instruments, and laurel"
+coverImageSource: "https://www.metmuseum.org/art/collection/search/436836"
+coverImageLicense: "Public Domain"
+coverImageCredit: "Laurent de La Hyre; The Metropolitan Museum of Art"
 ---
 
 The same note appears again in today's session. Low F in the bass clef — the same one that appeared yesterday, and the day before. It keeps coming back.
@@ -35,8 +35,8 @@ Second, **weak items need more repetitions than strong ones to reach the same pe
 
 These two findings together form the logic of weighted practice: route more frequent repetitions toward weak items, and fewer toward strong ones.
 
-![The Ebbinghaus Forgetting Curve diagram showing memory retention percentage declining over time without review — the scientific foundation underpinning spaced repetition and weighted practice systems](https://upload.wikimedia.org/wikipedia/commons/d/dc/Ebbinghaus_Forgetting_Curve.jpg)
-*Figure 1: The Ebbinghaus Forgetting Curve. [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Ebbinghaus_Forgetting_Curve.jpg) — CC BY-SA 3.0. Credit: Nheise.*
+![Caravaggio, "The Musicians" (1597), oil on canvas — four young musicians gathered with open scores, practicing and performing together](https://images.metmuseum.org/CRDImages/ep/original/DP-687-001.jpg)
+*Figure 1: Caravaggio (Michelangelo Merisi), "The Musicians" (1597), oil on canvas. [The Metropolitan Museum of Art](https://www.metmuseum.org/art/collection/search/435844) — Public Domain*
 
 ## 🎹 How Weighted Practice Is Structured
 
@@ -48,8 +48,8 @@ The specific implementations of weighted practice vary, but the underlying struc
 
 **Spaced re-presentation (N+2 scheduling).** A wrong note should not reappear on the very next turn — that creates conditions for short-term memory to produce a correct answer without actual recognition improvement. Scheduling reappearance N+2 turns later (after two other notes) creates a minimal but real retrieval demand, which drives genuine consolidation rather than immediate recall.
 
-![Historical portrait photograph of Hermann Ebbinghaus (1850–1909), German psychologist whose memory experiments established the empirical basis for modern spaced repetition systems](https://upload.wikimedia.org/wikipedia/commons/9/92/Ebbinghaus2.jpg)
-*Figure 2: Hermann Ebbinghaus (1850–1909). [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Ebbinghaus2.jpg) — Public Domain.*
+![John George Brown, "The Music Lesson" (1870), oil on canvas — a teacher guiding a student through a score, depicting focused, targeted instruction](https://images.metmuseum.org/CRDImages/ad/original/DP156440.jpg)
+*Figure 2: John George Brown, "The Music Lesson" (1870), oil on canvas. [The Metropolitan Museum of Art](https://www.metmuseum.org/art/collection/search/10240) — Public Domain*
 
 ## 🔍 How Noteflex Implements This
 
@@ -64,5 +64,6 @@ For a learner who keeps seeing the same low F in the bass clef appear again and 
 1. Cepeda, N. J., Pashler, H., Vul, E., Wixted, J. T., & Rohrer, D. (2006). Distributed practice in verbal recall tasks: A review and quantitative synthesis. *Psychological Bulletin*, 132(3), 354–380. DOI: [10.1037/0033-2909.132.3.354](https://doi.org/10.1037/0033-2909.132.3.354)
 
 ### Image Sources
-- Figure 1: The Ebbinghaus Forgetting Curve. [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Ebbinghaus_Forgetting_Curve.jpg) — CC BY-SA 3.0. Credit: Nheise.
-- Figure 2: Hermann Ebbinghaus (1850–1909). [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Ebbinghaus2.jpg) — Public Domain.
+- Cover: Laurent de La Hyre, "Allegory of Music" (1649), oil on canvas. [The Metropolitan Museum of Art](https://www.metmuseum.org/art/collection/search/436836) — Public Domain.
+- Figure 1: Caravaggio, "The Musicians" (1597), oil on canvas. [The Metropolitan Museum of Art](https://www.metmuseum.org/art/collection/search/435844) — Public Domain.
+- Figure 2: John George Brown, "The Music Lesson" (1870), oil on canvas. [The Metropolitan Museum of Art](https://www.metmuseum.org/art/collection/search/10240) — Public Domain.
