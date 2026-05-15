@@ -78,16 +78,22 @@ node -e "console.log(crypto.randomBytes(12).toString('hex').match(/.{4}/g).join(
 ```
 Test Account for Paddle Review
 
-URL: https://noteflex.app
-Login: Click "Paddle Reviewer Access" at the bottom of the sign-in modal
-
+Login URL: https://noteflex.app/reviewer-login
 Email: forpaddle@noteflex.app
 Access code: {REVIEWER_ACCESS_CODE 값 박음}
+
+Steps:
+  1. Open https://noteflex.app/reviewer-login
+  2. Enter the email and access code above
+  3. Click "Continue" → redirected to /play (the game area)
 
 This account has Free tier permissions and can access the full sight-reading
 game with limits (7 plays/day, Levels 1–5 Sub-stage 1). Premium upgrade
 button leads to Paddle Sandbox checkout.
 ```
+
+> ⚠️ 메인 페이지 (https://noteflex.app/) 는 출시 전 ComingSoonGate로 차단되어 있어
+> AuthModal 풋터 링크가 노출되지 않음. 반드시 `/reviewer-login` 직접 URL 사용.
 
 ---
 

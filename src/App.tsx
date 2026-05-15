@@ -32,6 +32,7 @@ import CookieBanner from "./components/CookieBanner.tsx";
 import ComingSoonGate from "./components/ComingSoonGate.tsx";
 import ResetPasswordPage from "./pages/ResetPasswordPage.tsx";
 import AuthCallback from "./pages/AuthCallback.tsx";
+import ReviewerLogin from "./pages/ReviewerLogin.tsx";
 
 const queryClient = new QueryClient();
 
@@ -99,6 +100,9 @@ const App = () => (
               {/* 비밀번호 재설정 / 인증 콜백 — Coming Soon 차단 없음 */}
               <Route path="/reset-password" element={<ResetPasswordPage />} />
               <Route path="/auth/callback" element={<AuthCallback />} />
+
+              {/* Paddle 심사관 전용 진입 URL — ComingSoonGate 외부 (가드 X) */}
+              <Route path="/reviewer-login" element={<ReviewerLogin />} />
 
               {/* 게임·인증·결제 라우트 — Coming Soon 모드에서 차단 */}
               <Route
