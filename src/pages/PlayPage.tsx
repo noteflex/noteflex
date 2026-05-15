@@ -39,6 +39,16 @@ function AuthBar({ authLoading, user, onSignOut, onLoginRequest }: AuthBarProps)
       <div className="fixed top-0 left-0 right-0 z-40 h-10 bg-background/80 border-b border-border/50" />
     );
   }
+
+  // displayName: 자동 닉네임이면 이메일 prefix, 정상 닉네임이면 그대로.
+  const isAutoNickname = profile?.nickname?.startsWith("user_") ?? true;
+  const displayName = isAutoNickname
+    ? (user?.email?.split("@")[0] ?? "")
+    : (profile?.nickname ?? "");
+  const displayTitle = isAutoNickname
+    ? t.header.setNicknameHint
+    : (user?.email ?? "");
+
   return (
     <div className="fixed top-0 left-0 right-0 z-40 flex items-center justify-end px-4 py-2 bg-background/80 border-b border-border/50">
       {user ? (
@@ -53,11 +63,12 @@ function AuthBar({ authLoading, user, onSignOut, onLoginRequest }: AuthBarProps)
           )}
           <Link
             to="/profile"
-            className="text-xs px-3 py-1.5 rounded-lg border border-border text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+            title={displayTitle}
+            className="text-xs px-3 py-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors truncate max-w-[150px]"
+            data-testid="header-display-name"
           >
-            {t.header.profile}
+            {displayName}
           </Link>
-          <span className="text-xs text-muted-foreground truncate max-w-[150px]">{user.email}</span>
           <PremiumBadge />
           <button
             onClick={onSignOut}
@@ -197,6 +208,15 @@ export default function PlayPage() {
   const handleGoMain = () => navigate("/");
   const handleNextLevel = () => setScreen("levelSelect");
 
+  // displayName 헬퍼 — AuthBar와 동일 패턴.
+  const isAutoNickname = profile?.nickname?.startsWith("user_") ?? true;
+  const displayName = isAutoNickname
+    ? (user?.email?.split("@")[0] ?? "")
+    : (profile?.nickname ?? "");
+  const displayTitle = isAutoNickname
+    ? t.header.setNicknameHint
+    : (user?.email ?? "");
+
   const pageHeaderRight = GAME_ENABLED && !authLoading ? (
     user ? (
       <div className="flex items-center gap-3">
@@ -210,11 +230,12 @@ export default function PlayPage() {
         )}
         <Link
           to="/profile"
-          className="text-xs px-3 py-1.5 rounded-lg border border-border text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+          title={displayTitle}
+          className="text-xs px-3 py-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors truncate max-w-[150px]"
+          data-testid="header-display-name"
         >
-          {t.header.profile}
+          {displayName}
         </Link>
-        <span className="text-xs text-muted-foreground truncate max-w-[150px]">{user.email}</span>
         <button
           onClick={handleSignOut}
           className="text-xs px-3 py-1.5 rounded-lg border border-border text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"

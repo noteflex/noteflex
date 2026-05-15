@@ -60,6 +60,16 @@ export default function Index() {
     await signOut();
   };
 
+  // 헤더 displayName: 자동 닉네임(user_xxx) 패턴이면 이메일 prefix 사용.
+  // 정상 닉네임이면 그대로. 호버 시 보조 정보 (이메일 또는 닉네임 설정 힌트) 노출.
+  const isAutoNickname = profile?.nickname?.startsWith("user_") ?? true;
+  const displayName = isAutoNickname
+    ? (user?.email?.split("@")[0] ?? "")
+    : (profile?.nickname ?? "");
+  const displayTitle = isAutoNickname
+    ? t.header.setNicknameHint
+    : (user?.email ?? "");
+
   const pageHeaderRight = showGameUI && !authLoading ? (
     user ? (
       <div className="flex items-center gap-3">
@@ -73,11 +83,12 @@ export default function Index() {
         )}
         <Link
           to="/profile"
-          className="text-xs px-3 py-1.5 rounded-lg border border-border text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+          title={displayTitle}
+          className="text-xs px-3 py-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors truncate max-w-[150px]"
+          data-testid="header-display-name"
         >
-          {t.header.profile}
+          {displayName}
         </Link>
-        <span className="text-xs text-muted-foreground truncate max-w-[150px]">{user.email}</span>
         <button
           onClick={handleSignOut}
           className="text-xs px-3 py-1.5 rounded-lg border border-border text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"

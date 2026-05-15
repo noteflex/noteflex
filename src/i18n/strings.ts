@@ -22,6 +22,7 @@ export interface Strings {
     signOut: string;
     profile: string;
     dashboard: string;
+    setNicknameHint: string;
   };
   legal: {
     terms: string;
@@ -114,6 +115,7 @@ const ko: Strings = {
     signOut: "로그아웃",
     profile: "프로필",
     dashboard: "대시보드",
+    setNicknameHint: "닉네임 설정하기 →",
   },
   legal: {
     terms: "이용약관",
@@ -220,6 +222,7 @@ const en: Strings = {
     signOut: "Sign Out",
     profile: "Profile",
     dashboard: "Dashboard",
+    setNicknameHint: "Set your nickname →",
   },
   legal: {
     terms: "Terms of Service",
