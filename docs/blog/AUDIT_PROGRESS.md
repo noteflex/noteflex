@@ -87,6 +87,30 @@
 - Each post has 1 real, verifiable academic citation with DOI
 - No recently-used citations repeated (Bonneville-Roussy, Pomerleau-Turcotte, Imai-Matsumura excluded)
 
+## Audit: 2026-05-10 ~ 2026-05-12 Wikimedia Image Replacement
+
+**Date:** 2026-05-15  
+**Scope:** 9 topic pairs (18 files total) dated 2026-05-10 to 2026-05-12
+
+### Results
+
+| File | Wikimedia images replaced | New source | HTTP 200 ✓ |
+|---|---|---|---|
+| piano-sight-reading-guide (ko+en) | 3 (cover + Fig1 + Fig2) | Met (501788, 374224, 10240) | ✓ |
+| weakness-note-practice (ko+en) | 3 (cover + Fig1 + Fig2) | Met (436642, 10997, 436818) | ✓ |
+| weighted-practice-algorithm (ko+en) | 3 (cover + Fig1 + Fig2) | Met (436836, 435844, 10240) | ✓ |
+| church-accompanist-sight-reading (ko+en) | 2 (cover + Fig1) | Met (436880, 503670) | ✓ |
+| gamified-sight-reading (ko+en) | 3 (cover + Fig1 + Fig2) | Met (437749, 10240) | ✓ |
+| neuroscience-of-interval-recognition (ko+en) | 3 (cover + Fig1 + Fig2) | Met (435844, 436836, 436642) | ✓ |
+| adult-sight-reading (ko+en) | 3 (cover + Fig1 + Fig2) | Met (438014, 437070, 435826) | ✓ |
+| fast-note-recognition (ko+en) | 3 (cover + Fig1 + Fig2) | Met (374224, 437070, 10240) | ✓ |
+| hobbyist-musician-sight-reading (ko+en) | 3 (cover + Fig1 + Fig2) | Met (437749, 436836, 437070) | ✓ |
+
+**Total Wikimedia images replaced:** 26 across 18 files  
+**All replacement images verified HTTP 200 before use.**
+
+---
+
 ## Cumulative Blog Count (as of 2026-05-15)
 
 | Date range | Posts | Days |
