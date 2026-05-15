@@ -6,11 +6,11 @@ keywords: ["weak notes", "targeted practice", "sight-reading", "deliberate pract
 slug: "weakness-note-practice"
 category: "Practice Hub"
 day: 11
-coverImage: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8f/BWV56-autograph-manuscript-first-page-Bach-1726.jpg/960px-BWV56-autograph-manuscript-first-page-Bach-1726.jpg"
-coverImageAlt: "J.S. Bach's autograph manuscript of the bass aria from Cantata BWV 56 (1726), showing bass clef notation in the composer's hand"
-coverImageSource: "https://commons.wikimedia.org/wiki/File:BWV56-autograph-manuscript-first-page-Bach-1726.jpg"
+coverImage: "https://images.metmuseum.org/CRDImages/ep/original/DP-18251-001.jpg"
+coverImageAlt: "Bartholomeus van der Helst, «The Musician» (1662) — a portrait of a musician seated with sheet music, capturing the moment of focused note-reading"
+coverImageSource: "https://www.metmuseum.org/art/collection/search/436642"
 coverImageLicense: "Public Domain"
-coverImageCredit: "J.S. Bach; Bach Digital archive, Leipzig"
+coverImageCredit: "Bartholomeus van der Helst; The Metropolitan Museum of Art"
 ---
 
 Five run-throughs of the same piece and the hand still stops at the same note. Low F in the bass clef. The C above the treble staff. A sudden E♭ that keeps catching the eye. The hesitation doesn't diminish across sessions.
@@ -25,8 +25,8 @@ Bass clef notes present this challenge for learners who started in treble clef. 
 
 Ledger-line notes are the same problem in a different location. Notes that sit outside the five staff lines don't benefit from the pattern recognition that builds up for in-staff notes. Each encounter requires counting out from the nearest staff line until enough repetitions turn the position into direct recognition.
 
-![J.S. Bach's autograph manuscript of the opening bass aria from Cantata BWV 56 (1726), showing bass clef notation in Bach's own hand — the bass clef positions that represent a common weak zone for learners trained primarily in treble clef](https://upload.wikimedia.org/wikipedia/commons/thumb/8/8f/BWV56-autograph-manuscript-first-page-Bach-1726.jpg/960px-BWV56-autograph-manuscript-first-page-Bach-1726.jpg)
-*Figure 1: J.S. Bach, autograph manuscript of bass aria, Cantata BWV 56 (1726). [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:BWV56-autograph-manuscript-first-page-Bach-1726.jpg) — Public Domain. Bach Digital archive, Leipzig.*
+![William Michael Harnett, "Still Life—Violin and Music" (1888), oil on canvas — a violin resting on sheet music, the material objects of musical practice and repetition](https://images.metmuseum.org/CRDImages/ad/original/DT2046.jpg)
+*Figure 1: William Michael Harnett, "Still Life—Violin and Music" (1888), oil on canvas. [The Metropolitan Museum of Art](https://www.metmuseum.org/art/collection/search/10997) — Public Domain*
 
 ## 💡 Deliberate Practice Closes the Gap
 
@@ -42,8 +42,8 @@ Applied to sight-reading: running through a full piece expends the session on a 
 
 **3. Find the category.** Whether weakness clusters in the bass clef, around ledger lines, or at accidentals matters. A category is easier to train than a list of individual notes, and identifying the category points to the underlying recognition gap.
 
-![Beethoven's handwritten sketch manuscript for Piano Sonata in A Major Op. 101, Allegro movement (1816), showing the detailed notation process of a composer working through complex pitch patterns](https://upload.wikimedia.org/wikipedia/commons/2/2a/Beethoven_opus_101_manuscript.jpg)
-*Figure 2: Ludwig van Beethoven, sketch manuscript for Piano Sonata Op. 101, Allegro (1816). [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Beethoven_opus_101_manuscript.jpg) — Public Domain. Library of Congress.*
+![Thomas de Keyser, "A Musician and His Daughter" (1629), oil on canvas — father and daughter seated together with a score, a seventeenth-century Dutch portrait of musical instruction](https://images.metmuseum.org/CRDImages/ep/original/DP145937.jpg)
+*Figure 2: Thomas de Keyser, "A Musician and His Daughter" (1629), oil on canvas. [The Metropolitan Museum of Art](https://www.metmuseum.org/art/collection/search/436818) — Public Domain*
 
 ## 🔍 What Targeted Practice Looks Like
 
@@ -60,5 +60,6 @@ The note that stops you every time is already showing you exactly where to look.
 1. Ericsson, K. A., Krampe, R. T., & Tesch-Römer, C. (1993). The role of deliberate practice in the acquisition of expert performance. *Psychological Review*, 100(3), 363–406. DOI: [10.1037/0033-295X.100.3.363](https://doi.org/10.1037/0033-295X.100.3.363)
 
 ### Image Sources
-- Figure 1: J.S. Bach, autograph manuscript of bass aria, Cantata BWV 56 (1726). [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:BWV56-autograph-manuscript-first-page-Bach-1726.jpg) — Public Domain. Bach Digital archive, Leipzig.
-- Figure 2: Beethoven, sketch manuscript for Piano Sonata Op. 101, Allegro (1816). [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Beethoven_opus_101_manuscript.jpg) — Public Domain. Library of Congress.
+- Cover: Bartholomeus van der Helst, "The Musician" (1662), oil on canvas. [The Metropolitan Museum of Art](https://www.metmuseum.org/art/collection/search/436642) — Public Domain.
+- Figure 1: William Michael Harnett, "Still Life—Violin and Music" (1888), oil on canvas. [The Metropolitan Museum of Art](https://www.metmuseum.org/art/collection/search/10997) — Public Domain.
+- Figure 2: Thomas de Keyser, "A Musician and His Daughter" (1629), oil on canvas. [The Metropolitan Museum of Art](https://www.metmuseum.org/art/collection/search/436818) — Public Domain.
