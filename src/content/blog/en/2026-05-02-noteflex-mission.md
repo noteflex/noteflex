@@ -6,11 +6,11 @@ keywords: ["Noteflex", "score reading", "sight-reading practice", "music learnin
 slug: "noteflex-mission"
 category: "Music Tech"
 day: 3
-coverImage: "https://upload.wikimedia.org/wikipedia/commons/0/03/Playing_the_piano_with_a_score_%28Unsplash%29.jpg"
-coverImageAlt: "Playing piano while reading a score — where score-reading practice happens"
-coverImageSource: "https://commons.wikimedia.org/wiki/File:Playing_the_piano_with_a_score_(Unsplash).jpg"
-coverImageLicense: "CC0 Public Domain"
-coverImageCredit: "Wikimedia Commons"
+coverImage: "https://images.metmuseum.org/CRDImages/ep/original/DP145937.jpg"
+coverImageAlt: "Thomas de Keyser, «A Musician and His Daughter» (1629) — a scene of score reading at home"
+coverImageSource: "https://www.metmuseum.org/art/collection/search/436818"
+coverImageLicense: "Public Domain"
+coverImageCredit: "Thomas de Keyser; The Metropolitan Museum of Art"
 ---
 
 Anyone who has spent time learning piano knows the pattern. A new piece arrives, and the first few minutes go to figuring out individual notes — decoding pitch by pitch. Only after that decoding stage do the actual musical aspects of practice begin. The longer the decoding stage, the less time remains for the music itself.

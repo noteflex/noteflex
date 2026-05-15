@@ -6,11 +6,11 @@ keywords: ["Noteflex", "악보 독보", "초견 학습", "음악 학습 도구",
 slug: "noteflex-mission"
 category: "뮤직 테크 & 미래"
 day: 3
-coverImage: "https://upload.wikimedia.org/wikipedia/commons/0/03/Playing_the_piano_with_a_score_%28Unsplash%29.jpg"
-coverImageAlt: "악보를 보며 피아노를 연주하는 모습 — 독보 학습이 일어나는 현장"
-coverImageSource: "https://commons.wikimedia.org/wiki/File:Playing_the_piano_with_a_score_(Unsplash).jpg"
-coverImageLicense: "CC0 Public Domain"
-coverImageCredit: "Wikimedia Commons"
+coverImage: "https://images.metmuseum.org/CRDImages/ep/original/DP145937.jpg"
+coverImageAlt: "토마스 더 케이저르의 «음악가와 그의 딸» (1629) — 악보를 함께 보며 독보가 일어나는 가정 학습 장면"
+coverImageSource: "https://www.metmuseum.org/art/collection/search/436818"
+coverImageLicense: "Public Domain"
+coverImageCredit: "Thomas de Keyser; The Metropolitan Museum of Art"
 ---
 
 피아노 학원에 일정 기간 다녀 본 사람이라면 비슷한 경험이 있다. 새 곡을 받으면 첫 몇 분간은 한 음 한 음 짚어가며 천천히 해독하고, 그 단계를 지나야 비로소 음악적인 연습이 시작된다. 이 "음표 해독" 단계가 길수록 정작 음악적 표현에 쓸 시간이 줄어든다.
