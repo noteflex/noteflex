@@ -190,8 +190,8 @@ describe("LevelSelect — daily limit gate (Group B Fix Sprint)", () => {
       // Lv 1-2 = guest 입장에선 subscription 잠금
       await userEvent.click(screen.getByLabelText("Lv 1-2 Pro 전용"));
 
-      // UpgradeModal "Pricing 보기" CTA 노출 (Pro 구독 안내)
-      expect(await screen.findByRole("button", { name: /Pricing 보기/ })).toBeInTheDocument();
+      // UpgradeModal "View Premium Benefits" CTA 노출 (Pro 구독 안내)
+      expect(await screen.findByTestId("upgrade-modal-cta")).toBeInTheDocument();
       // DailyLimitModal CTA 노출 X (가입하기·Premium 보기 모두 X)
       expect(screen.queryByRole("button", { name: /^가입하기$|^sign up$/i })).not.toBeInTheDocument();
       expect(onSelectSublevel).not.toHaveBeenCalled();

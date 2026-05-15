@@ -68,6 +68,20 @@ export interface Strings {
     ko: string;
     en: string;
   };
+  premiumDialog: {
+    title: string;
+    subtitle: string;
+    benefits: readonly string[];
+    cta: string;
+    close: string;
+  };
+  lockedByProgress: {
+    title: string;
+    subtitle: string;     // {requiredLevel}·{requiredSublevel} placeholder
+    description: string;
+    cta: string;          // {requiredLevel}·{requiredSublevel} placeholder
+    close: string;
+  };
   adPlaceholder: {
     premium: {
       title: string;
@@ -166,6 +180,25 @@ const ko: Strings = {
   langToggle: {
     ko: "한국어",
     en: "English",
+  },
+  premiumDialog: {
+    title: "✨ Pro 구독으로 전체 단계 해제",
+    subtitle: "전체 21단계 · 상세 약점 분석 · 광고 제거",
+    benefits: [
+      "🎵 Lv 1-7 전체 21단계 이용",
+      "📊 음표별 약점·마스터 분석",
+      "🎯 개인화 출제 가중치",
+      "✨ 광고 없는 집중 연습",
+    ],
+    cta: "프리미엄 혜택 보기 →",
+    close: "닫기",
+  },
+  lockedByProgress: {
+    title: "🔒 이전 단계를 먼저 완료하세요",
+    subtitle: "Lv {requiredLevel}-{requiredSublevel}을 통과한 후 이 단계가 열립니다",
+    description: "단계별 학습이 가장 효과적인 초견 훈련 방식입니다. 차근차근 진행하세요.",
+    cta: "Lv {requiredLevel}-{requiredSublevel}로 이동 →",
+    close: "닫기",
   },
   adPlaceholder: {
     premium: {
@@ -273,6 +306,25 @@ const en: Strings = {
   langToggle: {
     ko: "한국어",
     en: "English",
+  },
+  premiumDialog: {
+    title: "✨ Unlock All Levels with Pro",
+    subtitle: "All 21 levels · Detailed weakness analysis · Ad-free",
+    benefits: [
+      "🎵 Access all 21 levels (Lv 1-7)",
+      "📊 Per-note weakness & mastery analytics",
+      "🎯 Personalized practice weighting",
+      "✨ Distraction-free, ad-free experience",
+    ],
+    cta: "View Premium Benefits →",
+    close: "Close",
+  },
+  lockedByProgress: {
+    title: "🔒 Complete previous stage first",
+    subtitle: "Pass Lv {requiredLevel}-{requiredSublevel} to unlock this stage",
+    description: "Sequential practice is the most effective way to build sight-reading skills. Take it step by step.",
+    cta: "Go to Lv {requiredLevel}-{requiredSublevel} →",
+    close: "Close",
   },
   adPlaceholder: {
     premium: {

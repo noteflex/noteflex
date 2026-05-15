@@ -178,7 +178,7 @@ describe("LevelSelect - Guest 구독 게이트", () => {
 
     await userEvent.click(screen.getByLabelText("Lv 2-1 Pro 전용"));
 
-    expect(screen.getByText(/Pro 구독으로 전체 단계 해제/)).toBeInTheDocument();
+    expect(screen.getByText(/Unlock All Levels with Pro/)).toBeInTheDocument();
   });
 
   it("Lv 1-2 클릭 → UpgradeModal 열림 (guest → Sub2 구독 잠금)", async () => {
@@ -186,7 +186,7 @@ describe("LevelSelect - Guest 구독 게이트", () => {
 
     await userEvent.click(screen.getByLabelText("Lv 1-2 Pro 전용"));
 
-    expect(screen.getByText(/Pro 구독으로 전체 단계 해제/)).toBeInTheDocument();
+    expect(screen.getByText(/Unlock All Levels with Pro/)).toBeInTheDocument();
   });
 });
 
@@ -262,7 +262,7 @@ describe("LevelSelect - Free 구독 게이트", () => {
 
     await userEvent.click(screen.getByLabelText("Lv 1-2 Pro 전용"));
 
-    expect(screen.getByText(/Pro 구독으로 전체 단계 해제/)).toBeInTheDocument();
+    expect(screen.getByText(/Unlock All Levels with Pro/)).toBeInTheDocument();
   });
 
   it("Lv 3-2 클릭 → UpgradeModal 열림", async () => {
@@ -270,7 +270,7 @@ describe("LevelSelect - Free 구독 게이트", () => {
 
     await userEvent.click(screen.getByLabelText("Lv 3-2 Pro 전용"));
 
-    expect(screen.getByText(/Pro 구독으로 전체 단계 해제/)).toBeInTheDocument();
+    expect(screen.getByText(/Unlock All Levels with Pro/)).toBeInTheDocument();
   });
 });
 
@@ -371,15 +371,15 @@ describe("LevelSelect - UpgradeModal → Pricing 이동", () => {
     mockUseLevelProgress.mockReturnValue(mockProgressHook([]));
   });
 
-  it("UpgradeModal에서 'Pricing 보기' 클릭 → /pricing 이동", async () => {
+  it("UpgradeModal에서 'View Premium Benefits' 클릭 → /pricing 이동", async () => {
     renderLevelSelect();
 
     // 구독 잠금 셀 클릭 → 모달 오픈
     await userEvent.click(screen.getByLabelText("Lv 2-1 Pro 전용"));
-    expect(screen.getByText(/Pro 구독으로 전체 단계 해제/)).toBeInTheDocument();
+    expect(screen.getByText(/Unlock All Levels with Pro/)).toBeInTheDocument();
 
-    // Pricing 보기 클릭
-    await userEvent.click(screen.getByRole("button", { name: /Pricing 보기/ }));
+    // View Premium Benefits 클릭
+    await userEvent.click(screen.getByTestId("upgrade-modal-cta"));
 
     expect(mockNavigate).toHaveBeenCalledWith("/pricing");
   });
@@ -388,12 +388,12 @@ describe("LevelSelect - UpgradeModal → Pricing 이동", () => {
     renderLevelSelect();
 
     await userEvent.click(screen.getByLabelText("Lv 2-1 Pro 전용"));
-    expect(screen.getByText(/Pro 구독으로 전체 단계 해제/)).toBeInTheDocument();
+    expect(screen.getByText(/Unlock All Levels with Pro/)).toBeInTheDocument();
 
-    await userEvent.click(screen.getByRole("button", { name: "닫기" }));
+    await userEvent.click(screen.getByTestId("upgrade-modal-close"));
 
     await waitFor(() => {
-      expect(screen.queryByText(/Pro 구독으로 전체 단계 해제/)).not.toBeInTheDocument();
+      expect(screen.queryByText(/Unlock All Levels with Pro/)).not.toBeInTheDocument();
     });
   });
 });

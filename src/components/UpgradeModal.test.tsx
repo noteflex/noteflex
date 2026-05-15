@@ -32,31 +32,31 @@ describe("UpgradeModal", () => {
 
   it("open=true 시 다이얼로그 렌더링", () => {
     renderModal(true);
-    expect(screen.getByText(/Pro 구독으로 전체 단계 해제/)).toBeInTheDocument();
-    // "전체 21단계"는 DialogDescription과 목록 항목 두 곳에 있으므로 getAllByText 사용
-    expect(screen.getAllByText(/전체 21단계/).length).toBeGreaterThanOrEqual(1);
+    // 디폴트 EN — LanguageProvider 미박 환경
+    expect(screen.getByText(/Unlock All Levels with Pro/)).toBeInTheDocument();
+    expect(screen.getAllByText(/21 levels/).length).toBeGreaterThanOrEqual(1);
   });
 
   it("open=false 시 내용 숨김", () => {
     renderModal(false);
-    expect(screen.queryByText(/Pro 구독으로 전체 단계 해제/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Unlock All Levels with Pro/)).not.toBeInTheDocument();
   });
 
-  it("'Pricing 보기' 클릭 → /pricing 이동 + onClose 호출", async () => {
+  it("'View Premium Benefits' 클릭 → /pricing 이동 + onClose 호출", async () => {
     const onClose = vi.fn();
     renderModal(true, onClose);
 
-    await userEvent.click(screen.getByRole("button", { name: /Pricing 보기/ }));
+    await userEvent.click(screen.getByTestId("upgrade-modal-cta"));
 
     expect(mockNavigate).toHaveBeenCalledWith("/pricing");
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
-  it("'닫기' 클릭 → onClose 호출, navigate 안 함", async () => {
+  it("'Close' 클릭 → onClose 호출, navigate 안 함", async () => {
     const onClose = vi.fn();
     renderModal(true, onClose);
 
-    await userEvent.click(screen.getByRole("button", { name: "닫기" }));
+    await userEvent.click(screen.getByTestId("upgrade-modal-close"));
 
     expect(onClose).toHaveBeenCalledTimes(1);
     expect(mockNavigate).not.toHaveBeenCalled();
@@ -64,9 +64,10 @@ describe("UpgradeModal", () => {
 
   it("혜택 목록 표시: 4가지 항목", () => {
     renderModal(true);
-    expect(screen.getByText(/Lv 1–7 전체 21단계/)).toBeInTheDocument();
-    expect(screen.getByText(/약점·마스터 분석/)).toBeInTheDocument();
-    expect(screen.getByText(/개인화 출제 가중치/)).toBeInTheDocument();
-    expect(screen.getByText(/광고 없는/)).toBeInTheDocument();
+    expect(screen.getByText(/Access all 21 levels/)).toBeInTheDocument();
+    expect(screen.getByText(/Per-note weakness/)).toBeInTheDocument();
+    expect(screen.getByText(/Personalized practice/)).toBeInTheDocument();
+    // "ad-free"는 subtitle + benefit 둘 다에 박혀있어 getAllByText 박음
+    expect(screen.getAllByText(/ad-free/i).length).toBeGreaterThanOrEqual(1);
   });
 });
