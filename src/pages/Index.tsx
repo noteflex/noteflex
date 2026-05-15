@@ -40,6 +40,13 @@ export default function Index() {
   const navigate = useNavigate();
   const [showAuth, setShowAuth] = useState(false);
 
+  // admin·reviewer는 GAME_ENABLED 무관하게 게임 UI 노출.
+  // - admin: 내부 테스트
+  // - reviewer: Paddle 심사관 게임 영역 확인
+  const isPrivilegedRole =
+    profile?.role === "admin" || profile?.role === "reviewer";
+  const showGameUI = GAME_ENABLED || isPrivilegedRole;
+
   const handleAuthClose = () => {
     setShowAuth(false);
   };
@@ -53,7 +60,7 @@ export default function Index() {
     await signOut();
   };
 
-  const pageHeaderRight = GAME_ENABLED && !authLoading ? (
+  const pageHeaderRight = showGameUI && !authLoading ? (
     user ? (
       <div className="flex items-center gap-3">
         {profile?.role !== "admin" && (
@@ -94,7 +101,7 @@ export default function Index() {
       style={{ background: "radial-gradient(circle at top, #ffffff 0%, #f8f5e4 100%)" }}
     >
       <Header right={pageHeaderRight} />
-      {showAuth && GAME_ENABLED && (
+      {showAuth && showGameUI && (
         <AuthModal onClose={handleAuthClose} />
       )}
 
@@ -110,7 +117,7 @@ export default function Index() {
         >
           {t.hero.subtitle}
         </p>
-        {GAME_ENABLED ? (
+        {showGameUI ? (
           <button
             onClick={handleStart}
             className="mt-10 px-10 py-4 rounded-full bg-primary text-primary-foreground font-medium text-lg shadow hover:shadow-md hover:scale-[1.02] transition-all duration-150 active:scale-[0.98] animate-fade-up"
