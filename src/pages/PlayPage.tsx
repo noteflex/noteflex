@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
 import { PremiumBadge } from "@/components/PremiumBadge";
+import { cn } from "@/lib/utils";
 import {
   Tooltip,
   TooltipContent,
@@ -46,14 +47,28 @@ function AuthBar({ authLoading, user, onSignOut, onLoginRequest }: AuthBarProps)
     );
   }
 
-  // displayName 박음:
-  //   - 자동 닉네임(user_xxx) → 이메일 prefix + 호버 시 "닉네임 설정하기 →"
-  //   - 정상 닉네임 → 닉네임 그대로 + 호버 시 전체 이메일
+  // displayName chip 박음 — AuthBar 영역:
+  //   - 자동 닉네임(user_xxx) → 이메일 prefix + Tooltip "닉네임 설정하기 →"
+  //   - 정상 닉네임 → 닉네임 그대로 + Tooltip X
   const nickname = profile?.nickname ?? "";
   const email = user?.email ?? "";
   const isAutoNickname = nickname.startsWith("user_");
   const displayName = isAutoNickname ? email.split("@")[0] : nickname;
-  const displayTitle = isAutoNickname ? t.header.setNicknameHint : email;
+
+  const chipLink = (
+    <Link
+      to="/profile"
+      className={cn(
+        "inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium",
+        "bg-secondary/60 text-secondary-foreground",
+        "hover:bg-secondary transition-colors",
+        "cursor-pointer truncate max-w-[150px]",
+      )}
+      data-testid="header-display-name"
+    >
+      {displayName}
+    </Link>
+  );
 
   return (
     <div className="fixed top-0 left-0 right-0 z-40 flex items-center justify-end px-4 py-2 bg-background/80 border-b border-border/50">
@@ -67,22 +82,18 @@ function AuthBar({ authLoading, user, onSignOut, onLoginRequest }: AuthBarProps)
               {t.header.dashboard}
             </Link>
           )}
-          <TooltipProvider delayDuration={150}>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Link
-                  to="/profile"
-                  className="text-xs px-3 py-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-muted hover:underline underline-offset-4 transition-colors truncate max-w-[150px] cursor-pointer"
-                  data-testid="header-display-name"
-                >
-                  {displayName}
-                </Link>
-              </TooltipTrigger>
-              <TooltipContent side="bottom" sideOffset={8}>
-                <p className="text-xs">{displayTitle}</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+          {isAutoNickname ? (
+            <TooltipProvider delayDuration={150}>
+              <Tooltip>
+                <TooltipTrigger asChild>{chipLink}</TooltipTrigger>
+                <TooltipContent side="bottom" sideOffset={8}>
+                  <p className="text-xs">{t.header.setNicknameHint}</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          ) : (
+            chipLink
+          )}
           <PremiumBadge />
           <button
             onClick={onSignOut}
@@ -222,14 +233,26 @@ export default function PlayPage() {
   const handleGoMain = () => navigate("/");
   const handleNextLevel = () => setScreen("levelSelect");
 
-  // displayName 헬퍼 — AuthBar와 동일 패턴.
-  //   - 자동 닉네임(user_xxx) → 이메일 prefix + 호버 시 "닉네임 설정하기 →"
-  //   - 정상 닉네임 → 닉네임 그대로 + 호버 시 전체 이메일
+  // displayName chip 박음 — pageHeaderRight 영역 (AuthBar와 동일 패턴).
   const nickname = profile?.nickname ?? "";
   const email = user?.email ?? "";
   const isAutoNickname = nickname.startsWith("user_");
   const displayName = isAutoNickname ? email.split("@")[0] : nickname;
-  const displayTitle = isAutoNickname ? t.header.setNicknameHint : email;
+
+  const headerChipLink = (
+    <Link
+      to="/profile"
+      className={cn(
+        "inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium",
+        "bg-secondary/60 text-secondary-foreground",
+        "hover:bg-secondary transition-colors",
+        "cursor-pointer truncate max-w-[150px]",
+      )}
+      data-testid="header-display-name"
+    >
+      {displayName}
+    </Link>
+  );
 
   const pageHeaderRight = GAME_ENABLED && !authLoading ? (
     user ? (
@@ -242,14 +265,18 @@ export default function PlayPage() {
             {t.header.dashboard}
           </Link>
         )}
-        <Link
-          to="/profile"
-          title={displayTitle}
-          className="text-xs px-3 py-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors truncate max-w-[150px]"
-          data-testid="header-display-name"
-        >
-          {displayName}
-        </Link>
+        {isAutoNickname ? (
+          <TooltipProvider delayDuration={150}>
+            <Tooltip>
+              <TooltipTrigger asChild>{headerChipLink}</TooltipTrigger>
+              <TooltipContent side="bottom" sideOffset={8}>
+                <p className="text-xs">{t.header.setNicknameHint}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        ) : (
+          headerChipLink
+        )}
         <button
           onClick={handleSignOut}
           className="text-xs px-3 py-1.5 rounded-lg border border-border text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"

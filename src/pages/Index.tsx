@@ -7,6 +7,7 @@ import Footer from "@/components/Footer";
 import { useAuth } from "@/contexts/AuthContext";
 import { useT } from "@/contexts/LanguageContext";
 import { GAME_ENABLED } from "@/lib/featureFlags";
+import { cn } from "@/lib/utils";
 import {
   Tooltip,
   TooltipContent,
@@ -66,15 +67,28 @@ export default function Index() {
     await signOut();
   };
 
-  // 헤더 displayName 박음:
-  //   - 자동 닉네임(user_xxx) → 이메일 prefix + 호버 시 "닉네임 설정하기 →"
-  //   - 정상 닉네임 → 닉네임 그대로 + 호버 시 전체 이메일
-  // 로딩 상태(nickname 미박힘) = 이메일 prefix + 이메일 호버 (자동 닉네임 가정 X).
+  // 헤더 displayName chip 박음:
+  //   - 자동 닉네임(user_xxx) → 이메일 prefix + Tooltip "닉네임 설정하기 →"
+  //   - 정상 닉네임 → 닉네임 그대로 + Tooltip X (마우스 가림 회피)
   const nickname = profile?.nickname ?? "";
   const email = user?.email ?? "";
   const isAutoNickname = nickname.startsWith("user_");
   const displayName = isAutoNickname ? email.split("@")[0] : nickname;
-  const displayTitle = isAutoNickname ? t.header.setNicknameHint : email;
+
+  const chipLink = (
+    <Link
+      to="/profile"
+      className={cn(
+        "inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium",
+        "bg-secondary/60 text-secondary-foreground",
+        "hover:bg-secondary transition-colors",
+        "cursor-pointer truncate max-w-[150px]",
+      )}
+      data-testid="header-display-name"
+    >
+      {displayName}
+    </Link>
+  );
 
   const pageHeaderRight = showGameUI && !authLoading ? (
     user ? (
@@ -87,22 +101,18 @@ export default function Index() {
             {t.header.dashboard}
           </Link>
         )}
-        <TooltipProvider delayDuration={150}>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Link
-                to="/profile"
-                className="text-xs px-3 py-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-muted hover:underline underline-offset-4 transition-colors truncate max-w-[150px] cursor-pointer"
-                data-testid="header-display-name"
-              >
-                {displayName}
-              </Link>
-            </TooltipTrigger>
-            <TooltipContent side="bottom" sideOffset={8}>
-              <p className="text-xs">{displayTitle}</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+        {isAutoNickname ? (
+          <TooltipProvider delayDuration={150}>
+            <Tooltip>
+              <TooltipTrigger asChild>{chipLink}</TooltipTrigger>
+              <TooltipContent side="bottom" sideOffset={8}>
+                <p className="text-xs">{t.header.setNicknameHint}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        ) : (
+          chipLink
+        )}
         <button
           onClick={handleSignOut}
           className="text-xs px-3 py-1.5 rounded-lg border border-border text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
