@@ -13,8 +13,6 @@ coverImageLicense: "Public Domain"
 coverImageCredit: "U.S. National Archives; Wikimedia Commons"
 ---
 
-![음악 수업에서 함께 악보를 읽는 모습](https://upload.wikimedia.org/wikipedia/commons/1/1a/Music_class_usa.jpg)
-*그림 1: 음악 수업 풍경. 출처: Wikimedia Commons / CC BY-SA*
 
 초견 연습은 시간을 얼마나 들이느냐보다 그 시간을 어떻게 나누느냐가 더 큰 차이를 만든다. 한 번에 한 시간을 몰아서 연습한 사람과 같은 시간을 5~10분씩 나눠 일주일 동안 분산한 사람의 결과를 비교한 자료들은, 후자 쪽이 같거나 더 나은 진척을 보였다고 보고한다. 단순한 시간량의 문제가 아니라 학습이 이루어지는 조건의 문제이기 때문이다.
 
@@ -44,8 +42,6 @@ coverImageCredit: "U.S. National Archives; Wikimedia Commons"
 
 균형 비율로는 새 악보 70%, 같은 악보 30%가 합리적인 출발선이다. 새 악보 비율이 너무 낮으면 같은 패턴에만 익숙해지고, 너무 높으면 단편적 인식만 늘 뿐 깊은 자동화로 이어지지 않는다. 같은 악보 30%는 직전에 어려웠던 곳을 짧게 복기하는 용도로 쓴다.
 
-![메트로놈 ― 시간 단위로 연습을 나누는 도구](https://upload.wikimedia.org/wikipedia/commons/5/5f/Metronome_Nikko.jpg)
-*그림 2: 메트로놈은 연습을 시간 단위로 분할하는 데 쓰인다. 출처: Wikimedia Commons / CC BY-SA 3.0*
 
 ## 시간을 분배하는 한 주 예시
 
@@ -64,5 +60,5 @@ coverImageCredit: "U.S. National Archives; Wikimedia Commons"
 1. Duke, R. A., Simmons, A. L., & Cash, C. D. (2009). It's not how much; it's how: Characteristics of practice behavior and retention of performance achievements. *Journal of Research in Music Education*, 56(4), 310-321. DOI: [10.1177/0022429408328851](https://doi.org/10.1177/0022429408328851)
 
 ### 이미지 출처
-- 그림 1: Wikimedia Commons / CC BY-SA — Music class usa
-- 그림 2: Wikimedia Commons / CC BY-SA 3.0 — Metronome Nikko
+
+1. U.S. National Archives; Wikimedia Commons. [원본 페이지](https://commons.wikimedia.org/wiki/File:Music_class_usa.jpg). 라이선스: Public Domain. (블로그 커버 이미지)

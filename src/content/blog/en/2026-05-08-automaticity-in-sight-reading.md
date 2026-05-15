@@ -13,8 +13,6 @@ coverImageLicense: "CC BY-SA"
 coverImageCredit: "Wikimedia Commons"
 ---
 
-![A pianist practicing with sheet music](https://upload.wikimedia.org/wikipedia/commons/e/e6/Piano_practice.jpg)
-*Figure 1: Pianist at practice. Source: Wikimedia Commons / CC BY 2.0*
 
 Think back to the first weeks of learning to drive. Every check of the mirror, every adjustment of the wheel, every brake decision required deliberate attention. There was nothing left over. A year later, most of that had vanished from consciousness. The moment you decide to change lanes, your hands are already moving.
 
@@ -46,8 +44,6 @@ Chaffin and Imreh (2002) tracked a concert pianist learning Bach's Italian Conce
 
 The implication for sight-reading is practical: encountering many short, varied excerpts builds automaticity faster than replaying the same piece until it flows. The goal is not to remember a specific score. The goal is to build the recognition response itself — the reflex that fires before thought.
 
-![Students learning rhythm in a music education setting](https://upload.wikimedia.org/wikipedia/commons/1/13/Teaching_rhythm_in_music_education.jpg)
-*Figure 2: Rhythm instruction in music education. Source: Wikimedia Commons / CC BY-SA 4.0*
 
 ## What Happens Without It
 
@@ -68,5 +64,5 @@ Learning to drive, no one announces the moment the steering became unconscious. 
 2. Palmer, C. (1997). Music performance. *Annual Review of Psychology*, 48, 115–138. DOI: [10.1146/annurev.psych.48.1.115](https://doi.org/10.1146/annurev.psych.48.1.115)
 
 ### Image Sources
-- Figure 1: Wikimedia Commons / CC BY 2.0
-- Figure 2: Wikimedia Commons / CC BY-SA 4.0
+
+1. Wikimedia Commons. [Source page](https://commons.wikimedia.org/wiki/File:Piano_practice.jpg). License: CC BY-SA. (Blog cover image)

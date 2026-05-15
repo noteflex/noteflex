@@ -48,8 +48,6 @@ Melodic steps are processed nearly automatically; leaps are not. Mark the large-
 
 When your pitch accuracy is uncertain, preserve the rhythm. An individual pitch error is absorbed into the ensemble; a rhythmic break disrupts everyone. "Close enough on pitch, right on beat" is a better policy than sacrificing tempo to find the perfect note.
 
-![Village choir at Sunday morning service, circa 1943. Library of Congress.](https://tile.loc.gov/storage-services/service/pnp/cph/3a30000/3a34000/3a34100/3a34192r.jpg)
-*Source: [The village choir, Sunday morning service — Library of Congress](https://www.loc.gov/item/2016645936/) — No known restrictions on publication*
 
 ## 🎵 Holding Your Line Against the Harmony
 
@@ -90,5 +88,5 @@ Pomerleau-Turcotte, J., Moreno Sala, M. T., Dubé, F., & Vachon, F. (2022). Expe
 
 ## Image Sources
 
-1. Ansel Adams. (1943). *Choir with director Louie Frizzell, Manzanar Relocation Center* [Photograph]. Library of Congress Prints and Photographs Division. https://www.loc.gov/item/2002696025/ — No known restrictions on publication.
-2. *The village choir, Sunday morning service* [Photograph, ca. 1943]. Library of Congress Prints and Photographs Division. https://www.loc.gov/item/2016645936/ — No known restrictions on publication.
+
+1. Ansel Adams; Library of Congress Prints and Photographs Division. [Source page](https://www.loc.gov/item/2002696025/). License: No known restrictions on publication. (Blog cover image)

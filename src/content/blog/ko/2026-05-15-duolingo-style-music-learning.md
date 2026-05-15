@@ -33,8 +33,6 @@ coverImageCredit: "Auguste Renoir; The Metropolitan Museum of Art"
 
 오답 직후 즉각 정답을 보여준다. 피드백의 시간 지연이 짧을수록 교정 효과가 크다는 것은 학습 심리학의 기본 원리다.
 
-![조지아 플린트 리버 팜스 음악 수업 (1939년경). 미국 의회도서관 소장.](https://tile.loc.gov/storage-services/service/pnp/fsa/8c10000/8c10100/8c10111v.jpg)
-*Source: [Music class, Flint River Farms, Georgia — Library of Congress](https://www.loc.gov/item/2017800843/) — No known restrictions on publication*
 
 ## 🎵 음악 학습의 특수성
 
@@ -61,8 +59,6 @@ coverImageCredit: "Auguste Renoir; The Metropolitan Museum of Art"
 
 ## 📱 음악 앱이 적용할 수 있는 게임화 요소
 
-![조지아 플린트 리버 팜스 음악 수업 (1939년경). 미국 의회도서관 소장.](https://tile.loc.gov/storage-services/service/pnp/fsa/8c10000/8c10100/8c10110v.jpg)
-*Source: [Music class practicing songs, Flint River Farms, Georgia — Library of Congress](https://www.loc.gov/item/2017800842/) — No known restrictions on publication*
 
 게임화가 음악 앱에 실질적으로 기여할 수 있는 영역은 다음과 같다.
 
@@ -84,6 +80,5 @@ Cepeda, N. J., Pashler, H., Vul, E., Wixted, J. T., & Rohrer, D. (2006). Distrib
 
 ## 이미지 출처
 
-1. Renoir, A. (1888). *The Daughters of Catulle Mendès* [painting]. The Metropolitan Museum of Art. https://www.metmuseum.org/art/collection/search/438014 — Public Domain.
-2. Library of Congress Prints and Photographs Division. (c. 1939). *Music class practicing songs for May Day-Health Day festivities, Flint River Farms, Georgia* [photograph]. https://www.loc.gov/item/2017800843/ — No known restrictions on publication.
-3. Library of Congress Prints and Photographs Division. (c. 1939). *Music class practicing songs for May Day-Health Day festivities, Flint River Farms, Georgia* [photograph]. https://www.loc.gov/item/2017800842/ — No known restrictions on publication.
+
+1. Auguste Renoir; The Metropolitan Museum of Art. [원본 페이지](https://www.metmuseum.org/art/collection/search/438014). 라이선스: Public Domain. (블로그 커버 이미지)

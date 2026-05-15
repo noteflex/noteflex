@@ -25,8 +25,6 @@ This simultaneous processing requirement is what separates piano sight-reading f
 
 Karpinski (2000) analyzed the cognitive demands of score reading and described how increasing the volume of information to process reduces the speed available for each piece of it. Two voices to decode at once is structurally more demanding than one. That structural load is what makes the first encounter with the grand staff feel so different from single-staff reading.
 
-![Fred Becker's wood engraving "Piano Player" (1935–40) — an Expressionist black-and-white print of a musician seated at the piano, eyes fixed on the score](https://images.metmuseum.org/CRDImages/dp/original/DP820129.jpg)
-*Figure 1: Fred Becker, "Piano Player" (1935–40), wood engraving. [The Metropolitan Museum of Art](https://www.metmuseum.org/art/collection/search/374224) — Public Domain*
 
 ## 💡 Breaking the Load Into Stages
 
@@ -46,8 +44,6 @@ Chords can be read in one of two ways: note by note, identifying each pitch indi
 
 Pattern recognition of this kind only develops through repetition. The same chord shape needs to appear enough times to register as a unit before whole-chord reading becomes possible.
 
-![John George Brown, "The Music Lesson" (1870), oil on canvas — a teacher and student reading music together, illustrating the guided process of learning to read notation](https://images.metmuseum.org/CRDImages/ad/original/DP156440.jpg)
-*Figure 2: John George Brown, "The Music Lesson" (1870), oil on canvas. [The Metropolitan Museum of Art](https://www.metmuseum.org/art/collection/search/10240) — Public Domain*
 
 ## 🔍 Practical Principles for Piano Sight-Reading
 
@@ -68,6 +64,5 @@ The first encounter with the grand staff is the beginning of the adaptation, not
 2. Lehmann, A. C., & McArthur, V. (2002). Sight-reading. In R. Parncutt & G. E. McPherson (Eds.), *The Science and Psychology of Music Performance* (pp. 135–150). Oxford University Press.
 
 ### Image Sources
-- Cover: Bartolomeo Cristofori, Grand Piano (1720). [The Metropolitan Museum of Art](https://www.metmuseum.org/art/collection/search/501788) — Public Domain.
-- Figure 1: Fred Becker, "Piano Player" (1935–40), wood engraving. [The Metropolitan Museum of Art](https://www.metmuseum.org/art/collection/search/374224) — Public Domain.
-- Figure 2: John George Brown, "The Music Lesson" (1870), oil on canvas. [The Metropolitan Museum of Art](https://www.metmuseum.org/art/collection/search/10240) — Public Domain.
+
+1. Bartolomeo Cristofori; The Metropolitan Museum of Art. [Source page](https://www.metmuseum.org/art/collection/search/501788). License: Public Domain. (Blog cover image)

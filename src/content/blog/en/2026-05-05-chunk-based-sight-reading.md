@@ -12,8 +12,6 @@ coverImageLicense: "CC BY-SA"
 coverImageCredit: "Wikimedia Commons"
 ---
 
-![Music notation](https://upload.wikimedia.org/wikipedia/commons/thumb/6/62/Music_notation.svg/500px-Music_notation.svg.png)
-*Figure 1: Music notation. Source: Wikimedia Commons / CC BY-SA*
 
 Learning to read music typically begins with identifying notes one at a time — find the note on the staff, name it, press the key, move on. That approach is a workable starting point. Kept long enough, however, it becomes the main obstacle to faster sight-reading. Processing notes individually introduces a structural speed limit that no amount of slow, careful practice will remove.
 
@@ -46,8 +44,6 @@ One practical implication is that familiarity with a wide range of musical style
 
 ## How to Train Pattern Recognition ✅
 
-![Treble clef](https://upload.wikimedia.org/wikipedia/commons/thumb/f/fa/Treble_clef.svg/500px-Treble_clef.svg.png)
-*Figure 2: The treble clef — the starting point for reading music on the upper staff. Source: Wikimedia Commons / Public Domain*
 
 Chunk recognition can be practised deliberately. Here are four approaches that target it directly.
 
@@ -72,5 +68,5 @@ Noteflex supports this process by presenting problems organised around interval 
 1. Sloboda, J. A. (1984). Experimental studies of music reading: A review. *Music Perception*, 2(2), 222–236. https://doi.org/10.2307/40285292
 
 ### Image Sources
-- Figure 1: Wikimedia Commons / CC BY-SA
-- Figure 2: Wikimedia Commons / Public Domain
+
+1. Wikimedia Commons. [Source page](https://commons.wikimedia.org/wiki/File:Music_notation.svg). License: CC BY-SA. (Blog cover image)

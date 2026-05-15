@@ -25,8 +25,6 @@ Vygotsky(1978)는 이 영역을 "근접 발달 영역(Zone of Proximal Developme
 
 21단계라는 수는 7개 레벨 × 3개 서브레벨로 구성된다. 서브레벨은 동일한 음역 범위와 조표를 유지하면서 리듬 복잡도와 동시 음표 수를 조금씩 높인다. 레벨이 올라가면 새로운 음역과 조표가 도입된다.
 
-![Carl Czerny Op. 337 «40가지 일과 연습» 피아노 악보 — 운지법 표기와 함께 단계적 난이도 구조가 명확히 보이는 체계적 연습곡집의 전형](https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/CCzernyOp337Teil1.png/960px-CCzernyOp337Teil1.png)
-*그림 1: Carl Czerny, Op. 337 «40가지 일과 연습» 1부, LilyPond 악보 (M. Gößnitzer 편). [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:CCzernyOp337Teil1.png) — CC0 Public Domain*
 
 ## 💡 플로 상태와 난이도 설계
 
@@ -49,8 +47,6 @@ Noteflex의 각 서브레벨에는 네 가지 통과 기준이 있다.
 
 이 네 가지가 모두 충족될 때 다음 단계가 열린다. 하나라도 부족하면 같은 단계가 반복된다. 통과 기준이 명시되어 있다는 것은 학습자 입장에서 "지금 어디에 있는가"가 수치로 보인다는 뜻이다. 불명확한 진행감 대신 구체적인 피드백이 제공된다.
 
-![Carl Czerny(1791–1857)의 역사적 석판화 초상 — 베토벤의 제자이자 전 세계 피아노 교육에서 사용되는 단계별 연습곡집의 창시자](https://upload.wikimedia.org/wikipedia/commons/thumb/7/76/Carl_Czerny_Lanzedelli_Litho.jpg/960px-Carl_Czerny_Lanzedelli_Litho.jpg)
-*그림 2: Carl Czerny, Josef Lanzedelli d. Ä. 석판화 (c. 1820). [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Carl_Czerny_Lanzedelli_Litho.jpg) — Public Domain. 빈 알베르티나 미술관 소장.*
 
 ## 🎹 21단계의 실제 구성
 
@@ -77,5 +73,5 @@ Vygotsky가 ZPD를 설명할 때 강조한 것은 경계 자체가 아니라 그
 3. Hattie, J., & Timperley, H. (2007). The power of feedback. *Review of Educational Research*, 77(1), 81–112. DOI: [10.3102/003465430298487](https://doi.org/10.3102/003465430298487)
 
 ### 이미지 출처
-- 그림 1: Carl Czerny, Op. 337 «40가지 일과 연습» 1부, LilyPond 악보 (M. Gößnitzer 편). [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:CCzernyOp337Teil1.png) — CC0 Public Domain.
-- 그림 2: Carl Czerny, Josef Lanzedelli d. Ä. 석판화 (c. 1820). [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Carl_Czerny_Lanzedelli_Litho.jpg) — Public Domain. 빈 알베르티나 미술관 소장.
+
+1. Manuela Gößnitzer (LilyPond 악보); Carl Czerny 작곡 (Public Domain). [원본 페이지](https://commons.wikimedia.org/wiki/File:CCzernyOp337Teil1.png). 라이선스: CC0 Public Domain. (블로그 커버 이미지)

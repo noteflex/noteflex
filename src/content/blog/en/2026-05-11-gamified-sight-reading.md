@@ -29,8 +29,6 @@ The simplest way to create competence feedback is to track something specific. A
 
 Tracking response time to specific note types or intervals produces the same effect more precisely. "Today I hesitated at low bass clef notes four times" means something when yesterday it was six. That differential is the equivalent of a score in a game: small, concrete, and real.
 
-![John George Brown, "The Music Lesson" (1870), oil on canvas — teacher and student with a score, depicting the structured feedback and tracked progress that makes learning feel like a game](https://images.metmuseum.org/CRDImages/ad/original/DP156440.jpg)
-*Figure 1: John George Brown, "The Music Lesson" (1870), oil on canvas. [The Metropolitan Museum of Art](https://www.metmuseum.org/art/collection/search/10240) — Public Domain*
 
 ## 🎹 Level Design — Neither Too Easy Nor Too Hard
 
@@ -53,5 +51,5 @@ Sight-reading practice does not have to feel like a chore. Add feedback structur
 1. Ryan, R. M., & Deci, E. L. (2000). Self-determination theory and the facilitation of intrinsic motivation, social development, and well-being. *American Psychologist*, 55(1), 68–78. DOI: [10.1037/0003-066X.55.1.68](https://doi.org/10.1037/0003-066X.55.1.68)
 
 ### Image Sources
-- Cover: Jan Steen, "Merry Company on a Terrace" (ca. 1670), oil on canvas. [The Metropolitan Museum of Art](https://www.metmuseum.org/art/collection/search/437749) — Public Domain.
-- Figure 1: John George Brown, "The Music Lesson" (1870), oil on canvas. [The Metropolitan Museum of Art](https://www.metmuseum.org/art/collection/search/10240) — Public Domain.
+
+1. Jan Steen; The Metropolitan Museum of Art. [Source page](https://www.metmuseum.org/art/collection/search/437749). License: Public Domain. (Blog cover image)

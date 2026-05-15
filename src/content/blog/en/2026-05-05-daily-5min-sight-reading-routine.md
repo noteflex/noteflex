@@ -12,8 +12,6 @@ coverImageLicense: "CC BY-SA"
 coverImageCredit: "Wikimedia Commons"
 ---
 
-![Piano practice session](https://upload.wikimedia.org/wikipedia/commons/thumb/e/e6/Piano_practice.jpg/500px-Piano_practice.jpg)
-*Figure 1: A piano practice session. Source: Wikimedia Commons / CC BY-SA*
 
 Five minutes a day sounds too modest to make a difference in sight-reading. Reading music at first sight demands real skill, and the instinct is to assume that longer sessions produce better results. Research on skill acquisition, however, has repeatedly challenged that assumption. Short, focused practice sessions often outperform long, unfocused ones — and the reasons come down to how the brain consolidates new information.
 
@@ -41,8 +39,6 @@ When an instrument is not available, the first two steps still work with just a 
 
 ## Why Continuity Matters More Than Volume ✅
 
-![Pianist performing at the piano](https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/Playing_the_piano.jpg/500px-Playing_the_piano.jpg)
-*Figure 2: A pianist at the keyboard. Source: Wikimedia Commons / CC BY-SA*
 
 Thirty sessions of five minutes each equal one hundred and fifty minutes of practice — more total time than a single two-hour session. But the bigger advantage is biological. During sleep, the brain consolidates motor memories and cognitive patterns formed during the day, transferring them into long-term storage. Practising daily gives that consolidation process thirty opportunities to run; cramming into a single session gives it one.
 
@@ -67,5 +63,5 @@ Noteflex is designed with exactly this daily routine in mind. Each session prese
 1. Ericsson, K. A., Krampe, R. T., & Tesch-Römer, C. (1993). The role of deliberate practice in the acquisition of expert performance. *Psychological Review*, 100(3), 363–406. https://doi.org/10.1037/0033-295X.100.3.363
 
 ### Image Sources
-- Figure 1: Wikimedia Commons / CC BY-SA
-- Figure 2: Wikimedia Commons / CC BY-SA
+
+1. Wikimedia Commons. [Source page](https://commons.wikimedia.org/wiki/File:Piano_practice.jpg). License: CC BY-SA. (Blog cover image)

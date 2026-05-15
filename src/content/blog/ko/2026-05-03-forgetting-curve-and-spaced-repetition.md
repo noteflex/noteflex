@@ -17,8 +17,6 @@ coverImageCredit: "Hermann Ebbinghaus; Wikimedia Commons"
 
 이 망각의 패턴이 임의적이지 않다는 점이 중요하다. 일정한 형태가 있고, 그 형태를 알면 학습 일정 자체를 다르게 설계할 수 있다.
 
-![Ebbinghaus 망각 곡선](https://upload.wikimedia.org/wikipedia/commons/thumb/8/81/Ebbinghaus_curve.png/330px-Ebbinghaus_curve.png)
-*그림 1: Ebbinghaus의 망각 곡선 — 학습 직후 가파르게 떨어지고 시간이 지날수록 완만해진다. 출처: Wikimedia Commons / Public Domain*
 
 ## 📉 Ebbinghaus의 발견
 
@@ -85,4 +83,5 @@ N+2 로직은 강력하지만 만능은 아니다. 알아둘 한계가 있다.
 2. Cepeda, N. J., Pashler, H., Vul, E., Wixted, J. T., & Rohrer, D. (2006). Distributed practice in verbal recall tasks: A review and quantitative synthesis. *Psychological Bulletin*, 132(3), 354–380.
 
 ### 이미지 출처
-- 그림 1: Wikimedia Commons / Public Domain — Ebbinghaus forgetting curve
+
+1. Hermann Ebbinghaus; Wikimedia Commons. [원본 페이지](https://commons.wikimedia.org/wiki/File:Ebbinghaus_curve.png). 라이선스: Public Domain. (블로그 커버 이미지)

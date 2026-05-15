@@ -25,8 +25,6 @@ coverImageCredit: "Jan Steen; The Metropolitan Museum of Art"
 
 세 번째는 즉흥성이다. 친구와 한 자리에서 악보를 펼쳐 같이 연주하는 경험 — 19세기까지 가정 음악의 표준이었던 형태 — 이 가능해진다. 외운 곡만 연주하는 학습자는 이걸 영영 시도하지 않는다.
 
-![로랑 드 라 이르의 «음악의 알레고리» (1649) — 바로크 시대 음악을 학문적 기예로 표현한 알레고리 회화, 악보·악기·월계관이 함께 어우러진 구성](https://images.metmuseum.org/CRDImages/ep/original/DT1387.jpg)
-*그림 1: Laurent de La Hyre, «Allegory of Music» (1649), 유화. [The Metropolitan Museum of Art](https://www.metmuseum.org/art/collection/search/436836) — Public Domain*
 
 ## 💡 합리적 분량 — 하루 5~10분
 
@@ -40,8 +38,6 @@ Bonneville-Roussy 외(2011)는 아마추어 음악인의 동기 구조를 조사
 
 훈련 시 적용 방법은 단순하다. 새 곡을 펼쳤을 때, 틀려도 무조건 끝까지 간다. 끝까지 갔으면 한 번 더 펼쳐 본다. 두 번째에서 정확도가 자연스럽게 올라간다. 음표 하나하나에 멈춰서 교정하는 방식은 초견 훈련이 아니라 곡 외우기 훈련이다.
 
-![가브리엘 메취의 «음악 파티» (1659) — 17세기 네덜란드 가정에서 남녀가 함께 악보를 읽으며 연주하는 장면, 19세기까지 이어진 가정 음악 문화의 원형](https://images.metmuseum.org/CRDImages/ep/original/DP145948.jpg)
-*그림 2: Gabriël Metsu, «A Musical Party» (1659), 유화. [The Metropolitan Museum of Art](https://www.metmuseum.org/art/collection/search/437070) — Public Domain*
 
 ## 🎵 즐거움을 보존하는 훈련 설계
 
@@ -66,6 +62,5 @@ Noteflex가 짧은 세션(평균 3~5분)을 기본 단위로 설계한 이유도
 1. Bonneville-Roussy, A., Lavigne, G. L., & Vallerand, R. J. (2011). When passion leads to excellence: The case of musicians. *Psychology of Music*, 39(1), 123–138. DOI: [10.1177/0305735609352441](https://doi.org/10.1177/0305735609352441)
 
 ### 이미지 출처
-- 표지: Jan Steen, «Merry Company on a Terrace» (ca. 1670), 유화. [The Metropolitan Museum of Art](https://www.metmuseum.org/art/collection/search/437749) — Public Domain.
-- 그림 1: Laurent de La Hyre, «Allegory of Music» (1649), 유화. [The Metropolitan Museum of Art](https://www.metmuseum.org/art/collection/search/436836) — Public Domain.
-- 그림 2: Gabriël Metsu, «A Musical Party» (1659), 유화. [The Metropolitan Museum of Art](https://www.metmuseum.org/art/collection/search/437070) — Public Domain.
+
+1. Jan Steen; The Metropolitan Museum of Art. [원본 페이지](https://www.metmuseum.org/art/collection/search/437749). 라이선스: Public Domain. (블로그 커버 이미지)

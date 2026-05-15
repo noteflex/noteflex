@@ -27,8 +27,6 @@ Without this metadata, you cannot compare sessions later. Rate difficulty subjec
 
 ### 2. Error types and locations
 
-![Allegory of Music (detail), by Laurent de La Hyre, 1649. The Metropolitan Museum of Art.](https://images.metmuseum.org/CRDImages/ep/original/DT1387.jpg)
-*Source: [Allegory of Music — The Metropolitan Museum of Art](https://www.metmuseum.org/art/collection/search/436836) — Public Domain*
 
 This is the most important data to capture. Not "I made mistakes" — but "where, and what kind."
 
@@ -64,8 +62,6 @@ After two weeks, questions worth asking:
 
 When these patterns become visible, practice planning changes qualitatively. Instead of "I'll do more sight-reading this week," you have "this week I will drill accidental recognition in three-flat keys at BPM 80."
 
-![The Dance Class by Edgar Degas, 1874. The Metropolitan Museum of Art.](https://images.metmuseum.org/CRDImages/ep/original/DP-20101-001.jpg)
-*Source: [The Dance Class — The Metropolitan Museum of Art](https://www.metmuseum.org/art/collection/search/438817) — Public Domain*
 
 ## ✏️ Paper vs. Digital Journal
 
@@ -91,5 +87,5 @@ Hallam, S. (1997). The development of memorisation strategies in musicians. *Bri
 
 ## Image Sources
 
-1. De La Hyre, L. (1649). *Allegory of Music* [painting]. The Metropolitan Museum of Art. https://www.metmuseum.org/art/collection/search/436836 — Public Domain.
-2. Degas, E. (1874). *The Dance Class* [painting]. The Metropolitan Museum of Art. https://www.metmuseum.org/art/collection/search/438817 — Public Domain.
+
+1. Laurent de La Hyre; The Metropolitan Museum of Art. [Source page](https://www.metmuseum.org/art/collection/search/436836). License: Public Domain. (Blog cover image)

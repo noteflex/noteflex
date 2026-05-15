@@ -51,8 +51,6 @@ For non-native language repertoire — Italian arias, Latin motets, German Liede
 
 ## 📊 The Shared Bottleneck: Eye-Hand Span
 
-![Happy Walker's Madrillion Society Orchestra, Washington, D.C. Library of Congress.](https://tile.loc.gov/storage-services/service/pnp/cph/3c00000/3c07000/3c07600/3c07654v.jpg)
-*Source: [Happy Walker's Madrillion Society Orchestra — Library of Congress](https://www.loc.gov/item/93507036/) — No known restrictions on publication*
 
 Despite their surface differences, all instrument-specific sight-reading challenges converge on a common bottleneck: the size of the reading window you can maintain ahead of your current position.
 
@@ -88,5 +86,5 @@ Imai-Matsumura, K., & Mutou, M. (2021). Gaze analysis of pianists' sight-reading
 
 ## Image Sources
 
-1. Bartolomeo Cristofori. (1720). *Grand Piano* [Musical instrument, cypress, boxwood, painted leather, fir]. Metropolitan Museum of Art. https://www.metmuseum.org/art/collection/search/501788 — Public Domain.
-2. *[Happy Walker's Madrillion Society Orchestra, Washington, D.C.]* [Photograph, n.d.]. Library of Congress Prints and Photographs Division. https://www.loc.gov/item/93507036/ — No known restrictions on publication.
+
+1. Bartolomeo Cristofori; Metropolitan Museum of Art Open Access. [Source page](https://www.metmuseum.org/art/collection/search/501788). License: Public Domain. (Blog cover image)

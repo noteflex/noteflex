@@ -25,8 +25,6 @@ Bass clef notes present this challenge for learners who started in treble clef. 
 
 Ledger-line notes are the same problem in a different location. Notes that sit outside the five staff lines don't benefit from the pattern recognition that builds up for in-staff notes. Each encounter requires counting out from the nearest staff line until enough repetitions turn the position into direct recognition.
 
-![William Michael Harnett, "Still Life—Violin and Music" (1888), oil on canvas — a violin resting on sheet music, the material objects of musical practice and repetition](https://images.metmuseum.org/CRDImages/ad/original/DT2046.jpg)
-*Figure 1: William Michael Harnett, "Still Life—Violin and Music" (1888), oil on canvas. [The Metropolitan Museum of Art](https://www.metmuseum.org/art/collection/search/10997) — Public Domain*
 
 ## 💡 Deliberate Practice Closes the Gap
 
@@ -42,8 +40,6 @@ Applied to sight-reading: running through a full piece expends the session on a 
 
 **3. Find the category.** Whether weakness clusters in the bass clef, around ledger lines, or at accidentals matters. A category is easier to train than a list of individual notes, and identifying the category points to the underlying recognition gap.
 
-![Thomas de Keyser, "A Musician and His Daughter" (1629), oil on canvas — father and daughter seated together with a score, a seventeenth-century Dutch portrait of musical instruction](https://images.metmuseum.org/CRDImages/ep/original/DP145937.jpg)
-*Figure 2: Thomas de Keyser, "A Musician and His Daughter" (1629), oil on canvas. [The Metropolitan Museum of Art](https://www.metmuseum.org/art/collection/search/436818) — Public Domain*
 
 ## 🔍 What Targeted Practice Looks Like
 
@@ -60,6 +56,5 @@ The note that stops you every time is already showing you exactly where to look.
 1. Ericsson, K. A., Krampe, R. T., & Tesch-Römer, C. (1993). The role of deliberate practice in the acquisition of expert performance. *Psychological Review*, 100(3), 363–406. DOI: [10.1037/0033-295X.100.3.363](https://doi.org/10.1037/0033-295X.100.3.363)
 
 ### Image Sources
-- Cover: Bartholomeus van der Helst, "The Musician" (1662), oil on canvas. [The Metropolitan Museum of Art](https://www.metmuseum.org/art/collection/search/436642) — Public Domain.
-- Figure 1: William Michael Harnett, "Still Life—Violin and Music" (1888), oil on canvas. [The Metropolitan Museum of Art](https://www.metmuseum.org/art/collection/search/10997) — Public Domain.
-- Figure 2: Thomas de Keyser, "A Musician and His Daughter" (1629), oil on canvas. [The Metropolitan Museum of Art](https://www.metmuseum.org/art/collection/search/436818) — Public Domain.
+
+1. Bartholomeus van der Helst; The Metropolitan Museum of Art. [Source page](https://www.metmuseum.org/art/collection/search/436642). License: Public Domain. (Blog cover image)

@@ -33,8 +33,6 @@ Position shifting carries two distinct difficulties.
 
 Many adjacent pitches on the violin can be played on a single string or split across two strings. The score does not indicate which string to use (unless fingering annotations are provided). The player infers the optimal string assignment from pitch register, passage context, and bow direction.
 
-![The Humpbacked Violinist by Adriaen van Ostade, 17th century. The Metropolitan Museum of Art.](https://images.metmuseum.org/CRDImages/dp/original/DP821926.jpg)
-*Source: [The Humpbacked Violinist — The Metropolitan Museum of Art](https://www.metmuseum.org/art/collection/search/396320) — Public Domain*
 
 To make string-crossing decisions quickly in sight-reading:
 - Check whether adjacent notes in a passage can remain on one string
@@ -56,8 +54,6 @@ Classical scores include some bowing markings, but never all of them. Unmarked d
 
 One practical principle handles a large portion of unmarked bowing decisions: strong beats naturally favor down-bow, weak beats up-bow. When this baseline is internalized physically, roughly half the bowing choices in standard notation become automatic. The remaining decisions — where convention does not apply cleanly — are where musical judgment develops through experience.
 
-![Violin by Nicolò Amati (Cremona), 1669. The Metropolitan Museum of Art.](https://images.metmuseum.org/CRDImages/mi/original/DP230434.jpg)
-*Source: [Violin by Nicolò Amati — The Metropolitan Museum of Art](https://www.metmuseum.org/art/collection/search/503057) — Public Domain*
 
 ## 🎻 Training Strategies for Violin Sight-Reading
 
@@ -81,6 +77,5 @@ Kopiez, R., & Lee, J. I. (2006). Towards a dynamic model of skills involved in s
 
 ## Image Sources
 
-1. Zorn, A. (1904). *Village Violinist* [print]. The Metropolitan Museum of Art. https://www.metmuseum.org/art/collection/search/384561 — Public Domain.
-2. Van Ostade, A. (17th c.). *The Humpbacked Violinist* [print]. The Metropolitan Museum of Art. https://www.metmuseum.org/art/collection/search/396320 — Public Domain.
-3. Amati, N. (1669). *Violin* [musical instrument]. The Metropolitan Museum of Art. https://www.metmuseum.org/art/collection/search/503057 — Public Domain.
+
+1. Anders Zorn; The Metropolitan Museum of Art. [Source page](https://www.metmuseum.org/art/collection/search/384561). License: Public Domain. (Blog cover image)

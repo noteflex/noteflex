@@ -29,8 +29,6 @@ Ryan과 Deci(2000)는 자기결정이론(Self-Determination Theory)에서 인간
 
 더 구체적으로는 특정 음표나 음정 패턴의 반응 시간을 추적하는 것이 효과적이다. "오늘 bass clef 낮은 음역 구간에서 멈춘 횟수: 4번"이 "어제보다 2번 적어졌다"가 되면, 게임의 점수와 동일한 기능을 한다.
 
-![존 조지 브라운의 «음악 수업» (1870), 유화 — 악보를 함께 읽으며 배우는 교사와 학생의 장면, 피드백과 진도 측정이 있는 구조화된 학습](https://images.metmuseum.org/CRDImages/ad/original/DP156440.jpg)
-*그림 1: John George Brown, «The Music Lesson» (1870), 유화. [The Metropolitan Museum of Art](https://www.metmuseum.org/art/collection/search/10240) — Public Domain*
 
 ## 🎹 레벨 설계 — 너무 쉽지도 어렵지도 않게
 
@@ -51,5 +49,5 @@ Noteflex는 이 원리를 반영해 짧은 세션 안에서 음표별 반응 데
 1. Ryan, R. M., & Deci, E. L. (2000). Self-determination theory and the facilitation of intrinsic motivation, social development, and well-being. *American Psychologist*, 55(1), 68–78. DOI: [10.1037/0003-066X.55.1.68](https://doi.org/10.1037/0003-066X.55.1.68)
 
 ### 이미지 출처
-- 표지: Jan Steen, «Merry Company on a Terrace» (ca. 1670), 유화. [The Metropolitan Museum of Art](https://www.metmuseum.org/art/collection/search/437749) — Public Domain.
-- 그림 1: John George Brown, «The Music Lesson» (1870), 유화. [The Metropolitan Museum of Art](https://www.metmuseum.org/art/collection/search/10240) — Public Domain.
+
+1. Jan Steen; The Metropolitan Museum of Art. [원본 페이지](https://www.metmuseum.org/art/collection/search/437749). 라이선스: Public Domain. (블로그 커버 이미지)

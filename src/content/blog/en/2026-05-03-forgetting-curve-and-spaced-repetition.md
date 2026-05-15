@@ -17,8 +17,6 @@ That learning fades after a delay is intuitively familiar. Words memorized yeste
 
 What matters here is that the pattern of forgetting is not random. It has a shape, and once that shape is known, learning schedules can be designed around it.
 
-![Ebbinghaus forgetting curve](https://upload.wikimedia.org/wikipedia/commons/thumb/8/81/Ebbinghaus_curve.png/330px-Ebbinghaus_curve.png)
-*Figure 1: The Ebbinghaus forgetting curve — steepest immediately after learning, flattening over time. Source: Wikimedia Commons / Public Domain*
 
 ## 📉 What Ebbinghaus found
 

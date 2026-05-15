@@ -27,8 +27,6 @@ coverImageCredit: "Franz Napoleon Heigel; The Metropolitan Museum of Art"
 
 ### 2. 모음과 음정의 상관관계
 
-![The Singer in Green, 에드가 드가 작, 1884년경. 메트로폴리탄 미술관 소장.](https://images.metmuseum.org/CRDImages/ep/original/DP-25446-001.jpg)
-*Source: [The Singer in Green — The Metropolitan Museum of Art](https://www.metmuseum.org/art/collection/search/436159) — Public Domain*
 
 이것은 순수하게 성악에만 존재하는 문제다. 모음 /a/와 /i/는 음정을 유지하는 방식이 다르다. 높은 음역에서 /i/ 발음은 인두 공간을 좁히기 때문에 음정이 낮아지기 쉽다. 반대로 /a/는 낮은 음역에서 안정적이지만 높은 음역에서 열린 발성이 필요하다.
 
@@ -54,8 +52,6 @@ coverImageCredit: "Franz Napoleon Heigel; The Metropolitan Museum of Art"
 
 이 두 가지를 먼저 파악하면, 음정을 읽을 때 리듬과 텍스트가 이미 틀에 잡혀 있어서 실수가 줄어든다.
 
-![The Spanish Singer, 에두아르 마네 작, 1860년. 메트로폴리탄 미술관 소장.](https://images.metmuseum.org/CRDImages/ep/original/dp130799.jpg)
-*Source: [The Spanish Singer — The Metropolitan Museum of Art](https://www.metmuseum.org/art/collection/search/436944) — Public Domain*
 
 ## 🎤 음절별 초견 훈련법
 
@@ -79,6 +75,5 @@ McPherson, G. E. (1994). Factors and abilities influencing sight-reading skill i
 
 ## 이미지 출처
 
-1. Heigel, F. N. (n.d.). *Henriette Sontag* [painting]. The Metropolitan Museum of Art. https://www.metmuseum.org/art/collection/search/436639 — Public Domain.
-2. Degas, E. (ca. 1884). *The Singer in Green* [painting]. The Metropolitan Museum of Art. https://www.metmuseum.org/art/collection/search/436159 — Public Domain.
-3. Manet, É. (1860). *The Spanish Singer* [painting]. The Metropolitan Museum of Art. https://www.metmuseum.org/art/collection/search/436944 — Public Domain.
+
+1. Franz Napoleon Heigel; The Metropolitan Museum of Art. [원본 페이지](https://www.metmuseum.org/art/collection/search/436639). 라이선스: Public Domain. (블로그 커버 이미지)

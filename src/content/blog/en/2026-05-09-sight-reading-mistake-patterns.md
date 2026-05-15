@@ -21,8 +21,6 @@ Understanding where those clusters tend to form can shift the direction of pract
 
 Kopiez and Lee (2008), synthesizing a broad body of research on the skills involved in sight-reading, identified recurring conditions that raise error rates — independent of overall skill level. Three categories stand out.
 
-![J.S. Bach's autograph manuscript of Violin Sonata No. 1 in G minor BWV 1001, showing dense notation with ledger lines and complex accidentals](https://upload.wikimedia.org/wikipedia/commons/thumb/e/e2/BWV1001-cropped.jpg/960px-BWV1001-cropped.jpg)
-*Figure 1: J.S. Bach, autograph manuscript of Violin Sonata No. 1 in G minor BWV 1001. [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:BWV1001-cropped.jpg) — Public Domain*
 
 **Note position and register.** Notes that require ledger lines above or below the staff produce more errors than notes sitting within the staff. The more ledger lines, the higher the error rate. The register around middle C (C4) tends to have the lowest error density for most readers; the extremes of the range are where recognition slows.
 
@@ -50,8 +48,6 @@ Errors in sight-reading can be separated into three functional categories.
 
 Identifying which of these three is responsible for most of a person's errors makes it possible to target practice more precisely.
 
-!["Liszt at the Piano" (1840), oil painting by Josef Danhauser showing Franz Liszt performing for George Sand, Alexandre Dumas, and others gathered around the instrument](https://upload.wikimedia.org/wikipedia/commons/e/ef/Liszt_at_the_Piano.JPG)
-*Figure 2: Josef Danhauser, "Liszt at the Piano" (1840), oil on canvas. [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Liszt_at_the_Piano.JPG) — Public Domain. Alte Nationalgalerie, Berlin.*
 
 ## 🔍 How to Map Your Own Pattern
 
@@ -70,5 +66,5 @@ The first time you stop at a passage is useful information, not just a frustrati
 2. Lehmann, A. C., & McArthur, V. (2002). Sight-reading. In R. Parncutt & G. E. McPherson (Eds.), *The Science and Psychology of Music Performance* (pp. 135–150). Oxford University Press.
 
 ### Image Sources
-- Figure 1: J.S. Bach, autograph manuscript of Violin Sonata No. 1 in G minor BWV 1001. [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:BWV1001-cropped.jpg) — Public Domain.
-- Figure 2: Josef Danhauser, "Liszt at the Piano" (1840), oil on canvas. [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Liszt_at_the_Piano.JPG) — Public Domain. Alte Nationalgalerie, Berlin.
+
+1. J.S. Bach; Bach Digital archive. [Source page](https://commons.wikimedia.org/wiki/File:BWV1001-cropped.jpg). License: Public Domain. (Blog cover image)

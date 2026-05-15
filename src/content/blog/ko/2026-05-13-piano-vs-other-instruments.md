@@ -51,8 +51,6 @@ coverImageCredit: "Bartolomeo Cristofori; Metropolitan Museum of Art Open Access
 
 ## 📊 눈-손 간격, 악기마다 다른가
 
-![워싱턴 D.C.의 해피 워커스 마드릴리온 소사이어티 오케스트라 (연도 미상). 미국 의회도서관 소장.](https://tile.loc.gov/storage-services/service/pnp/cph/3c00000/3c07000/3c07600/3c07654v.jpg)
-*Source: [Happy Walker's Madrillion Society Orchestra — Library of Congress](https://www.loc.gov/item/93507036/) — No known restrictions on publication*
 
 Imai-Matsumura & Mutou(2021)는 피아노 전문가와 피아노 전공 학생의 시선 패턴을 비교했다. 전문가는 어려운 악보에서도 현재 연주하는 음보다 상당히 앞을 읽는 눈-손 간격을 유지했고, 학생은 쉬운 악보에서도 간격이 좁았다. 이 연구는 주로 피아노를 대상으로 했지만, 눈-손 간격의 원리 — **악보를 미리 읽는 능력이 초견 유창성의 핵심** — 은 악기와 무관하게 적용된다.
 
@@ -86,5 +84,5 @@ Imai-Matsumura, K., & Mutou, M. (2021). Gaze analysis of pianists' sight-reading
 
 ## 이미지 출처
 
-1. Bartolomeo Cristofori. (1720). *Grand Piano* [Musical instrument, cypress, boxwood, painted leather, fir]. Metropolitan Museum of Art. https://www.metmuseum.org/art/collection/search/501788 — Public Domain.
-2. *[Happy Walker's Madrillion Society Orchestra, Washington, D.C.]* [Photograph, n.d.]. Library of Congress Prints and Photographs Division. https://www.loc.gov/item/93507036/ — No known restrictions on publication.
+
+1. Bartolomeo Cristofori; Metropolitan Museum of Art Open Access. [원본 페이지](https://www.metmuseum.org/art/collection/search/501788). 라이선스: Public Domain. (블로그 커버 이미지)

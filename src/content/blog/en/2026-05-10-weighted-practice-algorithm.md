@@ -35,8 +35,6 @@ Second, **weak items need more repetitions than strong ones to reach the same pe
 
 These two findings together form the logic of weighted practice: route more frequent repetitions toward weak items, and fewer toward strong ones.
 
-![Caravaggio, "The Musicians" (1597), oil on canvas — four young musicians gathered with open scores, practicing and performing together](https://images.metmuseum.org/CRDImages/ep/original/DP-687-001.jpg)
-*Figure 1: Caravaggio (Michelangelo Merisi), "The Musicians" (1597), oil on canvas. [The Metropolitan Museum of Art](https://www.metmuseum.org/art/collection/search/435844) — Public Domain*
 
 ## 🎹 How Weighted Practice Is Structured
 
@@ -48,8 +46,6 @@ The specific implementations of weighted practice vary, but the underlying struc
 
 **Spaced re-presentation (N+2 scheduling).** A wrong note should not reappear on the very next turn — that creates conditions for short-term memory to produce a correct answer without actual recognition improvement. Scheduling reappearance N+2 turns later (after two other notes) creates a minimal but real retrieval demand, which drives genuine consolidation rather than immediate recall.
 
-![John George Brown, "The Music Lesson" (1870), oil on canvas — a teacher guiding a student through a score, depicting focused, targeted instruction](https://images.metmuseum.org/CRDImages/ad/original/DP156440.jpg)
-*Figure 2: John George Brown, "The Music Lesson" (1870), oil on canvas. [The Metropolitan Museum of Art](https://www.metmuseum.org/art/collection/search/10240) — Public Domain*
 
 ## 🔍 How Noteflex Implements This
 
@@ -64,6 +60,5 @@ For a learner who keeps seeing the same low F in the bass clef appear again and 
 1. Cepeda, N. J., Pashler, H., Vul, E., Wixted, J. T., & Rohrer, D. (2006). Distributed practice in verbal recall tasks: A review and quantitative synthesis. *Psychological Bulletin*, 132(3), 354–380. DOI: [10.1037/0033-2909.132.3.354](https://doi.org/10.1037/0033-2909.132.3.354)
 
 ### Image Sources
-- Cover: Laurent de La Hyre, "Allegory of Music" (1649), oil on canvas. [The Metropolitan Museum of Art](https://www.metmuseum.org/art/collection/search/436836) — Public Domain.
-- Figure 1: Caravaggio, "The Musicians" (1597), oil on canvas. [The Metropolitan Museum of Art](https://www.metmuseum.org/art/collection/search/435844) — Public Domain.
-- Figure 2: John George Brown, "The Music Lesson" (1870), oil on canvas. [The Metropolitan Museum of Art](https://www.metmuseum.org/art/collection/search/10240) — Public Domain.
+
+1. Laurent de La Hyre; The Metropolitan Museum of Art. [Source page](https://www.metmuseum.org/art/collection/search/436836). License: Public Domain. (Blog cover image)

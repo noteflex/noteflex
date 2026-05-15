@@ -17,8 +17,6 @@ Some musicians make significant sight-reading gains in a few months while others
 
 The seven principles below recur consistently across the music education literature on sight-reading.
 
-![A study environment with sheet music on a desk](https://upload.wikimedia.org/wikipedia/commons/c/c9/Small_environment_of_studying_Score_KV265.jpg)
-*Figure 1: A score-study setup. Source: Wikimedia Commons / CC BY-SA 4.0*
 
 ## 1️⃣ Don't stop
 

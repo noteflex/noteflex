@@ -17,8 +17,6 @@ coverImageCredit: "Wikimedia Commons"
 
 아래 7가지는 음악 교육 문헌에서 자주 등장하는 초견 연습 원칙들이다.
 
-![악보를 펼쳐 놓고 학습하는 환경](https://upload.wikimedia.org/wikipedia/commons/c/c9/Small_environment_of_studying_Score_KV265.jpg)
-*그림 1: 악보를 책상에 펼치고 학습하는 환경. 출처: Wikimedia Commons / CC BY-SA 4.0*
 
 ## 1️⃣ 멈추지 않기
 

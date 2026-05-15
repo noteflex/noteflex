@@ -33,8 +33,6 @@ coverImageCredit: "Anders Zorn; The Metropolitan Museum of Art"
 
 바이올린의 음역 중 인접한 음은 같은 현에서 연주할 수도, 두 현에 걸쳐 연주할 수도 있다. 악보에는 어느 현을 사용할지 표시되지 않는다(별도의 핑거링 주석이 없는 경우).
 
-![현악기 연주자. 아드리안 반 오스타더 작, 17세기. 메트로폴리탄 미술관 소장.](https://images.metmuseum.org/CRDImages/dp/original/DP821926.jpg)
-*Source: [The Humpbacked Violinist — The Metropolitan Museum of Art](https://www.metmuseum.org/art/collection/search/396320) — Public Domain*
 
 현 교차(string crossing)가 필요한 구간을 초견 중 즉각적으로 판단하려면:
 - 연속하는 두 음이 같은 현에서 연주 가능한지 확인
@@ -56,8 +54,6 @@ coverImageCredit: "Anders Zorn; The Metropolitan Museum of Art"
 
 기본 원칙: 강박은 다운보우로, 약박은 업보우로 시작하는 것이 자연스럽다. 이 원칙을 몸에 익히면 표시되지 않은 보잉의 절반은 자동으로 처리된다.
 
-![니콜로 아마티 제작 바이올린, 1669년. 메트로폴리탄 미술관 소장.](https://images.metmuseum.org/CRDImages/mi/original/DP230434.jpg)
-*Source: [Violin by Nicolò Amati — The Metropolitan Museum of Art](https://www.metmuseum.org/art/collection/search/503057) — Public Domain*
 
 ## 🎻 바이올린 초견을 위한 훈련법
 
@@ -81,6 +77,5 @@ Kopiez, R., & Lee, J. I. (2006). Towards a dynamic model of skills involved in s
 
 ## 이미지 출처
 
-1. Zorn, A. (1904). *Village Violinist* [print]. The Metropolitan Museum of Art. https://www.metmuseum.org/art/collection/search/384561 — Public Domain.
-2. Van Ostade, A. (17th c.). *The Humpbacked Violinist* [print]. The Metropolitan Museum of Art. https://www.metmuseum.org/art/collection/search/396320 — Public Domain.
-3. Amati, N. (1669). *Violin* [musical instrument]. The Metropolitan Museum of Art. https://www.metmuseum.org/art/collection/search/503057 — Public Domain.
+
+1. Anders Zorn; The Metropolitan Museum of Art. [원본 페이지](https://www.metmuseum.org/art/collection/search/384561). 라이선스: Public Domain. (블로그 커버 이미지)

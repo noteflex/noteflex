@@ -33,8 +33,6 @@ Accuracy rates alone omit a critical dimension: how long each answer took. Consi
 
 "I got it right eventually" is not a sufficient criterion for fluency.
 
-![A Musician and His Daughter, by Thomas de Keyser, 1629. The Metropolitan Museum of Art.](https://images.metmuseum.org/CRDImages/ep/original/DP145937.jpg)
-*Source: [A Musician and His Daughter — The Metropolitan Museum of Art](https://www.metmuseum.org/art/collection/search/436818) — Public Domain*
 
 ### 3. Improvement trajectory
 
@@ -48,8 +46,6 @@ Accumulated daily session data produces an improvement trajectory. "F# reaction 
 
 **Session design under time constraints**: When practice time is limited, data-ranked weak notes can be presented first. Spending limited time on already-strong notes is inefficient. Data-ranked targeting ensures that short sessions have maximum developmental impact.
 
-![Grand Pianoforte by Érard, ca. 1840. The Metropolitan Museum of Art.](https://images.metmuseum.org/CRDImages/mi/original/DP225545.jpg)
-*Source: [Grand Pianoforte by Érard — The Metropolitan Museum of Art](https://www.metmuseum.org/art/collection/search/503046) — Public Domain*
 
 ## 📈 The Gap Between Self-Assessment and Data Assessment
 
@@ -69,6 +65,5 @@ Kruger, J., & Dunning, D. (1999). Unskilled and unaware of it: How difficulties 
 
 ## Image Sources
 
-1. Van der Helst, B. (1662). *The Musician* [painting]. The Metropolitan Museum of Art. https://www.metmuseum.org/art/collection/search/436642 — Public Domain.
-2. De Keyser, T. (1629). *A Musician and His Daughter* [painting]. The Metropolitan Museum of Art. https://www.metmuseum.org/art/collection/search/436818 — Public Domain.
-3. Érard. (ca. 1840). *Grand Pianoforte* [musical instrument]. The Metropolitan Museum of Art. https://www.metmuseum.org/art/collection/search/503046 — Public Domain.
+
+1. Bartholomeus van der Helst; The Metropolitan Museum of Art. [Source page](https://www.metmuseum.org/art/collection/search/436642). License: Public Domain. (Blog cover image)

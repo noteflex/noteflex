@@ -25,8 +25,6 @@ Vygotsky (1978) named the learning-productive zone the "Zone of Proximal Develop
 
 The 21-stage number comes from 7 levels × 3 sublevels. Each sublevel holds the same pitch range and key signature as the others in its level, while incrementally raising rhythmic complexity and the number of simultaneous notes. Moving from one level to the next introduces a new pitch range and key signature.
 
-![Carl Czerny's Op. 337 "40 Daily Exercises" Part 1 piano score, showing graded exercise progression with fingering markings — a foundational example of systematic difficulty structuring in piano pedagogy](https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/CCzernyOp337Teil1.png/960px-CCzernyOp337Teil1.png)
-*Figure 1: Carl Czerny, Op. 337 "40 Daily Exercises" Part 1, LilyPond engraving by M. Gößnitzer. [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:CCzernyOp337Teil1.png) — CC0 Public Domain*
 
 ## 💡 Flow State and Difficulty Calibration
 
@@ -49,8 +47,6 @@ Noteflex's pass criteria for each sublevel make that position visible. A stage i
 
 All four must be satisfied. If any falls short, the stage continues. Because the criteria are explicit, a learner always knows the answer to "where am I now" in concrete numbers, not in vague impressions.
 
-![Historical lithograph portrait of Carl Czerny (1791–1857), Austrian pianist and piano pedagogue, creator of the graded exercise methods used in piano training worldwide](https://upload.wikimedia.org/wikipedia/commons/thumb/7/76/Carl_Czerny_Lanzedelli_Litho.jpg/960px-Carl_Czerny_Lanzedelli_Litho.jpg)
-*Figure 2: Carl Czerny, lithograph by Josef Lanzedelli d. Ä. (c. 1820). [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Carl_Czerny_Lanzedelli_Litho.jpg) — Public Domain. Albertina, Vienna.*
 
 ## 🎹 How the 21 Stages Are Actually Structured
 
@@ -77,5 +73,5 @@ When Vygotsky described the ZPD, he emphasized not the boundary itself but the f
 3. Hattie, J., & Timperley, H. (2007). The power of feedback. *Review of Educational Research*, 77(1), 81–112. DOI: [10.3102/003465430298487](https://doi.org/10.3102/003465430298487)
 
 ### Image Sources
-- Figure 1: Carl Czerny, Op. 337 "40 Daily Exercises" Part 1, LilyPond engraving by M. Gößnitzer. [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:CCzernyOp337Teil1.png) — CC0 Public Domain.
-- Figure 2: Carl Czerny, lithograph by Josef Lanzedelli d. Ä. (c. 1820). [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Carl_Czerny_Lanzedelli_Litho.jpg) — Public Domain. Albertina, Vienna.
+
+1. Manuela Gößnitzer (LilyPond engraving); based on Carl Czerny's public domain composition. [Source page](https://commons.wikimedia.org/wiki/File:CCzernyOp337Teil1.png). License: CC0 Public Domain. (Blog cover image)

@@ -33,8 +33,6 @@ coverImageCredit: "Bartholomeus van der Helst; The Metropolitan Museum of Art"
 
 느려도 맞히면 괜찮다는 생각은 데이터가 반박한다.
 
-![음악가와 딸. 토마스 드 카이저 작, 1629년. 메트로폴리탄 미술관 소장.](https://images.metmuseum.org/CRDImages/ep/original/DP145937.jpg)
-*Source: [A Musician and His Daughter — The Metropolitan Museum of Art](https://www.metmuseum.org/art/collection/search/436818) — Public Domain*
 
 ### 3. 개선 궤적
 
@@ -48,8 +46,6 @@ coverImageCredit: "Bartholomeus van der Helst; The Metropolitan Museum of Art"
 
 **연습 세션 설계**: 시간이 제한되어 있을 때, 데이터가 가장 약한 음표 군을 우선 훈련하도록 세션을 설계해준다. 남은 시간을 이미 잘 아는 음표에 쓰는 것은 효율적이지 않다.
 
-![에라르 제작 그랜드 피아노포르테, 1840년경. 메트로폴리탄 미술관 소장.](https://images.metmuseum.org/CRDImages/mi/original/DP225545.jpg)
-*Source: [Grand Pianoforte by Érard — The Metropolitan Museum of Art](https://www.metmuseum.org/art/collection/search/503046) — Public Domain*
 
 ## 📈 자기 평가와 데이터 평가의 간극
 
@@ -69,6 +65,5 @@ Kruger, J., & Dunning, D. (1999). Unskilled and unaware of it: How difficulties 
 
 ## 이미지 출처
 
-1. Van der Helst, B. (1662). *The Musician* [painting]. The Metropolitan Museum of Art. https://www.metmuseum.org/art/collection/search/436642 — Public Domain.
-2. De Keyser, T. (1629). *A Musician and His Daughter* [painting]. The Metropolitan Museum of Art. https://www.metmuseum.org/art/collection/search/436818 — Public Domain.
-3. Érard. (ca. 1840). *Grand Pianoforte* [musical instrument]. The Metropolitan Museum of Art. https://www.metmuseum.org/art/collection/search/503046 — Public Domain.
+
+1. Bartholomeus van der Helst; The Metropolitan Museum of Art. [원본 페이지](https://www.metmuseum.org/art/collection/search/436642). 라이선스: Public Domain. (블로그 커버 이미지)

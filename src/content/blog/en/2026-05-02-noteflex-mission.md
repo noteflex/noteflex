@@ -17,8 +17,6 @@ Anyone who has spent time learning piano knows the pattern. A new piece arrives,
 
 Reducing that stage means training notation reading directly. But how that training should be structured is rarely explicit.
 
-![Hands on piano keys with a musical score visible](https://upload.wikimedia.org/wikipedia/commons/0/03/Playing_the_piano_with_a_score_%28Unsplash%29.jpg)
-*Figure 1: Reading and playing from a musical score. Source: Wikimedia Commons / CC0 1.0 Public Domain*
 
 ## 🤔 Where current approaches fall short
 

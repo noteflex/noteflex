@@ -27,8 +27,6 @@ The effective approach is **syllable-by-syllable integration**: recognize each s
 
 ### 2. Vowels and intonation
 
-![The Singer in Green, by Edgar Degas, ca. 1884. The Metropolitan Museum of Art.](https://images.metmuseum.org/CRDImages/ep/original/DP-25446-001.jpg)
-*Source: [The Singer in Green — The Metropolitan Museum of Art](https://www.metmuseum.org/art/collection/search/436159) — Public Domain*
 
 This is a challenge that has no parallel in instrumental playing. The vowel /i/ (as in "see") narrows the pharyngeal space compared to /a/ (as in "father"), which means that producing /i/ at high pitches tends to pull intonation flat without compensatory technique. Conversely, /a/ opens easily at lower pitches but requires specific laryngeal adjustment in the upper register.
 
@@ -54,8 +52,6 @@ When you first see a score, scan for two things only:
 
 When these two dimensions are settled first, reading pitches becomes a single-layer task rather than a three-way juggling act.
 
-![The Spanish Singer, by Édouard Manet, 1860. The Metropolitan Museum of Art.](https://images.metmuseum.org/CRDImages/ep/original/dp130799.jpg)
-*Source: [The Spanish Singer — The Metropolitan Museum of Art](https://www.metmuseum.org/art/collection/search/436944) — Public Domain*
 
 ## 🎤 Specific Vocal Sight-Reading Exercises
 
@@ -79,6 +75,5 @@ McPherson, G. E. (1994). Factors and abilities influencing sight-reading skill i
 
 ## Image Sources
 
-1. Heigel, F. N. (n.d.). *Henriette Sontag* [painting]. The Metropolitan Museum of Art. https://www.metmuseum.org/art/collection/search/436639 — Public Domain.
-2. Degas, E. (ca. 1884). *The Singer in Green* [painting]. The Metropolitan Museum of Art. https://www.metmuseum.org/art/collection/search/436159 — Public Domain.
-3. Manet, É. (1860). *The Spanish Singer* [painting]. The Metropolitan Museum of Art. https://www.metmuseum.org/art/collection/search/436944 — Public Domain.
+
+1. Franz Napoleon Heigel; The Metropolitan Museum of Art. [Source page](https://www.metmuseum.org/art/collection/search/436639). License: Public Domain. (Blog cover image)

@@ -27,8 +27,6 @@ coverImageCredit: "Laurent de La Hyre; The Metropolitan Museum of Art"
 
 ### 2. 오류 유형과 발생 위치
 
-![음악의 알레고리 (세부), 로랑 드 라 이르, 1649년. 메트로폴리탄 미술관.](https://images.metmuseum.org/CRDImages/ep/original/DT1387.jpg)
-*Source: [Allegory of Music — The Metropolitan Museum of Art](https://www.metmuseum.org/art/collection/search/436836) — Public Domain*
 
 가장 중요한 기록이다. "틀렸다"가 아니라 "어디서, 무엇이 틀렸나"를 구체적으로 쓴다.
 
@@ -64,8 +62,6 @@ coverImageCredit: "Laurent de La Hyre; The Metropolitan Museum of Art"
 
 이 패턴들이 보이면, 다음 주 연습 계획이 달라진다. "오늘도 초견 연습"이 아니라 "이번 주는 3♭ 조성의 임시표 반응 속도 집중 훈련"이 된다.
 
-![댄스 수업, 에드가 드가, 1874년. 메트로폴리탄 미술관 소장.](https://images.metmuseum.org/CRDImages/ep/original/DP-20101-001.jpg)
-*Source: [The Dance Class — The Metropolitan Museum of Art](https://www.metmuseum.org/art/collection/search/438817) — Public Domain*
 
 ## ✏️ 디지털 vs. 아날로그 일지
 
@@ -89,5 +85,5 @@ Hallam, S. (1997). The development of memorisation strategies in musicians. *Bri
 
 ## 이미지 출처
 
-1. De La Hyre, L. (1649). *Allegory of Music* [painting]. The Metropolitan Museum of Art. https://www.metmuseum.org/art/collection/search/436836 — Public Domain.
-2. Degas, E. (1874). *The Dance Class* [painting]. The Metropolitan Museum of Art. https://www.metmuseum.org/art/collection/search/438817 — Public Domain.
+
+1. Laurent de La Hyre; The Metropolitan Museum of Art. [원본 페이지](https://www.metmuseum.org/art/collection/search/436836). 라이선스: Public Domain. (블로그 커버 이미지)

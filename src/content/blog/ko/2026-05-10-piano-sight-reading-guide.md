@@ -25,8 +25,6 @@ coverImageCredit: "Bartolomeo Cristofori; The Metropolitan Museum of Art"
 
 Karpinski(2000)는 악보 읽기의 인지 과정을 분석하면서, 처리할 정보량이 늘어날수록 전체 처리 속도가 느려진다고 설명했다. 두 성부를 동시에 해독하는 것은 구조적으로 단일 성부보다 인지 부담이 크다. 그 부담이 양손 동시 시도에서 학습자를 막는다.
 
-![프레드 베커의 목판화 «피아노 연주자» (1935–40) — 피아노 앞에 앉아 악보를 응시하는 연주자를 담은 표현주의적 흑백 목판화](https://images.metmuseum.org/CRDImages/dp/original/DP820129.jpg)
-*그림 1: Fred Becker, «Piano Player» (1935–40), 목판화. [The Metropolitan Museum of Art](https://www.metmuseum.org/art/collection/search/374224) — Public Domain*
 
 ## 💡 인지 부담을 나누는 단계
 
@@ -46,8 +44,6 @@ Karpinski(2000)는 악보 읽기의 인지 과정을 분석하면서, 처리할 
 
 이 패턴 인식은 반복 노출로만 형성된다. 같은 화음 모양이 충분히 반복된 후에야 개별 번역 없이 전체 인식이 가능해진다.
 
-![존 조지 브라운의 «음악 수업» (1870), 유화 — 음악 교사와 학생이 악보를 함께 읽으며 배우는 장면](https://images.metmuseum.org/CRDImages/ad/original/DP156440.jpg)
-*그림 2: John George Brown, «The Music Lesson» (1870), 유화. [The Metropolitan Museum of Art](https://www.metmuseum.org/art/collection/search/10240) — Public Domain*
 
 ## 피아노 초견 훈련의 실용 원칙 🔍
 
@@ -68,6 +64,5 @@ Noteflex의 레벨 5~7은 그랜드 오선지를 사용한다. treble과 bass를
 2. Lehmann, A. C., & McArthur, V. (2002). Sight-reading. In R. Parncutt & G. E. McPherson (Eds.), *The Science and Psychology of Music Performance* (pp. 135–150). Oxford University Press.
 
 ### 이미지 출처
-- 표지: Bartolomeo Cristofori, Grand Piano (1720). [The Metropolitan Museum of Art](https://www.metmuseum.org/art/collection/search/501788) — Public Domain.
-- 그림 1: Fred Becker, «Piano Player» (1935–40), 목판화. [The Metropolitan Museum of Art](https://www.metmuseum.org/art/collection/search/374224) — Public Domain.
-- 그림 2: John George Brown, «The Music Lesson» (1870), 유화. [The Metropolitan Museum of Art](https://www.metmuseum.org/art/collection/search/10240) — Public Domain.
+
+1. Bartolomeo Cristofori; The Metropolitan Museum of Art. [원본 페이지](https://www.metmuseum.org/art/collection/search/501788). 라이선스: Public Domain. (블로그 커버 이미지)

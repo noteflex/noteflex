@@ -27,8 +27,6 @@ McPherson (1994), analyzing the factors that determine sight-reading ability in 
 
 **Third: congregation-tempo matching.** Church accompaniment is congregation-centered, not performer-centered. The accompanist follows the room. Reading while actively listening — adjusting tempo in response to what the congregation is actually singing — requires a form of split attention that must be trained separately from pure notation reading.
 
-![Thomas Appleton Pipe Organ (1830) at the Metropolitan Museum of Art — a nineteenth-century American church pipe organ, the instrument at the center of church accompaniment](https://images.metmuseum.org/CRDImages/mi/original/DP-14247-002.jpg)
-*Figure 1: Thomas Appleton, Pipe Organ (1830). [The Metropolitan Museum of Art](https://www.metmuseum.org/art/collection/search/503670) — Public Domain*
 
 ## 💡 Building Transposition Fluency
 
@@ -51,5 +49,5 @@ The service arrives with no rehearsal. A prepared accompanist plays whatever the
 1. McPherson, G. E. (1994). Factors and abilities influencing musical performance reading ability in instrumental music students. *Journal of Research in Music Education*, 42(1), 37–47. DOI: [10.2307/3345701](https://doi.org/10.2307/3345701)
 
 ### Image Sources
-- Cover: Henry Lerolle, "The Organ Rehearsal" (1885), oil on canvas. [The Metropolitan Museum of Art](https://www.metmuseum.org/art/collection/search/436880) — Public Domain.
-- Figure 1: Thomas Appleton, Pipe Organ (1830). [The Metropolitan Museum of Art](https://www.metmuseum.org/art/collection/search/503670) — Public Domain.
+
+1. Henry Lerolle; The Metropolitan Museum of Art. [Source page](https://www.metmuseum.org/art/collection/search/436880). License: Public Domain. (Blog cover image)

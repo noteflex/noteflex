@@ -13,8 +13,6 @@ coverImageLicense: "Public Domain"
 coverImageCredit: "U.S. National Archives; Wikimedia Commons"
 ---
 
-![A music class working on score reading together](https://upload.wikimedia.org/wikipedia/commons/1/1a/Music_class_usa.jpg)
-*Figure 1: A classroom setting for music reading. Source: Wikimedia Commons / CC BY-SA*
 
 How long you spend on sight-reading matters less than how that time is divided. Compared to a single hour of massed practice, the same total minutes split into 5- to 10-minute slices across a week tend to produce equal or better gains. The difference is not about volume — it's about the conditions under which learning actually consolidates.
 
@@ -44,8 +42,6 @@ Sight-reading differs from general practice in one essential way. If the same sc
 
 A workable starting ratio is 70% new material, 30% revisited material. Too little new material and the reader simply learns one set of patterns; too much, and shallow recognition never deepens into automation. The 30% revisit slot is best used to revisit a specific spot that gave trouble in a recent session.
 
-![A metronome — a tool for slicing practice into short, deliberate units](https://upload.wikimedia.org/wikipedia/commons/5/5f/Metronome_Nikko.jpg)
-*Figure 2: A metronome divides practice into measured time units. Source: Wikimedia Commons / CC BY-SA 3.0*
 
 ## A Sample Week of Distributed Practice
 

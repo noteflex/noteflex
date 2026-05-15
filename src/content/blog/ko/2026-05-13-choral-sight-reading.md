@@ -48,8 +48,6 @@ coverImageCredit: "Ansel Adams; Library of Congress Prints and Photographs Divis
 
 음정이 불확실할 때는 리듬을 살리는 쪽을 선택한다. 합창에서 개인의 음정 실수보다 리듬 이탈이 앙상블 전체에 더 큰 피해를 준다. 음정을 "대충 비슷하게" 맞추면서 박을 지키는 것이 목표다.
 
-![주일 아침 예배의 마을 성가대 (1943년경). 미국 의회도서관 소장.](https://tile.loc.gov/storage-services/service/pnp/cph/3a30000/3a34000/3a34100/3a34192r.jpg)
-*Source: [The village choir, Sunday morning service — Library of Congress](https://www.loc.gov/item/2016645936/) — No known restrictions on publication*
 
 ## 🎵 화성 맥락 안에서 독립 선율 유지하기
 
@@ -90,5 +88,5 @@ Pomerleau-Turcotte, J., Moreno Sala, M. T., Dubé, F., & Vachon, F. (2022). Expe
 
 ## 이미지 출처
 
-1. Ansel Adams. (1943). *Choir with director Louie Frizzell, Manzanar Relocation Center* [Photograph]. Library of Congress Prints and Photographs Division. https://www.loc.gov/item/2002696025/ — No known restrictions on publication.
-2. *The village choir, Sunday morning service* [Photograph, ca. 1943]. Library of Congress Prints and Photographs Division. https://www.loc.gov/item/2016645936/ — No known restrictions on publication.
+
+1. Ansel Adams; Library of Congress Prints and Photographs Division. [원본 페이지](https://www.loc.gov/item/2002696025/). 라이선스: No known restrictions on publication. (블로그 커버 이미지)

@@ -33,8 +33,6 @@ What a lead sheet deliberately omits:
 - Approach notes, chromatic passing tones
 - The content of any improvised solos
 
-![Gerry Mulligan rehearsing the Concert Jazz Band, 1978. Library of Congress Music Division.](https://tile.loc.gov/image-services/iiif/public:music:musihas-100010867:musihas-100010867.100010867/full/pct:100.0/0/default.jpg)
-*Source: [Gerry Mulligan rehearsing Concert Jazz Band — Library of Congress](https://www.loc.gov/item/2023865247/) — No known restrictions on publication*
 
 ## 🎹 Chord Symbol Parsing: Real-Time Harmonic Decoding
 
@@ -66,8 +64,6 @@ What a big band part looks like:
 
 The single most important skill in big band sight-reading is **groove alignment with the rhythm section**. Written eighth notes in a swing chart are not played straight. The stylistic convention of swing (long–short eighth note pairs) is not written on the page — it is a genre assumption. A player who reads the notation literally in a big band session will be detected immediately. Groove interpretation must precede the downbeat.
 
-![Gerry Mulligan with the Concert Jazz Band in performance. Library of Congress Music Division.](https://tile.loc.gov/image-services/iiif/public:music:musihas-100010913:musihas-100010913.100010913/full/pct:50.0/0/default.jpg)
-*Source: [Gerry Mulligan with Concert Jazz Band — Library of Congress](https://www.loc.gov/item/2023865282/) — No known restrictions on publication*
 
 ## 🎵 Practical Training for Jazz Sight-Reading
 
@@ -91,6 +87,5 @@ Kopiez, R., & Lee, J. I. (2006). Towards a dynamic model of skills involved in s
 
 ## Image Sources
 
-1. Gottlieb, W. P. (c. 1938–1948). *Glenn Miller Orchestra* [photograph]. Library of Congress Music Division. https://www.loc.gov/item/2023868713/ — No known restrictions on publication.
-2. Library of Congress Music Division. (1978). *Gerry Mulligan rehearsing Concert Jazz Band* [photograph]. https://www.loc.gov/item/2023865247/ — No known restrictions on publication.
-3. Library of Congress Music Division. (1978). *Gerry Mulligan with Concert Jazz Band* [photograph]. https://www.loc.gov/item/2023865282/ — No known restrictions on publication.
+
+1. William P. Gottlieb; Library of Congress Music Division. [Source page](https://www.loc.gov/item/2023868713/). License: No known restrictions on publication. (Blog cover image)

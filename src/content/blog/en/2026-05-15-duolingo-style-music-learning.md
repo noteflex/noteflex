@@ -31,8 +31,6 @@ Sessions are capped at approximately 5–15 minutes. This lowers the activation 
 
 The correct answer appears immediately after an incorrect response. The shorter the delay between error and correction, the stronger the corrective effect — this is a foundational principle in learning psychology.
 
-![Music class at Flint River Farms, Georgia, circa 1939. Library of Congress.](https://tile.loc.gov/storage-services/service/pnp/fsa/8c10000/8c10100/8c10111v.jpg)
-*Source: [Music class, Flint River Farms, Georgia — Library of Congress](https://www.loc.gov/item/2017800843/) — No known restrictions on publication*
 
 ## 🎵 Where Music Learning Differs
 
@@ -59,8 +57,6 @@ In language learning, "is this sentence correct?" can be evaluated by text compa
 
 ## 📱 Gamification Elements That Do Transfer to Music Apps
 
-![Music class practicing songs, Flint River Farms, Georgia, circa 1939. Library of Congress.](https://tile.loc.gov/storage-services/service/pnp/fsa/8c10000/8c10100/8c10110v.jpg)
-*Source: [Music class practicing songs, Flint River Farms, Georgia — Library of Congress](https://www.loc.gov/item/2017800842/) — No known restrictions on publication*
 
 Several gamification principles apply effectively to the cognitive and recognition components of music learning.
 
@@ -82,6 +78,5 @@ Cepeda, N. J., Pashler, H., Vul, E., Wixted, J. T., & Rohrer, D. (2006). Distrib
 
 ## Image Sources
 
-1. Renoir, A. (1888). *The Daughters of Catulle Mendès* [painting]. The Metropolitan Museum of Art. https://www.metmuseum.org/art/collection/search/438014 — Public Domain.
-2. Library of Congress Prints and Photographs Division. (c. 1939). *Music class practicing songs for May Day-Health Day festivities, Flint River Farms, Georgia* [photograph]. https://www.loc.gov/item/2017800843/ — No known restrictions on publication.
-3. Library of Congress Prints and Photographs Division. (c. 1939). *Music class practicing songs for May Day-Health Day festivities, Flint River Farms, Georgia* [photograph]. https://www.loc.gov/item/2017800842/ — No known restrictions on publication.
+
+1. Auguste Renoir; The Metropolitan Museum of Art. [Source page](https://www.metmuseum.org/art/collection/search/438014). License: Public Domain. (Blog cover image)

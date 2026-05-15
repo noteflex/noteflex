@@ -17,8 +17,6 @@ coverImageCredit: "Wikimedia Commons"
 
 이 단계를 줄이려면 악보 독보 자체를 훈련해야 하는데, 막상 그 훈련을 어떻게 해야 하는지는 명확하지 않다.
 
-![악보를 보며 피아노 연주](https://upload.wikimedia.org/wikipedia/commons/0/03/Playing_the_piano_with_a_score_%28Unsplash%29.jpg)
-*그림 1: 악보를 보며 연주하는 장면. 출처: Wikimedia Commons / CC0 1.0 Public Domain*
 
 ## 🤔 기존 학습 방식의 한계
 
