@@ -107,24 +107,24 @@ describe("ProfilePage", () => {
 
   it("닉네임 필드가 기존 값으로 렌더링됨", () => {
     renderProfilePage();
-    const input = screen.getByPlaceholderText("3~20자, 영문 소문자/숫자/밑줄") as HTMLInputElement;
+    const input = screen.getByPlaceholderText("3–20 chars, lowercase letters/digits/underscore") as HTMLInputElement;
     expect(input.value).toBe("tester01");
   });
 
   it("변경 사항 없으면 저장 버튼 비활성화", () => {
     renderProfilePage();
-    expect(screen.getByRole("button", { name: "저장" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Save" })).toBeDisabled();
   });
 
   it("닉네임 변경 시 '변경 사항이 있습니다' 메시지 표시", async () => {
     mockUseNicknameAvailability.mockReturnValue({ state: "available" });
     const user = userEvent.setup();
     renderProfilePage();
-    const input = screen.getByPlaceholderText("3~20자, 영문 소문자/숫자/밑줄");
+    const input = screen.getByPlaceholderText("3–20 chars, lowercase letters/digits/underscore");
     await user.clear(input);
     await user.type(input, "newuser01");
     await waitFor(() => {
-      expect(screen.getByText(/변경 사항이 있습니다/)).toBeInTheDocument();
+      expect(screen.getByText(/unsaved changes/)).toBeInTheDocument();
     });
   });
 
@@ -132,11 +132,11 @@ describe("ProfilePage", () => {
     mockUseNicknameAvailability.mockReturnValue({ state: "available" });
     const user = userEvent.setup();
     renderProfilePage();
-    const input = screen.getByPlaceholderText("3~20자, 영문 소문자/숫자/밑줄");
+    const input = screen.getByPlaceholderText("3–20 chars, lowercase letters/digits/underscore");
     await user.clear(input);
     await user.type(input, "newuser01");
     await waitFor(() => {
-      expect(screen.getByRole("button", { name: "저장" })).not.toBeDisabled();
+      expect(screen.getByRole("button", { name: "Save" })).not.toBeDisabled();
     });
   });
 
@@ -147,12 +147,12 @@ describe("ProfilePage", () => {
     });
     const user = userEvent.setup();
     renderProfilePage();
-    const input = screen.getByPlaceholderText("3~20자, 영문 소문자/숫자/밑줄");
+    const input = screen.getByPlaceholderText("3–20 chars, lowercase letters/digits/underscore");
     await user.clear(input);
     await user.type(input, "admin");
     await waitFor(() => {
-      expect(screen.getByText("이미 사용 중인 닉네임입니다")).toBeInTheDocument();
-      expect(screen.getByRole("button", { name: "저장" })).toBeDisabled();
+      expect(screen.getByText("This nickname is already taken")).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Save" })).toBeDisabled();
     });
   });
 
@@ -160,11 +160,11 @@ describe("ProfilePage", () => {
     mockUseNicknameAvailability.mockReturnValue({ state: "available" });
     const user = userEvent.setup();
     renderProfilePage();
-    const input = screen.getByPlaceholderText("3~20자, 영문 소문자/숫자/밑줄");
+    const input = screen.getByPlaceholderText("3–20 chars, lowercase letters/digits/underscore");
     await user.clear(input);
     await user.type(input, "newuser01");
-    await waitFor(() => expect(screen.getByRole("button", { name: "저장" })).not.toBeDisabled());
-    await user.click(screen.getByRole("button", { name: "저장" }));
+    await waitFor(() => expect(screen.getByRole("button", { name: "Save" })).not.toBeDisabled());
+    await user.click(screen.getByRole("button", { name: "Save" }));
     await waitFor(() => {
       expect(mockSupabaseUpdate).toHaveBeenCalledWith(
         expect.objectContaining({ nickname: "newuser01" })
@@ -185,14 +185,14 @@ describe("ProfilePage", () => {
   it("계이름 라디오 선택 시 localStorage에 즉시 반영됨", async () => {
     const user = userEvent.setup();
     renderProfilePage();
-    await user.click(screen.getByLabelText(/한국어 계이름/));
+    await user.click(screen.getByLabelText(/Korean Solfège/));
     expect(localStorage.getItem("noteflex.solfege_system")).toBe("ko");
   });
 
   it("로그아웃 버튼 클릭 시 signOut 호출됨", async () => {
     const user = userEvent.setup();
     renderProfilePage();
-    await user.click(screen.getByRole("button", { name: "로그아웃" }));
+    await user.click(screen.getByRole("button", { name: "Sign Out" }));
     await waitFor(() => expect(mockSignOut).toHaveBeenCalledTimes(1));
   });
 

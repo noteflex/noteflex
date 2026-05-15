@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLang, useT, type Lang } from "@/contexts/LanguageContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useSolfegeSystem } from "@/hooks/useSolfegeSystem";
 import { useNicknameAvailability } from "@/hooks/useNicknameAvailability";
@@ -22,34 +23,42 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 
-const LOCALE_OPTIONS = [
-  { value: "ko", label: "한국어" },
-  { value: "en", label: "English" },
+const LOCALE_OPTIONS: { value: Lang; key: "ko" | "en" }[] = [
+  { value: "ko", key: "ko" },
+  { value: "en", key: "en" },
 ] as const;
 
-const SOLFEGE_OPTIONS: { value: SolfegeSystem; label: string; example: string }[] = [
-  { value: "ko", label: "한국어 계이름", example: "도-레-미-파-솔-라-시" },
-  { value: "en", label: "영어 음이름", example: "C-D-E-F-G-A-B" },
-  { value: "latin", label: "라틴 계이름", example: "Do-Re-Mi-Fa-Sol-La-Si" },
+const SOLFEGE_OPTIONS: { value: SolfegeSystem; example: string }[] = [
+  { value: "ko", example: "도-레-미-파-솔-라-시" },
+  { value: "en", example: "C-D-E-F-G-A-B" },
+  { value: "latin", example: "Do-Re-Mi-Fa-Sol-La-Si" },
 ];
-
-const DELETE_REASONS = [
-  "사용 빈도 낮음",
-  "서비스 불만",
-  "개인정보 보호",
-  "기타",
-] as const;
 
 export default function ProfilePage() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user, profile, signOut, refreshProfile } = useAuth();
   const { system, setSystem } = useSolfegeSystem();
+  const { lang, setLang } = useLang();
+  const t = useT();
 
-  // ── 프로필 폼 (닉네임 + 언어 + 생년월일 + 국적 + 마케팅) ──
+  // 계이름·언어 옵션 라벨 영역 (KO/EN 분기)
+  const localeLabels: Record<Lang, string> = {
+    ko: t.langToggle.ko,
+    en: t.langToggle.en,
+    ja: "日本語",
+    zh: "中文",
+  };
+  const solfegeLabels: Record<SolfegeSystem, string> = {
+    ko: t.profile.solfegeKorean,
+    en: t.profile.solfegeEnglish,
+    latin: t.profile.solfegeLatin,
+  };
+
+  // ── 프로필 폼 (닉네임 + 생년월일 + 국적 + 마케팅) ──
+  // 표시 언어(locale)는 LanguageContext.setLang으로 즉시 반영 박음 — 폼 상태 X.
   const [formData, setFormData] = useState({
     nickname:         profile?.nickname ?? "",
-    locale:           profile?.locale ?? "ko",
     birth_year:       profile?.birth_year?.toString() ?? "",
     birth_month:      profile?.birth_month?.toString() ?? "",
     birth_day:        profile?.birth_day?.toString() ?? "",
@@ -63,7 +72,6 @@ export default function ProfilePage() {
     if (profile && !profileSynced.current) {
       setFormData({
         nickname:         profile.nickname ?? "",
-        locale:           profile.locale ?? "ko",
         birth_year:       profile.birth_year?.toString() ?? "",
         birth_month:      profile.birth_month?.toString() ?? "",
         birth_day:        profile.birth_day?.toString() ?? "",
@@ -77,7 +85,6 @@ export default function ProfilePage() {
   const isDirty = useMemo(
     () =>
       formData.nickname     !== (profile?.nickname ?? "") ||
-      formData.locale       !== (profile?.locale ?? "ko") ||
       formData.birth_year   !== (profile?.birth_year?.toString() ?? "") ||
       formData.birth_month  !== (profile?.birth_month?.toString() ?? "") ||
       formData.birth_day    !== (profile?.birth_day?.toString() ?? "") ||
@@ -85,6 +92,16 @@ export default function ProfilePage() {
       formData.marketing_agreed !== !!profile?.marketing_agreed_at,
     [formData, profile]
   );
+
+  // 언어 변경 핸들러: LanguageContext 즉시 반영 + DB 동기화 (best-effort).
+  // setLang은 localStorage 박힘 → 새로고침·다른 페이지 이동 시 유지.
+  const handleLanguageChange = async (newLang: Lang) => {
+    setLang(newLang);
+    if (user) {
+      // best-effort: 실패해도 UI는 정상 (localStorage 폴백 박힘).
+      void supabase.from("profiles").update({ locale: newLang }).eq("id", user.id);
+    }
+  };
 
   const nicknameCheckInput =
     formData.nickname !== (profile?.nickname ?? "") ? formData.nickname : "";
@@ -123,7 +140,6 @@ export default function ProfilePage() {
     try {
       const updates: Record<string, any> = {
         nickname:     formData.nickname,
-        locale:       formData.locale,
         country_code: formData.country_code,
       };
       if (formData.birth_year)  updates.birth_year  = parseInt(formData.birth_year, 10);
@@ -143,20 +159,20 @@ export default function ProfilePage() {
       if (error) {
         if ((error as any).code === "23505") {
           toast({
-            title: "이미 사용 중인 닉네임이에요",
-            description: "다른 닉네임을 입력해주세요.",
+            title: t.profile.nicknameDuplicate,
+            description: t.profile.nicknameDuplicateDesc,
             variant: "destructive",
           });
           return;
         }
-        toast({ title: "저장 실패", description: error.message, variant: "destructive" });
+        toast({ title: t.profile.saveFailed, description: error.message, variant: "destructive" });
         return;
       }
 
       await refreshProfile();
-      toast({ title: "저장되었습니다" });
+      toast({ title: t.profile.saveSuccess });
     } catch {
-      toast({ title: "저장 실패", variant: "destructive" });
+      toast({ title: t.profile.saveFailed, variant: "destructive" });
     } finally {
       setSaving(false);
     }
@@ -188,7 +204,7 @@ export default function ProfilePage() {
       if (error) throw error;
       setDeleteEmailSent(true);
     } catch (err: any) {
-      toast({ title: "전송 실패", description: err.message, variant: "destructive" });
+      toast({ title: t.profile.deleteSendFailed, description: err.message, variant: "destructive" });
     } finally {
       setDeleteSending(false);
     }
@@ -199,12 +215,13 @@ export default function ProfilePage() {
     navigate("/");
   };
 
+  const localeForDate = lang === "ko" ? "ko-KR" : "en-US";
   const premiumUntil = profile?.premium_until
-    ? new Date(profile.premium_until).toLocaleDateString("ko-KR")
+    ? new Date(profile.premium_until).toLocaleDateString(localeForDate)
     : null;
 
   const joinedAt = profile?.created_at
-    ? new Date(profile.created_at).toLocaleDateString("ko-KR")
+    ? new Date(profile.created_at).toLocaleDateString(localeForDate)
     : null;
 
   return (
@@ -215,25 +232,25 @@ export default function ProfilePage() {
       <Header
         right={
           <Link to="/" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-            ← 홈으로
+            {t.profile.homeLink}
           </Link>
         }
       />
       <div className="flex-1 px-4 py-8">
       <div className="max-w-lg mx-auto space-y-4">
 
-        <h1 className="text-xl font-bold text-foreground">프로필 설정</h1>
+        <h1 className="text-xl font-bold text-foreground">{t.profile.title}</h1>
 
         {/* ━━━━━━━━━━━━━━━━ 계정 설정 ━━━━━━━━━━━━━━━━ */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">계정 설정</CardTitle>
+            <CardTitle className="text-base">{t.profile.accountSection}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-5">
 
             {/* 닉네임 */}
             <div className="space-y-1.5">
-              <Label>닉네임</Label>
+              <Label>{t.profile.nicknameLabel}</Label>
               <Input
                 value={formData.nickname}
                 onChange={(e) =>
@@ -242,15 +259,15 @@ export default function ProfilePage() {
                     nickname: e.target.value.toLowerCase(),
                   }))
                 }
-                placeholder="3~20자, 영문 소문자/숫자/밑줄"
+                placeholder={t.profile.nicknamePlaceholder}
                 maxLength={20}
                 data-testid="nickname-input"
               />
               {nicknameStatus.state === "checking" && (
-                <p className="text-xs text-muted-foreground">확인 중...</p>
+                <p className="text-xs text-muted-foreground">{t.profile.nicknameChecking}</p>
               )}
               {nicknameStatus.state === "available" && (
-                <p className="text-xs text-green-600">✅ 사용 가능한 닉네임입니다</p>
+                <p className="text-xs text-green-600">{t.profile.nicknameAvailable}</p>
               )}
               {nicknameStatus.state === "invalid_format" && (
                 <p className="text-xs text-destructive">{(nicknameStatus as any).reason}</p>
@@ -258,11 +275,11 @@ export default function ProfilePage() {
               {nicknameStatus.state === "taken" && (
                 <div className="space-y-1">
                   <p className="text-xs text-destructive" data-testid="nickname-taken-error">
-                    이미 사용 중인 닉네임입니다
+                    {t.profile.nicknameTaken}
                   </p>
                   {(nicknameStatus as any).suggestions?.length > 0 && (
                     <div className="flex flex-wrap gap-2 items-center">
-                      <span className="text-xs text-muted-foreground">추천:</span>
+                      <span className="text-xs text-muted-foreground">{t.profile.nicknameSuggestions}</span>
                       {(nicknameStatus as any).suggestions.map((s: string) => (
                         <button
                           key={s}
@@ -281,7 +298,7 @@ export default function ProfilePage() {
 
             {/* 생년월일 */}
             <div className="space-y-1.5">
-              <Label>생년월일 (선택)</Label>
+              <Label>{t.profile.birthYearLabel}</Label>
               <div className="grid grid-cols-3 gap-2">
                 <input
                   type="number"
@@ -318,7 +335,7 @@ export default function ProfilePage() {
 
             {/* 국적 */}
             <div className="space-y-1.5">
-              <Label>국적</Label>
+              <Label>{t.profile.nationalityLabel}</Label>
               <Select
                 value={formData.country_code}
                 onValueChange={(value) => setFormData((prev) => ({ ...prev, country_code: value }))}
@@ -334,22 +351,20 @@ export default function ProfilePage() {
               </Select>
             </div>
 
-            {/* 표시 언어 */}
+            {/* 표시 언어 — LanguageContext 즉시 반영 박음 */}
             <div className="space-y-1.5">
-              <Label>표시 언어</Label>
+              <Label>{t.profile.languageLabel}</Label>
               <Select
-                value={formData.locale}
-                onValueChange={(value) =>
-                  setFormData((prev) => ({ ...prev, locale: value }))
-                }
+                value={lang}
+                onValueChange={(value) => handleLanguageChange(value as Lang)}
               >
-                <SelectTrigger>
+                <SelectTrigger data-testid="language-select">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   {LOCALE_OPTIONS.map((opt) => (
                     <SelectItem key={opt.value} value={opt.value}>
-                      {opt.label}
+                      {localeLabels[opt.value]}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -366,13 +381,13 @@ export default function ProfilePage() {
                   className="w-4 h-4 accent-primary cursor-pointer"
                   data-testid="marketing-toggle"
                 />
-                <span className="text-foreground">마케팅 정보 수신 동의</span>
+                <span className="text-foreground">{t.profile.marketingConsent}</span>
               </label>
             </div>
 
             {isDirty && (
               <p className="text-sm text-amber-600">
-                변경 사항이 있습니다. 저장 버튼을 눌러주세요.
+                {t.profile.dirtyHint}
               </p>
             )}
             <Button
@@ -381,7 +396,7 @@ export default function ProfilePage() {
               className="w-full"
               data-testid="save-profile-button"
             >
-              {saving ? "저장 중..." : "저장"}
+              {saving ? t.profile.saving : t.profile.saveButton}
             </Button>
 
           </CardContent>
@@ -390,7 +405,7 @@ export default function ProfilePage() {
         {/* ━━━━━━━━━━━━━━━━ 계이름 체계 ━━━━━━━━━━━━━━━━ */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">계이름 표기 방식</CardTitle>
+            <CardTitle className="text-base">{t.profile.solfegeSection}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             <RadioGroup
@@ -402,41 +417,41 @@ export default function ProfilePage() {
                 <div key={opt.value} className="flex items-center gap-3">
                   <RadioGroupItem value={opt.value} id={`solfege-${opt.value}`} />
                   <Label htmlFor={`solfege-${opt.value}`} className="cursor-pointer">
-                    <span className="font-medium">{opt.label}</span>
+                    <span className="font-medium">{solfegeLabels[opt.value]}</span>
                     <span className="ml-2 text-sm text-muted-foreground">{opt.example}</span>
                   </Label>
                 </div>
               ))}
             </RadioGroup>
-            <p className="text-xs text-muted-foreground">이 설정은 즉시 적용됩니다.</p>
+            <p className="text-xs text-muted-foreground">{t.profile.solfegeApplied}</p>
           </CardContent>
         </Card>
 
         {/* ━━━━━━━━━━━━━━━━ 계정 정보 ━━━━━━━━━━━━━━━━ */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">계정 정보</CardTitle>
+            <CardTitle className="text-base">{t.profile.accountInfoSection}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2 text-sm">
             <div className="flex justify-between">
-              <span className="text-muted-foreground">이메일</span>
+              <span className="text-muted-foreground">{t.profile.accountInfoEmail}</span>
               <span className="font-medium">{user.email}</span>
             </div>
             {joinedAt && (
               <div className="flex justify-between">
-                <span className="text-muted-foreground">가입일</span>
+                <span className="text-muted-foreground">{t.profile.accountInfoJoinedAt}</span>
                 <span>{joinedAt}</span>
               </div>
             )}
             <div className="flex justify-between">
-              <span className="text-muted-foreground">구독 상태</span>
+              <span className="text-muted-foreground">{t.profile.accountInfoSubscription}</span>
               <span>
                 {profile?.is_premium ? (
                   <span className="text-amber-600 font-semibold">
                     ✨ Premium{premiumUntil ? ` (~${premiumUntil})` : ""}
                   </span>
                 ) : (
-                  <span className="text-muted-foreground">무료 플랜</span>
+                  <span className="text-muted-foreground">{t.profile.accountInfoFree}</span>
                 )}
               </span>
             </div>
@@ -445,17 +460,17 @@ export default function ProfilePage() {
 
         {/* ━━━━━━━━━━━━━━━━ 로그아웃 ━━━━━━━━━━━━━━━━ */}
         <Button variant="outline" className="w-full" onClick={handleSignOut}>
-          로그아웃
+          {t.profile.signOutButton}
         </Button>
 
         {/* ━━━━━━━━━━━━━━━━ 회원 탈퇴 (Danger Zone) ━━━━━━━━━━━━━━━━ */}
         <Card className="border-destructive/30">
           <CardHeader>
-            <CardTitle className="text-base text-destructive">회원 탈퇴</CardTitle>
+            <CardTitle className="text-base text-destructive">{t.profile.deleteSection}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             <p className="text-sm text-muted-foreground">
-              탈퇴 후 30일 내 복구가 가능합니다. 이후에는 모든 데이터가 삭제됩니다.
+              {t.profile.deleteDescription}
             </p>
             <Button
               variant="destructive"
@@ -463,7 +478,7 @@ export default function ProfilePage() {
               onClick={openDeleteModal}
               data-testid="open-delete-modal-button"
             >
-              회원 탈퇴
+              {t.profile.deleteButton}
             </Button>
           </CardContent>
         </Card>
@@ -481,11 +496,11 @@ export default function ProfilePage() {
             <div className="flex flex-col items-center gap-2 pt-6 pb-4 px-6">
               <span className="text-4xl">{deleteEmailSent ? "✉️" : "⚠️"}</span>
               <h2 className="text-xl font-bold text-foreground">
-                {deleteEmailSent ? "탈퇴 확인 메일을 보냈습니다" : "정말 탈퇴하시겠어요?"}
+                {deleteEmailSent ? t.profile.deleteEmailSentTitle : t.profile.deleteConfirmTitle}
               </h2>
               {!deleteEmailSent && (
                 <p className="text-xs text-muted-foreground text-center">
-                  탈퇴 후 30일 내 복구 가능합니다.
+                  {t.profile.deleteConfirmDesc}
                 </p>
               )}
             </div>
@@ -495,7 +510,7 @@ export default function ProfilePage() {
                 <>
                   <div>
                     <label className="text-sm font-medium text-muted-foreground block mb-1.5">
-                      탈퇴 사유 (선택)
+                      {t.profile.deleteReasonLabel}
                     </label>
                     <select
                       value={deleteReason}
@@ -503,8 +518,8 @@ export default function ProfilePage() {
                       data-testid="delete-reason-select"
                       className="w-full px-4 py-2.5 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                     >
-                      <option value="">선택 안 함</option>
-                      {DELETE_REASONS.map(r => (
+                      <option value="">{t.profile.deleteReasonNone}</option>
+                      {t.profile.deleteReasons.map(r => (
                         <option key={r} value={r}>{r}</option>
                       ))}
                     </select>
@@ -515,17 +530,16 @@ export default function ProfilePage() {
                     className="w-full"
                     data-testid="send-delete-otp-button"
                   >
-                    {deleteSending ? "처리 중..." : "탈퇴 확인 메일 보내기"}
+                    {deleteSending ? t.profile.deleteSending : t.profile.deleteSendButton}
                   </Button>
                 </>
               ) : (
                 <div className="space-y-3" data-testid="delete-email-sent-screen">
                   <p className="text-sm text-muted-foreground text-center leading-relaxed">
-                    <span className="font-medium text-foreground">{user.email}</span>에 도착한 메일에서<br />
-                    "탈퇴 확인" 링크를 클릭하면 탈퇴가 완료됩니다.
+                    <span className="font-medium text-foreground">{user.email}</span> — {t.profile.deleteEmailSentBody}
                   </p>
                   <p className="text-xs text-muted-foreground text-center">
-                    • 30일 내 같은 이메일로 가입 시 복구 가능합니다.
+                    {t.profile.deleteRecoveryHint}
                   </p>
                 </div>
               )}
@@ -537,7 +551,7 @@ export default function ProfilePage() {
                 onClick={closeDeleteModal}
                 data-testid="cancel-delete-button"
               >
-                {deleteEmailSent ? "닫기" : "취소"}
+                {deleteEmailSent ? t.profile.deleteCloseModal : t.profile.deleteCancel}
               </Button>
             </div>
           </div>

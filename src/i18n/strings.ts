@@ -82,6 +82,55 @@ export interface Strings {
     cta: string;          // {requiredLevel}·{requiredSublevel} placeholder
     close: string;
   };
+  profile: {
+    title: string;
+    homeLink: string;
+    accountSection: string;
+    nicknameLabel: string;
+    nicknamePlaceholder: string;
+    nicknameChecking: string;
+    nicknameAvailable: string;
+    nicknameTaken: string;
+    nicknameSuggestions: string;
+    birthYearLabel: string;
+    nationalityLabel: string;
+    languageLabel: string;
+    marketingConsent: string;
+    dirtyHint: string;
+    saveButton: string;
+    saving: string;
+    saveSuccess: string;
+    saveFailed: string;
+    nicknameDuplicate: string;
+    nicknameDuplicateDesc: string;
+    solfegeSection: string;
+    solfegeKorean: string;
+    solfegeEnglish: string;
+    solfegeLatin: string;
+    solfegeApplied: string;
+    accountInfoSection: string;
+    accountInfoEmail: string;
+    accountInfoJoinedAt: string;
+    accountInfoSubscription: string;
+    accountInfoFree: string;
+    signOutButton: string;
+    deleteSection: string;
+    deleteDescription: string;
+    deleteButton: string;
+    deleteConfirmTitle: string;
+    deleteConfirmDesc: string;
+    deleteEmailSentTitle: string;
+    deleteReasonLabel: string;
+    deleteReasonNone: string;
+    deleteReasons: readonly string[];
+    deleteSendButton: string;
+    deleteSending: string;
+    deleteEmailSentBody: string;
+    deleteRecoveryHint: string;
+    deleteCancel: string;
+    deleteCloseModal: string;
+    deleteSendFailed: string;
+  };
   adPlaceholder: {
     premium: {
       title: string;
@@ -199,6 +248,55 @@ const ko: Strings = {
     description: "단계별 학습이 가장 효과적인 초견 훈련 방식입니다. 차근차근 진행하세요.",
     cta: "Lv {requiredLevel}-{requiredSublevel}로 이동 →",
     close: "닫기",
+  },
+  profile: {
+    title: "프로필 설정",
+    homeLink: "← 홈으로",
+    accountSection: "계정 설정",
+    nicknameLabel: "닉네임",
+    nicknamePlaceholder: "3~20자, 영문 소문자/숫자/밑줄",
+    nicknameChecking: "확인 중...",
+    nicknameAvailable: "✅ 사용 가능한 닉네임입니다",
+    nicknameTaken: "이미 사용 중인 닉네임입니다",
+    nicknameSuggestions: "추천:",
+    birthYearLabel: "생년월일 (선택)",
+    nationalityLabel: "국적",
+    languageLabel: "표시 언어",
+    marketingConsent: "마케팅 정보 수신 동의",
+    dirtyHint: "변경 사항이 있습니다. 저장 버튼을 눌러주세요.",
+    saveButton: "저장",
+    saving: "저장 중...",
+    saveSuccess: "저장되었습니다",
+    saveFailed: "저장 실패",
+    nicknameDuplicate: "이미 사용 중인 닉네임이에요",
+    nicknameDuplicateDesc: "다른 닉네임을 입력해주세요.",
+    solfegeSection: "계이름 표기 방식",
+    solfegeKorean: "한국어 계이름",
+    solfegeEnglish: "영어 음이름",
+    solfegeLatin: "라틴 계이름",
+    solfegeApplied: "이 설정은 즉시 적용됩니다.",
+    accountInfoSection: "계정 정보",
+    accountInfoEmail: "이메일",
+    accountInfoJoinedAt: "가입일",
+    accountInfoSubscription: "구독 상태",
+    accountInfoFree: "무료 플랜",
+    signOutButton: "로그아웃",
+    deleteSection: "회원 탈퇴",
+    deleteDescription: "탈퇴 후 30일 내 복구가 가능합니다. 이후에는 모든 데이터가 삭제됩니다.",
+    deleteButton: "회원 탈퇴",
+    deleteConfirmTitle: "정말 탈퇴하시겠어요?",
+    deleteConfirmDesc: "탈퇴 후 30일 내 복구 가능합니다.",
+    deleteEmailSentTitle: "탈퇴 확인 메일을 보냈습니다",
+    deleteReasonLabel: "탈퇴 사유 (선택)",
+    deleteReasonNone: "선택 안 함",
+    deleteReasons: ["사용 빈도 낮음", "서비스 불만", "개인정보 보호", "기타"],
+    deleteSendButton: "탈퇴 확인 메일 보내기",
+    deleteSending: "처리 중...",
+    deleteEmailSentBody: "에 도착한 메일에서\n\"탈퇴 확인\" 링크를 클릭하면 탈퇴가 완료됩니다.",
+    deleteRecoveryHint: "• 30일 내 같은 이메일로 가입 시 복구 가능합니다.",
+    deleteCancel: "취소",
+    deleteCloseModal: "닫기",
+    deleteSendFailed: "전송 실패",
   },
   adPlaceholder: {
     premium: {
@@ -325,6 +423,55 @@ const en: Strings = {
     description: "Sequential practice is the most effective way to build sight-reading skills. Take it step by step.",
     cta: "Go to Lv {requiredLevel}-{requiredSublevel} →",
     close: "Close",
+  },
+  profile: {
+    title: "Profile Settings",
+    homeLink: "← Home",
+    accountSection: "Account Settings",
+    nicknameLabel: "Nickname",
+    nicknamePlaceholder: "3–20 chars, lowercase letters/digits/underscore",
+    nicknameChecking: "Checking...",
+    nicknameAvailable: "✅ Nickname available",
+    nicknameTaken: "This nickname is already taken",
+    nicknameSuggestions: "Suggestions:",
+    birthYearLabel: "Date of Birth (Optional)",
+    nationalityLabel: "Nationality",
+    languageLabel: "Display Language",
+    marketingConsent: "I agree to receive marketing communications",
+    dirtyHint: "You have unsaved changes. Please click Save.",
+    saveButton: "Save",
+    saving: "Saving...",
+    saveSuccess: "Saved",
+    saveFailed: "Save failed",
+    nicknameDuplicate: "Nickname already in use",
+    nicknameDuplicateDesc: "Please enter a different nickname.",
+    solfegeSection: "Solfège Notation",
+    solfegeKorean: "Korean Solfège",
+    solfegeEnglish: "English Letter Names",
+    solfegeLatin: "Latin Solfège",
+    solfegeApplied: "This setting applies immediately.",
+    accountInfoSection: "Account Information",
+    accountInfoEmail: "Email",
+    accountInfoJoinedAt: "Joined",
+    accountInfoSubscription: "Subscription",
+    accountInfoFree: "Free plan",
+    signOutButton: "Sign Out",
+    deleteSection: "Delete Account",
+    deleteDescription: "You can recover your account within 30 days after deletion. After that, all data is permanently removed.",
+    deleteButton: "Delete Account",
+    deleteConfirmTitle: "Are you sure you want to delete?",
+    deleteConfirmDesc: "Recovery is available within 30 days.",
+    deleteEmailSentTitle: "Deletion confirmation email sent",
+    deleteReasonLabel: "Reason (optional)",
+    deleteReasonNone: "Not specified",
+    deleteReasons: ["Low usage", "Service dissatisfaction", "Privacy concerns", "Other"],
+    deleteSendButton: "Send deletion confirmation email",
+    deleteSending: "Sending...",
+    deleteEmailSentBody: "We sent an email — click the \"Confirm deletion\" link to complete.",
+    deleteRecoveryHint: "• You can recover the account by signing up with the same email within 30 days.",
+    deleteCancel: "Cancel",
+    deleteCloseModal: "Close",
+    deleteSendFailed: "Failed to send",
   },
   adPlaceholder: {
     premium: {
