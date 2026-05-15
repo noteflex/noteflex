@@ -6,11 +6,11 @@ keywords: ["interval recognition", "sight-reading neuroscience", "auditory corte
 slug: "neuroscience-of-interval-recognition"
 category: "Sight-Reading Lab"
 day: 12
-coverImage: "https://upload.wikimedia.org/wikipedia/commons/c/c7/Hermann_von_Helmholtz.jpg"
-coverImageAlt: "Portrait of Hermann von Helmholtz (c. 1894) — the physicist and physiologist who established the scientific foundations of acoustics and pitch perception"
-coverImageSource: "https://commons.wikimedia.org/wiki/File:Hermann_von_Helmholtz.jpg"
+coverImage: "https://images.metmuseum.org/CRDImages/ep/original/DP-687-001.jpg"
+coverImageAlt: "Caravaggio, «The Musicians» (1597) — four young musicians gathered with open scores, playing and singing together in a scene of real-time musical perception and processing"
+coverImageSource: "https://www.metmuseum.org/art/collection/search/435844"
 coverImageLicense: "Public Domain"
-coverImageCredit: "Unknown photographer; Wikimedia Commons"
+coverImageCredit: "Caravaggio (Michelangelo Merisi); The Metropolitan Museum of Art"
 ---
 
 From the moment the eye lands on a C on the staff to the moment the finger moves, the brain processes several stages in under 300 milliseconds. The faster that chain runs, the stronger the sight-reader. Neuroscience has started mapping exactly where those stages happen and how they get faster with practice.
@@ -23,8 +23,8 @@ Sound reaches the auditory cortex through the cochlea. The auditory cortex is or
 
 When a note is read from the page, the visual cortex identifies its position on the staff. But for that position to become a meaningful pitch — something the hand can act on — the auditory cortex, frontal lobe, and motor cortex must all coordinate. Music cognition researchers call this auditory imagery: the internal sounding-out of a note before any sound is actually produced. This step is where sight-reading speed is most directly shaped.
 
-![Portrait of Hermann von Helmholtz (c. 1894) — the physicist and physiologist who established the scientific foundations of acoustics and pitch perception](https://upload.wikimedia.org/wikipedia/commons/c/c7/Hermann_von_Helmholtz.jpg)
-*Figure 1: Hermann von Helmholtz (1821–1894). [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Hermann_von_Helmholtz.jpg) — Public Domain.*
+![Laurent de La Hyre, "Allegory of Music" (1649), oil on canvas — a Baroque allegorical composition representing music as a learned discipline through scores, instruments, and laurel](https://images.metmuseum.org/CRDImages/ep/original/DT1387.jpg)
+*Figure 1: Laurent de La Hyre, "Allegory of Music" (1649), oil on canvas. [The Metropolitan Museum of Art](https://www.metmuseum.org/art/collection/search/436836) — Public Domain*
 
 ## 💡 Interval Recognition Is a Learned Pattern
 
@@ -36,8 +36,8 @@ This matters beyond speed. When pitch patterns are recognized as units, cognitiv
 
 Repeated engagement with specific note patterns strengthens the neural connections involved in their recognition — neuroplasticity operating at the level of sight-reading. This is why brief daily practice sessions tend to produce faster gains than infrequent longer ones: each session triggers consolidation, and consistent spacing allows pathways to stabilize.
 
-![Medieval illustration of Guido d'Arezzo (c. 991–1050) — the music theorist who first systematized interval names through the solfège syllables](https://upload.wikimedia.org/wikipedia/commons/5/53/Guido_van_Arezzo.jpg)
-*Figure 2: Guido d'Arezzo (991–1050). [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Guido_van_Arezzo.jpg) — Public Domain.*
+![Bartholomeus van der Helst, "The Musician" (1662), oil on canvas — a portrait of a musician seated with sheet music, capturing the focused state of interval pattern recognition in performance](https://images.metmuseum.org/CRDImages/ep/original/DP-18251-001.jpg)
+*Figure 2: Bartholomeus van der Helst, "The Musician" (1662), oil on canvas. [The Metropolitan Museum of Art](https://www.metmuseum.org/art/collection/search/436642) — Public Domain*
 
 ## Applying the Research to Practice
 
@@ -52,5 +52,6 @@ The brain changes when patterns repeat. Which patterns those are, and how delibe
 1. Zatorre, R. J., & Salimpoor, V. N. (2013). From perception to pleasure: Music and its neural substrates. *Proceedings of the National Academy of Sciences*, 110(Suppl 2), 10430–10437. DOI: [10.1073/pnas.1301228110](https://doi.org/10.1073/pnas.1301228110)
 
 ### Image Sources
-- Figure 1: Hermann von Helmholtz (c. 1894). [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Hermann_von_Helmholtz.jpg) — Public Domain.
-- Figure 2: Guido d'Arezzo (medieval illustration). [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Guido_van_Arezzo.jpg) — Public Domain.
+- Cover: Caravaggio, "The Musicians" (1597), oil on canvas. [The Metropolitan Museum of Art](https://www.metmuseum.org/art/collection/search/435844) — Public Domain.
+- Figure 1: Laurent de La Hyre, "Allegory of Music" (1649), oil on canvas. [The Metropolitan Museum of Art](https://www.metmuseum.org/art/collection/search/436836) — Public Domain.
+- Figure 2: Bartholomeus van der Helst, "The Musician" (1662), oil on canvas. [The Metropolitan Museum of Art](https://www.metmuseum.org/art/collection/search/436642) — Public Domain.
