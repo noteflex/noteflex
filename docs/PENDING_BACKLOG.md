@@ -46,6 +46,16 @@
 - [ ] **자체 GPC 감지 코드** — Termly 해지 시 박음 (~30분)
 - [ ] **EU/UK Representative 임명 검토** — 월 €50~200
 
+- [ ] **react-helmet-async 동적 SEO 메타 도입** (옵션 A)
+  - 라우트별 canonical·title·description·OG 태그 동적 설정
+  - BlogPost: canonical = 현재 URL, og:type='article', og:image = coverImage
+  - hreflang 태그로 ko/en 버전 연결
+  - 보호 라우트 (/dashboard, /admin/*) = noindex
+  - 배경: index.html 정적 canonical이 모든 페이지에서 홈(/)을 가리켜 Google이 블로그 글을 홈의 중복으로 판단 → 색인 0건 → 임시방편으로 canonical 제거 (2026-05-15)
+  - 도구: Claude Opus 4.7 추천 (테스트 회귀 영향 + 라우트 전수 적용)
+  - 작업량: ~2h
+  - 의존성: 출시 안정화 후
+
 ### 출시 후 6~8주
 
 - [ ] **Family Plan / 부모 계정 + 자녀 프로필**
