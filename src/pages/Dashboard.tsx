@@ -17,16 +17,9 @@ import { useUserStats } from "@/hooks/useUserStats";
 import { useMyStats } from "@/hooks/useMyStats";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import MasteryHeroCard, { MasteryHeroCardSkeleton } from "@/components/dashboard/MasteryHeroCard";
 import { WeakSlowNotesCards } from "@/components/dashboard/WeakSlowNotesCards";
 import { useLevelProgress } from "@/hooks/useLevelProgress";
 import { getUserTier } from "@/lib/subscriptionTier";
-import {
-  canAccessSublevel,
-  getProgressGatePrev,
-  type Sublevel,
-} from "@/lib/levelSystem";
-import { computeMasteryScore } from "@/components/MasteryScoreCard";
 
 /* ---------- 공용 helpers ---------- */
 
@@ -404,37 +397,7 @@ export default function Dashboard() {
     setSearchParams(next, { replace: true });
   };
 
-  const { progress: levelProgress, getProgressFor, loading: progressLoading } = useLevelProgress();
-
-  // 현재 진행 단계 + 마스터리 점수 계산
-  const currentMastery = useMemo(() => {
-    for (let lv = 1; lv <= 7; lv++) {
-      for (const sub of [1, 2, 3] as Sublevel[]) {
-        if (!canAccessSublevel(tier, lv, sub)) continue;
-        const prev = getProgressGatePrev(tier, lv, sub);
-        const isPrevPassed =
-          prev === null
-            ? true
-            : (getProgressFor(prev.level, prev.sublevel)?.passed ?? false);
-        if (!isPrevPassed && !isAdmin) continue;
-        const prog = getProgressFor(lv, sub);
-        if (!prog?.passed) {
-          return {
-            level: lv,
-            sublevel: sub,
-            progress: prog ?? null,
-            score: computeMasteryScore(prog ?? null),
-            accuracy: prog && prog.total_attempts > 0 ? prog.total_correct / prog.total_attempts : undefined,
-            avgReactionRatio: prog?.avg_reaction_ratio ?? undefined,
-            playCount: prog?.play_count ?? undefined,
-            bestStreak: prog?.best_streak ?? undefined,
-          };
-        }
-      }
-    }
-    return null;
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tier, isAdmin, levelProgress, getProgressFor]);
+  const { progress: levelProgress } = useLevelProgress();
 
   // 실제 "마지막 연습 활동" 시각 계산
   const realLastActivity = useMemo(() => {
@@ -525,14 +488,49 @@ export default function Dashboard() {
   const accSubtext = todayAcc != null && lastAcc != null
     ? formatDelta(todayAcc - lastAcc, "%p")
     : todayAcc != null
-      ? t.dashboard.noLastSessionYet
-      : t.dashboard.noLastSessionYet;
+      ? t.dashboard.noLastSessionYet   // 오늘 연습 있음, 비교 기준 없음
+      : t.dashboard.kpiNoDataToday;    // 상태 2: 오늘 연습 없음
   const speedSubtext = todaySpeed != null && lastSpeed != null
     ? formatDelta(+(todaySpeed - lastSpeed).toFixed(2), "s", /* invert */ true)
-    : t.dashboard.noLastSessionYet;
+    : todaySpeed != null
+      ? t.dashboard.noLastSessionYet
+      : t.dashboard.kpiNoDataToday;
   const xpSubtext = lastXp != null && todayXp > 0
     ? formatDelta(todayXp - lastXp, " XP")
-    : t.dashboard.noLastSessionYet;
+    : !practicedToday
+      ? t.dashboard.kpiNotYet          // 상태 2: 아직 시작 전
+      : t.dashboard.noLastSessionYet;
+
+  // 마지막 활동 데이터 — user_sessions 없으면 dailyStats30d fallback (reviewer RLS 대비)
+  const lastActivityData = useMemo(() => {
+    if (lastSessionNotToday) {
+      return {
+        startedAt: lastSessionNotToday.started_at,
+        accuracy: lastSessionNotToday.accuracy,
+        avgReactionMs: lastSessionNotToday.avg_reaction_ms,
+        xpEarned: lastSessionNotToday.xp_earned,
+      };
+    }
+    if (!practicedToday && stats.lastPracticeDate) {
+      const daily = myStats.dailyStats30d.find(
+        (d) => d.stat_date === stats.lastPracticeDate,
+      );
+      if (daily) {
+        const acc =
+          daily.avg_accuracy ??
+          (daily.total_notes > 0
+            ? daily.correct_notes / daily.total_notes
+            : null);
+        return {
+          startedAt: `${daily.stat_date}T12:00:00`,
+          accuracy: acc,
+          avgReactionMs: daily.avg_reaction_ms,
+          xpEarned: daily.xp_earned,
+        };
+      }
+    }
+    return null;
+  }, [lastSessionNotToday, practicedToday, stats.lastPracticeDate, myStats.dailyStats30d]);
 
   const homeNav = (
     <nav className="flex items-center gap-2">
@@ -609,7 +607,7 @@ export default function Dashboard() {
                     ? t.dashboard.streakTodayDone
                     : stats.currentStreak > 0
                       ? t.dashboard.streakTodayContinues
-                      : t.dashboard.streakTodayFirst
+                      : t.dashboard.streakStartFresh   // 상태 2 스트릭 끊김
                 }
                 accentClass="text-orange-500"
               />
@@ -638,31 +636,15 @@ export default function Dashboard() {
               />
             </section>
 
-            {/* 상태 2: 마지막 활동 카드 (오늘 X + 이전 세션 있음) */}
-            {!practicedToday && lastSessionNotToday && (
+            {/* 상태 2: 마지막 활동 카드 (오늘 X + 이전 활동 있음) */}
+            {!practicedToday && lastActivityData && (
               <LastActivityCard
-                startedAt={lastSessionNotToday.started_at}
-                accuracy={lastSessionNotToday.accuracy}
-                avgReactionMs={lastSessionNotToday.avg_reaction_ms}
-                xpEarned={lastSessionNotToday.xp_earned}
+                startedAt={lastActivityData.startedAt}
+                accuracy={lastActivityData.accuracy}
+                avgReactionMs={lastActivityData.avgReactionMs}
+                xpEarned={lastActivityData.xpEarned}
               />
             )}
-
-            {/* 마스터리 히어로 카드 — 로딩 중 Skeleton 박음 */}
-            {progressLoading && !currentMastery ? (
-              <MasteryHeroCardSkeleton />
-            ) : currentMastery ? (
-              <MasteryHeroCard
-                tier={isAdmin ? "admin" : tier}
-                bestScore={currentMastery.score}
-                level={currentMastery.level}
-                sublevel={currentMastery.sublevel}
-                accuracy={currentMastery.accuracy}
-                avgReactionRatio={currentMastery.avgReactionRatio}
-                playCount={currentMastery.playCount}
-                bestStreak={currentMastery.bestStreak}
-              />
-            ) : null}
 
             {/* 약점·느린 음표 Top 5 — 누적 데이터 (옥타브 + 색상) */}
             <WeakSlowNotesCards />

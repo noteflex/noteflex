@@ -336,6 +336,10 @@ export interface Strings {
     daysAgo: string;                // "{n}일 전" / "{n} days ago"
     yesterday: string;
     today: string;
+    /** 상태 2 KPI — 비활성 서브텍스트 */
+    streakStartFresh: string;   // "오늘 다시 시작해보세요"
+    kpiNoDataToday: string;     // "오늘 데이터 없음"
+    kpiNotYet: string;           // "아직 시작 전"
 
     /** AI 분석 보고서 영역 (신규 미니멀 버전) */
     aiFeedbackSubtitleActive: string;   // "연주를 검토하고 다음 목표를 제안해드려요"
@@ -678,6 +682,9 @@ const ko: Strings = {
     daysAgo: "{n}일 전",
     yesterday: "어제",
     today: "오늘",
+    streakStartFresh: "오늘 다시 시작해보세요",
+    kpiNoDataToday: "오늘 데이터 없음",
+    kpiNotYet: "아직 시작 전",
 
     aiFeedbackSubtitleActive: "연주를 검토하고 다음 목표를 제안해드려요",
     aiFeedbackSubtitleNew: "연습을 시작하면 AI가 분석해드려요",
@@ -1019,6 +1026,9 @@ const en: Strings = {
     daysAgo: "{n} days ago",
     yesterday: "Yesterday",
     today: "Today",
+    streakStartFresh: "Start fresh today",
+    kpiNoDataToday: "No data today",
+    kpiNotYet: "Not yet started",
 
     aiFeedbackSubtitleActive: "AI reviews your playing and suggests next goals",
     aiFeedbackSubtitleNew: "Practice and AI will analyze your patterns",
