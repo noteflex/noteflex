@@ -442,13 +442,13 @@ export default function Dashboard() {
   };
 
   const isAdmin = profile?.role === "admin";
-  const isReviewer = profile?.role === "reviewer";
   const tier = getUserTier(user ?? null, profile ?? null);
-  // AI 분석 보고서 영역 권한: admin·reviewer·premium → 풀 노출. 그 외 → blur + CTA.
+  // AI 분석 보고서 영역 권한: admin·premium → 풀 노출. 그 외 (reviewer 포함) → blur + CTA.
+  // reviewer = Free tier 동등 잠금 박음 (Paddle 심사관 결제 흐름 검증 영역).
   const aiReportTier: "guest" | "free" | "premium" | "admin" =
     isAdmin
       ? "admin"
-      : isReviewer || tier === "pro"
+      : tier === "pro"
         ? "premium"
         : !user
           ? "guest"
