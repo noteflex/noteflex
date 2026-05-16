@@ -238,15 +238,16 @@ public.apply_payment_topup(
 
 ## 2. Phase 3 작업 영역 우선순위 영역
 
-| 우선순위 | # | 영역 | 작업 영역 |
-|---|---|---|---|
-| 🔴 1 | 1.1 | 마이그 정의 영역 없는 8개 테이블 + 1개 RPC | Dashboard schema 영역 추출 + 재현 마이그 영역 박음 |
-| 🔴 2 | 1.3 | 누락 RLS 정책 영역 (`device_change_events.UPDATE` 영역 + 마이그 없는 영역 8개 테이블) | RLS completeness 마이그 |
-| 🟡 3 | 1.2 | 중복 정의 함수 6개 (특히 `hard_delete_account`) | Production 영역 영역 확인 + 정리 영역 박음 |
-| 🟡 4 | 1.6 | `apply_payment_topup` 시그니처 정정 영역 | 03_SQL_FUNCTIONS.md 정정 |
-| 🟢 5 | 1.4 | 컬럼 출처 영역 정정 영역 (profiles + note_mastery 영역) | 01_SCHEMA.md 정정 |
-| 🟢 6 | 1.7 | 누락 INSERT/UPDATE 위치 영역 (user_streaks, subscriptions) | 01_SCHEMA.md §17·18 영역 박음 |
-| 🟢 7 | 1.8 | 죽은 코드 영역 정리 영역 | 출시 영역 후 영역 박음 |
+| 우선순위 | # | 영역 | 작업 영역 | 상태 |
+|---|---|---|---|---|
+| 🔴 1 | 1.1 | 마이그 정의 영역 없는 8개 테이블 + 1개 RPC + `handle_session_complete` + `on_session_complete` | Dashboard schema 영역 추출 + 재현 마이그 영역 박음 | 🟡 **Step 1 골격 박힘 영역 (2026-05-18) — Step 1-1 결과 박은 영역 박음 완성 영역** |
+| 🔴 2 | 1.3 | 누락 RLS 정책 영역 (`device_change_events.UPDATE`) | UPDATE 정책 영역 박음 | ✅ **2026-05-18 박힘 영역** (`20260518_device_change_events_update_policy.sql`) |
+| 🔴 2b | 1.3 | 마이그 없는 영역 8개 테이블 영역 RLS 정책 | §1.1 영역 합침 영역 | 🟡 §1.1 영역 박힘 영역 박음 영역 |
+| 🟡 3 | 1.2 | 중복 정의 함수 6개 (특히 `hard_delete_account`) | Production 영역 영역 확인 + 정리 영역 박음 | ⏸ **Phase 3 Step 4** |
+| 🟡 4 | 1.6 | `apply_payment_topup` 시그니처 정정 영역 | 03_SQL_FUNCTIONS.md 정정 | ⏸ |
+| 🟢 5 | 1.4 | 컬럼 출처 영역 정정 영역 (profiles + note_mastery 영역) | Step 1-1 영역 박은 영역 영역 영역 정정 영역 | 🟡 **Step 1-1 영역 영역 박음** |
+| 🟢 6 | 1.7 | 누락 INSERT/UPDATE 위치 영역 (user_streaks, subscriptions) | 01_SCHEMA.md §17·18 영역 박음 | ⏸ |
+| 🟢 7 | 1.8 | 죽은 코드 영역 정리 영역 — `record_sublevel_attempt` 6개 인자 영역 | DROP 박음 | ✅ **2026-05-18 박힘 영역** (`20260518_phase3_consolidation.sql` §13) |
 
 ---
 
