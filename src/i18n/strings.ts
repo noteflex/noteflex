@@ -158,6 +158,30 @@ export interface Strings {
     /** "{hours}h {minutes}m" placeholder 박힘 */
     countdown: string;
   };
+  gameDialogs: {
+    // GameOverDialog
+    gameOverTitle: string;       // "😵 게임 오버 — {label}"
+    gameOverDesc: string;
+    statAttempts: string;
+    statAccuracy: string;
+    statBestStreak: string;
+    backToPrevious: string;      // "이전 단계로 ({label})"
+    retrySameLevel: string;
+    // SublevelPassedDialog — fast track
+    fastTrackBadge: string;
+    fastTrackAutoAdvance: string; // "{n}초 후 자동 진입" / "Auto-advance in {n}s"
+    fastTrackGoNow: string;
+    fastTrackLevelSelect: string;
+    // SublevelPassedDialog — normal pass
+    passedTitle: string;         // "🎉 {label} 통과!"
+    clearTitle: string;          // "✅ {label} 클리어"
+    passedDescNext: string;      // "축하해요! {nextLabel}이(가) 해제됐어요." / "..."
+    passedDescLast: string;      // "🏆 마지막 단계까지 통과했어요. 진짜 그랜드마스터!"
+    clearDesc: string;           // "이번 판도 깔끔하게 클리어. 더 도전해볼래요?"
+    backToSelect: string;        // "단계 선택으로"
+    replaySameLevel: string;     // "같은 단계 한 번 더"
+    nextLevelButton: string;     // "{nextLabel}로 →" / "{nextLabel} →"
+  };
   dashboard: {
     backToHome: string;
     libraryPreviewTitle: string;
@@ -416,6 +440,27 @@ const ko: Strings = {
     },
     countdown: "내일 reset까지: {hours}h {minutes}m",
   },
+  gameDialogs: {
+    gameOverTitle: "😵 게임 오버 — {label}",
+    gameOverDesc: "목숨이 다했어요. 다시 도전하거나 이전 단계로 돌아가서 연습할 수 있어요.",
+    statAttempts: "시도",
+    statAccuracy: "정답률",
+    statBestStreak: "최고 연속",
+    backToPrevious: "이전 단계로 ({label})",
+    retrySameLevel: "같은 단계 다시 도전",
+    fastTrackBadge: "🚀 패스트트랙",
+    fastTrackAutoAdvance: "{n}초 후 자동 진입",
+    fastTrackGoNow: "지금 바로 다음 단계",
+    fastTrackLevelSelect: "레벨 선택",
+    passedTitle: "🎉 {label} 통과!",
+    clearTitle: "✅ {label} 클리어",
+    passedDescNext: "축하해요! {nextLabel}이(가) 해제됐어요.",
+    passedDescLast: "🏆 마지막 단계까지 통과했어요. 진짜 그랜드마스터!",
+    clearDesc: "이번 판도 깔끔하게 클리어. 더 도전해볼래요?",
+    backToSelect: "단계 선택으로",
+    replaySameLevel: "같은 단계 한 번 더",
+    nextLevelButton: "{nextLabel}로 →",
+  },
   dashboard: {
     backToHome: "메인",
     libraryPreviewTitle: "📚 내 악보 (관리자 프리뷰)",
@@ -664,6 +709,27 @@ const en: Strings = {
       close: "Try tomorrow",
     },
     countdown: "Resets in: {hours}h {minutes}m",
+  },
+  gameDialogs: {
+    gameOverTitle: "😵 Game Over — {label}",
+    gameOverDesc: "You ran out of lives. Try again or go back to a previous stage to practice.",
+    statAttempts: "Attempts",
+    statAccuracy: "Accuracy",
+    statBestStreak: "Best streak",
+    backToPrevious: "Back to {label}",
+    retrySameLevel: "Retry this stage",
+    fastTrackBadge: "🚀 Fast Track",
+    fastTrackAutoAdvance: "Auto-advance in {n}s",
+    fastTrackGoNow: "Next stage now",
+    fastTrackLevelSelect: "Level select",
+    passedTitle: "🎉 {label} cleared!",
+    clearTitle: "✅ {label} clear",
+    passedDescNext: "Nice work! {nextLabel} is now unlocked.",
+    passedDescLast: "🏆 You completed the final stage. A true grandmaster!",
+    clearDesc: "Clean clear again. Ready for another challenge?",
+    backToSelect: "Back to level select",
+    replaySameLevel: "Play this stage again",
+    nextLevelButton: "{nextLabel} →",
   },
   dashboard: {
     backToHome: "Home",

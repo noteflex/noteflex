@@ -20,8 +20,8 @@ describe("GameOverDialog", () => {
 
   it("게임오버 제목 + 단계 라벨 표시", () => {
     render(<GameOverDialog {...baseProps} />);
-    expect(screen.getByText(/게임 오버/)).toBeInTheDocument();
-    // 제목 안에 "Lv 2-2" 포함
+    // EN default lang — useT() fallback
+    expect(screen.getByText(/Game Over/)).toBeInTheDocument();
     expect(screen.getByRole("heading")).toHaveTextContent("Lv 2-2");
   });
 
@@ -36,8 +36,8 @@ describe("GameOverDialog", () => {
     render(
       <GameOverDialog {...baseProps} onGoToPreviousSublevel={onGoToPreviousSublevel} />
     );
-    // 버튼만 정확히 잡기 (description의 "이전 단계로 돌아가서..." 와 충돌 회피)
-    const button = screen.getByRole("button", { name: /이전 단계로/ });
+    // EN: "Back to {label}"
+    const button = screen.getByRole("button", { name: /Back to/ });
     await user.click(button);
     expect(onGoToPreviousSublevel).toHaveBeenCalledOnce();
   });
@@ -46,15 +46,14 @@ describe("GameOverDialog", () => {
     const user = userEvent.setup();
     const onReplay = vi.fn();
     render(<GameOverDialog {...baseProps} onReplay={onReplay} />);
-    await user.click(screen.getByRole("button", { name: /같은 단계 다시 도전/ }));
+    await user.click(screen.getByRole("button", { name: /Retry this stage/ }));
     expect(onReplay).toHaveBeenCalledOnce();
   });
 
   it("Lv 1-1에서는 이전 단계 버튼 안 보임", () => {
     render(<GameOverDialog {...baseProps} level={1} sublevel={1} />);
-    // 버튼 role로만 확인 (description의 "이전 단계로 돌아가서..." 텍스트는 항상 있음)
     expect(
-      screen.queryByRole("button", { name: /이전 단계로/ })
+      screen.queryByRole("button", { name: /Back to/ })
     ).not.toBeInTheDocument();
   });
 

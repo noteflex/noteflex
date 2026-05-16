@@ -9,7 +9,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { formatSublevel, getPreviousSublevel } from "@/lib/levelSystem";
 import { generateCoachingComment } from "@/lib/aiCoaching";
-import { useLang } from "@/contexts/LanguageContext";
+import { useLang, useT } from "@/contexts/LanguageContext";
+import { format as formatI18n } from "@/i18n/strings";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLevelProgress } from "@/hooks/useLevelProgress";
 
@@ -41,6 +42,7 @@ export function GameOverDialog({
   onClose,
 }: GameOverDialogProps) {
   const { lang } = useLang();
+  const t = useT();
   const { user } = useAuth();
   const { getProgressFor } = useLevelProgress();
   const accuracy = totalAttempts > 0
@@ -85,24 +87,24 @@ export function GameOverDialog({
       >
         <DialogHeader>
           <DialogTitle className="text-xl">
-            😵 게임 오버 — {currentLabel}
+            {formatI18n(t.gameDialogs.gameOverTitle, { label: currentLabel })}
           </DialogTitle>
           <DialogDescription className="pt-2">
-            목숨이 다했어요. 다시 도전하거나 이전 단계로 돌아가서 연습할 수 있어요.
+            {t.gameDialogs.gameOverDesc}
           </DialogDescription>
         </DialogHeader>
 
         <div className="my-4 grid grid-cols-3 gap-2 rounded-lg bg-muted p-3 text-center text-sm">
           <div>
-            <div className="text-xs text-muted-foreground">시도</div>
+            <div className="text-xs text-muted-foreground">{t.gameDialogs.statAttempts}</div>
             <div className="font-semibold">{totalAttempts}</div>
           </div>
           <div>
-            <div className="text-xs text-muted-foreground">정답률</div>
+            <div className="text-xs text-muted-foreground">{t.gameDialogs.statAccuracy}</div>
             <div className="font-semibold">{accuracy}%</div>
           </div>
           <div>
-            <div className="text-xs text-muted-foreground">최고 연속</div>
+            <div className="text-xs text-muted-foreground">{t.gameDialogs.statBestStreak}</div>
             <div className="font-semibold">{bestStreak}</div>
           </div>
         </div>
@@ -115,17 +117,17 @@ export function GameOverDialog({
         </p>
 
         <DialogFooter className="flex flex-col gap-2 sm:flex-row sm:justify-between">
-          {hasPrevious && (
+          {hasPrevious && prevLabel && (
             <Button
               variant="outline"
               onClick={onGoToPreviousSublevel}
               className="w-full sm:w-auto"
             >
-              이전 단계로 ({prevLabel})
+              {formatI18n(t.gameDialogs.backToPrevious, { label: prevLabel })}
             </Button>
           )}
           <Button onClick={onReplay} className="w-full sm:w-auto">
-            같은 단계 다시 도전
+            {t.gameDialogs.retrySameLevel}
           </Button>
         </DialogFooter>
       </DialogContent>

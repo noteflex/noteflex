@@ -10,7 +10,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { formatSublevel, getNextSublevel } from "@/lib/levelSystem";
 import { generateCoachingComment } from "@/lib/aiCoaching";
-import { useLang } from "@/contexts/LanguageContext";
+import { useLang, useT } from "@/contexts/LanguageContext";
+import { format as formatI18n } from "@/i18n/strings";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLevelProgress } from "@/hooks/useLevelProgress";
 
@@ -48,6 +49,7 @@ export function SublevelPassedDialog({
   onClose,
 }: SublevelPassedDialogProps) {
   const { lang } = useLang();
+  const t = useT();
   const { user } = useAuth();
   const { getProgressFor } = useLevelProgress();
   const [countdown, setCountdown] = useState(AUTO_ADVANCE_SECONDS);
@@ -107,12 +109,10 @@ export function SublevelPassedDialog({
 
   // ── 패스트트랙 분기 ──────────────────────────────────────────
   if (fastTrack) {
-    const badge = lang === "ko" ? "🚀 패스트트랙" : "🚀 Fast Track";
-    const autoLabel = lang === "ko"
-      ? `${countdown}초 후 자동 진입`
-      : `Auto-advance in ${countdown}s`;
-    const goNowLabel = lang === "ko" ? "지금 바로 다음 단계" : "Next stage now";
-    const selectLabel = lang === "ko" ? "레벨 선택" : "Level select";
+    const badge = t.gameDialogs.fastTrackBadge;
+    const autoLabel = formatI18n(t.gameDialogs.fastTrackAutoAdvance, { n: String(countdown) });
+    const goNowLabel = t.gameDialogs.fastTrackGoNow;
+    const selectLabel = t.gameDialogs.fastTrackLevelSelect;
 
     return (
       <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
@@ -175,13 +175,13 @@ export function SublevelPassedDialog({
 
   // ── 일반 통과 분기 (Group C 영역 무손상) ────────────────────────
   const title = justPassed
-    ? `🎉 ${currentLabel} 통과!`
-    : `✅ ${currentLabel} 클리어`;
+    ? formatI18n(t.gameDialogs.passedTitle, { label: currentLabel })
+    : formatI18n(t.gameDialogs.clearTitle, { label: currentLabel });
   const description = justPassed
-    ? hasNext
-      ? `축하해요! ${nextLabel}이(가) 해제됐어요.`
-      : "🏆 마지막 단계까지 통과했어요. 진짜 그랜드마스터!"
-    : "이번 판도 깔끔하게 클리어. 더 도전해볼래요?";
+    ? hasNext && nextLabel
+      ? formatI18n(t.gameDialogs.passedDescNext, { nextLabel })
+      : t.gameDialogs.passedDescLast
+    : t.gameDialogs.clearDesc;
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
@@ -197,17 +197,17 @@ export function SublevelPassedDialog({
 
         <div className="my-4 grid grid-cols-3 gap-2 rounded-lg bg-emerald-50 p-3 text-center text-sm dark:bg-emerald-950/30">
           <div>
-            <div className="text-xs text-muted-foreground">시도</div>
+            <div className="text-xs text-muted-foreground">{t.gameDialogs.statAttempts}</div>
             <div className="font-semibold">{totalAttempts}</div>
           </div>
           <div>
-            <div className="text-xs text-muted-foreground">정답률</div>
+            <div className="text-xs text-muted-foreground">{t.gameDialogs.statAccuracy}</div>
             <div className="font-semibold text-emerald-600 dark:text-emerald-400">
               {accuracy}%
             </div>
           </div>
           <div>
-            <div className="text-xs text-muted-foreground">최고 연속</div>
+            <div className="text-xs text-muted-foreground">{t.gameDialogs.statBestStreak}</div>
             <div className="font-semibold text-emerald-600 dark:text-emerald-400">
               {bestStreak}
             </div>
@@ -227,7 +227,7 @@ export function SublevelPassedDialog({
             onClick={onBackToSelect}
             className="w-full sm:w-auto"
           >
-            단계 선택으로
+            {t.gameDialogs.backToSelect}
           </Button>
           <div className="flex flex-col gap-2 sm:flex-row">
             <Button
@@ -235,11 +235,11 @@ export function SublevelPassedDialog({
               onClick={onReplay}
               className="w-full sm:w-auto"
             >
-              같은 단계 한 번 더
+              {t.gameDialogs.replaySameLevel}
             </Button>
-            {hasNext && justPassed && (
+            {hasNext && justPassed && nextLabel && (
               <Button onClick={onGoToNextSublevel} className="w-full sm:w-auto">
-                {nextLabel}로 →
+                {formatI18n(t.gameDialogs.nextLevelButton, { nextLabel })}
               </Button>
             )}
           </div>

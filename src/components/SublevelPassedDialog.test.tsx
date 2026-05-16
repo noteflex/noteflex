@@ -20,14 +20,15 @@ describe("SublevelPassedDialog", () => {
 
   it("just_passed=true: 통과 축하 메시지 표시", () => {
     render(<SublevelPassedDialog {...baseProps} />);
-    expect(screen.getByText(/Lv 2-1 통과/)).toBeInTheDocument();
-    expect(screen.getByText(/Lv 2-2.*해제/)).toBeInTheDocument();
+    // EN default lang — useT() fallback
+    expect(screen.getByText(/Lv 2-1 cleared/)).toBeInTheDocument();
+    expect(screen.getByText(/Lv 2-2.*unlocked/)).toBeInTheDocument();
   });
 
   it("just_passed=false: 클리어 메시지 (이미 통과한 단계 재플레이)", () => {
     render(<SublevelPassedDialog {...baseProps} justPassed={false} />);
-    expect(screen.getByText(/Lv 2-1 클리어/)).toBeInTheDocument();
-    expect(screen.queryByText(/해제/)).not.toBeInTheDocument();
+    expect(screen.getByText(/Lv 2-1 clear/)).toBeInTheDocument();
+    expect(screen.queryByText(/unlocked/)).not.toBeInTheDocument();
   });
 
   it("정답률 계산 정확 (27/30 = 90%)", () => {
@@ -37,15 +38,16 @@ describe("SublevelPassedDialog", () => {
 
   it("다음 단계 버튼은 just_passed=true에서만 보임", () => {
     const { rerender } = render(<SublevelPassedDialog {...baseProps} />);
-    expect(screen.getByText(/Lv 2-2로/)).toBeInTheDocument();
+    // EN: "{nextLabel} →"
+    expect(screen.getByRole("button", { name: /Lv 2-2/ })).toBeInTheDocument();
 
     rerender(<SublevelPassedDialog {...baseProps} justPassed={false} />);
-    expect(screen.queryByText(/Lv 2-2로/)).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Lv 2-2/ })).not.toBeInTheDocument();
   });
 
   it("Lv 7-3 통과 시 그랜드마스터 메시지", () => {
     render(<SublevelPassedDialog {...baseProps} level={7} sublevel={3} />);
-    expect(screen.getByText(/그랜드마스터/)).toBeInTheDocument();
+    expect(screen.getByText(/grandmaster/)).toBeInTheDocument();
   });
 
   it("Lv 7-3에서 다음 단계 버튼 안 보임", () => {
@@ -59,7 +61,7 @@ describe("SublevelPassedDialog", () => {
     render(
       <SublevelPassedDialog {...baseProps} onBackToSelect={onBackToSelect} />
     );
-    await user.click(screen.getByText(/단계 선택으로/));
+    await user.click(screen.getByText(/Back to level select/));
     expect(onBackToSelect).toHaveBeenCalledOnce();
   });
 
@@ -67,7 +69,7 @@ describe("SublevelPassedDialog", () => {
     const user = userEvent.setup();
     const onReplay = vi.fn();
     render(<SublevelPassedDialog {...baseProps} onReplay={onReplay} />);
-    await user.click(screen.getByText(/같은 단계 한 번 더/));
+    await user.click(screen.getByText(/Play this stage again/));
     expect(onReplay).toHaveBeenCalledOnce();
   });
 
@@ -77,7 +79,7 @@ describe("SublevelPassedDialog", () => {
     render(
       <SublevelPassedDialog {...baseProps} onGoToNextSublevel={onGoToNextSublevel} />
     );
-    await user.click(screen.getByText(/Lv 2-2로/));
+    await user.click(screen.getByRole("button", { name: /Lv 2-2/ }));
     expect(onGoToNextSublevel).toHaveBeenCalledOnce();
   });
 });
