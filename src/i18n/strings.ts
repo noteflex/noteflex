@@ -180,6 +180,7 @@ export interface Strings {
     chartNoData: string;
     chartAvgLabel: string;
     chartMaxLabel: string;
+    chartMinLabel: string;
     chartLatestLabel: string;
     secondsSuffix: string;
     // Batch analysis (formal)
@@ -512,6 +513,7 @@ const ko: Strings = {
     chartNoData: "아직 데이터가 없어요",
     chartAvgLabel: "평균",
     chartMaxLabel: "최고",
+    chartMinLabel: "최단",
     chartLatestLabel: "최근",
     secondsSuffix: "초",
     batchTitle: "🔬 공식 학습 분석",
@@ -830,6 +832,7 @@ const en: Strings = {
     chartNoData: "No data yet",
     chartAvgLabel: "Avg",
     chartMaxLabel: "Max",
+    chartMinLabel: "Best",
     chartLatestLabel: "Latest",
     secondsSuffix: "s",
     batchTitle: "🔬 Formal Learning Analysis",

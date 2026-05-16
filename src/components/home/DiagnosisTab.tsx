@@ -135,21 +135,6 @@ export default function DiagnosisTab() {
       }));
   })();
 
-  const responseLinePoints = (() => {
-    if (dailyAvgResponse.length === 0) return "";
-    const width = 260;
-    const height = 80;
-    const minY = 0;
-    const maxY = Math.max(...dailyAvgResponse.map((d) => d.avgTime), 1);
-    return dailyAvgResponse
-      .map((d, i) => {
-        const x = dailyAvgResponse.length === 1 ? width / 2 : (i / (dailyAvgResponse.length - 1)) * width;
-        const y = height - ((d.avgTime - minY) / (maxY - minY || 1)) * height;
-        return `${x},${y}`;
-      })
-      .join(" ");
-  })();
-
   const mostVulnerable = weakest.length > 0 ? weakest[0] : null;
 
   if (loading) {
@@ -173,22 +158,59 @@ export default function DiagnosisTab() {
     );
   }
 
-  // ── 차트 X축 고정 영역 (작업 3) ──────────────────────────────
-  // 기간 영역만큼 X축 슬롯 박음 (7d=7, 30d=30, all=실제 데이터 길이 max 30).
-  // 데이터 박힌 날만 표시, 빈 날은 X축에만 박힘.
+  // ── 차트 X축 고정 영역 ──────────────────────────────
+  // 기간 영역만큼 X축 슬롯 박음 (7d=7, 30d=30).
+  // 데이터 박힌 날만 막대 박힘, 빈 날도 X축 라벨 박힘 (시간 흐름 인지).
   const slotCount = period === "7d" ? 7 : period === "30d" ? 30 : Math.max(dailyAccuracy.length, 7);
 
-  // 핵심 숫자 강조 (작업 3) — 평균·최고·최근
-  const accAvg = dailyAccuracy.length > 0
-    ? Math.round(dailyAccuracy.reduce((a, b) => a + b.accuracy, 0) / dailyAccuracy.length)
-    : 0;
+  // X축 날짜 라벨 슬롯 박음 — 오늘부터 거꾸로 (왼쪽 = 오래된, 오른쪽 = 오늘)
+  const slotDates: { day: string; isoDay: string }[] = (() => {
+    const out: { day: string; isoDay: string }[] = [];
+    const today = new Date();
+    for (let i = slotCount - 1; i >= 0; i--) {
+      const d = new Date(today);
+      d.setDate(today.getDate() - i);
+      const iso = d.toISOString().slice(0, 10);
+      out.push({ day: iso.slice(5), isoDay: iso });
+    }
+    return out;
+  })();
+
+  // fullDailyMap: filteredLogs 영역에서 매일 가중 정확도·반응 시간 박음 (isoDay 키)
+  const fullDailyMap = new Map<string, { correct: number; total: number; responseSum: number; responseCount: number }>();
+  for (const log of filteredLogs) {
+    const day = log.created_at.slice(0, 10);
+    const e = fullDailyMap.get(day) ?? { correct: 0, total: 0, responseSum: 0, responseCount: 0 };
+    e.total++;
+    if (log.is_correct) e.correct++;
+    if (log.response_time != null) {
+      e.responseSum += log.response_time;
+      e.responseCount++;
+    }
+    fullDailyMap.set(day, e);
+  }
+  const dailyAccByIso = new Map<string, number>();
+  for (const [day, v] of fullDailyMap) {
+    dailyAccByIso.set(day, v.total > 0 ? Math.round((v.correct / v.total) * 100) : 0);
+  }
+
+  // 핵심 숫자 — 정확도
+  // - Latest: 오늘 데이터 박힌 영역 정답률 (없으면 가장 최근 데이터 박힌 날)
+  // - Avg: 가중 평균 (전체 정답 ÷ 전체 시도) — overallAccuracy와 정합 박음
+  // - Max: 일별 최고 정답률 (단일 날 최고치)
+  const accAvg = overallAccuracy;
   const accMax = dailyAccuracy.length > 0
     ? Math.max(...dailyAccuracy.map((d) => d.accuracy))
     : 0;
   const accLatest = dailyAccuracy.length > 0 ? dailyAccuracy[dailyAccuracy.length - 1].accuracy : 0;
 
-  const reactAvg = dailyAvgResponse.length > 0
-    ? +(dailyAvgResponse.reduce((a, b) => a + b.avgTime, 0) / dailyAvgResponse.length).toFixed(2)
+  // 핵심 숫자 — 반응 시간
+  // - Latest: 가장 최근 데이터 박힌 날 평균
+  // - Avg: 가중 평균 (전체 반응 시간 ÷ 전체 응답 수) — avgResponseTime과 정합
+  // - Min: 일별 최단 평균 (가장 빨랐던 날)
+  const reactAvg = avgResponseTime;
+  const reactMin = dailyAvgResponse.length > 0
+    ? Math.min(...dailyAvgResponse.map((d) => d.avgTime))
     : 0;
   const reactLatest = dailyAvgResponse.length > 0 ? dailyAvgResponse[dailyAvgResponse.length - 1].avgTime : 0;
 
@@ -346,32 +368,45 @@ export default function DiagnosisTab() {
               <p className="text-[10px] text-muted-foreground">{t.diagnosis.chartMaxLabel}</p>
             </div>
           </div>
-          {/* X축 영역 슬롯 박음 — 데이터 박힌 영역만 막대 박힘 */}
-          <div className="flex items-end gap-1 h-24" style={{ minWidth: `${slotCount * 8}px` }}>
-            {Array.from({ length: slotCount }, (_, i) => {
-              const dataIdx = dailyAccuracy.length - slotCount + i;
-              const d = dataIdx >= 0 ? dailyAccuracy[dataIdx] : null;
+          {/* X축 영역: 모든 슬롯에 날짜 박음. 데이터 박힌 영역만 막대. 빈 영역 = 회색 베이스라인 */}
+          <div className="flex items-end gap-0.5 h-24">
+            {slotDates.map((slot, i) => {
+              const acc = dailyAccByIso.get(slot.isoDay);
+              const hasData = acc != null;
               return (
-                <div key={i} className="flex-1 flex flex-col items-center gap-1 min-w-0">
-                  {d ? (
+                <div key={i} className="flex-1 flex flex-col items-center gap-0.5 min-w-0">
+                  {hasData ? (
                     <>
-                      <span className="text-[8px] font-bold text-foreground">{d.accuracy}%</span>
+                      <span className="text-[8px] font-bold text-foreground">{acc}%</span>
                       <div
-                        className="w-full rounded-t-md transition-all"
+                        className="w-full rounded-t-sm transition-all"
                         style={{
-                          height: `${Math.max(d.accuracy * 0.7, 4)}px`,
+                          height: `${Math.max((acc as number) * 0.7, 4)}px`,
                           background:
-                            d.accuracy >= 80
+                            (acc as number) >= 80
                               ? "hsl(var(--primary))"
-                              : d.accuracy >= 50
+                              : (acc as number) >= 50
                                 ? "hsl(var(--accent))"
                                 : "hsl(var(--destructive))",
                         }}
                       />
                     </>
                   ) : (
-                    <div className="w-full h-1 bg-muted/30 rounded-t-md mt-auto" />
+                    <div className="w-full h-1 bg-muted/30 rounded-t-sm mt-auto" />
                   )}
+                </div>
+              );
+            })}
+          </div>
+          {/* X축 날짜 라벨 — 7d = 모든 슬롯, 30d = 5일 간격만 */}
+          <div className="flex gap-0.5 mt-1">
+            {slotDates.map((slot, i) => {
+              const show = period === "7d" || i === 0 || i === slotDates.length - 1 || i % 5 === 0;
+              return (
+                <div key={i} className="flex-1 text-center min-w-0">
+                  {show ? (
+                    <span className="text-[7px] text-muted-foreground">{slot.day}</span>
+                  ) : null}
                 </div>
               );
             })}
@@ -379,11 +414,11 @@ export default function DiagnosisTab() {
         </div>
       ) : null}
 
-      {/* Avg Reaction Time Chart — X축 고정 + 핵심 숫자 강조 (작업 3) */}
+      {/* Avg Reaction Time Chart — X축 슬롯 박음 + Latest/Avg/Min */}
       {dailyAvgResponse.length > 0 ? (
         <div className="w-full bg-card rounded-xl border border-border p-4">
           <h3 className="text-sm font-bold text-foreground mb-3">{t.diagnosis.reactionTrendTitle}</h3>
-          {/* 핵심 숫자 — 최근·평균 */}
+          {/* 핵심 숫자 — 최근·평균·최단 */}
           <div className="flex items-baseline justify-around mb-4 gap-2">
             <div className="text-center">
               <p className="text-2xl font-bold text-primary">{reactLatest}{t.diagnosis.secondsSuffix}</p>
@@ -393,51 +428,60 @@ export default function DiagnosisTab() {
               <p className="text-2xl font-bold text-foreground">{reactAvg}{t.diagnosis.secondsSuffix}</p>
               <p className="text-[10px] text-muted-foreground">{t.diagnosis.chartAvgLabel}</p>
             </div>
+            <div className="text-center">
+              <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{reactMin}{t.diagnosis.secondsSuffix}</p>
+              <p className="text-[10px] text-muted-foreground">{t.diagnosis.chartMinLabel}</p>
+            </div>
           </div>
-          {/* X축 슬롯 박음 — 데이터 박힌 점만 표시 */}
+          {/* X축 영역: 슬롯 박힘. 데이터 박힌 영역만 점 박음 (isoDay 매핑) */}
           <div className="w-full overflow-x-auto">
             <svg viewBox={`0 0 ${slotCount * 16} 100`} className="w-full h-28">
-              <polyline
-                fill="none"
-                stroke="hsl(var(--primary))"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                points={(() => {
-                  const maxY = Math.max(...dailyAvgResponse.map((d) => d.avgTime), 1);
-                  return dailyAvgResponse
-                    .map((d) => {
-                      const dataDay = d.day;
-                      const idx = dailyAccuracy.findIndex((a) => a.day === dataDay);
-                      // dataIdx → slotIdx: 데이터 박힌 영역의 오프셋 박음
-                      const slotIdx = idx >= 0 ? slotCount - dailyAvgResponse.length + dailyAvgResponse.indexOf(d) : 0;
-                      const x = slotIdx * 16 + 8;
-                      const y = 80 - (d.avgTime / (maxY || 1)) * 70;
-                      return `${x},${y}`;
-                    })
-                    .join(" ");
-                })()}
-              />
-              {dailyAvgResponse.map((d, i) => {
-                const maxY = Math.max(...dailyAvgResponse.map((v) => v.avgTime), 1);
-                const slotIdx = slotCount - dailyAvgResponse.length + i;
-                const x = slotIdx * 16 + 8;
-                const y = 80 - (d.avgTime / (maxY || 1)) * 70;
+              {(() => {
+                const maxY = Math.max(...dailyAvgResponse.map((d) => d.avgTime), 1);
+                // 가중 평균 영역 박음 — fullDailyMap 영역에서 avgTime 영역 계산 박음
+                const dataPoints: { slotIdx: number; x: number; y: number; avgTime: number; day: string }[] = [];
+                slotDates.forEach((slot, slotIdx) => {
+                  const fdm = fullDailyMap.get(slot.isoDay);
+                  if (!fdm || fdm.responseCount === 0) return;
+                  const avgTime = +(fdm.responseSum / fdm.responseCount).toFixed(2);
+                  const x = slotIdx * 16 + 8;
+                  const y = 80 - (avgTime / (maxY || 1)) * 70;
+                  dataPoints.push({ slotIdx, x, y, avgTime, day: slot.day });
+                });
                 return (
-                  <g key={d.day}>
-                    <circle cx={x} cy={y} r={3} fill="hsl(var(--primary))" />
-                    <text
-                      x={x}
-                      y={96}
-                      textAnchor="middle"
-                      fontSize="7"
-                      fill="hsl(var(--muted-foreground))"
-                    >
-                      {d.day}
-                    </text>
-                  </g>
+                  <>
+                    {dataPoints.length > 1 && (
+                      <polyline
+                        fill="none"
+                        stroke="hsl(var(--primary))"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        points={dataPoints.map((p) => `${p.x},${p.y}`).join(" ")}
+                      />
+                    )}
+                    {dataPoints.map((p) => (
+                      <circle key={p.slotIdx} cx={p.x} cy={p.y} r={3} fill="hsl(var(--primary))" />
+                    ))}
+                    {slotDates.map((slot, slotIdx) => {
+                      const show = period === "7d" || slotIdx === 0 || slotIdx === slotDates.length - 1 || slotIdx % 5 === 0;
+                      if (!show) return null;
+                      return (
+                        <text
+                          key={`label-${slotIdx}`}
+                          x={slotIdx * 16 + 8}
+                          y={96}
+                          textAnchor="middle"
+                          fontSize="7"
+                          fill="hsl(var(--muted-foreground))"
+                        >
+                          {slot.day}
+                        </text>
+                      );
+                    })}
+                  </>
                 );
-              })}
+              })()}
             </svg>
           </div>
         </div>
