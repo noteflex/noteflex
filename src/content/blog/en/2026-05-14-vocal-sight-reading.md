@@ -72,8 +72,3 @@ The initial overwhelm of reading a vocal score for the first time is a recogniza
 ## References
 
 McPherson, G. E. (1994). Factors and abilities influencing sight-reading skill in music. *Journal of Research in Music Education*, *42*(3), 217–231. https://doi.org/10.2307/3345701
-
-## Image Sources
-
-
-1. Franz Napoleon Heigel; The Metropolitan Museum of Art. [Source page](https://www.metmuseum.org/art/collection/search/436639). License: Public Domain. (Blog cover image)

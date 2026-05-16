@@ -71,11 +71,6 @@ Noteflex의 음표 인식 훈련은 악보 읽기의 시각 처리 부분을 자
 
 ---
 
-## 참고 자료
+## 참고 문헌
 
 Kopiez, R., & Lee, J. I. (2006). Towards a dynamic model of skills involved in sight reading music. *Music Education Research*, *8*(1), 97–120. https://doi.org/10.1080/14613800600570785
-
-## 이미지 출처
-
-
-1. Anders Zorn; The Metropolitan Museum of Art. [원본 페이지](https://www.metmuseum.org/art/collection/search/384561). 라이선스: Public Domain. (블로그 커버 이미지)

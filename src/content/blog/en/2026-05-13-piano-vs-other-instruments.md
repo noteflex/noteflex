@@ -83,8 +83,3 @@ What all of them share is that individual note recognition is the floor, not the
 Imai-Matsumura, K., & Mutou, M. (2021). Gaze analysis of pianists' sight-reading: Comparison between expert pianists and students training to be pianists. *Music & Science*, *4*. https://doi.org/10.1177/20592043211061106
 
 ---
-
-## Image Sources
-
-
-1. Bartolomeo Cristofori; Metropolitan Museum of Art Open Access. [Source page](https://www.metmuseum.org/art/collection/search/501788). License: Public Domain. (Blog cover image)

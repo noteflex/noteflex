@@ -74,9 +74,4 @@ Daily, consistent, short. A well-established learning principle meets a new inte
 
 ## References
 
-Cepeda, N. J., Pashler, H., Vul, E., Wixted, J. T., & Rohrer, D. (2006). Distributed practice in verbal recall tasks: A review and quantitative synthesis. *Psychological Bulletin*, *132*(3), 354–380. https://doi.org/10.1037/0033-295X.132.3.354
-
-## Image Sources
-
-
-1. Auguste Renoir; The Metropolitan Museum of Art. [Source page](https://www.metmuseum.org/art/collection/search/438014). License: Public Domain. (Blog cover image)
+Cepeda, N. J., Pashler, H., Vul, E., Wixted, J. T., & Rohrer, D. (2006). Distributed practice in verbal recall tasks: A review and quantitative synthesis. *Psychological Bulletin*, *132*(3), 354–380. https://doi.org/10.1037/0033-2909.132.3.354

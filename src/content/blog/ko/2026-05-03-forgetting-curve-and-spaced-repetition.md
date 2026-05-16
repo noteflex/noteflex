@@ -76,12 +76,8 @@ N+2 로직은 강력하지만 만능은 아니다. 알아둘 한계가 있다.
 
 망각 곡선은 100년 전의 발견이지만 학습 도구를 설계할 때 여전히 유효한 출발점이다. 어떤 음표를 언제 다시 보여줄지를 임의로 정하지 않고, 망각의 패턴을 따라 정한다는 점이 데이터 기반 학습의 출발이다.
 
-## 참고 자료
+## 참고 문헌
 
 1. Ebbinghaus, H. (1913). *Memory: A Contribution to Experimental Psychology* (H. A. Ruger & C. E. Bussenius, Trans.). Teachers College, Columbia University. (Original work published 1885)
 
 2. Cepeda, N. J., Pashler, H., Vul, E., Wixted, J. T., & Rohrer, D. (2006). Distributed practice in verbal recall tasks: A review and quantitative synthesis. *Psychological Bulletin*, 132(3), 354–380.
-
-### 이미지 출처
-
-1. Hermann Ebbinghaus; Wikimedia Commons. [원본 페이지](https://commons.wikimedia.org/wiki/File:Ebbinghaus_curve.png). 라이선스: Public Domain. (블로그 커버 이미지)

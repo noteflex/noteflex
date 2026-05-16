@@ -84,8 +84,3 @@ The moment when lead sheet reading stops feeling like decoding and starts feelin
 ## References
 
 Kopiez, R., & Lee, J. I. (2006). Towards a dynamic model of skills involved in sight reading music. *Music Education Research*, *8*(1), 97–120. https://doi.org/10.1080/14613800600570785
-
-## Image Sources
-
-
-1. William P. Gottlieb; Library of Congress Music Division. [Source page](https://www.loc.gov/item/2023868713/). License: No known restrictions on publication. (Blog cover image)

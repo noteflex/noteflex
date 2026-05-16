@@ -66,7 +66,3 @@ Noteflex supports this process by presenting problems organised around interval 
 ## References
 
 1. Sloboda, J. A. (1984). Experimental studies of music reading: A review. *Music Perception*, 2(2), 222–236. https://doi.org/10.2307/40285292
-
-### Image Sources
-
-1. Wikimedia Commons. [Source page](https://commons.wikimedia.org/wiki/File:Music_notation.svg). License: CC BY-SA. (Blog cover image)

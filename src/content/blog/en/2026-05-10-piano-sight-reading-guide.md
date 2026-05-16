@@ -62,7 +62,3 @@ The first encounter with the grand staff is the beginning of the adaptation, not
 1. Karpinski, G. S. (2000). *Aural Skills Acquisition: The Development of Listening, Reading, and Performing Skills in College-Level Musicians*. Oxford University Press.
 
 2. Lehmann, A. C., & McArthur, V. (2002). Sight-reading. In R. Parncutt & G. E. McPherson (Eds.), *The Science and Psychology of Music Performance* (pp. 135–150). Oxford University Press.
-
-### Image Sources
-
-1. Bartolomeo Cristofori; The Metropolitan Museum of Art. [Source page](https://www.metmuseum.org/art/collection/search/501788). License: Public Domain. (Blog cover image)

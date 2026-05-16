@@ -58,7 +58,3 @@ For a learner who keeps seeing the same low F in the bass clef appear again and 
 ## References
 
 1. Cepeda, N. J., Pashler, H., Vul, E., Wixted, J. T., & Rohrer, D. (2006). Distributed practice in verbal recall tasks: A review and quantitative synthesis. *Psychological Bulletin*, 132(3), 354–380. DOI: [10.1037/0033-2909.132.3.354](https://doi.org/10.1037/0033-2909.132.3.354)
-
-### Image Sources
-
-1. Laurent de La Hyre; The Metropolitan Museum of Art. [Source page](https://www.metmuseum.org/art/collection/search/436836). License: Public Domain. (Blog cover image)

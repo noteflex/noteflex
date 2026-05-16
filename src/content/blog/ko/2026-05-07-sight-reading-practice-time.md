@@ -55,10 +55,6 @@ coverImageCredit: "U.S. National Archives; Wikimedia Commons"
 
 연습은 결국 누적의 문제이다. 그 누적은 한 번에 만들어지지 않는다. 매일 짧게, 그러나 의도를 가지고 만나는 시간이 누적되어 초견 능력이 자란다.
 
-## 참고 자료
+## 참고 문헌
 
 1. Duke, R. A., Simmons, A. L., & Cash, C. D. (2009). It's not how much; it's how: Characteristics of practice behavior and retention of performance achievements. *Journal of Research in Music Education*, 56(4), 310-321. DOI: [10.1177/0022429408328851](https://doi.org/10.1177/0022429408328851)
-
-### 이미지 출처
-
-1. U.S. National Archives; Wikimedia Commons. [원본 페이지](https://commons.wikimedia.org/wiki/File:Music_class_usa.jpg). 라이선스: Public Domain. (블로그 커버 이미지)

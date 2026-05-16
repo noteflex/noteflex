@@ -44,10 +44,6 @@ Noteflex에서 음표별 난이도를 실시간으로 추적해 약한 구간을
 
 예배는 연습 없이 찾아온다. 준비된 반주자는 악보가 무엇이든, 조가 무엇이든, 멈추지 않는다.
 
-## 참고 자료
+## 참고 문헌
 
 1. McPherson, G. E. (1994). Factors and abilities influencing musical performance reading ability in instrumental music students. *Journal of Research in Music Education*, 42(1), 37–47. DOI: [10.2307/3345701](https://doi.org/10.2307/3345701)
-
-### 이미지 출처
-
-1. Henry Lerolle; The Metropolitan Museum of Art. [원본 페이지](https://www.metmuseum.org/art/collection/search/436880). 라이선스: Public Domain. (블로그 커버 이미지)

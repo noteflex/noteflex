@@ -62,8 +62,3 @@ Noteflex logs note ID, response time, correctness, and streak data for every ses
 ## References
 
 Kruger, J., & Dunning, D. (1999). Unskilled and unaware of it: How difficulties in recognizing one's own incompetence lead to inflated self-assessments. *Journal of Personality and Social Psychology*, *77*(6), 1121–1134. https://doi.org/10.1037/0022-3514.77.6.1121
-
-## Image Sources
-
-
-1. Bartholomeus van der Helst; The Metropolitan Museum of Art. [Source page](https://www.metmuseum.org/art/collection/search/436642). License: Public Domain. (Blog cover image)

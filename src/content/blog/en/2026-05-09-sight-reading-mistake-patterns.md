@@ -64,7 +64,3 @@ The first time you stop at a passage is useful information, not just a frustrati
 1. Kopiez, R., & Lee, J. I. (2008). Towards a general model of skills involved in sight reading music. *Music Education Research*, 10(1), 41–62. DOI: [10.1080/14613800701871363](https://doi.org/10.1080/14613800701871363)
 
 2. Lehmann, A. C., & McArthur, V. (2002). Sight-reading. In R. Parncutt & G. E. McPherson (Eds.), *The Science and Psychology of Music Performance* (pp. 135–150). Oxford University Press.
-
-### Image Sources
-
-1. J.S. Bach; Bach Digital archive. [Source page](https://commons.wikimedia.org/wiki/File:BWV1001-cropped.jpg). License: Public Domain. (Blog cover image)

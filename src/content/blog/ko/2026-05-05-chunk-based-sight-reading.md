@@ -63,10 +63,6 @@ Sloboda(1984)는 음악 읽기에 관한 여러 실험 연구를 검토하면서
 
 Noteflex는 이 과정을 지원하기 위해 음정과 화음을 포함한 패턴 중심의 문제를 제공한다. 단일 음표가 아닌 음형 단위로 반복 출제되는 구조를 통해, 패턴 인식이 자연스럽게 훈련될 수 있도록 설계되어 있다.
 
-## 참고 자료
+## 참고 문헌
 
 1. Sloboda, J. A. (1984). Experimental studies of music reading: A review. *Music Perception*, 2(2), 222–236. https://doi.org/10.2307/40285292
-
-### 이미지 출처
-
-1. Wikimedia Commons. [원본 페이지](https://commons.wikimedia.org/wiki/File:Music_notation.svg). 라이선스: CC BY-SA. (블로그 커버 이미지)

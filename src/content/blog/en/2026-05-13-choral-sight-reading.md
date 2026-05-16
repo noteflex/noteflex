@@ -85,8 +85,3 @@ Choral sight-reading is not a solitary skill — but it is trained alone. Ten mi
 Pomerleau-Turcotte, J., Moreno Sala, M. T., Dubé, F., & Vachon, F. (2022). Experiential and cognitive predictors of sight-singing performance in music higher education. *Journal of Research in Music Education*, *70*(2), 206–227. https://doi.org/10.1177/00224294211049425
 
 ---
-
-## Image Sources
-
-
-1. Ansel Adams; Library of Congress Prints and Photographs Division. [Source page](https://www.loc.gov/item/2002696025/). License: No known restrictions on publication. (Blog cover image)

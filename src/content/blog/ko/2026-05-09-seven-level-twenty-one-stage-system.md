@@ -64,14 +64,10 @@ Noteflex의 각 서브레벨에는 네 가지 통과 기준이 있다.
 
 Vygotsky가 ZPD를 설명할 때 강조한 것은 경계 자체가 아니라 그 경계가 움직인다는 사실이었다. 오늘 손이 닿지 않던 영역이 내일의 ZPD가 되고, 그 내일의 영역이 그 다음 날의 기반이 된다. 21단계는 그 움직임을 구조화한 것이다.
 
-## 참고 자료
+## 참고 문헌
 
 1. Vygotsky, L. S. (1978). *Mind in Society: The Development of Higher Psychological Processes*. Harvard University Press.
 
 2. Csikszentmihalyi, M. (1990). *Flow: The Psychology of Optimal Experience*. Harper & Row.
 
 3. Hattie, J., & Timperley, H. (2007). The power of feedback. *Review of Educational Research*, 77(1), 81–112. DOI: [10.3102/003465430298487](https://doi.org/10.3102/003465430298487)
-
-### 이미지 출처
-
-1. Manuela Gößnitzer (LilyPond 악보); Carl Czerny 작곡 (Public Domain). [원본 페이지](https://commons.wikimedia.org/wiki/File:CCzernyOp337Teil1.png). 라이선스: CC0 Public Domain. (블로그 커버 이미지)

@@ -74,8 +74,3 @@ The same C4 on the staff can be played in three different physical locations. De
 ## References
 
 Kopiez, R., & Lee, J. I. (2006). Towards a dynamic model of skills involved in sight reading music. *Music Education Research*, *8*(1), 97–120. https://doi.org/10.1080/14613800600570785
-
-## Image Sources
-
-
-1. Anders Zorn; The Metropolitan Museum of Art. [Source page](https://www.metmuseum.org/art/collection/search/384561). License: Public Domain. (Blog cover image)

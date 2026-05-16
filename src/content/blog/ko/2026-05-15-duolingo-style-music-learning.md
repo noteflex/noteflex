@@ -74,11 +74,6 @@ Noteflex는 간격 반복 원리를 음표 훈련에 적용한다. 틀린 음표
 
 ---
 
-## 참고 자료
+## 참고 문헌
 
-Cepeda, N. J., Pashler, H., Vul, E., Wixted, J. T., & Rohrer, D. (2006). Distributed practice in verbal recall tasks: A review and quantitative synthesis. *Psychological Bulletin*, *132*(3), 354–380. https://doi.org/10.1037/0033-295X.132.3.354
-
-## 이미지 출처
-
-
-1. Auguste Renoir; The Metropolitan Museum of Art. [원본 페이지](https://www.metmuseum.org/art/collection/search/438014). 라이선스: Public Domain. (블로그 커버 이미지)
+Cepeda, N. J., Pashler, H., Vul, E., Wixted, J. T., & Rohrer, D. (2006). Distributed practice in verbal recall tasks: A review and quantitative synthesis. *Psychological Bulletin*, *132*(3), 354–380. https://doi.org/10.1037/0033-2909.132.3.354

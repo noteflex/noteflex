@@ -44,10 +44,6 @@ Noteflex는 이 원리를 반영해 짧은 세션 안에서 음표별 반응 데
 
 초견 연습은 단조롭지 않아도 된다. 피드백 구조를 만들고, 레벨을 설계하고, 기록을 남기면 — 그것은 이미 게임의 구조를 갖는다.
 
-## 참고 자료
+## 참고 문헌
 
 1. Ryan, R. M., & Deci, E. L. (2000). Self-determination theory and the facilitation of intrinsic motivation, social development, and well-being. *American Psychologist*, 55(1), 68–78. DOI: [10.1037/0003-066X.55.1.68](https://doi.org/10.1037/0003-066X.55.1.68)
-
-### 이미지 출처
-
-1. Jan Steen; The Metropolitan Museum of Art. [원본 페이지](https://www.metmuseum.org/art/collection/search/437749). 라이선스: Public Domain. (블로그 커버 이미지)

@@ -57,12 +57,8 @@ Noteflex의 레벨 5~7은 그랜드 오선지를 사용한다. treble과 bass를
 
 첫 그랜드 오선지의 충격은 학습의 초입일 뿐이다. 두 clef가 각각 유창해지면, 합산이 아니라 통합이 일어난다.
 
-## 참고 자료
+## 참고 문헌
 
 1. Karpinski, G. S. (2000). *Aural Skills Acquisition: The Development of Listening, Reading, and Performing Skills in College-Level Musicians*. Oxford University Press.
 
 2. Lehmann, A. C., & McArthur, V. (2002). Sight-reading. In R. Parncutt & G. E. McPherson (Eds.), *The Science and Psychology of Music Performance* (pp. 135–150). Oxford University Press.
-
-### 이미지 출처
-
-1. Bartolomeo Cristofori; The Metropolitan Museum of Art. [원본 페이지](https://www.metmuseum.org/art/collection/search/501788). 라이선스: Public Domain. (블로그 커버 이미지)

@@ -71,6 +71,6 @@ Noteflex가 모든 음악 학습 문제를 풀지는 않는다. 다음 영역은
 
 악보 독보 학습의 빈틈을 데이터로 메우는 것 — 이것이 Noteflex가 풀려는 한 가지 문제다.
 
-## 참고 자료
+## 참고 문헌
 
 1. Levitin, D. J. (2006). *This Is Your Brain on Music: The Science of a Human Obsession*. Dutton.

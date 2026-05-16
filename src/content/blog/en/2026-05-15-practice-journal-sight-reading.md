@@ -83,9 +83,4 @@ Noteflex automatically records response accuracy, reaction time, and note-level 
 
 ## References
 
-Hallam, S. (1997). The development of memorisation strategies in musicians. *British Journal of Music Education*, *14*(1), 87–97. https://doi.org/10.1017/S0265051700003575
-
-## Image Sources
-
-
-1. Laurent de La Hyre; The Metropolitan Museum of Art. [Source page](https://www.metmuseum.org/art/collection/search/436836). License: Public Domain. (Blog cover image)
+Hallam, S. (1997). The development of memorisation strategies in musicians. *British Journal of Music Education*, *14*(1), 87–97.

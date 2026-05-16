@@ -62,7 +62,3 @@ Learning to drive, no one announces the moment the steering became unconscious. 
 1. Chaffin, R., & Imreh, G. (2002). Practicing perfection: Piano performance as expert memory. *Psychological Science*, 13(4), 342–349. DOI: [10.1111/1467-9280.00462](https://doi.org/10.1111/1467-9280.00462)
 
 2. Palmer, C. (1997). Music performance. *Annual Review of Psychology*, 48, 115–138. DOI: [10.1146/annurev.psych.48.1.115](https://doi.org/10.1146/annurev.psych.48.1.115)
-
-### Image Sources
-
-1. Wikimedia Commons. [Source page](https://commons.wikimedia.org/wiki/File:Piano_practice.jpg). License: CC BY-SA. (Blog cover image)

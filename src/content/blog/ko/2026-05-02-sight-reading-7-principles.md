@@ -62,6 +62,6 @@ coverImageCredit: "Wikimedia Commons"
 
 Noteflex는 이 원칙들 중 일부를 데이터 기반으로 지원하도록 설계되어 있다. 어떤 음표 위치에서 인식 속도가 떨어지는지 기록하고, 해당 위치를 더 자주 출제해 청크 인식의 약한 부분을 보완하는 방식이다. 7원칙 중 청크 단위 인식과 약점 음표 보완 두 영역에 초점을 둔 도구다. 나머지 원칙(멈추지 않기·박자 우선·시야 선행 등)은 실제 악기 연습에서 자체적으로 길러야 하는 부분이다.
 
-## 참고 자료
+## 참고 문헌
 
 1. Lehmann, A. C., & McArthur, V. (2002). Sight-reading. In R. Parncutt & G. E. McPherson (Eds.), *The Science and Psychology of Music Performance: Creative Strategies for Teaching and Learning* (pp. 135–150). Oxford University Press.

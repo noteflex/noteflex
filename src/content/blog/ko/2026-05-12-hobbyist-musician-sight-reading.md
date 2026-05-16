@@ -57,10 +57,6 @@ Noteflex가 짧은 세션(평균 3~5분)을 기본 단위로 설계한 이유도
 
 음악을 평생 곁에 두고 싶다면, 초견은 직업 연주자의 영역이 아니라 취미 연주자에게 더 결정적인 도구일 수 있다.
 
-## 참고 자료
+## 참고 문헌
 
 1. Bonneville-Roussy, A., Lavigne, G. L., & Vallerand, R. J. (2011). When passion leads to excellence: The case of musicians. *Psychology of Music*, 39(1), 123–138. DOI: [10.1177/0305735609352441](https://doi.org/10.1177/0305735609352441)
-
-### 이미지 출처
-
-1. Jan Steen; The Metropolitan Museum of Art. [원본 페이지](https://www.metmuseum.org/art/collection/search/437749). 라이선스: Public Domain. (블로그 커버 이미지)

@@ -58,7 +58,3 @@ Practice is, in the end, a question of accumulation. That accumulation is never 
 ## References
 
 1. Duke, R. A., Simmons, A. L., & Cash, C. D. (2009). It's not how much; it's how: Characteristics of practice behavior and retention of performance achievements. *Journal of Research in Music Education*, 56(4), 310-321. DOI: [10.1177/0022429408328851](https://doi.org/10.1177/0022429408328851)
-
-### Image Credits
-- Figure 1: Wikimedia Commons / CC BY-SA — Music class usa
-- Figure 2: Wikimedia Commons / CC BY-SA 3.0 — Metronome Nikko

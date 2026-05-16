@@ -81,6 +81,3 @@ The forgetting curve is a discovery from over a century ago, but it remains a us
 1. Ebbinghaus, H. (1913). *Memory: A Contribution to Experimental Psychology* (H. A. Ruger & C. E. Bussenius, Trans.). Teachers College, Columbia University. (Original work published 1885)
 
 2. Cepeda, N. J., Pashler, H., Vul, E., Wixted, J. T., & Rohrer, D. (2006). Distributed practice in verbal recall tasks: A review and quantitative synthesis. *Psychological Bulletin*, 132(3), 354–380.
-
-### Image credits
-- Figure 1: Wikimedia Commons / Public Domain — Ebbinghaus forgetting curve

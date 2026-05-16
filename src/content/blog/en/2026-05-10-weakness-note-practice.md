@@ -54,7 +54,3 @@ The note that stops you every time is already showing you exactly where to look.
 ## References
 
 1. Ericsson, K. A., Krampe, R. T., & Tesch-Römer, C. (1993). The role of deliberate practice in the acquisition of expert performance. *Psychological Review*, 100(3), 363–406. DOI: [10.1037/0033-295X.100.3.363](https://doi.org/10.1037/0033-295X.100.3.363)
-
-### Image Sources
-
-1. Bartholomeus van der Helst; The Metropolitan Museum of Art. [Source page](https://www.metmuseum.org/art/collection/search/436642). License: Public Domain. (Blog cover image)

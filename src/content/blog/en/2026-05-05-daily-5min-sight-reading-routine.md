@@ -61,7 +61,3 @@ Noteflex is designed with exactly this daily routine in mind. Each session prese
 ## References
 
 1. Ericsson, K. A., Krampe, R. T., & Tesch-Römer, C. (1993). The role of deliberate practice in the acquisition of expert performance. *Psychological Review*, 100(3), 363–406. https://doi.org/10.1037/0033-295X.100.3.363
-
-### Image Sources
-
-1. Wikimedia Commons. [Source page](https://commons.wikimedia.org/wiki/File:Piano_practice.jpg). License: CC BY-SA. (Blog cover image)

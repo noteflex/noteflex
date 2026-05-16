@@ -71,7 +71,3 @@ When Vygotsky described the ZPD, he emphasized not the boundary itself but the f
 2. Csikszentmihalyi, M. (1990). *Flow: The Psychology of Optimal Experience*. Harper & Row.
 
 3. Hattie, J., & Timperley, H. (2007). The power of feedback. *Review of Educational Research*, 77(1), 81–112. DOI: [10.3102/003465430298487](https://doi.org/10.3102/003465430298487)
-
-### Image Sources
-
-1. Manuela Gößnitzer (LilyPond engraving); based on Carl Czerny's public domain composition. [Source page](https://commons.wikimedia.org/wiki/File:CCzernyOp337Teil1.png). License: CC0 Public Domain. (Blog cover image)

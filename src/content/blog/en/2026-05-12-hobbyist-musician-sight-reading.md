@@ -60,7 +60,3 @@ If music is meant to stay in a life, sight-reading may matter more to the hobbyi
 ## References
 
 1. Bonneville-Roussy, A., Lavigne, G. L., & Vallerand, R. J. (2011). When passion leads to excellence: The case of musicians. *Psychology of Music*, 39(1), 123–138. DOI: [10.1177/0305735609352441](https://doi.org/10.1177/0305735609352441)
-
-### Image Sources
-
-1. Jan Steen; The Metropolitan Museum of Art. [Source page](https://www.metmuseum.org/art/collection/search/437749). License: Public Domain. (Blog cover image)

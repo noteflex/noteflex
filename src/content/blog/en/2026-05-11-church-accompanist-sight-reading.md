@@ -47,7 +47,3 @@ The service arrives with no rehearsal. A prepared accompanist plays whatever the
 ## References
 
 1. McPherson, G. E. (1994). Factors and abilities influencing musical performance reading ability in instrumental music students. *Journal of Research in Music Education*, 42(1), 37–47. DOI: [10.2307/3345701](https://doi.org/10.2307/3345701)
-
-### Image Sources
-
-1. Henry Lerolle; The Metropolitan Museum of Art. [Source page](https://www.metmuseum.org/art/collection/search/436880). License: Public Domain. (Blog cover image)
