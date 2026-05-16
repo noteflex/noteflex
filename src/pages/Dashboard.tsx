@@ -285,8 +285,9 @@ function LastActivityCard({
     return formatI18n(t.dashboard.daysAgo, { n: String(days) });
   }, [startedAt, t, lang]);
 
-  const accDisplay = accuracy != null ? Math.round(accuracy * 100) : 0;
-  const speedDisplay = avgReactionMs != null ? +(avgReactionMs / 1000).toFixed(2) : 0;
+  // null → "—" 표시 (정확한 데이터 없는 fallback 경우)
+  const accDisplay = accuracy != null ? `${Math.round(accuracy * 100)}%` : "—";
+  const speedDisplay = avgReactionMs != null ? `${+(avgReactionMs / 1000).toFixed(2)}s` : "—";
 
   return (
     <div className="border-l-4 border-amber-400 bg-card rounded-r-lg px-4 py-3">
@@ -296,9 +297,9 @@ function LastActivityCard({
       <p className="text-sm text-foreground">
         {formatI18n(t.dashboard.lastActivityFormat, {
           when,
-          acc: String(accDisplay),
-          speed: String(speedDisplay),
-          xp: String(xpEarned),
+          acc: accDisplay,
+          speed: speedDisplay,
+          xp: xpEarned > 0 ? String(xpEarned) : "—",
         })}
       </p>
     </div>
@@ -445,7 +446,13 @@ export default function Dashboard() {
   // user_sessions RLS가 reviewer를 막을 경우 대비: user_sublevel_progress를 추가 게임 이력 신호로 사용
   const hasAnyProgress = levelProgress.length > 0;
   const isNewUser = !hasAnySession && !hasAnyProgress && !stats.lastPracticeDate;
-  const practicedToday = isToday(stats.lastPracticeDate);
+
+  // profiles.last_practice_date 트리거 미적용 대비:
+  // user_sessions에 오늘 세션이 있으면 오늘 연습 완료로 처리
+  const hasSessionToday = sessionsTyped.some(
+    (s) => isoFromIsoOrTimestamp(s.started_at) === todayIso(),
+  );
+  const practicedToday = isToday(stats.lastPracticeDate) || hasSessionToday;
 
   const todaySessions = sessionsTyped.filter(
     (s) => isoFromIsoOrTimestamp(s.started_at) === todayIso(),
@@ -501,9 +508,19 @@ export default function Dashboard() {
       ? t.dashboard.kpiNotYet          // 상태 2: 아직 시작 전
       : t.dashboard.noLastSessionYet;
 
-  // 마지막 활동 데이터 — user_sessions 없으면 dailyStats30d fallback (reviewer RLS 대비)
+  // 마지막 활동 데이터 — 3단계 fallback (reviewer RLS·트리거 미적용 대비)
   const lastActivityData = useMemo(() => {
+    // [진단 로그] 각 데이터 소스 현황 — 콘솔에서 어느 영역 비었는지 확인
+    console.log("[Dashboard][lastActivity] sessions:", sessionsTyped.length,
+      "| dailyStats30d:", myStats.dailyStats30d.length,
+      "| lastPracticeDate:", stats.lastPracticeDate,
+      "| practicedToday:", practicedToday,
+      "| hasAnyProgress:", hasAnyProgress,
+    );
+
+    // 1순위: user_sessions의 가장 최근 비오늘 세션
     if (lastSessionNotToday) {
+      console.log("[Dashboard][lastActivity] source=user_sessions", lastSessionNotToday.started_at);
       return {
         startedAt: lastSessionNotToday.started_at,
         accuracy: lastSessionNotToday.accuracy,
@@ -511,26 +528,46 @@ export default function Dashboard() {
         xpEarned: lastSessionNotToday.xp_earned,
       };
     }
-    if (!practicedToday && stats.lastPracticeDate) {
-      const daily = myStats.dailyStats30d.find(
-        (d) => d.stat_date === stats.lastPracticeDate,
-      );
-      if (daily) {
-        const acc =
-          daily.avg_accuracy ??
-          (daily.total_notes > 0
-            ? daily.correct_notes / daily.total_notes
-            : null);
-        return {
-          startedAt: `${daily.stat_date}T12:00:00`,
-          accuracy: acc,
-          avgReactionMs: daily.avg_reaction_ms,
-          xpEarned: daily.xp_earned,
-        };
-      }
+
+    // 2순위: user_stats_daily 최신 항목 (오늘 제외, lastPracticeDate 요구 X)
+    const recentDaily = myStats.dailyStats30d
+      .filter((d) => d.stat_date !== todayIso())
+      .sort((a, b) => b.stat_date.localeCompare(a.stat_date))[0];
+    if (recentDaily) {
+      console.log("[Dashboard][lastActivity] source=dailyStats30d", recentDaily.stat_date);
+      const acc =
+        recentDaily.avg_accuracy ??
+        (recentDaily.total_notes > 0
+          ? recentDaily.correct_notes / recentDaily.total_notes
+          : null);
+      return {
+        startedAt: `${recentDaily.stat_date}T12:00:00`,
+        accuracy: acc,
+        avgReactionMs: recentDaily.avg_reaction_ms,
+        xpEarned: recentDaily.xp_earned,
+      };
     }
+
+    // 3순위: hasAnyProgress = true면 "활동 기록 있음" 카드 표시 (정확한 stats 없음)
+    // profiles.last_practice_date로 날짜 추정, 없으면 어제로 fallback
+    if (hasAnyProgress) {
+      const fallbackDate = stats.lastPracticeDate
+        ?? new Date(Date.now() - 86_400_000).toISOString().slice(0, 10);
+      console.log("[Dashboard][lastActivity] source=progress_fallback date:", fallbackDate);
+      return {
+        startedAt: `${fallbackDate}T12:00:00`,
+        accuracy: null,
+        avgReactionMs: null,
+        xpEarned: 0,
+      };
+    }
+
+    console.log("[Dashboard][lastActivity] source=null (no data found)");
     return null;
-  }, [lastSessionNotToday, practicedToday, stats.lastPracticeDate, myStats.dailyStats30d]);
+  }, [
+    lastSessionNotToday, practicedToday, stats.lastPracticeDate,
+    myStats.dailyStats30d, sessionsTyped.length, hasAnyProgress,
+  ]);
 
   const homeNav = (
     <nav className="flex items-center gap-2">
