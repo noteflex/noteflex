@@ -14,8 +14,8 @@ export function CategoryCover({ category, variant, className }: CategoryCoverPro
     return (
       <div
         className={cn(
-          "flex flex-col items-center justify-center gap-1 rounded-lg",
-          "aspect-[16/10] w-full",
+          "flex items-center justify-center rounded-lg",
+          "w-16 h-16 shrink-0",
           "bg-gradient-to-br transition-colors",
           style.gradient,
           style.darkGradient,
@@ -25,9 +25,6 @@ export function CategoryCover({ category, variant, className }: CategoryCoverPro
         aria-hidden="true"
       >
         <span className="text-2xl leading-none">{style.icon}</span>
-        <span className={cn("text-[10px] font-medium text-center px-1 leading-tight", style.textColor)}>
-          {category}
-        </span>
       </div>
     );
   }

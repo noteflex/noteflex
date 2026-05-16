@@ -87,11 +87,9 @@ export default function Blog() {
                   >
                     <Link
                       to={`/blog/${post.slug}`}
-                      className="flex flex-col sm:flex-row gap-4 group"
+                      className="flex flex-row items-start gap-4 group"
                     >
-                      <div className="sm:w-40 sm:shrink-0">
-                        <CategoryCover category={post.category} variant="card" />
-                      </div>
+                      <CategoryCover category={post.category} variant="card" />
                       <div className="flex-1 min-w-0">
                         {post.category && (
                           <span className="text-xs text-muted-foreground mb-1 block">
