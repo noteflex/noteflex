@@ -60,6 +60,10 @@
 | 악기별 / Instrument | violet | 🎹 |
 | 미매핑 fallback | stone | 🎼 |
 
+- ✅ **글 상세 hero 영역 제거** (`a4b6c0b`) — 중복 카테고리 표시 제거, 본문 바로 시작
+  - `BlogPost.tsx`: `<CategoryCover variant="hero" />` + import 제거
+  - 카테고리 cover = 목록 카드(w-16 h-16)에만 유지
+
 ### 검증
 - 794/794 테스트 PASS — 회귀 X
 - `npx tsc --noEmit` 에러 X
