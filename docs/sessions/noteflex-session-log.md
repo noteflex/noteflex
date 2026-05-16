@@ -4,6 +4,43 @@
 
 ---
 
+## 2026-05-16 — 대시보드·티어·차트 6개 영역 통합 fix (reviewer 정책 갈음)
+
+### 박음
+- ✅ **작업 0: reviewer Premium 잠금 우회 제거** (`2968a18`) ⭐ 가장 중요
+  - Dashboard aiReportTier: `isReviewer || tier === pro` → `tier === pro`
+  - reviewer = Free tier 동등 잠금 (AI Feedback blur·CTA 박힘)
+  - ComingSoonGate·Index isPrivilegedRole = 유지 (게임 영역 접근 우회)
+  - 이유: Paddle 심사관이 결제 흐름 시나리오 검증 박을 영역
+- ✅ **작업 2: 탭 순서 Diagnosis → Rhythm → Activity** (`f604d56`)
+  - VALID_TABS·기본 탭·handleTabChange URL fallback 정합
+  - Dashboard.test.tsx EN default 정합 + async findByText 박음
+- ✅ **작업 3·4: 옥타브 + 색상 + Formal 최하단** (`e7ada20`)
+  - stats key = note_key + octave (예: C4·F#3)
+  - Top 1 빨강·Top 2·3 노랑 박음 (음표 라벨 + bar 색상 정합)
+  - BatchAnalysisSection = DiagnosisTab 최하단 (무거운 분석 영역)
+- ✅ **작업 5·6: 정확도·속도 그래프 X축 + 계산 진단** (`354934e`)
+  - slotDates 영역 박음 (왼쪽 = 오래된, 오른쪽 = 오늘)
+  - 가중 평균 정합: accAvg = overallAccuracy (단순 일별 평균 → 전체 정답/전체 시도)
+  - 반응 시간: Latest/Avg/Min(가장 빨랐던 날) 박음
+  - 빈 슬롯도 X축 라벨 박음 (시간 흐름 인지)
+- ✅ **작업 7: 활동 탭 LEAGUE 제거 + 순서** (`676c38b`)
+  - 4 카드 → 3 카드 (Current Streak → Longest Streak → Today XP)
+  - grid-cols-1 sm:grid-cols-3
+  - league strings 영역 유지 (출시 후 재활용)
+
+### 짚힌 영역
+- ⚠️ 정확도 계산 진단 결과: 사용자 "84%가 안 맞다" 짚음 = 단순 일별 평균 박힌 영역에서 가중 평균으로 정합 박음
+  * 이전 = sum(daily accuracy) / day count → 적은 데이터 날·많은 데이터 날 동등 가중
+  * 신규 = sum(correct) / sum(attempts) → 정확한 가중 평균 (KPI Accuracy와 정합)
+- ⚠️ reviewer 박음 시나리오: Premium 카드 blur 박힘 + UpgradeModal 노출 → 결제 흐름 검증 박을 영역
+
+### 검증
+- 794/794 PASS (NoteGame.consecutive flaky 1건 단독 실행 시 9 PASS)
+- `npx tsc --noEmit` 에러 X
+
+---
+
 ## 2026-05-16 — 대시보드·게임 다이얼로그 통합 fix 5건 (i18n 전수·차트·순서·잠금·음표별 비교)
 
 ### 박음
