@@ -11,6 +11,11 @@
 
 ### 출시 후 즉시 (6월~)
 
+- [ ] **Dashboard DB 쿼리 최적화** — Mastery 카드 첫 로드 속도 개선
+  - 현재: Skeleton UI로 로딩 인지만 박음 (체감 속도 ↑)
+  - 출시 후: 실제 fetch 시간 분석 (Supabase RLS·N+1·인덱스 영역)
+  - 의존성: 실 사용자 데이터 + Sentry/Vercel Analytics 측정
+
 - [ ] **Note-level AI Coaching 비교 분석** — 음정별 기록 있음 vs 새 음정 분기
   - 현재: 사인인 사용자 = sublevel 누적 정답률 비교 (간단 비교)
   - 출시 후: 노트별 history 박힘 → 음정 단위 정밀 분석 (Goolsby fixation time 등)

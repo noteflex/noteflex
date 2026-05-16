@@ -4,6 +4,29 @@
 
 ---
 
+## 2026-05-16 — §5.4 회귀 fix 3건 (런타임 에러·한·영 혼재·로딩 인지)
+
+### 박음
+- ✅ **회귀 fix 1: historicalAccuracy null 가드** (`6a5a12e`)
+  - 원인: MasteryHeroCard `avgReactionRatio.toFixed(2)` 호출 시 DB null 통과해 crash
+  - MasteryHeroCard: `!== undefined` → `!= null` (null·undefined 모두 covers)
+  - Dashboard.tsx: `prog?.avg_reaction_ratio ?? undefined` (null → undefined 정합)
+- ✅ **회귀 fix 2: 게임 결과 다이얼로그 한·영 혼재** (`cbaddad`)
+  - strings.ts: `gameDialogs` 섹션 신규 (18 키, KO·EN)
+  - GameOverDialog·SublevelPassedDialog: hardcoded KO → useT() + formatI18n
+  - 테스트 23개 EN default 정합 (GameOver 6 + SublevelPassed 17)
+- ✅ **회귀 fix 3: Mastery 카드 Skeleton UI** (`e6ef454`)
+  - MasteryHeroCardSkeleton 신규 export (실제 카드 형태 회색 박스 + animate-pulse)
+  - Dashboard: progressLoading && !currentMastery → Skeleton 박음
+  - 로딩 완료 후 자연스럽게 실제 카드 전환
+
+### 검증
+- 794/794 테스트 PASS (각 fix 후 회귀 X)
+- `npx tsc --noEmit` 에러 X
+- 시나리오: 신규 사용자 대시보드 진입 → 런타임 에러 X, Skeleton 노출 → 데이터 로드 후 실제 카드
+
+---
+
 ## 2026-05-16 — §5.4 사용자 대시보드 부분 잠금 sprint (5개 영역)
 
 ### 박음
