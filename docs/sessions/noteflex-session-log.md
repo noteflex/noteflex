@@ -4,6 +4,52 @@
 
 ---
 
+## 2026-05-16 — 대시보드 전면 단순화 sprint (탭 제거 + 3 상태 분기 + Top 5)
+
+### 박음
+- ✅ **대시보드 전면 재설계** (`702a8a4`)
+  - 탭 영역 (Diagnosis/Rhythm/Activity) 자체 제거
+  - 단일 페이지 미니멀 구성 박음
+  - 3 상태 분기:
+    1. 신규 사용자 (세션 X + lastPracticeDate null) → NewUserView (큰 CTA) + AI 카드만
+    2. 오늘 활동 X → EmptyTodayNotice + KPI 비활성 + LastActivityCard + 음표 + AI
+    3. 오늘 활동 O → KPI 정상 + 음표 + AI
+  - KPI 4 카드: 스트릭·정답률·속도·오늘 XP
+  - 비교 기준: 어제 → 마지막 활동 데이터 (자동 fallback, "vs 최근")
+  - formatDelta 함수: ±0 노이즈 회피, 방향 화살표 (↑/↓)
+- ✅ **WeakSlowNotesCards 신규** (`702a8a4`)
+  - Top 3 → Top 5
+  - 옥타브 정확 표시: C4·F#3 (note_key + octave 통합 key)
+  - 색상: Top 1 빨강 (#E24B4A), Top 2~5 노랑 (#EF9F27)
+  - 5+ 시도 영역만 박음
+- ✅ **i18n dashboard 섹션 재작성**
+  - 신규 키: emptyToday·newUser·vsLast·lastActivity·aiFeedbackSubtitle·daysAgo·yesterday·today
+  - 폐기 키 영역은 유지 (호환성 — 출시 후 AI 보고서 도입 시 재활용 가능)
+- ✅ **컴포넌트 archive 이동**
+  - DiagnosisTab → src/components/_archive/DiagnosisTab.tsx
+  - BatchAnalysisSection → src/components/_archive/BatchAnalysisSection.tsx
+  - 향후 AI 보고서 도입 시 재활용 가능
+
+### 제거된 영역 (AI 보고서로 이동 — 출시 후 PENDING)
+- 일별 정답률 그래프 (XpBarChart, Daily accuracy)
+- 평균 반응 시간 추이 (AccuracyReactionChart)
+- 공식 학습 분석 (BatchAnalysisSection)
+- 취약점 분석 테이블
+- XP Trend 그래프 (Rhythm 탭)
+- Weakest Notes Top 10 (Top 5로 통합)
+- LEAGUE 카드 (Activity 탭)
+
+### 검증
+- 794/794 PASS (Dashboard.test.tsx 6 tests 신규 영역 정합)
+- `npx tsc --noEmit` 에러 X
+- `npm run build` 성공
+
+### 짚힌 영역
+- ⚠️ reviewer 정책 (작업 0) = 이전 commit 2968a18에서 적용됨 — 검증 통과 (이번 sprint 재확인 X)
+- ⚠️ 스트릭 정책 (작업 3) = 현재 calendar day 유지 + "오늘 박으면 N+1일째" 동기 메시지 박음
+
+---
+
 ## 2026-05-16 — 대시보드·티어·차트 6개 영역 통합 fix (reviewer 정책 갈음)
 
 ### 박음

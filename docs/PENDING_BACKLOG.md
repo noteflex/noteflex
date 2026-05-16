@@ -7,6 +7,32 @@
 
 ---
 
+## 2026-05-16 미니멀 대시보드 → AI 보고서 PENDING
+
+### 출시 후 즉시 (6월~) — AI 보고서 실제 구현 영역
+- [ ] **Today's Comment 실제 구현** — 매일 자정 KST 사용자별 코멘트 생성
+  - 입력: 어제 세션 데이터·약점 음표·진행 영역
+  - 출력: 100자 미만 짧은 코멘트 (Bernstein 톤)
+  - 인프라: Vercel Cron + Claude API (Sonnet 4.6)
+- [ ] **Weekly Report 실제 구현** — 매주 월요일 06:00 KST
+  - 입력: 1주 누적 세션 데이터
+  - 출력: 패턴 분석·약점 영역·다음 주 목표 (400자 미만)
+- [ ] **Monthly Growth Report 실제 구현** — 매월 1일 06:00 KST
+  - 입력: 1개월 누적 + 이전 월 대비
+  - 출력: 성장 패턴·성과·다음 달 도전 (700자 미만)
+
+### 출시 후 1~2개월 — Archive 컴포넌트 재활용 영역
+- [ ] **DiagnosisTab → 별도 페이지 (/diagnosis 또는 /reports)**
+  - 현재 _archive로 이동 박힘
+  - AI 보고서에 통합되거나 별도 페이지로 박음
+- [ ] **BatchAnalysisSection → /reports/weakness**
+  - 공식 학습 분석 영역 (매일 자정 KST 계산)
+  - 출시 후 사용자 데이터 박힘 → 신뢰성 검증 후 노출
+- [ ] **그래프 영역 재도입 검토** — XpBarChart·AccuracyReactionChart
+  - AI 보고서에 통합 또는 옵션 영역으로 박음
+
+---
+
 ## 2026-05-16 reviewer·차트·LEAGUE 추가 PENDING
 
 ### Paddle 심사 영역
