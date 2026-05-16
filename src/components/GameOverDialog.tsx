@@ -13,6 +13,7 @@ import { useLang, useT } from "@/contexts/LanguageContext";
 import { format as formatI18n } from "@/i18n/strings";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLevelProgress } from "@/hooks/useLevelProgress";
+import { AICoachingDetail } from "./AICoachingDetail";
 
 interface GameOverDialogProps {
   open: boolean;
@@ -115,6 +116,9 @@ export function GameOverDialog({
         >
           {coaching}
         </p>
+
+        {/* 음표별 비교 분석 — Guest = 박지 말 것 */}
+        <AICoachingDetail />
 
         <DialogFooter className="flex flex-col gap-2 sm:flex-row sm:justify-between">
           {hasPrevious && prevLabel && (

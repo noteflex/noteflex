@@ -14,6 +14,7 @@ import { useLang, useT } from "@/contexts/LanguageContext";
 import { format as formatI18n } from "@/i18n/strings";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLevelProgress } from "@/hooks/useLevelProgress";
+import { AICoachingDetail } from "./AICoachingDetail";
 
 interface SublevelPassedDialogProps {
   open: boolean;
@@ -220,6 +221,9 @@ export function SublevelPassedDialog({
         >
           {coaching}
         </p>
+
+        {/* 음표별 비교 분석 — Guest = 박지 말 것 (AICoachingDetail 내부에서 useAuth 분기) */}
+        <AICoachingDetail />
 
         <DialogFooter className="flex flex-col gap-2 sm:flex-row sm:justify-between">
           <Button

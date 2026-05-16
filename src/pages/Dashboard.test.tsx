@@ -143,7 +143,8 @@ describe("Dashboard — 탭 네비게이션", () => {
     expect(diagnosisTab).toHaveAttribute("data-state", "active");
 
     // DiagnosisTab은 마운트 즉시 로딩 스피너를 표시 (fetchUserNoteLogs 진행 중)
-    expect(await screen.findByText(/분석 중/)).toBeInTheDocument();
+    // EN default lang
+    expect(await screen.findByText(/Analyzing/)).toBeInTheDocument();
   });
 
   it("잘못된 tab 값 (?tab=invalid)은 rhythm으로 fallback", () => {
