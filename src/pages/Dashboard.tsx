@@ -4,6 +4,7 @@ import { BookOpen, RefreshCw } from "lucide-react";
 import Header from "@/components/Header";
 import { AdBanner } from "@/components/AdBanner";
 import UpgradeModal from "@/components/UpgradeModal";
+import PremiumBlurCard from "@/components/PremiumBlurCard";
 import { getSlot } from "@/lib/adsense";
 import { formatDistanceToNow } from "date-fns";
 import { ko, enUS } from "date-fns/locale";
@@ -441,7 +442,23 @@ export default function Dashboard() {
   };
 
   const isAdmin = profile?.role === "admin";
+  const isReviewer = profile?.role === "reviewer";
   const tier = getUserTier(user ?? null, profile ?? null);
+  // AI 분석 보고서 영역 권한: admin·reviewer·premium → 풀 노출. 그 외 → blur + CTA.
+  const aiReportTier: "guest" | "free" | "premium" | "admin" =
+    isAdmin
+      ? "admin"
+      : isReviewer || tier === "pro"
+        ? "premium"
+        : !user
+          ? "guest"
+          : "free";
+
+  const handleOpenUpgrade = () => {
+    const next = new URLSearchParams(searchParams);
+    next.set("upgrade", "1");
+    setSearchParams(next, { replace: true });
+  };
   const { progress: levelProgress, getProgressFor } = useLevelProgress();
 
   // 현재 진행 단계 + 마스터리 점수 계산
@@ -797,8 +814,8 @@ export default function Dashboard() {
           </CardContent>
         </Card>
 
-        {/* AI 피드백 */}
-        <Card>
+        {/* AI 피드백 — 프리미엄 전용 (admin·reviewer·premium 풀, Free blur + CTA) */}
+        <Card data-testid="ai-feedback-card">
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
               <span aria-hidden>🤖</span>
@@ -809,26 +826,28 @@ export default function Dashboard() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <ReportTile
-                icon="💬"
-                label={t.dashboard.reportDailyLabel}
-                period={t.dashboard.reportDailyPeriod}
-                onClick={() => handleReportClick("daily")}
-              />
-              <ReportTile
-                icon="📊"
-                label={t.dashboard.reportWeeklyLabel}
-                period={t.dashboard.reportWeeklyPeriod}
-                onClick={() => handleReportClick("weekly")}
-              />
-              <ReportTile
-                icon="🏆"
-                label={t.dashboard.reportMonthlyLabel}
-                period={t.dashboard.reportMonthlyPeriod}
-                onClick={() => handleReportClick("monthly")}
-              />
-            </div>
+            <PremiumBlurCard tier={aiReportTier} onUpgrade={handleOpenUpgrade}>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <ReportTile
+                  icon="💬"
+                  label={t.dashboard.reportDailyLabel}
+                  period={t.dashboard.reportDailyPeriod}
+                  onClick={() => handleReportClick("daily")}
+                />
+                <ReportTile
+                  icon="📊"
+                  label={t.dashboard.reportWeeklyLabel}
+                  period={t.dashboard.reportWeeklyPeriod}
+                  onClick={() => handleReportClick("weekly")}
+                />
+                <ReportTile
+                  icon="🏆"
+                  label={t.dashboard.reportMonthlyLabel}
+                  period={t.dashboard.reportMonthlyPeriod}
+                  onClick={() => handleReportClick("monthly")}
+                />
+              </div>
+            </PremiumBlurCard>
           </CardContent>
         </Card>
           </TabsContent>
