@@ -66,7 +66,7 @@ Being an adult does not mean it is too late. It means starting as a different ki
 1. Bugos, J. A., Perlstein, W. M., McCrae, C. S., Brophy, T. S., & Bedenbaugh, P. H. (2007). Individualized piano instruction enhances executive functioning and working memory in older adults. *Aging & Mental Health*, 11(4), 464–471. DOI: [10.1080/13607860601086504](https://doi.org/10.1080/13607860601086504)
 2. Wan, C. Y., & Schlaug, G. (2010). Music making as a tool for promoting brain plasticity across the life span. *The Neuroscientist*, 16(5), 566–577. DOI: [10.1177/1073858410377805](https://doi.org/10.1177/1073858410377805)
 
-### Image Sources
+## Image Sources
 - Cover: Auguste Renoir, "The Daughters of Catulle Mendès" (1888), oil on canvas. [The Metropolitan Museum of Art](https://www.metmuseum.org/art/collection/search/438014) — Public Domain.
 - Figure 1: Gabriël Metsu, "A Musical Party" (1659), oil on canvas. [The Metropolitan Museum of Art](https://www.metmuseum.org/art/collection/search/437070) — Public Domain.
 - Figure 2: Sir Edward Burne-Jones, "The Love Song" (1868–77), oil on canvas. [The Metropolitan Museum of Art](https://www.metmuseum.org/art/collection/search/435826) — Public Domain.

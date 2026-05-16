@@ -54,6 +54,6 @@ coverImageCredit: "Frédéric Chopin; Wikimedia Commons"
 
 Noteflex는 7레벨 21단계 구조 안에서 다양한 음표 패턴을 지속적으로 제시하도록 설계되어 있다. 학습자가 이미 익숙한 패턴에 머무르지 않고, 조금씩 새로운 패턴을 접하면서 인식 범위를 넓혀가는 구조다. 초견의 5가지 영향이 실제로 나타나려면 그 기반이 되는 반복 노출이 선행되어야 한다.
 
-## 참고 자료
+## 참고 문헌
 
 1. Lehmann, A. C., & McArthur, V. (2002). Sight-reading. In R. Parncutt & G. E. McPherson (Eds.), *The Science and Psychology of Music Performance: Creative Strategies for Teaching and Learning* (pp. 135–150). Oxford University Press.

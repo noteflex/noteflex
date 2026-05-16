@@ -81,5 +81,5 @@ Reading music, in the end, is the ability to automatically convert visual notati
 
 2. Wolf, T. (1976). A cognitive model of musical sight-reading. *Journal of Psycholinguistic Research*, 5(2), 143–171.
 
-### Image credits
+## Image Sources
 - Figure 1: Wikimedia Commons / Public Domain — J. S. Bach, *The Well-Tempered Clavier* Book II, A♭ Major Fugue (autograph manuscript)

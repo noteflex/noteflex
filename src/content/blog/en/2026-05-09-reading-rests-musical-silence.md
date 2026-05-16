@@ -67,6 +67,6 @@ The score does not go blank at a rest. Something is happening in that space, and
 
 2. Cooper, G. W., & Meyer, L. B. (1960). *The Rhythmic Structure of Music*. University of Chicago Press.
 
-### Image Sources
+## Image Sources
 - Figure 1: Beethoven, Piano Sonata No. 8 "Pathétique" Op. 13 (Universal Edition, 1918–1921). [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Beethoven_Sonata_piano_no8_mov1_01.JPG) — Public Domain.
 - Figure 2: Beethoven, autograph manuscript of Piano Sonata Op. 90 (1814). [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Beethoven-Op.90-manuscript-opening.jpg) — Public Domain. Beethoven-Haus Bonn.

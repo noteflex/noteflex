@@ -73,6 +73,6 @@ Reading a time signature is not a side detail. It is the act of grasping the bre
 
 1. Hannon, E. E., & Trehub, S. E. (2005). Metrical categories in infancy and adulthood. *Psychological Science*, 16(1), 48-55. DOI: [10.1111/j.0956-7976.2005.00779.x](https://doi.org/10.1111/j.0956-7976.2005.00779.x)
 
-### Image Credits
+## Image Sources
 - Figure 1: Wikimedia Commons / public domain — Time signature example
 - Figure 2: Wikimedia Commons / CC BY-SA 4.0 — Teaching rhythm in music education

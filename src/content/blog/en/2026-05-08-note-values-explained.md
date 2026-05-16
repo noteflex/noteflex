@@ -73,6 +73,6 @@ The different shapes on the page — open heads, filled heads, flags and beams �
 
 2. Grahn, J. A., & Brett, M. (2007). Rhythm and beat perception in motor areas of the brain. *Journal of Cognitive Neuroscience*, 19(5), 893–906. DOI: [10.1162/jocn.2007.19.5.893](https://doi.org/10.1162/jocn.2007.19.5.893)
 
-### Image Sources
+## Image Sources
 - Figure 1: Wikimedia Commons / CC BY-SA 3.0
 - Figure 2: Wikimedia Commons / CC BY-SA 2.0

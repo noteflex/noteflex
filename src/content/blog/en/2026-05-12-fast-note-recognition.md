@@ -66,7 +66,7 @@ Fast reading is not the speed of the eye. It is the speed of cognition. And the 
 1. Goolsby, T. W. (1994). Profiles of processing: Eye movements during sight-reading. *Music Perception*, 12(1), 97–123. DOI: [10.2307/40285757](https://doi.org/10.2307/40285757)
 2. Rayner, K. (1998). Eye movements in reading and information processing: 20 years of research. *Psychological Bulletin*, 124(3), 372–422. DOI: [10.1037/0033-2909.124.3.372](https://doi.org/10.1037/0033-2909.124.3.372)
 
-### Image Sources
+## Image Sources
 - Cover: Fred Becker, "Piano Player" (1935–40), wood engraving. [The Metropolitan Museum of Art](https://www.metmuseum.org/art/collection/search/374224) — Public Domain.
 - Figure 1: Gabriël Metsu, "A Musical Party" (1659), oil on canvas. [The Metropolitan Museum of Art](https://www.metmuseum.org/art/collection/search/437070) — Public Domain.
 - Figure 2: John George Brown, "The Music Lesson" (1870), oil on canvas. [The Metropolitan Museum of Art](https://www.metmuseum.org/art/collection/search/10240) — Public Domain.

@@ -68,6 +68,6 @@ When accumulated over weeks, these numbers form a visible trend. The shift from 
 
 1. Mishra, J. (2014). Factors related to sight-reading accuracy: A meta-analysis. *Journal of Research in Music Education*, 61(4), 452–465.
 
-### Image credits
+## Image Sources
 - Figure 1: Wikimedia Commons / Public Domain — Chopin Prélude, Op. 28, No. 7
 - Figure 2: Wikimedia Commons / Public Domain — Bach Lute Suite score

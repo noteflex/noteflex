@@ -67,11 +67,11 @@ Noteflex는 음표 위치별 평균 반응 시간을 자동 누적한다. 덧줄
 
 덧줄 읽기는 단순한 익숙함의 문제가 아니라 시각 인지의 구조적 부담이다. 부담의 위치를 안 다음에야 효율적으로 줄일 수 있다.
 
-## 참고 자료
+## 참고 문헌
 
 1. Goolsby, T. W. (1994). Eye movement in music reading: Effects of reading ability, notational complexity, and encounters. *Music Perception*, 12(1), 77–96.
 
 2. Wolf, T. (1976). A cognitive model of musical sight-reading. *Journal of Psycholinguistic Research*, 5(2), 143–171.
 
-### 이미지 출처
+## 이미지 출처
 - 그림 1: Wikimedia Commons / Public Domain — Ledger line notation diagram

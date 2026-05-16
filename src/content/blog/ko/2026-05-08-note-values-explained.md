@@ -67,12 +67,12 @@ Noteflex에서 음표 인식 훈련은 각 음표의 위치와 이름을 즉각 
 
 처음 악보를 펼쳤을 때 낯설었던 그 모양들 — 꼬리 하나, 꼬리 둘, 비어 있는 머리. 그것들은 계산 공식이 아니라 음악이 숨 쉬는 방식이다.
 
-## 참고 자료
+## 참고 문헌
 
 1. Drake, C., Jones, M. R., & Baruch, C. (2000). The development of rhythmic attending in auditory sequences: Attunement, referent period, focal attending. *Cognition*, 77(3), 251–288. DOI: [10.1016/S0010-0277(00)00106-2](https://doi.org/10.1016/S0010-0277(00)00106-2)
 
 2. Grahn, J. A., & Brett, M. (2007). Rhythm and beat perception in motor areas of the brain. *Journal of Cognitive Neuroscience*, 19(5), 893–906. DOI: [10.1162/jocn.2007.19.5.893](https://doi.org/10.1162/jocn.2007.19.5.893)
 
-### 이미지 출처
+## 이미지 출처
 - 그림 1: Wikimedia Commons / CC BY-SA 3.0
 - 그림 2: Wikimedia Commons / CC BY-SA 2.0

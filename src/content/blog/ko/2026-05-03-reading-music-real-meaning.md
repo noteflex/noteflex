@@ -75,11 +75,11 @@ Noteflex는 사용자가 음표를 답할 때마다 반응 속도를 0.01초 단
 
 악보를 읽는다는 것은 결국 시각 정보를 음악적 의미로 자동 변환하는 능력이다. 그 자동화 정도를 객관적으로 보는 일이 학습의 첫 걸음이다.
 
-## 참고 자료
+## 참고 문헌
 
 1. Sloboda, J. A. (1985). *The Musical Mind: The Cognitive Psychology of Music*. Oxford University Press.
 
 2. Wolf, T. (1976). A cognitive model of musical sight-reading. *Journal of Psycholinguistic Research*, 5(2), 143–171.
 
-### 이미지 출처
+## 이미지 출처
 - 그림 1: Wikimedia Commons / Public Domain — J. S. Bach, *The Well-Tempered Clavier* Book II, A♭ Major Fugue (autograph manuscript)

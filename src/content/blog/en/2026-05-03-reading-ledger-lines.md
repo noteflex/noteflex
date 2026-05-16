@@ -73,5 +73,5 @@ Reading ledger lines is not just a matter of familiarity; it is a structural cog
 
 2. Wolf, T. (1976). A cognitive model of musical sight-reading. *Journal of Psycholinguistic Research*, 5(2), 143–171.
 
-### Image credits
+## Image Sources
 - Figure 1: Wikimedia Commons / Public Domain — Ledger line notation diagram

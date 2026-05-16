@@ -51,7 +51,7 @@ The brain changes when patterns repeat. Which patterns those are, and how delibe
 
 1. Zatorre, R. J., & Salimpoor, V. N. (2013). From perception to pleasure: Music and its neural substrates. *Proceedings of the National Academy of Sciences*, 110(Suppl 2), 10430–10437. DOI: [10.1073/pnas.1301228110](https://doi.org/10.1073/pnas.1301228110)
 
-### Image Sources
+## Image Sources
 - Cover: Caravaggio, "The Musicians" (1597), oil on canvas. [The Metropolitan Museum of Art](https://www.metmuseum.org/art/collection/search/435844) — Public Domain.
 - Figure 1: Laurent de La Hyre, "Allegory of Music" (1649), oil on canvas. [The Metropolitan Museum of Art](https://www.metmuseum.org/art/collection/search/436836) — Public Domain.
 - Figure 2: Bartholomeus van der Helst, "The Musician" (1662), oil on canvas. [The Metropolitan Museum of Art](https://www.metmuseum.org/art/collection/search/436642) — Public Domain.

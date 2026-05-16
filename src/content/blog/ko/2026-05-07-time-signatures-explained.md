@@ -69,10 +69,10 @@ coverImageCredit: "Wikimedia Commons"
 
 박자표 한 줄을 읽는 일은 곡 전체의 호흡을 미리 잡는 일과 같다. 두 숫자의 의미를 명확히 갖고 있으면, 처음 보는 악보에서도 첫 마디 전에 곡의 흐름을 짐작할 수 있다.
 
-## 참고 자료
+## 참고 문헌
 
 1. Hannon, E. E., & Trehub, S. E. (2005). Metrical categories in infancy and adulthood. *Psychological Science*, 16(1), 48-55. DOI: [10.1111/j.0956-7976.2005.00779.x](https://doi.org/10.1111/j.0956-7976.2005.00779.x)
 
-### 이미지 출처
+## 이미지 출처
 - 그림 1: Wikimedia Commons / public domain — Time signature example
 - 그림 2: Wikimedia Commons / CC BY-SA 4.0 — Teaching rhythm in music education

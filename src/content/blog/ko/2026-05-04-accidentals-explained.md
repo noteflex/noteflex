@@ -69,10 +69,10 @@ Krumhansl(1990)은 조성 안의 음들이 청자의 지각 안에서 위계적 
 
 임시표가 많은 악구를 연습할 때, 어느 임시표에서 오류가 나는지 패턴을 기록해 두는 것이 효율적이다. 대개는 몇 개의 특정 음(예: 올림바장조 곡에서 F♮, E♭장조 곡에서 B♮)에서 반복적으로 오류가 난다. 그 위치를 집중 연습하면 전체 오류율이 눈에 띄게 줄어든다.
 
-## 참고 자료
+## 참고 문헌
 
 1. Krumhansl, C. L. (1990). *Cognitive Foundations of Musical Pitch*. Oxford University Press.
 
-### 이미지 출처
+## 이미지 출처
 - 그림 1: Wikimedia Commons / Public Domain — Chopin piano score with double accidentals
 - 그림 2: Wikimedia Commons / Public Domain — Piano keyboard diagram

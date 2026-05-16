@@ -73,6 +73,6 @@ A practical habit: when practicing a passage with multiple accidentals, track wh
 
 1. Krumhansl, C. L. (1990). *Cognitive Foundations of Musical Pitch*. Oxford University Press.
 
-### Image credits
+## Image Sources
 - Figure 1: Wikimedia Commons / Public Domain — Chopin piano score with double accidentals
 - Figure 2: Wikimedia Commons / Public Domain — Piano keyboard diagram

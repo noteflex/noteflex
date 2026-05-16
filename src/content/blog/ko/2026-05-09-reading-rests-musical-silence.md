@@ -61,12 +61,12 @@ Noteflex의 훈련 구조에는 음표 인식 이후 단계로 리듬 처리 정
 
 악보 위의 쉼표는 비어 있는 공간이 아니다. 그 공간이 음악적 의미를 품고 있다는 것을 읽어내는 것, 그것도 초견의 한 층위다.
 
-## 참고 자료
+## 참고 문헌
 
 1. Margulis, E. H. (2007). Silences in music are not silent: An exploratory study of context effects on the experience of musical pauses. *Music Perception*, 24(5), 485–506. DOI: [10.1525/mp.2007.24.5.485](https://doi.org/10.1525/mp.2007.24.5.485)
 
 2. Cooper, G. W., & Meyer, L. B. (1960). *The Rhythmic Structure of Music*. University of Chicago Press.
 
-### 이미지 출처
+## 이미지 출처
 - 그림 1: Beethoven, 피아노 소나타 8번 «비창» Op. 13 (Universal Edition, 1918–1921). [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Beethoven_Sonata_piano_no8_mov1_01.JPG) — Public Domain.
 - 그림 2: Beethoven, 피아노 소나타 Op. 90 자필 악보 (1814). [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Beethoven-Op.90-manuscript-opening.jpg) — Public Domain. Beethoven-Haus Bonn 소장.
