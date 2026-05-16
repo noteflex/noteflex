@@ -52,14 +52,14 @@ import {
 } from "@/lib/levelSystem";
 import { computeMasteryScore } from "@/components/MasteryScoreCard";
 
-const VALID_TABS = ["rhythm", "diagnosis", "activity"] as const;
+const VALID_TABS = ["diagnosis", "rhythm", "activity"] as const;
 type HomeTab = (typeof VALID_TABS)[number];
 
 function parseTab(value: string | null): HomeTab {
   if (value && (VALID_TABS as readonly string[]).includes(value)) {
     return value as HomeTab;
   }
-  return "rhythm";
+  return "diagnosis";
 }
 
 /* ---------- 공용 ---------- */
@@ -428,7 +428,7 @@ export default function Dashboard() {
   const handleTabChange = (value: string) => {
     const next = parseTab(value);
     setSearchParams(
-      next === "rhythm" ? {} : { tab: next },
+      next === "diagnosis" ? {} : { tab: next },
       { replace: true }
     );
   };
@@ -674,18 +674,18 @@ export default function Dashboard() {
         >
           <TabsList className="grid w-full grid-cols-3 h-auto">
             <TabsTrigger
-              value="rhythm"
-              className="text-xs sm:text-sm py-2 data-[state=active]:font-semibold"
-            >
-              <span aria-hidden className="mr-1">📅</span>
-              {t.dashboard.tabRhythm}
-            </TabsTrigger>
-            <TabsTrigger
               value="diagnosis"
               className="text-xs sm:text-sm py-2 data-[state=active]:font-semibold"
             >
               <span aria-hidden className="mr-1">🎯</span>
               {t.dashboard.tabDiagnosis}
+            </TabsTrigger>
+            <TabsTrigger
+              value="rhythm"
+              className="text-xs sm:text-sm py-2 data-[state=active]:font-semibold"
+            >
+              <span aria-hidden className="mr-1">📅</span>
+              {t.dashboard.tabRhythm}
             </TabsTrigger>
             <TabsTrigger
               value="activity"

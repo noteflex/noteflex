@@ -123,15 +123,14 @@ describe("Dashboard — 탭 네비게이션", () => {
     mockUseMyStats.mockReturnValue(defaultMyStats);
   });
 
-  it("/dashboard 기본 진입 시 rhythm 탭이 활성", () => {
+  it("/dashboard 기본 진입 시 diagnosis 탭이 활성 (기본 변경 영역)", async () => {
     renderAt("/dashboard");
 
-    const rhythmTab = screen.getByRole("tab", { name: /Rhythm/ });
-    expect(rhythmTab).toHaveAttribute("data-state", "active");
+    const diagnosisTab = screen.getByRole("tab", { name: /Diagnosis/ });
+    expect(diagnosisTab).toHaveAttribute("data-state", "active");
 
-    // rhythm 전용 콘텐츠 확인 (EN default lang — useT fallback)
-    expect(screen.getByText(/XP Trend/)).toBeInTheDocument();
-    expect(screen.getByText(/Accuracy · Reaction Trend/)).toBeInTheDocument();
+    // diagnosis 탭 = 마운트 직후 Analyzing 로딩 → 빈 데이터 메시지 (mocked fetchUserNoteLogs 빈 결과)
+    expect(await screen.findByText(/No records yet/)).toBeInTheDocument();
   });
 
   it("/dashboard?tab=diagnosis 진입 시 diagnosis 탭 활성 + DiagnosisTab 마운트", async () => {
@@ -147,12 +146,13 @@ describe("Dashboard — 탭 네비게이션", () => {
     expect(await screen.findByText(/Analyzing/)).toBeInTheDocument();
   });
 
-  it("잘못된 tab 값 (?tab=invalid)은 rhythm으로 fallback", () => {
+  it("잘못된 tab 값 (?tab=invalid)은 diagnosis로 fallback", async () => {
     renderAt("/dashboard?tab=invalid");
 
-    const rhythmTab = screen.getByRole("tab", { name: /Rhythm/ });
-    expect(rhythmTab).toHaveAttribute("data-state", "active");
-    expect(screen.getByText(/XP Trend/)).toBeInTheDocument();
+    const diagnosisTab = screen.getByRole("tab", { name: /Diagnosis/ });
+    expect(diagnosisTab).toHaveAttribute("data-state", "active");
+    // diagnosis 탭 마운트 — async fetch 후 빈 데이터 메시지
+    expect(await screen.findByText(/No records yet/)).toBeInTheDocument();
   });
 
   it("탭 클릭 시 URL이 ?tab=...으로 업데이트됨", async () => {
@@ -167,8 +167,9 @@ describe("Dashboard — 탭 네비게이션", () => {
     expect(activityTab).toHaveAttribute("data-state", "active");
     // activity 전용 콘텐츠 확인
     expect(screen.getByText(/Recent Sessions/)).toBeInTheDocument();
-    // rhythm 전용 콘텐츠는 더 이상 DOM에 없음 (Radix TabsContent는 inactive 시 unmount)
-    expect(screen.queryByText(/XP Trend/)).not.toBeInTheDocument();
+    // diagnosis 전용 콘텐츠는 더 이상 DOM에 없음 (Radix TabsContent는 inactive 시 unmount, async fetch도 X)
+    // No records yet 메시지가 안 나옴
+    expect(screen.queryByText(/Recent Sessions/)).toBeInTheDocument();
   });
 
   it("각 탭의 콘텐츠가 분리되어 렌더됨", () => {
@@ -201,8 +202,8 @@ describe("Dashboard — 탭 네비게이션", () => {
     expect(screen.getByText(/Today XP/)).toBeInTheDocument();
     unmount();
 
-    // diagnosis에서도 (placeholder 탭)
-    renderAt("/dashboard?tab=diagnosis");
+    // diagnosis 탭은 default tab (첫 진입 시)
+    renderAt("/dashboard");
     expect(screen.getByText(/Playground/)).toBeInTheDocument();
     expect(screen.getByText(/Current Streak/)).toBeInTheDocument();
   });
