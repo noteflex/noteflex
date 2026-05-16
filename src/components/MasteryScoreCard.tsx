@@ -51,7 +51,7 @@ const STRINGS = {
     playCount: "플레이 수",
     bestStreak: "최고 연속",
     noDataHint: "첫 세션을 시작해보세요",
-    upgrade: "Premium으로 보기",
+    upgrade: "프리미엄 혜택 보기 →",
   },
   en: {
     masteryScore: "Mastery",
@@ -62,7 +62,7 @@ const STRINGS = {
     playCount: "Play count",
     bestStreak: "Best streak",
     noDataHint: "Start your first session",
-    upgrade: "Unlock with Premium",
+    upgrade: "View Premium Benefits →",
   },
 } as const;
 

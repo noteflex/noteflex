@@ -63,9 +63,9 @@ describe("PremiumBlurCard", () => {
     expect(screen.getByTestId("upgrade-overlay")).toBeInTheDocument();
   });
 
-  it("free ko — 기본 CTA 텍스트 'Premium으로 보기'", () => {
+  it("free ko — 기본 CTA 텍스트 '프리미엄 혜택 보기 →'", () => {
     renderCard("free");
-    expect(screen.getByTestId("upgrade-cta")).toHaveTextContent("Premium으로 보기");
+    expect(screen.getByTestId("upgrade-cta")).toHaveTextContent("프리미엄 혜택 보기 →");
   });
 
   it("ctaText prop 제공 시 기본 텍스트 덮어쓰기", () => {

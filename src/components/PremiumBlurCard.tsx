@@ -11,8 +11,8 @@ interface PremiumBlurCardProps {
 }
 
 const DEFAULT_CTA: Record<string, Record<string, string>> = {
-  ko: { guest: "무료로 가입하기", free: "Premium으로 보기" },
-  en: { guest: "Sign up — free", free: "Unlock with Premium" },
+  ko: { guest: "무료로 가입하기", free: "프리미엄 혜택 보기 →" },
+  en: { guest: "Sign up — free", free: "View Premium Benefits →" },
 };
 
 export default function PremiumBlurCard({
