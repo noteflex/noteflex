@@ -10,6 +10,8 @@ import { Button } from "@/components/ui/button";
 import { formatSublevel, getPreviousSublevel } from "@/lib/levelSystem";
 import { generateCoachingComment } from "@/lib/aiCoaching";
 import { useLang } from "@/contexts/LanguageContext";
+import { useAuth } from "@/contexts/AuthContext";
+import { useLevelProgress } from "@/hooks/useLevelProgress";
 
 interface GameOverDialogProps {
   open: boolean;
@@ -39,6 +41,8 @@ export function GameOverDialog({
   onClose,
 }: GameOverDialogProps) {
   const { lang } = useLang();
+  const { user } = useAuth();
+  const { getProgressFor } = useLevelProgress();
   const accuracy = totalAttempts > 0
     ? Math.round((totalCorrect / totalAttempts) * 100)
     : 0;
@@ -48,6 +52,18 @@ export function GameOverDialog({
   const prevLabel = prev ? formatSublevel(prev.level, prev.sublevel) : null;
 
   const accuracyRatio = totalAttempts > 0 ? totalCorrect / totalAttempts : 0;
+
+  // 이전 누적 정답률 — 사인인 + 이전 세션 충분(≥5 시도) 영역만 비교 박음
+  const historicalAccuracy: number | undefined = (() => {
+    if (!user) return undefined;
+    const cumulative = getProgressFor(level, sublevel);
+    if (!cumulative) return undefined;
+    const preAttempts = cumulative.total_attempts - totalAttempts;
+    const preCorrect = cumulative.total_correct - totalCorrect;
+    if (preAttempts < 5) return undefined;
+    return preCorrect / preAttempts;
+  })();
+
   const coaching = generateCoachingComment(
     {
       outcome: "game_over",
@@ -55,6 +71,7 @@ export function GameOverDialog({
       bestStreak,
       avgReactionRatio,
       playCount,
+      historicalAccuracy,
     },
     lang === "ko" ? "ko" : "en"
   );

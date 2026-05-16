@@ -11,6 +11,8 @@ import { Button } from "@/components/ui/button";
 import { formatSublevel, getNextSublevel } from "@/lib/levelSystem";
 import { generateCoachingComment } from "@/lib/aiCoaching";
 import { useLang } from "@/contexts/LanguageContext";
+import { useAuth } from "@/contexts/AuthContext";
+import { useLevelProgress } from "@/hooks/useLevelProgress";
 
 interface SublevelPassedDialogProps {
   open: boolean;
@@ -46,12 +48,25 @@ export function SublevelPassedDialog({
   onClose,
 }: SublevelPassedDialogProps) {
   const { lang } = useLang();
+  const { user } = useAuth();
+  const { getProgressFor } = useLevelProgress();
   const [countdown, setCountdown] = useState(AUTO_ADVANCE_SECONDS);
   const autoAdvancedRef = useRef(false);
 
   const accuracy = totalAttempts > 0
     ? Math.round((totalCorrect / totalAttempts) * 100)
     : 0;
+
+  // 이전 누적 정답률 — 사인인 사용자 + 이전 세션 충분(≥5 시도) 박힌 영역만 비교 박음
+  const historicalAccuracy: number | undefined = (() => {
+    if (!user) return undefined;
+    const cumulative = getProgressFor(level, sublevel);
+    if (!cumulative) return undefined;
+    const preAttempts = cumulative.total_attempts - totalAttempts;
+    const preCorrect = cumulative.total_correct - totalCorrect;
+    if (preAttempts < 5) return undefined; // 신규 음정 영역
+    return preCorrect / preAttempts;
+  })();
   const next = getNextSublevel(level, sublevel);
   const hasNext = next !== null;
   const currentLabel = formatSublevel(level, sublevel);
@@ -85,6 +100,7 @@ export function SublevelPassedDialog({
       avgReactionRatio,
       playCount: 0,
       fastTrack,
+      historicalAccuracy,
     },
     lang === "ko" ? "ko" : "en"
   );

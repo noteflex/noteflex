@@ -12,12 +12,20 @@ export interface CoachingInput {
   playCount: number;
   /** 패스트트랙 통과 (true → 전용 메시지 반환) */
   fastTrack?: boolean;
+  /** 이전 누적 정답률 (이번 세션 제외, 0~1). 박힌 영역 = 비교 분기 박음. */
+  historicalAccuracy?: number;
 }
 
 interface CoachingStrings {
   passed: readonly [string, string, string];    // 3 branches
   game_over: readonly [string, string, string, string]; // 4 branches
   fast_track: string; // fastTrack 전용
+  /** "{delta}%p" placeholder 박힘. {direction} = "↑/→/↓" 박힘 */
+  comparisonPrefix: {
+    up: string;       // "이전 대비 정확도 +{delta}%p ↑"
+    flat: string;     // "이전 대비 정확도 유지"
+    down: string;     // "이전 대비 정확도 -{delta}%p ↓"
+  };
 }
 
 const STRINGS: Record<"ko" | "en", CoachingStrings> = {
@@ -41,6 +49,11 @@ const STRINGS: Record<"ko" | "en", CoachingStrings> = {
       "조금만 더 하면 돼요! 플레이할수록 기준에 가까워지고 있어요.",
     ],
     fast_track: "이미 충분합니다. 다음 단계로.",
+    comparisonPrefix: {
+      up: "이전 대비 정확도 +{delta}%p ↑ — ",
+      flat: "이전 대비 정확도 유지 → ",
+      down: "이전 대비 정확도 -{delta}%p ↓ — ",
+    },
   },
   en: {
     passed: [
@@ -62,19 +75,15 @@ const STRINGS: Record<"ko" | "en", CoachingStrings> = {
       "Almost there! Every play brings you closer to passing.",
     ],
     fast_track: "Already enough. Onto the next.",
+    comparisonPrefix: {
+      up: "Accuracy +{delta}%p ↑ vs your average — ",
+      flat: "Accuracy steady vs your average → ",
+      down: "Accuracy -{delta}%p ↓ vs your average — ",
+    },
   },
 };
 
-export function generateCoachingComment(
-  input: CoachingInput,
-  lang: "ko" | "en"
-): string {
-  const s = STRINGS[lang];
-
-  if (input.fastTrack) {
-    return s.fast_track;
-  }
-
+function baseComment(input: CoachingInput, s: CoachingStrings): string {
   if (input.outcome === "passed") {
     if (
       input.accuracy >= 0.95 &&
@@ -100,4 +109,38 @@ export function generateCoachingComment(
     return s.game_over[2];
   }
   return s.game_over[3];
+}
+
+function comparisonPrefix(
+  current: number,
+  historical: number,
+  prefixes: CoachingStrings["comparisonPrefix"]
+): string {
+  const deltaPct = Math.round((current - historical) * 100);
+  // ±2%p 이내는 유지로 박음 (노이즈 회피)
+  if (deltaPct >= -2 && deltaPct <= 2) return prefixes.flat;
+  if (deltaPct > 2) {
+    return prefixes.up.replace("{delta}", String(deltaPct));
+  }
+  return prefixes.down.replace("{delta}", String(Math.abs(deltaPct)));
+}
+
+export function generateCoachingComment(
+  input: CoachingInput,
+  lang: "ko" | "en"
+): string {
+  const s = STRINGS[lang];
+
+  if (input.fastTrack) {
+    return s.fast_track;
+  }
+
+  const base = baseComment(input, s);
+
+  // 비교 분기: historicalAccuracy 박힌 영역만 prefix 박음 (Guest = X)
+  if (input.historicalAccuracy !== undefined) {
+    return comparisonPrefix(input.accuracy, input.historicalAccuracy, s.comparisonPrefix) + base;
+  }
+
+  return base;
 }
