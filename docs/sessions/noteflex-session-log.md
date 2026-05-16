@@ -4,6 +4,39 @@
 
 ---
 
+## 2026-05-17 — 대시보드 회귀 fix 3건 + 전날 회귀 fix 2건 (reviewer + 페이지 제목)
+
+### 박음
+- ✅ **Fix 2: 페이지 제목 "Playground" → "Dashboard"** (strings.ts)
+  - KO: `"플레이그라운드"` → `"대시보드"`, subtitle `"오늘의 연습과 진행 상황"` → `"오늘의 연습과 진행 영역"`
+  - EN: `"Playground"` → `"Dashboard"`
+- ✅ **Fix 1: reviewer NewUserView 회귀** (Dashboard.tsx + migration)
+  - `isNewUser` 조건에 `!hasAnyProgress` 게이트 추가 (`user_sublevel_progress` fallback)
+  - `user_sessions` RLS가 막혀도 level progress 존재 시 신규 사용자 아님으로 처리
+  - `supabase/migrations/20260516_reviewer_sessions_rls.sql` 생성 (user_sessions RLS 보강 + last_practice_date 트리거)
+- ✅ **작업 1: KPI 카드 상태별 메시지 분기 정합** (`4fa8e0f`)
+  - 상태 2 스트릭 서브텍스트: `streakTodayFirst` → `streakStartFresh` ("Start fresh today")
+  - 상태 2 정답률·속도: `"첫 세션 이후 표시"` → `kpiNoDataToday` ("No data today")
+  - 상태 2 XP: `"첫 세션 이후 표시"` → `kpiNotYet` ("Not yet started")
+  - strings.ts 3키 추가: `streakStartFresh` · `kpiNoDataToday` · `kpiNotYet` (KO·EN)
+- ✅ **작업 2: MasteryHeroCard 대시보드에서 제거** (`4fa8e0f`)
+  - Dashboard.tsx에서 MasteryHeroCard·MasteryHeroCardSkeleton·computeMasteryScore 의존 전체 제거
+  - `useLevelProgress` 단순화: `progress: levelProgress`만 유지 (getProgressFor·progressLoading 제거)
+  - MasteryHeroCard 컴포넌트 파일 자체는 유지 (LevelSelect 등 단계 선택 영역에서 사용)
+- ✅ **작업 3: 마지막 활동 카드 LastActivityCard 노출 강화** (`4fa8e0f`)
+  - `lastActivityData` fallback 추가: `user_sessions` 없을 때 `dailyStats30d`에서 마지막 연습일 데이터 활용
+  - reviewer 또는 RLS 문제로 세션 조회 실패 시에도 카드 노출
+
+### 검증
+- 794/794 PASS (타입 에러 0, 빌드 성공)
+
+### 짚힌 영역
+- ⚠️ `supabase/migrations/20260516_reviewer_sessions_rls.sql` → Supabase Dashboard SQL Editor에서 수동 실행 필요
+  - user_sessions RLS SELECT·INSERT 정책 + last_practice_date 트리거 보강
+- ⚠️ MasteryHeroCard 단계 선택 화면(LevelSelect)에는 여전히 박혀 있음 — 대시보드 제거 영역만
+
+---
+
 ## 2026-05-16 — 대시보드 전면 단순화 sprint (탭 제거 + 3 상태 분기 + Top 5)
 
 ### 박음

@@ -7,6 +7,21 @@
 
 ---
 
+## 2026-05-17 회귀 자체 검증 체크리스트 (대시보드 sprint 이후 필수)
+
+> 대시보드 재설계 후 아래 시나리오를 reviewer 계정으로 반드시 확인.
+
+- [ ] **Supabase migration 수동 apply**: `20260516_reviewer_sessions_rls.sql` → SQL Editor 실행
+- [ ] **reviewer 로그인 후 /dashboard**: NewUserView 박지 말 것 (7 게임 이후)
+- [ ] **상태 2 KPI 서브텍스트**: 정답률 = "No data today", XP = "Not yet started"
+- [ ] **상태 2 마지막 활동 카드**: "Last activity: N days ago · Acc X% · Speed Xs · XP X" 박힘
+- [ ] **MasteryHeroCard 미노출**: 대시보드에 Lv 1-1 카드 박지 않는 것 확인
+- [ ] **페이지 제목**: "Dashboard" / "대시보드" 박힘 (Playground 아님)
+- [ ] **AI Feedback blur**: reviewer → blur 박힘, admin → 풀 노출
+- [ ] **신규 사용자 시뮬**: 세션 없는 계정 → NewUserView ("Start your first session") 박힘
+
+---
+
 ## 2026-05-16 미니멀 대시보드 → AI 보고서 PENDING
 
 ### 출시 후 즉시 (6월~) — AI 보고서 실제 구현 영역
