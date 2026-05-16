@@ -126,19 +126,19 @@ describe("Dashboard — 탭 네비게이션", () => {
   it("/dashboard 기본 진입 시 rhythm 탭이 활성", () => {
     renderAt("/dashboard");
 
-    const rhythmTab = screen.getByRole("tab", { name: /학습.*리듬|리듬/ });
+    const rhythmTab = screen.getByRole("tab", { name: /Rhythm/ });
     expect(rhythmTab).toHaveAttribute("data-state", "active");
 
-    // rhythm 전용 콘텐츠 확인
-    expect(screen.getByText(/XP 추이/)).toBeInTheDocument();
-    expect(screen.getByText(/정확도 · 반응속도 추이/)).toBeInTheDocument();
+    // rhythm 전용 콘텐츠 확인 (EN default lang — useT fallback)
+    expect(screen.getByText(/XP Trend/)).toBeInTheDocument();
+    expect(screen.getByText(/Accuracy · Reaction Trend/)).toBeInTheDocument();
   });
 
   it("/dashboard?tab=diagnosis 진입 시 diagnosis 탭 활성 + DiagnosisTab 마운트", async () => {
     renderAt("/dashboard?tab=diagnosis");
 
     const diagnosisTab = screen.getByRole("tab", {
-      name: /실력.*진단|진단/,
+      name: /Diagnosis/,
     });
     expect(diagnosisTab).toHaveAttribute("data-state", "active");
 
@@ -149,9 +149,9 @@ describe("Dashboard — 탭 네비게이션", () => {
   it("잘못된 tab 값 (?tab=invalid)은 rhythm으로 fallback", () => {
     renderAt("/dashboard?tab=invalid");
 
-    const rhythmTab = screen.getByRole("tab", { name: /학습.*리듬|리듬/ });
+    const rhythmTab = screen.getByRole("tab", { name: /Rhythm/ });
     expect(rhythmTab).toHaveAttribute("data-state", "active");
-    expect(screen.getByText(/XP 추이/)).toBeInTheDocument();
+    expect(screen.getByText(/XP Trend/)).toBeInTheDocument();
   });
 
   it("탭 클릭 시 URL이 ?tab=...으로 업데이트됨", async () => {
@@ -159,51 +159,51 @@ describe("Dashboard — 탭 네비게이션", () => {
     renderAt("/dashboard");
 
     const activityTab = screen.getByRole("tab", {
-      name: /활동.*기록|기록/,
+      name: /Activity/,
     });
     await user.click(activityTab);
 
     expect(activityTab).toHaveAttribute("data-state", "active");
     // activity 전용 콘텐츠 확인
-    expect(screen.getByText(/최근 세션/)).toBeInTheDocument();
+    expect(screen.getByText(/Recent Sessions/)).toBeInTheDocument();
     // rhythm 전용 콘텐츠는 더 이상 DOM에 없음 (Radix TabsContent는 inactive 시 unmount)
-    expect(screen.queryByText(/XP 추이/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/XP Trend/)).not.toBeInTheDocument();
   });
 
   it("각 탭의 콘텐츠가 분리되어 렌더됨", () => {
     // rhythm: XP 추이 / 정확도·반응속도 / 약점 음표 / AI 피드백
     const { unmount } = renderAt("/dashboard?tab=rhythm");
-    expect(screen.getByText(/XP 추이/)).toBeInTheDocument();
-    expect(screen.getByText(/약점 음표 Top 10/)).toBeInTheDocument();
+    expect(screen.getByText(/XP Trend/)).toBeInTheDocument();
+    expect(screen.getByText(/Weakest Notes — Top 10/)).toBeInTheDocument();
     expect(
-      screen.getByText(/AI가 너의 연주를 보고 코멘트와 다음 목표를 제안해요/)
+      screen.getByText(/AI reviews your playing and suggests/)
     ).toBeInTheDocument();
     // rhythm에는 세션 테이블 없음
-    expect(screen.queryByText(/최근 세션/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Recent Sessions/)).not.toBeInTheDocument();
     unmount();
 
     // activity: 최근 세션
     renderAt("/dashboard?tab=activity");
-    expect(screen.getByText(/최근 세션/)).toBeInTheDocument();
+    expect(screen.getByText(/Recent Sessions/)).toBeInTheDocument();
     // activity에는 차트/AI 피드백 없음
-    expect(screen.queryByText(/XP 추이/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/XP Trend/)).not.toBeInTheDocument();
     expect(
-      screen.queryByText(/AI가 너의 연주를 보고 코멘트와 다음 목표를 제안해요/)
+      screen.queryByText(/AI reviews your playing and suggests/)
     ).not.toBeInTheDocument();
   });
 
   it("헤더/요약 섹션은 탭 바깥에서 항상 렌더됨", () => {
     // rhythm에서
     const { unmount } = renderAt("/dashboard?tab=rhythm");
-    expect(screen.getByText(/플레이그라운드/)).toBeInTheDocument();
-    expect(screen.getByText(/현재 스트릭/)).toBeInTheDocument();
-    expect(screen.getByText(/오늘 XP/)).toBeInTheDocument();
+    expect(screen.getByText(/Playground/)).toBeInTheDocument();
+    expect(screen.getByText(/Current Streak/)).toBeInTheDocument();
+    expect(screen.getByText(/Today XP/)).toBeInTheDocument();
     unmount();
 
     // diagnosis에서도 (placeholder 탭)
     renderAt("/dashboard?tab=diagnosis");
-    expect(screen.getByText(/플레이그라운드/)).toBeInTheDocument();
-    expect(screen.getByText(/현재 스트릭/)).toBeInTheDocument();
+    expect(screen.getByText(/Playground/)).toBeInTheDocument();
+    expect(screen.getByText(/Current Streak/)).toBeInTheDocument();
   });
 });
 

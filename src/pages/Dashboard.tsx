@@ -6,7 +6,9 @@ import { AdBanner } from "@/components/AdBanner";
 import UpgradeModal from "@/components/UpgradeModal";
 import { getSlot } from "@/lib/adsense";
 import { formatDistanceToNow } from "date-fns";
-import { ko } from "date-fns/locale";
+import { ko, enUS } from "date-fns/locale";
+import { useLang, useT } from "@/contexts/LanguageContext";
+import { format as formatI18n } from "@/i18n/strings";
 import {
   Bar,
   BarChart,
@@ -103,9 +105,10 @@ function isToday(dateStr: string | null): boolean {
   return dateStr === `${y}-${m}-${day}`;
 }
 
-function formatDateTime(iso: string | null): string {
+function formatDateTime(iso: string | null, lang: "ko" | "en" | "ja" | "zh"): string {
   if (!iso) return "—";
-  return new Date(iso).toLocaleString("ko-KR", {
+  const localeTag = lang === "ko" ? "ko-KR" : "en-US";
+  return new Date(iso).toLocaleString(localeTag, {
     month: "2-digit",
     day: "2-digit",
     hour: "2-digit",
@@ -120,8 +123,6 @@ function trendIcon(trend: string | null): string {
   return "";
 }
 
-const DAY_LABELS = ["일", "월", "화", "수", "목", "금", "토"];
-
 /* ---------- 최신 업데이트 스트립 ---------- */
 
 function LastUpdatedStrip({
@@ -133,6 +134,8 @@ function LastUpdatedStrip({
   loading: boolean;
   onRefresh: () => void;
 }) {
+  const t = useT();
+  const { lang } = useLang();
   // 1분마다 상대 시간 재렌더 (tick이 바뀌어야 useMemo가 재평가됨)
   const [tick, setTick] = useState(0);
   useEffect(() => {
@@ -144,10 +147,10 @@ function LastUpdatedStrip({
     if (!lastActivity) return null;
     return formatDistanceToNow(lastActivity, {
       addSuffix: true,
-      locale: ko,
+      locale: lang === "ko" ? ko : enUS,
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [lastActivity, tick]);
+  }, [lastActivity, tick, lang]);
 
   // 로딩도 아니고 활동 기록도 없으면 완전히 숨김
   if (!loading && !lastActivity) return null;
@@ -169,10 +172,10 @@ function LastUpdatedStrip({
         </span>
         <span className="truncate">
           {loading ? (
-            "업데이트 중…"
+            t.dashboard.updating
           ) : (
             <>
-              실시간 · 마지막 연습{" "}
+              {t.dashboard.liveLastPractice}{" "}
               <span className="text-foreground font-medium">{relative}</span>
             </>
           )}
@@ -188,7 +191,7 @@ function LastUpdatedStrip({
         <RefreshCw
           className={`h-3 w-3 mr-1 ${loading ? "animate-spin" : ""}`}
         />
-        새로고침
+        {t.dashboard.refresh}
       </Button>
     </div>
   );
@@ -205,12 +208,14 @@ function XpBarChart({
   weekStats: DailyStat[];
   dailyStats30d: { stat_date: string; xp_earned: number }[];
 }) {
+  const t = useT();
+  const dayLabels = t.dashboard.dayLabels;
   const chartData = useMemo(() => {
     if (range === "7d") {
       return weekStats.map((d) => {
         const dt = new Date(`${d.stat_date}T00:00:00`);
         return {
-          label: DAY_LABELS[dt.getDay()],
+          label: dayLabels[dt.getDay()],
           xp: d.xp_earned,
           date: d.stat_date,
         };
@@ -235,7 +240,7 @@ function XpBarChart({
       }
       return out;
     }
-  }, [range, weekStats, dailyStats30d]);
+  }, [range, weekStats, dailyStats30d, dayLabels]);
 
   const total = chartData.reduce((s, d) => s + d.xp, 0);
 
@@ -246,7 +251,7 @@ function XpBarChart({
           📈
         </p>
         <p className="text-sm text-muted-foreground">
-          {range === "7d" ? "이번 주" : "최근 30일"} 기록이 없어요
+          {range === "7d" ? t.dashboard.noRecordWeek : t.dashboard.noRecord30d}
         </p>
       </div>
     );
@@ -276,7 +281,7 @@ function XpBarChart({
           <Tooltip
             cursor={{ fill: "rgba(0,0,0,0.04)" }}
             contentStyle={{ fontSize: "12px", borderRadius: "8px" }}
-            formatter={(value: number) => [`${value} XP`, "획득"]}
+            formatter={(value: number) => [`${value} XP`, t.dashboard.xpEarnedLabel]}
             labelFormatter={(_, payload) => {
               const date = payload?.[0]?.payload?.date;
               return date ?? "";
@@ -300,6 +305,7 @@ function AccuracyReactionChart({
     avg_reaction_ms: number | null;
   }[];
 }) {
+  const t = useT();
   const data = useMemo(
     () =>
       dailyStats30d.map((d) => ({
@@ -317,7 +323,7 @@ function AccuracyReactionChart({
     return (
       <div className="h-52 flex items-center justify-center">
         <p className="text-sm text-muted-foreground">
-          최근 30일 기록이 없어요
+          {t.dashboard.noRecord30d}
         </p>
       </div>
     );
@@ -326,7 +332,7 @@ function AccuracyReactionChart({
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div>
-        <p className="text-xs text-muted-foreground mb-2">정확도 (%)</p>
+        <p className="text-xs text-muted-foreground mb-2">{t.dashboard.accuracyAxis}</p>
         <div className="h-44 w-full">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart
@@ -338,7 +344,7 @@ function AccuracyReactionChart({
               <YAxis tick={{ fontSize: 10 }} axisLine={false} tickLine={false} width={32} domain={[0, 100]} />
               <Tooltip
                 contentStyle={{ fontSize: "12px", borderRadius: "8px" }}
-                formatter={(v: number | null) => v != null ? [`${v}%`, "정확도"] : ["—", "정확도"]}
+                formatter={(v: number | null) => v != null ? [`${v}%`, t.dashboard.accuracyTooltip] : ["—", t.dashboard.accuracyTooltip]}
               />
               <Line type="monotone" dataKey="accuracy" stroke="#10b981" strokeWidth={2} dot={{ r: 2 }} connectNulls />
             </LineChart>
@@ -346,7 +352,7 @@ function AccuracyReactionChart({
         </div>
       </div>
       <div>
-        <p className="text-xs text-muted-foreground mb-2">평균 반응속도 (ms)</p>
+        <p className="text-xs text-muted-foreground mb-2">{t.dashboard.reactionAxis}</p>
         <div className="h-44 w-full">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart
@@ -358,7 +364,7 @@ function AccuracyReactionChart({
               <YAxis tick={{ fontSize: 10 }} axisLine={false} tickLine={false} width={40} />
               <Tooltip
                 contentStyle={{ fontSize: "12px", borderRadius: "8px" }}
-                formatter={(v: number | null) => v != null ? [`${v}ms`, "평균"] : ["—", "평균"]}
+                formatter={(v: number | null) => v != null ? [`${v}ms`, t.dashboard.avgTooltip] : ["—", t.dashboard.avgTooltip]}
               />
               <Line type="monotone" dataKey="reaction" stroke="#6366f1" strokeWidth={2} dot={{ r: 2 }} connectNulls />
             </LineChart>
@@ -411,6 +417,8 @@ export default function Dashboard() {
   const stats = useUserStats(user);
   const myStats = useMyStats(user);
   const [xpRange, setXpRange] = useState<"7d" | "30d">("7d");
+  const t = useT();
+  const { lang } = useLang();
 
   // 탭 상태 ↔ URL 쿼리 동기화 (?tab=rhythm|diagnosis|activity)
   const [searchParams, setSearchParams] = useSearchParams();
@@ -484,34 +492,34 @@ export default function Dashboard() {
 
   const handleRefreshAll = async () => {
     await Promise.all([stats.refresh(), myStats.refresh()]);
-    toast.success("최신 데이터로 업데이트했어요");
+    toast.success(t.dashboard.refreshSuccess);
   };
 
   const handleLibraryClick = (e: React.MouseEvent) => {
     e.preventDefault();
-    toast.info("📚 내 악보 (관리자 프리뷰)", {
-      description: "공개 전 기능 확인용. 일반 사용자에게는 노출되지 않아요.",
+    toast.info(t.dashboard.libraryPreviewTitle, {
+      description: t.dashboard.libraryPreviewDesc,
     });
   };
 
   const handleReportClick = (type: "daily" | "weekly" | "monthly") => {
     const labels = {
-      daily: "오늘의 AI 코멘트",
-      weekly: "이번 주 리포트",
-      monthly: "월간 성장 리포트",
+      daily: t.dashboard.reportDailyLabel,
+      weekly: t.dashboard.reportWeeklyLabel,
+      monthly: t.dashboard.reportMonthlyLabel,
     };
-    toast.info(`🤖 ${labels[type]} 준비 중이에요`, {
+    toast.info(formatI18n(t.dashboard.reportComingSoon, { label: labels[type] }), {
       description:
         type === "daily"
-          ? "AI가 오늘 연주를 보고 짧은 코멘트를 남겨줄 거야."
-          : "AI가 너의 연주 패턴을 분석해줄 거야.",
+          ? t.dashboard.reportDailyDesc
+          : t.dashboard.reportNotDailyDesc,
     });
   };
 
   if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
-        <p className="text-muted-foreground text-sm">불러오는 중…</p>
+        <p className="text-muted-foreground text-sm">{t.dashboard.loading}</p>
       </div>
     );
   }
@@ -525,15 +533,15 @@ export default function Dashboard() {
   const homeNav = (
     <nav className="flex items-center gap-2">
       <Button variant="outline" size="sm" asChild>
-        <Link to="/">메인</Link>
+        <Link to="/">{t.dashboard.backToHome}</Link>
       </Button>
       {isAdmin ? (
         <Button
           variant="ghost"
           size="icon"
           onClick={handleLibraryClick}
-          aria-label="내 악보 (관리자 프리뷰)"
-          title="내 악보 (관리자 전용 · 준비 중)"
+          aria-label={t.dashboard.libraryPreviewTitle}
+          title={t.dashboard.libraryPreviewTitle}
         >
           <BookOpen className="h-5 w-5" />
         </Button>
@@ -558,8 +566,8 @@ export default function Dashboard() {
       <main className="max-w-3xl mx-auto px-4 py-8 space-y-8">
         {/* 페이지 제목 */}
         <div>
-          <h1 className="text-lg font-semibold tracking-tight">플레이그라운드</h1>
-          <p className="text-xs text-muted-foreground">오늘의 연습과 진행 상황</p>
+          <h1 className="text-lg font-semibold tracking-tight">{t.dashboard.pageTitle}</h1>
+          <p className="text-xs text-muted-foreground">{t.dashboard.pageSubtitle}</p>
         </div>
 
         {/* 상단 요약 */}
@@ -567,48 +575,51 @@ export default function Dashboard() {
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <StatTile
               icon="🔥"
-              label="현재 스트릭"
-              value={`${stats.currentStreak}일`}
+              label={t.dashboard.currentStreak}
+              value={formatI18n(t.dashboard.streakValueDays, { n: String(stats.currentStreak) })}
               subtext={
                 practicedToday
-                  ? "오늘 연습 완료 ✓"
+                  ? t.dashboard.streakTodayDone
                   : stats.currentStreak > 0
-                    ? "오늘 연습하면 이어져요"
-                    : "오늘 첫 연습을 시작해요"
+                    ? t.dashboard.streakTodayContinues
+                    : t.dashboard.streakTodayFirst
               }
               accentClass="text-orange-500"
             />
             <StatTile
               icon="⭐"
-              label="오늘 XP"
+              label={t.dashboard.todayXp}
               value={stats.todayXp}
-              subtext={`총 ${stats.totalXp.toLocaleString()} XP`}
+              subtext={formatI18n(t.dashboard.totalXp, { n: stats.totalXp.toLocaleString() })}
               accentClass="text-amber-500"
             />
             <StatTile
               icon="🏆"
-              label="리그"
+              label={t.dashboard.league}
               value={stats.league?.name ?? stats.currentLeagueName ?? "—"}
               subtext={
                 stats.standing
                   ? stats.standing.rank_in_group
-                    ? `그룹 ${stats.standing.rank_in_group}위 · 주간 ${stats.standing.weekly_xp} XP`
-                    : `주간 ${stats.standing.weekly_xp} XP`
-                  : "첫 연습 후 배정"
+                    ? formatI18n(t.dashboard.leagueGroupRank, {
+                        rank: String(stats.standing.rank_in_group),
+                        xp: String(stats.standing.weekly_xp),
+                      })
+                    : formatI18n(t.dashboard.leagueWeekly, { xp: String(stats.standing.weekly_xp) })
+                  : t.dashboard.leagueAfterFirst
               }
               accentClass=""
             />
             <StatTile
               icon="📅"
-              label="최장 스트릭"
-              value={`${stats.longestStreak}일`}
-              subtext="내 최고 기록"
+              label={t.dashboard.longestStreak}
+              value={formatI18n(t.dashboard.streakValueDays, { n: String(stats.longestStreak) })}
+              subtext={t.dashboard.bestRecord}
             />
           </div>
 
           {stats.error ? (
             <p className="text-xs text-destructive">
-              대시보드 데이터 불러오기 실패: {stats.error}
+              {formatI18n(t.dashboard.dataError, { error: stats.error })}
             </p>
           ) : null}
         </section>
@@ -647,21 +658,21 @@ export default function Dashboard() {
               className="text-xs sm:text-sm py-2 data-[state=active]:font-semibold"
             >
               <span aria-hidden className="mr-1">📅</span>
-              <span className="hidden xs:inline">학습 </span>리듬
+              {t.dashboard.tabRhythm}
             </TabsTrigger>
             <TabsTrigger
               value="diagnosis"
               className="text-xs sm:text-sm py-2 data-[state=active]:font-semibold"
             >
               <span aria-hidden className="mr-1">🎯</span>
-              <span className="hidden xs:inline">실력 </span>진단
+              {t.dashboard.tabDiagnosis}
             </TabsTrigger>
             <TabsTrigger
               value="activity"
               className="text-xs sm:text-sm py-2 data-[state=active]:font-semibold"
             >
               <span aria-hidden className="mr-1">🏆</span>
-              <span className="hidden xs:inline">활동 </span>기록
+              {t.dashboard.tabActivity}
             </TabsTrigger>
           </TabsList>
 
@@ -671,9 +682,11 @@ export default function Dashboard() {
         <Card>
           <CardHeader className="flex-row items-center justify-between space-y-0">
             <div>
-              <CardTitle className="text-base">XP 추이</CardTitle>
+              <CardTitle className="text-base">{t.dashboard.xpChartTitle}</CardTitle>
               <CardDescription>
-                {xpRange === "7d" ? "최근 7일" : "최근 30일"} 획득 XP
+                {formatI18n(t.dashboard.xpRangeEarned, {
+                  range: xpRange === "7d" ? t.dashboard.xpRangeRecent7d : t.dashboard.xpRangeRecent30d,
+                })}
               </CardDescription>
             </div>
             <div className="flex items-center gap-1 bg-muted rounded-md p-0.5">
@@ -686,7 +699,7 @@ export default function Dashboard() {
                     : "text-muted-foreground"
                 }`}
               >
-                7일
+                {t.dashboard.xpRange7d}
               </button>
               <button
                 type="button"
@@ -697,14 +710,14 @@ export default function Dashboard() {
                     : "text-muted-foreground"
                 }`}
               >
-                30일
+                {t.dashboard.xpRange30d}
               </button>
             </div>
           </CardHeader>
           <CardContent>
             {stats.loading || myStats.loading ? (
               <div className="h-52 flex items-center justify-center">
-                <p className="text-sm text-muted-foreground">불러오는 중…</p>
+                <p className="text-sm text-muted-foreground">{t.dashboard.loading}</p>
               </div>
             ) : (
               <XpBarChart
@@ -719,13 +732,13 @@ export default function Dashboard() {
         {/* 정확도 + 반응속도 */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">정확도 · 반응속도 추이</CardTitle>
-            <CardDescription>최근 30일 일별 평균</CardDescription>
+            <CardTitle className="text-base">{t.dashboard.accuracyReactionTitle}</CardTitle>
+            <CardDescription>{t.dashboard.accuracyReactionDesc}</CardDescription>
           </CardHeader>
           <CardContent>
             {myStats.loading ? (
               <div className="h-52 flex items-center justify-center">
-                <p className="text-sm text-muted-foreground">불러오는 중…</p>
+                <p className="text-sm text-muted-foreground">{t.dashboard.loading}</p>
               </div>
             ) : (
               <AccuracyReactionChart dailyStats30d={myStats.dailyStats30d} />
@@ -737,21 +750,21 @@ export default function Dashboard() {
         <Card>
           <CardHeader>
             <CardTitle className="text-base flex items-center">
-              <span>약점 음표 Top 10</span>
-              <InfoTooltip content="전체 게임 이력의 누적 정답률 기준 · 꾸준히 약했던 음표입니다" />
+              <span>{t.dashboard.weakNotesTitle}</span>
+              <InfoTooltip content={t.dashboard.weakNotesTooltip} />
             </CardTitle>
             <CardDescription>
-              5회 이상 시도한 음표 중 정답률이 낮은 순
+              {t.dashboard.weakNotesDesc}
             </CardDescription>
           </CardHeader>
           <CardContent>
             {myStats.loading ? (
               <p className="text-sm text-muted-foreground py-8 text-center">
-                불러오는 중…
+                {t.dashboard.loading}
               </p>
             ) : myStats.weakNotes.length === 0 ? (
               <p className="text-sm text-muted-foreground py-8 text-center">
-                분석할 데이터가 충분하지 않아요
+                {t.dashboard.weakNotesInsufficient}
               </p>
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
@@ -762,7 +775,7 @@ export default function Dashboard() {
                   >
                     <p className="text-xs text-muted-foreground">
                       #{idx + 1} ·{" "}
-                      {n.clef === "treble" ? "높은음자리" : "낮은음자리"}
+                      {n.clef === "treble" ? t.dashboard.clefTreble : t.dashboard.clefBass}
                     </p>
                     <p className="text-lg font-bold mt-1">
                       {n.note_key}{" "}
@@ -774,7 +787,7 @@ export default function Dashboard() {
                     </p>
                     {n.avg_reaction_ms != null ? (
                       <p className="text-[10px] text-muted-foreground mt-0.5">
-                        평균 {n.avg_reaction_ms}ms
+                        {formatI18n(t.dashboard.avgMs, { n: String(n.avg_reaction_ms) })}
                       </p>
                     ) : null}
                   </div>
@@ -789,30 +802,30 @@ export default function Dashboard() {
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
               <span aria-hidden>🤖</span>
-              AI 피드백
+              {t.dashboard.aiFeedbackTitle}
             </CardTitle>
             <CardDescription>
-              AI가 너의 연주를 보고 코멘트와 다음 목표를 제안해요
+              {t.dashboard.aiFeedbackDesc}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <ReportTile
                 icon="💬"
-                label="오늘의 코멘트"
-                period="매일 · 짧은 AI 피드백"
+                label={t.dashboard.reportDailyLabel}
+                period={t.dashboard.reportDailyPeriod}
                 onClick={() => handleReportClick("daily")}
               />
               <ReportTile
                 icon="📊"
-                label="이번 주 리포트"
-                period="주간 · 매주 월요일"
+                label={t.dashboard.reportWeeklyLabel}
+                period={t.dashboard.reportWeeklyPeriod}
                 onClick={() => handleReportClick("weekly")}
               />
               <ReportTile
                 icon="🏆"
-                label="월간 성장 리포트"
-                period="월간 · 매월 1일"
+                label={t.dashboard.reportMonthlyLabel}
+                period={t.dashboard.reportMonthlyPeriod}
                 onClick={() => handleReportClick("monthly")}
               />
             </div>
@@ -830,36 +843,36 @@ export default function Dashboard() {
             {/* 최근 세션 */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">최근 세션</CardTitle>
-                <CardDescription>최대 20개</CardDescription>
+                <CardTitle className="text-base">{t.dashboard.recentSessionsTitle}</CardTitle>
+                <CardDescription>{t.dashboard.recentSessionsDesc}</CardDescription>
               </CardHeader>
               <CardContent className="p-0">
                 {myStats.loading ? (
                   <p className="text-sm text-muted-foreground py-8 text-center">
-                    불러오는 중…
+                    {t.dashboard.loading}
                   </p>
                 ) : myStats.sessions.length === 0 ? (
                   <p className="text-sm text-muted-foreground py-8 text-center">
-                    아직 세션 기록이 없어요
+                    {t.dashboard.noSessions}
                   </p>
                 ) : (
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
                       <thead className="bg-muted/30 text-xs text-muted-foreground">
                         <tr className="text-left">
-                          <th className="px-4 py-2 font-medium">시각</th>
-                          <th className="px-4 py-2 font-medium">레벨</th>
+                          <th className="px-4 py-2 font-medium">{t.dashboard.tableTime}</th>
+                          <th className="px-4 py-2 font-medium">{t.dashboard.tableLevel}</th>
                           <th className="px-4 py-2 font-medium text-right">
-                            정답/전체
+                            {t.dashboard.tableCorrectTotal}
                           </th>
                           <th className="px-4 py-2 font-medium text-right">
-                            정확도
+                            {t.dashboard.tableAccuracy}
                           </th>
                           <th className="px-4 py-2 font-medium text-right">
-                            평균 반응
+                            {t.dashboard.tableAvgReaction}
                           </th>
                           <th className="px-4 py-2 font-medium text-right">
-                            XP
+                            {t.dashboard.tableXp}
                           </th>
                         </tr>
                       </thead>
@@ -870,7 +883,7 @@ export default function Dashboard() {
                             className="border-b border-border/50 hover:bg-accent/20"
                           >
                             <td className="px-4 py-2 text-xs">
-                              {formatDateTime(s.started_at)}
+                              {formatDateTime(s.started_at, lang)}
                             </td>
                             <td className="px-4 py-2">Lv.{s.level}</td>
                             <td className="px-4 py-2 text-right">

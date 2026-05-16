@@ -158,6 +158,89 @@ export interface Strings {
     /** "{hours}h {minutes}m" placeholder 박힘 */
     countdown: string;
   };
+  dashboard: {
+    backToHome: string;
+    libraryPreviewTitle: string;
+    libraryPreviewDesc: string;
+    pageTitle: string;
+    pageSubtitle: string;
+    loading: string;
+    updating: string;
+    liveLastPractice: string;
+    refresh: string;
+    refreshSuccess: string;
+    dataError: string;          // "{error}" placeholder
+    // StatTile labels
+    currentStreak: string;
+    streakValueDays: string;    // "{n}일" / "{n} days"
+    streakTodayDone: string;
+    streakTodayContinues: string;
+    streakTodayFirst: string;
+    todayXp: string;
+    totalXp: string;            // "총 {n} XP" / "Total {n} XP"
+    league: string;
+    leagueGroupRank: string;    // "{rank}위 · 주간 {xp} XP" / "Group #{rank} · Weekly {xp} XP"
+    leagueWeekly: string;       // "주간 {xp} XP" / "Weekly {xp} XP"
+    leagueAfterFirst: string;
+    longestStreak: string;
+    bestRecord: string;
+    // Tabs
+    tabRhythm: string;
+    tabDiagnosis: string;
+    tabActivity: string;
+    // XP chart
+    xpChartTitle: string;
+    xpRangeRecent7d: string;
+    xpRangeRecent30d: string;
+    xpRangeEarned: string;      // "{range} 획득 XP"
+    xpRange7d: string;
+    xpRange30d: string;
+    xpEarnedLabel: string;      // "획득" / "earned"
+    noRecordWeek: string;
+    noRecord30d: string;
+    // Accuracy / reaction chart
+    accuracyReactionTitle: string;
+    accuracyReactionDesc: string;
+    accuracyAxis: string;       // "정확도 (%)"
+    reactionAxis: string;       // "평균 반응속도 (ms)"
+    accuracyTooltip: string;
+    avgTooltip: string;
+    // Weak notes
+    weakNotesTitle: string;
+    weakNotesTooltip: string;
+    weakNotesDesc: string;
+    weakNotesInsufficient: string;
+    clefTreble: string;
+    clefBass: string;
+    avgMs: string;              // "평균 {n}ms"
+    // AI feedback
+    aiFeedbackTitle: string;
+    aiFeedbackDesc: string;
+    reportDailyLabel: string;
+    reportDailyPeriod: string;
+    reportWeeklyLabel: string;
+    reportWeeklyPeriod: string;
+    reportMonthlyLabel: string;
+    reportMonthlyPeriod: string;
+    reportComingSoon: string;   // "🤖 {label} 준비 중이에요"
+    reportDailyDesc: string;
+    reportNotDailyDesc: string;
+    // Recent sessions
+    recentSessionsTitle: string;
+    recentSessionsDesc: string;
+    noSessions: string;
+    tableTime: string;
+    tableLevel: string;
+    tableCorrectTotal: string;
+    tableAccuracy: string;
+    tableAvgReaction: string;
+    tableXp: string;
+    // Premium gate (AI 분석 보고서)
+    aiReportLocked: string;             // "AI 일간 분석 보고서"
+    aiReportLockedSubtitle: string;     // 짧은 안내
+    // DAY_LABELS
+    dayLabels: readonly string[];       // 일·월·화·... / S·M·T·...
+  };
 }
 
 const ko: Strings = {
@@ -333,6 +416,80 @@ const ko: Strings = {
     },
     countdown: "내일 reset까지: {hours}h {minutes}m",
   },
+  dashboard: {
+    backToHome: "메인",
+    libraryPreviewTitle: "📚 내 악보 (관리자 프리뷰)",
+    libraryPreviewDesc: "공개 전 기능 확인용. 일반 사용자에게는 노출되지 않아요.",
+    pageTitle: "플레이그라운드",
+    pageSubtitle: "오늘의 연습과 진행 상황",
+    loading: "불러오는 중…",
+    updating: "업데이트 중…",
+    liveLastPractice: "실시간 · 마지막 연습",
+    refresh: "새로고침",
+    refreshSuccess: "최신 데이터로 업데이트했어요",
+    dataError: "대시보드 데이터 불러오기 실패: {error}",
+    currentStreak: "현재 스트릭",
+    streakValueDays: "{n}일",
+    streakTodayDone: "오늘 연습 완료 ✓",
+    streakTodayContinues: "오늘 연습하면 이어져요",
+    streakTodayFirst: "오늘 첫 연습을 시작해요",
+    todayXp: "오늘 XP",
+    totalXp: "총 {n} XP",
+    league: "리그",
+    leagueGroupRank: "그룹 {rank}위 · 주간 {xp} XP",
+    leagueWeekly: "주간 {xp} XP",
+    leagueAfterFirst: "첫 연습 후 배정",
+    longestStreak: "최장 스트릭",
+    bestRecord: "내 최고 기록",
+    tabRhythm: "학습 리듬",
+    tabDiagnosis: "실력 진단",
+    tabActivity: "활동 기록",
+    xpChartTitle: "XP 추이",
+    xpRangeRecent7d: "최근 7일",
+    xpRangeRecent30d: "최근 30일",
+    xpRangeEarned: "{range} 획득 XP",
+    xpRange7d: "7일",
+    xpRange30d: "30일",
+    xpEarnedLabel: "획득",
+    noRecordWeek: "이번 주 기록이 없어요",
+    noRecord30d: "최근 30일 기록이 없어요",
+    accuracyReactionTitle: "정확도 · 반응속도 추이",
+    accuracyReactionDesc: "최근 30일 일별 평균",
+    accuracyAxis: "정확도 (%)",
+    reactionAxis: "평균 반응속도 (ms)",
+    accuracyTooltip: "정확도",
+    avgTooltip: "평균",
+    weakNotesTitle: "약점 음표 Top 10",
+    weakNotesTooltip: "전체 게임 이력의 누적 정답률 기준 · 꾸준히 약했던 음표입니다",
+    weakNotesDesc: "5회 이상 시도한 음표 중 정답률이 낮은 순",
+    weakNotesInsufficient: "분석할 데이터가 충분하지 않아요",
+    clefTreble: "높은음자리",
+    clefBass: "낮은음자리",
+    avgMs: "평균 {n}ms",
+    aiFeedbackTitle: "AI 피드백",
+    aiFeedbackDesc: "AI가 너의 연주를 보고 코멘트와 다음 목표를 제안해요",
+    reportDailyLabel: "오늘의 코멘트",
+    reportDailyPeriod: "매일 · 짧은 AI 피드백",
+    reportWeeklyLabel: "이번 주 리포트",
+    reportWeeklyPeriod: "주간 · 매주 월요일",
+    reportMonthlyLabel: "월간 성장 리포트",
+    reportMonthlyPeriod: "월간 · 매월 1일",
+    reportComingSoon: "🤖 {label} 준비 중이에요",
+    reportDailyDesc: "AI가 오늘 연주를 보고 짧은 코멘트를 남겨줄 거야.",
+    reportNotDailyDesc: "AI가 너의 연주 패턴을 분석해줄 거야.",
+    recentSessionsTitle: "최근 세션",
+    recentSessionsDesc: "최대 20개",
+    noSessions: "아직 세션 기록이 없어요",
+    tableTime: "시각",
+    tableLevel: "레벨",
+    tableCorrectTotal: "정답/전체",
+    tableAccuracy: "정확도",
+    tableAvgReaction: "평균 반응",
+    tableXp: "XP",
+    aiReportLocked: "AI 분석 보고서",
+    aiReportLockedSubtitle: "프리미엄에서 일간·주간·월간 AI 분석을 받아보세요.",
+    dayLabels: ["일", "월", "화", "수", "목", "금", "토"],
+  },
 };
 
 const en: Strings = {
@@ -507,6 +664,80 @@ const en: Strings = {
       close: "Try tomorrow",
     },
     countdown: "Resets in: {hours}h {minutes}m",
+  },
+  dashboard: {
+    backToHome: "Home",
+    libraryPreviewTitle: "📚 My Sheets (Admin preview)",
+    libraryPreviewDesc: "Pre-release feature check. Not visible to regular users.",
+    pageTitle: "Playground",
+    pageSubtitle: "Today's practice and progress",
+    loading: "Loading…",
+    updating: "Updating…",
+    liveLastPractice: "Live · Last practice",
+    refresh: "Refresh",
+    refreshSuccess: "Updated with the latest data",
+    dataError: "Failed to load dashboard data: {error}",
+    currentStreak: "Current Streak",
+    streakValueDays: "{n} days",
+    streakTodayDone: "Today's practice done ✓",
+    streakTodayContinues: "Practice today to keep the streak",
+    streakTodayFirst: "Start your first practice today",
+    todayXp: "Today XP",
+    totalXp: "Total {n} XP",
+    league: "League",
+    leagueGroupRank: "Group #{rank} · Weekly {xp} XP",
+    leagueWeekly: "Weekly {xp} XP",
+    leagueAfterFirst: "Assigned after first practice",
+    longestStreak: "Longest Streak",
+    bestRecord: "Personal best",
+    tabRhythm: "Rhythm",
+    tabDiagnosis: "Diagnosis",
+    tabActivity: "Activity",
+    xpChartTitle: "XP Trend",
+    xpRangeRecent7d: "Last 7 days",
+    xpRangeRecent30d: "Last 30 days",
+    xpRangeEarned: "{range} XP earned",
+    xpRange7d: "7d",
+    xpRange30d: "30d",
+    xpEarnedLabel: "Earned",
+    noRecordWeek: "No records this week",
+    noRecord30d: "No records in the last 30 days",
+    accuracyReactionTitle: "Accuracy · Reaction Trend",
+    accuracyReactionDesc: "Daily averages, last 30 days",
+    accuracyAxis: "Accuracy (%)",
+    reactionAxis: "Avg reaction time (ms)",
+    accuracyTooltip: "Accuracy",
+    avgTooltip: "Avg",
+    weakNotesTitle: "Weakest Notes — Top 10",
+    weakNotesTooltip: "By cumulative accuracy across all game history · consistently weak notes",
+    weakNotesDesc: "Lowest accuracy among notes with 5+ attempts",
+    weakNotesInsufficient: "Not enough data to analyze",
+    clefTreble: "Treble",
+    clefBass: "Bass",
+    avgMs: "Avg {n}ms",
+    aiFeedbackTitle: "AI Feedback",
+    aiFeedbackDesc: "AI reviews your playing and suggests comments and next goals",
+    reportDailyLabel: "Today's Comment",
+    reportDailyPeriod: "Daily · Short AI feedback",
+    reportWeeklyLabel: "Weekly Report",
+    reportWeeklyPeriod: "Weekly · Every Monday",
+    reportMonthlyLabel: "Monthly Growth Report",
+    reportMonthlyPeriod: "Monthly · 1st of each month",
+    reportComingSoon: "🤖 {label} coming soon",
+    reportDailyDesc: "AI will leave a short comment on today's playing.",
+    reportNotDailyDesc: "AI will analyze your playing patterns.",
+    recentSessionsTitle: "Recent Sessions",
+    recentSessionsDesc: "Up to 20",
+    noSessions: "No session records yet",
+    tableTime: "Time",
+    tableLevel: "Level",
+    tableCorrectTotal: "Correct/Total",
+    tableAccuracy: "Accuracy",
+    tableAvgReaction: "Avg reaction",
+    tableXp: "XP",
+    aiReportLocked: "AI Analytics Report",
+    aiReportLockedSubtitle: "Unlock daily, weekly, and monthly AI analytics with Premium.",
+    dayLabels: ["S", "M", "T", "W", "T", "F", "S"],
   },
 };
 
