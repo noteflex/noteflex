@@ -4,6 +4,82 @@
 
 ---
 
+## 2026-05-16 — 블로그 cover image 시각 정합 (그라데이션 아이콘 박스)
+
+### 박음
+- ✅ **cover image → 카테고리별 그라데이션 패턴 교체** (`a8f12bb`)
+  - 신규 `src/lib/categoryStyle.ts` — KO+EN 10개 카테고리 → gradient·icon·textColor 매핑
+  - 신규 `src/components/blog/CategoryCover.tsx` — `variant="card"` (w-16 h-16 아이콘) / `variant="hero"` (aspect-video)
+  - `Blog.tsx`: coverImage `<img>` → `<CategoryCover variant="card" />` 교체 (모든 글 통일)
+  - `BlogPost.tsx`: `<figure>` + figcaption → `<CategoryCover variant="hero" />` 교체
+  - frontmatter coverImage 데이터 보존 (출시 후 재활용 가능)
+- ✅ **카테고리 cover 크기 축소** (`b33280d`) — aspect-[16/10] 큰 박스 → w-16 h-16 아이콘 박스
+  - 카테고리 텍스트 제거 (우측 라벨 중복 제거)
+  - Blog.tsx 카드: `flex-row items-start` 직결 (모바일도 좌측 아이콘 + 우측 텍스트)
+
+### 카테고리별 색상 매핑
+| 카테고리 | 색상 | 아이콘 |
+|---|---|---|
+| 음악 이론 & 화성학 / Theory & Harmony | amber | 📚 |
+| 초견의 정석 / Sight-Reading Lab | amber | 📚 |
+| 실전 연습 가이드 / Practice Hub | emerald | 🎵 |
+| 직군별·학습과학 등 | emerald | 🎵 |
+| 뮤직 테크 & 미래 / Music Tech | sky | 🎧 |
+| 악기별 / Instrument | violet | 🎹 |
+| 미매핑 fallback | stone | 🎼 |
+
+### 검증
+- 794/794 테스트 PASS — 회귀 X
+- `npx tsc --noEmit` 에러 X
+- `npm run build` 성공
+
+---
+
+## 2026-05-15 — SEO fix + Paddle reviewer + UI 정비 + 블로그 D+A 이미지 정책
+
+### 박음
+
+#### SEO 색인 fix
+- ✅ **canonical 태그 임시 제거** (`27d94aa`) — 모든 페이지가 `https://www.noteflex.app/`을 canonical로 가리켜 Google이 블로그 글을 홈 중복으로 판단 → 색인 0건 → 전체 canonical 제거 (임시 옵션 B)
+- ⏳ **동적 SEO (옵션 A)** = react-helmet-async 라우트별 canonical·title·description·OG → 출시 후 PENDING
+
+#### Paddle 심사관 reviewer 흐름 (4 Stage)
+- ✅ **Stage 1: DB 마이그레이션** (`14c5302`) — `profiles.role` CHECK 확장 (`reviewer` 추가), `is_reviewer()` RPC, `forpaddle@noteflex.app` 계정 (role='reviewer', nickname='paddle_reviewer')
+- ✅ **Stage 2: /api/reviewer-login Serverless Function** (`fff32b9`) — 이메일 화이트리스트 + REVIEWER_ACCESS_CODE (timing-safe compare) + IP rate limit 5/min + admin.generateLink → verifyOtp → {access_token, refresh_token}
+- ✅ **Stage 3: AuthModal + ComingSoonGate 우회** (`6992240`) — `isPrivilegedRole = admin || reviewer`, GAME_ENABLED bypass
+- ✅ **Stage 4: 운영 가이드** (`d9ed1c5`) — `docs/reviewer/SETUP.md`
+- ✅ **/reviewer-login 별도 URL** (`0462f2d`, `feb212c`) — ComingSoonGate 없는 독립 진입 경로
+
+#### UI 정비 sprint (commits `20df266`~`c1d4428`)
+- ✅ 언어 자동 감지: `detectAutoLang()` — timezone Asia/Seoul → ko, 그 외 → en
+- ✅ 헤더 LangToggle 제거 (ProfilePage 표시 언어 설정으로 통합)
+- ✅ "Practice Dashboard" → "Dashboard" 단어 통일
+- ✅ 헤더 Profile 버튼 삭제 + displayName 스마트 노출 (자동닉네임 → 이메일 prefix + Tooltip)
+- ✅ displayName chip 스타일 (inline-flex rounded-full px-3 py-1.5) + 조건부 Tooltip (자동닉네임만)
+- ✅ UpgradeModal EN 번역 + "View Premium Benefits" testid
+- ✅ LockedByProgressDialog 신규 — ESC·backdrop 막힘, 티어 영역 첫 미통과 단계로 이동
+- ✅ LevelSelect 잠금 우선순위: subscription → progress → daily limit
+- ✅ ProfilePage 전체 EN 번역 + 표시 언어 토글 fix (setLang() 호출 누락 정정)
+- ✅ Index/PlayPage GAME_ENABLED 우회 (admin·reviewer)
+
+#### 블로그 D+A 이미지 정책 sprint
+- ✅ **IMAGE_POLICY.md** (`bfc27ad`) — D+A 정책 박음 (HISTORY_THEORY = Wikimedia 2개, PRACTICAL_GUIDE = 1개)
+- ✅ **80편 전수 점검** (`8feb072`~`f9f1f84`) — PRACTICAL_GUIDE 이미지 1개 축소 + 후크 위치 이미지 제거
+- ✅ **본문 출처 섹션 정리** — PRACTICAL_GUIDE 44편 이미지 출처 섹션 제거 (`a9a8c43`), HISTORY_THEORY 36편 이미지 출처 h3→h2 + References 통합 (`0b3ce5e`)
+- ✅ **DOI 404 fix** — Cepeda `0033-295X` → `0033-2909` 오타 정정, Hallam 1997 DOI URL 제거
+- ✅ **cover image 렌더링 추가** (`bf3442f`) → 무관 이미지 문제 발견 → 그라데이션 정책 전환
+
+### 짚힌 영역
+- ⚠️ Vercel env vars `SUPABASE_SERVICE_ROLE_KEY`, `REVIEWER_ACCESS_CODE` 설정 필요 (Paddle 심사 전)
+- ⚠️ Supabase Dashboard에서 `20260515_reviewer_role.sql` 적용 필요
+- ⚠️ www → non-www 301 = Vercel Dashboard에서 설정 (코드 영역 X)
+
+### 검증
+- 794/794 테스트 PASS (누적)
+- 빌드 에러 X
+
+---
+
 ## 2026-05-14 — Termly 약관 4종 완성 + KO 번역 + 14세 정책 정합
 
 ### 박음

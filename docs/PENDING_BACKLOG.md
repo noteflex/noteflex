@@ -7,6 +7,39 @@
 
 ---
 
+## 2026-05-15~16 추가 PENDING
+
+### 출시 전 필수 (5/31까지)
+
+- [ ] **Vercel env vars 설정** — Paddle 심사 전 반드시 박음
+  - `SUPABASE_SERVICE_ROLE_KEY` (Supabase 대시보드 → Project Settings → API)
+  - `REVIEWER_ACCESS_CODE` (임의 문자열, Paddle 심사관 공유용)
+- [ ] **Supabase 마이그레이션 적용** — `supabase/migrations/20260515_reviewer_role.sql`
+  - `profiles.role` CHECK 확장 + `is_reviewer()` RPC + forpaddle 계정
+- [ ] **www → non-www 301** — Vercel Dashboard 도메인 설정 영역
+  - `www.noteflex.app` → `noteflex.app` 301 리다이렉트
+  - Google Search Console에서 기본 도메인 non-www로 설정
+- [ ] **/about 페이지 콘텐츠** — Paddle 심사 신뢰도 영역
+- [ ] **/contact 페이지 양식** — Resend 통한 발송, Florida·Nebraska·Texas 컴플라이언스
+- [ ] **Paddle 심사 신청** — 5/17(일) 예정 (약관 4종 + about + contact 박은 후)
+- [ ] **Footer strings.ts 통신판매업 번호 갱신** — `제 2026-서울서초-1624호` (EN에서는 `Seoul Seocho-gu 2026-1624`)
+- [ ] **OG 이미지 생성** — `public/og-image.png` (1200×630), 소셜 공유 미리보기
+
+### 출시 후 즉시 (6월~)
+
+- [ ] **react-helmet-async 동적 SEO** (옵션 A) — 임시 canonical 제거 상태를 올바른 동적 메타로 교체
+  - 라우트별 `canonical`, `title`, `description`, `og:*` 태그 동적 설정
+  - BlogPost: `og:type='article'`, `hreflang ko/en`
+  - 보호 라우트(`/dashboard`, `/admin/*`) = `noindex`
+  - 작업량 ~2h, 의존성: 출시 안정화 후
+- [ ] **reviewer-login 비활성화** — Paddle 심사 통과 후
+  - `REVIEWER_ACCESS_CODE` Vercel env 제거 또는 `api/reviewer-login.ts` 삭제
+- [ ] **블로그 Pexels 음악 사진 보강** — 현재 그라데이션 아이콘 유지 여부 결정 (출시 후)
+- [ ] **DOI 검증 자동화** — CrossRef API 박음, 신규 글 작성 시 자동 검증
+- [ ] **본문 학술 인용 굵게 박는 패턴** — 신규 글 작성 시 default 스타일 정합
+
+---
+
 ## 2026-05-14 추가 PENDING
 
 ### 출시 전 필수 (5/14~31)
