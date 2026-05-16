@@ -42,9 +42,10 @@ export default function PremiumBlurCard({
 
   return (
     <div className="relative overflow-hidden rounded-lg" data-testid="premium-blur-card">
-      {/* blurred content — GPU layer via will-change */}
+      {/* blurred content — GPU layer via will-change. pointer-events-none 박음 → 잠금 우회 클릭 X */}
       <div
         style={{ filter: `blur(${blurAmount}px)`, willChange: "filter" }}
+        className="pointer-events-none select-none"
         aria-hidden="true"
         data-testid="blur-layer"
       >
