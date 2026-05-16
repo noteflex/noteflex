@@ -8,6 +8,7 @@ import { useT } from "@/contexts/LanguageContext";
 import { loadBlogPost, type BlogPost as BlogPostType } from "@/lib/markdownLoader";
 import { AdBanner } from "@/components/AdBanner";
 import { getSlot } from "@/lib/adsense";
+import { CategoryCover } from "@/components/blog/CategoryCover";
 
 export default function BlogPost() {
   // URL :lang 유지 — 콘텐츠 lang은 URL 박힌 값 사용 (SEO·linkability 영역)
@@ -89,26 +90,9 @@ export default function BlogPost() {
               {post.meta.date && (
                 <p className="text-sm text-muted-foreground mb-6">{post.meta.date}</p>
               )}
-              {post.meta.coverImage && (
-                <figure className="mb-10">
-                  <img
-                    src={post.meta.coverImage}
-                    alt={post.meta.coverImageAlt || post.meta.title || post.slug}
-                    className="aspect-video w-full object-cover rounded-xl"
-                    onError={(e) => {
-                      e.currentTarget.parentElement!.style.display = "none";
-                    }}
-                  />
-                  {(post.meta.coverImageCredit || post.meta.coverImageSource) && (
-                    <figcaption className="mt-2 text-xs text-muted-foreground text-right">
-                      {post.meta.coverImageCredit || post.meta.coverImageSource}
-                      {post.meta.coverImageLicense && (
-                        <span className="ml-1">({post.meta.coverImageLicense})</span>
-                      )}
-                    </figcaption>
-                  )}
-                </figure>
-              )}
+              <div className="mb-10">
+                <CategoryCover category={post.meta.category || ""} variant="hero" />
+              </div>
               <MarkdownContent>{post.content}</MarkdownContent>
 
               {/* 글 본문 하단 배너 (PC + 모바일 모두 노출) */}

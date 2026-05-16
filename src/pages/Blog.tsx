@@ -7,6 +7,7 @@ import { listBlogPosts } from "@/lib/markdownLoader";
 import { AdBanner } from "@/components/AdBanner";
 import { InFeedAd } from "@/components/InFeedAd";
 import { getSlot } from "@/lib/adsense";
+import { CategoryCover } from "@/components/blog/CategoryCover";
 
 const INFEED_AD_INTERVAL = 6;
 
@@ -88,19 +89,9 @@ export default function Blog() {
                       to={`/blog/${post.slug}`}
                       className="flex flex-col sm:flex-row gap-4 group"
                     >
-                      {post.coverImage && (
-                        <div className="sm:w-40 sm:shrink-0">
-                          <img
-                            src={post.coverImage}
-                            alt={post.coverImageAlt || post.title}
-                            className="aspect-[16/9] w-full object-cover rounded-lg"
-                            loading="lazy"
-                            onError={(e) => {
-                              e.currentTarget.parentElement!.style.display = "none";
-                            }}
-                          />
-                        </div>
-                      )}
+                      <div className="sm:w-40 sm:shrink-0">
+                        <CategoryCover category={post.category} variant="card" />
+                      </div>
                       <div className="flex-1 min-w-0">
                         {post.category && (
                           <span className="text-xs text-muted-foreground mb-1 block">
