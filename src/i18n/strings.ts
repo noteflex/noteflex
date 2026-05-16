@@ -158,6 +158,56 @@ export interface Strings {
     /** "{hours}h {minutes}m" placeholder 박힘 */
     countdown: string;
   };
+  diagnosis: {
+    analyzing: string;
+    noRecordsTitle: string;
+    noRecordsHint: string;
+    period7d: string;
+    period30d: string;
+    periodAll: string;
+    kpiTotalQuestions: string;
+    kpiAccuracy: string;
+    kpiCorrectCount: string;
+    kpiAvgReaction: string;
+    vulnerabilityTitle: string;
+    vulnerabilityLowest: string;
+    weakestNotesTitle: string;
+    weakestNotesTooltip: string;
+    slowestNotesTitle: string;
+    slowestNotesTooltip: string;
+    dailyAccuracyTitle: string;
+    reactionTrendTitle: string;
+    chartNoData: string;
+    chartAvgLabel: string;
+    chartMaxLabel: string;
+    chartLatestLabel: string;
+    secondsSuffix: string;
+    // Batch analysis (formal)
+    batchTitle: string;
+    batchTooltip: string;
+    batchPending: string;       // "{time}" placeholder
+    batchLastAnalyzedAt: string; // "마지막 분석: {time}" / "Last analyzed: {time}"
+    batchLoading: string;
+    batchError: string;          // "{err}" placeholder
+    batchEmpty: string;
+    batchWeaknessHeading: string; // "{count}" placeholder
+    batchNoWeakness: string;
+    batchMastersHeading: string;  // "{count}" placeholder
+    batchNoMasters: string;
+    clefTreble: string;
+    clefBass: string;
+    statAccuracy: string;        // "정답률 {pct}"
+  };
+  aiCoachingDetail: {
+    fasterNotesTitle: string;     // 🚀 빨라진 음표
+    slowerNotesTitle: string;     // 🐢 느려진 음표
+    accuracyUpTitle: string;      // 🎯 정확도 ↑
+    accuracyDownTitle: string;    // 🎯 정확도 ↓
+    insufficientData: string;     // 이전 기록 5회 미만 영역
+    noteDeltaSeconds: string;     // "{note} ({sign}{delta}초)"
+    noteDeltaPp: string;          // "{note} ({sign}{delta}%p)"
+    /** showDetail prop을 다이얼로그 표시할지 안 할지 (테스트·placeholder) */
+  };
   gameDialogs: {
     // GameOverDialog
     gameOverTitle: string;       // "😵 게임 오버 — {label}"
@@ -440,6 +490,54 @@ const ko: Strings = {
     },
     countdown: "내일 reset까지: {hours}h {minutes}m",
   },
+  diagnosis: {
+    analyzing: "분석 중...",
+    noRecordsTitle: "아직 기록이 없습니다",
+    noRecordsHint: "게임을 플레이하면 자동으로 기록됩니다!",
+    period7d: "최근 7일",
+    period30d: "최근 30일",
+    periodAll: "전체",
+    kpiTotalQuestions: "총 문제",
+    kpiAccuracy: "정답률",
+    kpiCorrectCount: "정답 수",
+    kpiAvgReaction: "평균 반응",
+    vulnerabilityTitle: "취약점 분석",
+    vulnerabilityLowest: "가장 낮은 정답률:",
+    weakestNotesTitle: "😰 가장 약한 음표 Top 3",
+    weakestNotesTooltip: "최근 200개 답변 기준 · 지금 세션의 경향을 반영합니다",
+    slowestNotesTitle: "🐢 가장 느린 음표 Top 3",
+    slowestNotesTooltip: "최근 200개 답변의 평균 반응 시간 기준",
+    dailyAccuracyTitle: "📈 일별 정답률",
+    reactionTrendTitle: "⏱ 평균 반응 시간 추이",
+    chartNoData: "아직 데이터가 없어요",
+    chartAvgLabel: "평균",
+    chartMaxLabel: "최고",
+    chartLatestLabel: "최근",
+    secondsSuffix: "초",
+    batchTitle: "🔬 공식 학습 분석",
+    batchTooltip: "매일 자정 KST 기준 공식 판정 · 정답률과 반응 속도로 판정합니다",
+    batchPending: "⏰ 아직 분석 데이터가 없어요. 내일 아침 06:00 (KST)에 첫 분석이 완료됩니다",
+    batchLastAnalyzedAt: "⏰ 마지막 분석: {time}",
+    batchLoading: "분석 데이터 불러오는 중...",
+    batchError: "❌ 분석 데이터 로드 실패: {err}",
+    batchEmpty: "아직 분석 데이터가 없어요. 더 많이 연습하면 약점/마스터가 자동으로 판정됩니다.",
+    batchWeaknessHeading: "🔴 집중 훈련 필요 ({count})",
+    batchNoWeakness: "아직 약점으로 판정된 음표가 없어요 🎉",
+    batchMastersHeading: "🏆 마스터 완료 ({count})",
+    batchNoMasters: "아직 마스터한 음표가 없어요. 95%+ 정답률 20회 이상 달성해보세요!",
+    clefTreble: "높은음자리",
+    clefBass: "낮은음자리",
+    statAccuracy: "정답률 {pct}",
+  },
+  aiCoachingDetail: {
+    fasterNotesTitle: "🚀 빨라진 음표",
+    slowerNotesTitle: "🐢 느려진 음표",
+    accuracyUpTitle: "🎯 정확도 ↑",
+    accuracyDownTitle: "🎯 정확도 ↓",
+    insufficientData: "이전 기록이 충분하지 않아 비교 분석은 다음 세션부터 박혀요.",
+    noteDeltaSeconds: "{note} ({sign}{delta}초)",
+    noteDeltaPp: "{note} ({sign}{delta}%p)",
+  },
   gameDialogs: {
     gameOverTitle: "😵 게임 오버 — {label}",
     gameOverDesc: "목숨이 다했어요. 다시 도전하거나 이전 단계로 돌아가서 연습할 수 있어요.",
@@ -709,6 +807,54 @@ const en: Strings = {
       close: "Try tomorrow",
     },
     countdown: "Resets in: {hours}h {minutes}m",
+  },
+  diagnosis: {
+    analyzing: "Analyzing...",
+    noRecordsTitle: "No records yet",
+    noRecordsHint: "Playing the game automatically saves your records!",
+    period7d: "Last 7 days",
+    period30d: "Last 30 days",
+    periodAll: "All time",
+    kpiTotalQuestions: "Total questions",
+    kpiAccuracy: "Accuracy",
+    kpiCorrectCount: "Correct",
+    kpiAvgReaction: "Avg reaction",
+    vulnerabilityTitle: "Vulnerability analysis",
+    vulnerabilityLowest: "Lowest accuracy:",
+    weakestNotesTitle: "😰 Weakest Notes — Top 3",
+    weakestNotesTooltip: "Based on last 200 answers · reflects current session trends",
+    slowestNotesTitle: "🐢 Slowest Notes — Top 3",
+    slowestNotesTooltip: "Based on average reaction time of last 200 answers",
+    dailyAccuracyTitle: "📈 Daily accuracy",
+    reactionTrendTitle: "⏱ Avg reaction time trend",
+    chartNoData: "No data yet",
+    chartAvgLabel: "Avg",
+    chartMaxLabel: "Max",
+    chartLatestLabel: "Latest",
+    secondsSuffix: "s",
+    batchTitle: "🔬 Formal Learning Analysis",
+    batchTooltip: "Official daily evaluation at midnight KST · based on accuracy and reaction speed",
+    batchPending: "⏰ No analysis data yet. First analysis completes tomorrow at 06:00 (KST).",
+    batchLastAnalyzedAt: "⏰ Last analyzed: {time}",
+    batchLoading: "Loading analysis data...",
+    batchError: "❌ Failed to load analysis: {err}",
+    batchEmpty: "No analysis data yet. Practice more and weaknesses/masters will be auto-detected.",
+    batchWeaknessHeading: "🔴 Needs focused practice ({count})",
+    batchNoWeakness: "No notes flagged as weakness yet 🎉",
+    batchMastersHeading: "🏆 Mastered ({count})",
+    batchNoMasters: "No mastered notes yet. Reach 95%+ accuracy over 20+ attempts!",
+    clefTreble: "Treble",
+    clefBass: "Bass",
+    statAccuracy: "Accuracy {pct}",
+  },
+  aiCoachingDetail: {
+    fasterNotesTitle: "🚀 Faster notes",
+    slowerNotesTitle: "🐢 Slower notes",
+    accuracyUpTitle: "🎯 Accuracy up",
+    accuracyDownTitle: "🎯 Accuracy down",
+    insufficientData: "Not enough prior data yet — note-level comparison starts next session.",
+    noteDeltaSeconds: "{note} ({sign}{delta}s)",
+    noteDeltaPp: "{note} ({sign}{delta}%p)",
   },
   gameDialogs: {
     gameOverTitle: "😵 Game Over — {label}",

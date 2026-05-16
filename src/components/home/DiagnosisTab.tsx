@@ -3,6 +3,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { fetchUserNoteLogs, type UserNoteLogRecord } from "@/lib/userNoteLogs";
 import BatchAnalysisSection from "@/components/BatchAnalysisSection";
 import InfoTooltip from "@/components/ui/info-tooltip";
+import { useT } from "@/contexts/LanguageContext";
 
 interface NoteLog extends UserNoteLogRecord {}
 
@@ -18,6 +19,7 @@ type PeriodFilter = "7d" | "30d" | "all";
 
 export default function DiagnosisTab() {
   const { user } = useAuth();
+  const t = useT();
   const [logs, setLogs] = useState<NoteLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [period, setPeriod] = useState<PeriodFilter>("7d");
@@ -152,7 +154,7 @@ export default function DiagnosisTab() {
     return (
       <div className="w-full flex items-center justify-center gap-2 py-12 text-muted-foreground">
         <span className="inline-block w-5 h-5 border-2 border-muted-foreground/30 border-t-muted-foreground rounded-full animate-spin" />
-        분석 중...
+        {t.diagnosis.analyzing}
       </div>
     );
   }
@@ -161,22 +163,41 @@ export default function DiagnosisTab() {
     return (
       <div className="w-full text-center py-12">
         <span className="text-4xl block mb-3">🎵</span>
-        <p className="text-muted-foreground text-sm">아직 기록이 없습니다</p>
+        <p className="text-muted-foreground text-sm">{t.diagnosis.noRecordsTitle}</p>
         <p className="text-muted-foreground text-xs mt-1">
-          게임을 플레이하면 자동으로 기록됩니다!
+          {t.diagnosis.noRecordsHint}
         </p>
       </div>
     );
   }
+
+  // ── 차트 X축 고정 영역 (작업 3) ──────────────────────────────
+  // 기간 영역만큼 X축 슬롯 박음 (7d=7, 30d=30, all=실제 데이터 길이 max 30).
+  // 데이터 박힌 날만 표시, 빈 날은 X축에만 박힘.
+  const slotCount = period === "7d" ? 7 : period === "30d" ? 30 : Math.max(dailyAccuracy.length, 7);
+
+  // 핵심 숫자 강조 (작업 3) — 평균·최고·최근
+  const accAvg = dailyAccuracy.length > 0
+    ? Math.round(dailyAccuracy.reduce((a, b) => a + b.accuracy, 0) / dailyAccuracy.length)
+    : 0;
+  const accMax = dailyAccuracy.length > 0
+    ? Math.max(...dailyAccuracy.map((d) => d.accuracy))
+    : 0;
+  const accLatest = dailyAccuracy.length > 0 ? dailyAccuracy[dailyAccuracy.length - 1].accuracy : 0;
+
+  const reactAvg = dailyAvgResponse.length > 0
+    ? +(dailyAvgResponse.reduce((a, b) => a + b.avgTime, 0) / dailyAvgResponse.length).toFixed(2)
+    : 0;
+  const reactLatest = dailyAvgResponse.length > 0 ? dailyAvgResponse[dailyAvgResponse.length - 1].avgTime : 0;
 
   return (
     <div className="w-full flex flex-col gap-6">
       {/* Period Filter */}
       <div className="w-full flex gap-2">
         {[
-          { id: "7d" as const, label: "최근 7일" },
-          { id: "30d" as const, label: "최근 30일" },
-          { id: "all" as const, label: "전체" },
+          { id: "7d" as const, label: t.diagnosis.period7d },
+          { id: "30d" as const, label: t.diagnosis.period30d },
+          { id: "all" as const, label: t.diagnosis.periodAll },
         ].map((option) => (
           <button
             key={option.id}
@@ -196,111 +217,28 @@ export default function DiagnosisTab() {
       <div className="w-full grid grid-cols-2 sm:grid-cols-4 gap-3">
         <div className="bg-card rounded-xl border border-border p-3 text-center">
           <p className="text-2xl font-bold text-foreground">{totalAnswered}</p>
-          <p className="text-[10px] text-muted-foreground">총 문제</p>
+          <p className="text-[10px] text-muted-foreground">{t.diagnosis.kpiTotalQuestions}</p>
         </div>
         <div className="bg-card rounded-xl border border-border p-3 text-center">
           <p className="text-2xl font-bold text-primary">{overallAccuracy}%</p>
-          <p className="text-[10px] text-muted-foreground">정답률</p>
+          <p className="text-[10px] text-muted-foreground">{t.diagnosis.kpiAccuracy}</p>
         </div>
         <div className="bg-card rounded-xl border border-border p-3 text-center">
           <p className="text-2xl font-bold text-foreground">{totalCorrect}</p>
-          <p className="text-[10px] text-muted-foreground">정답 수</p>
+          <p className="text-[10px] text-muted-foreground">{t.diagnosis.kpiCorrectCount}</p>
         </div>
         <div className="bg-card rounded-xl border border-border p-3 text-center">
           <p className="text-2xl font-bold text-foreground">{avgResponseTime}s</p>
-          <p className="text-[10px] text-muted-foreground">평균 반응</p>
+          <p className="text-[10px] text-muted-foreground">{t.diagnosis.kpiAvgReaction}</p>
         </div>
       </div>
 
-      {/* Batch Analysis (official flags) */}
-      <BatchAnalysisSection />
-
-      {/* Vulnerability Insight */}
-      {mostVulnerable && (
-        <div className="w-full rounded-xl border border-destructive/30 bg-destructive/5 p-4">
-          <p className="text-xs font-semibold text-destructive mb-1">취약점 분석</p>
-          <p className="text-sm text-foreground">
-            가장 낮은 정답률:{" "}
-            <span className="font-mono font-bold">{mostVulnerable.noteKey}</span> (
-            {mostVulnerable.accuracy}%)
-          </p>
-        </div>
-      )}
-
-      {/* Mastery Chart */}
-      {dailyAccuracy.length > 0 && (
-        <div className="w-full bg-card rounded-xl border border-border p-4">
-          <h3 className="text-sm font-bold text-foreground mb-3">📈 일별 정답률</h3>
-          <div className="flex items-end gap-2 h-24">
-            {dailyAccuracy.map((d, i) => (
-              <div key={i} className="flex-1 flex flex-col items-center gap-1">
-                <span className="text-[9px] font-bold text-foreground">{d.accuracy}%</span>
-                <div
-                  className="w-full rounded-t-md transition-all"
-                  style={{
-                    height: `${Math.max(d.accuracy * 0.8, 4)}px`,
-                    background:
-                      d.accuracy >= 80
-                        ? "hsl(var(--primary))"
-                        : d.accuracy >= 50
-                          ? "hsl(var(--accent))"
-                          : "hsl(var(--destructive))",
-                  }}
-                />
-                <span className="text-[8px] text-muted-foreground">{d.day}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Average Response Time Trend */}
-      {dailyAvgResponse.length > 0 && (
-        <div className="w-full bg-card rounded-xl border border-border p-4">
-          <h3 className="text-sm font-bold text-foreground mb-3">⏱ 평균 반응 시간 추이</h3>
-          <div className="w-full overflow-x-auto">
-            <svg viewBox="0 0 260 100" className="w-full h-28">
-              <polyline
-                fill="none"
-                stroke="hsl(var(--primary))"
-                strokeWidth="3"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                points={responseLinePoints}
-              />
-              {dailyAvgResponse.map((d, i) => {
-                const maxY = Math.max(...dailyAvgResponse.map((v) => v.avgTime), 1);
-                const x =
-                  dailyAvgResponse.length === 1
-                    ? 130
-                    : (i / (dailyAvgResponse.length - 1)) * 260;
-                const y = 80 - (d.avgTime / (maxY || 1)) * 80;
-                return (
-                  <g key={d.day}>
-                    <circle cx={x} cy={y} r={3} fill="hsl(var(--primary))" />
-                    <text
-                      x={x}
-                      y={96}
-                      textAnchor="middle"
-                      fontSize="8"
-                      fill="hsl(var(--muted-foreground))"
-                    >
-                      {d.day}
-                    </text>
-                  </g>
-                );
-              })}
-            </svg>
-          </div>
-        </div>
-      )}
-
-      {/* Weakest Notes */}
+      {/* Weakest Notes — 위로 이동 (작업 4) */}
       {weakest.length > 0 && (
         <div className="w-full bg-card rounded-xl border border-border p-4">
           <h3 className="text-sm font-bold text-foreground mb-3 flex items-center">
-            😰 가장 약한 음표 Top 3
-            <InfoTooltip content="최근 200개 답변 기준 · 지금 세션의 경향을 반영합니다" />
+            {t.diagnosis.weakestNotesTitle}
+            <InfoTooltip content={t.diagnosis.weakestNotesTooltip} />
           </h3>
           <div className="flex flex-col gap-2">
             {weakest.map((w, i) => (
@@ -334,12 +272,12 @@ export default function DiagnosisTab() {
         </div>
       )}
 
-      {/* Slowest Notes */}
+      {/* Slowest Notes — 위로 이동 (작업 4) */}
       {slowest.length > 0 && (
         <div className="w-full bg-card rounded-xl border border-border p-4">
           <h3 className="text-sm font-bold text-foreground mb-3 flex items-center">
-            🐢 가장 느린 음표 Top 3
-            <InfoTooltip content="최근 200개 답변의 평균 반응 시간 기준" />
+            {t.diagnosis.slowestNotesTitle}
+            <InfoTooltip content={t.diagnosis.slowestNotesTooltip} />
           </h3>
           <div className="flex flex-col gap-2">
             {slowest.map((s, i) => (
@@ -357,13 +295,144 @@ export default function DiagnosisTab() {
                   />
                 </div>
                 <span className="text-xs text-muted-foreground w-12 text-right">
-                  {s.avgTime}초
+                  {s.avgTime}{t.diagnosis.secondsSuffix}
                 </span>
               </div>
             ))}
           </div>
         </div>
       )}
+
+      {/* Batch Analysis (official flags) */}
+      <BatchAnalysisSection />
+
+      {/* Vulnerability Insight */}
+      {mostVulnerable && (
+        <div className="w-full rounded-xl border border-destructive/30 bg-destructive/5 p-4">
+          <p className="text-xs font-semibold text-destructive mb-1">{t.diagnosis.vulnerabilityTitle}</p>
+          <p className="text-sm text-foreground">
+            {t.diagnosis.vulnerabilityLowest}{" "}
+            <span className="font-mono font-bold">{mostVulnerable.noteKey}</span> (
+            {mostVulnerable.accuracy}%)
+          </p>
+        </div>
+      )}
+
+      {/* Daily Accuracy Chart — X축 고정 + 핵심 숫자 강조 (작업 3) */}
+      {dailyAccuracy.length > 0 ? (
+        <div className="w-full bg-card rounded-xl border border-border p-4">
+          <h3 className="text-sm font-bold text-foreground mb-3">{t.diagnosis.dailyAccuracyTitle}</h3>
+          {/* 핵심 숫자 강조 — 평균·최고·최근 */}
+          <div className="flex items-baseline justify-around mb-4 gap-2">
+            <div className="text-center">
+              <p className="text-2xl font-bold text-primary">{accLatest}%</p>
+              <p className="text-[10px] text-muted-foreground">{t.diagnosis.chartLatestLabel}</p>
+            </div>
+            <div className="text-center">
+              <p className="text-2xl font-bold text-foreground">{accAvg}%</p>
+              <p className="text-[10px] text-muted-foreground">{t.diagnosis.chartAvgLabel}</p>
+            </div>
+            <div className="text-center">
+              <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{accMax}%</p>
+              <p className="text-[10px] text-muted-foreground">{t.diagnosis.chartMaxLabel}</p>
+            </div>
+          </div>
+          {/* X축 영역 슬롯 박음 — 데이터 박힌 영역만 막대 박힘 */}
+          <div className="flex items-end gap-1 h-24" style={{ minWidth: `${slotCount * 8}px` }}>
+            {Array.from({ length: slotCount }, (_, i) => {
+              const dataIdx = dailyAccuracy.length - slotCount + i;
+              const d = dataIdx >= 0 ? dailyAccuracy[dataIdx] : null;
+              return (
+                <div key={i} className="flex-1 flex flex-col items-center gap-1 min-w-0">
+                  {d ? (
+                    <>
+                      <span className="text-[8px] font-bold text-foreground">{d.accuracy}%</span>
+                      <div
+                        className="w-full rounded-t-md transition-all"
+                        style={{
+                          height: `${Math.max(d.accuracy * 0.7, 4)}px`,
+                          background:
+                            d.accuracy >= 80
+                              ? "hsl(var(--primary))"
+                              : d.accuracy >= 50
+                                ? "hsl(var(--accent))"
+                                : "hsl(var(--destructive))",
+                        }}
+                      />
+                    </>
+                  ) : (
+                    <div className="w-full h-1 bg-muted/30 rounded-t-md mt-auto" />
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      ) : null}
+
+      {/* Avg Reaction Time Chart — X축 고정 + 핵심 숫자 강조 (작업 3) */}
+      {dailyAvgResponse.length > 0 ? (
+        <div className="w-full bg-card rounded-xl border border-border p-4">
+          <h3 className="text-sm font-bold text-foreground mb-3">{t.diagnosis.reactionTrendTitle}</h3>
+          {/* 핵심 숫자 — 최근·평균 */}
+          <div className="flex items-baseline justify-around mb-4 gap-2">
+            <div className="text-center">
+              <p className="text-2xl font-bold text-primary">{reactLatest}{t.diagnosis.secondsSuffix}</p>
+              <p className="text-[10px] text-muted-foreground">{t.diagnosis.chartLatestLabel}</p>
+            </div>
+            <div className="text-center">
+              <p className="text-2xl font-bold text-foreground">{reactAvg}{t.diagnosis.secondsSuffix}</p>
+              <p className="text-[10px] text-muted-foreground">{t.diagnosis.chartAvgLabel}</p>
+            </div>
+          </div>
+          {/* X축 슬롯 박음 — 데이터 박힌 점만 표시 */}
+          <div className="w-full overflow-x-auto">
+            <svg viewBox={`0 0 ${slotCount * 16} 100`} className="w-full h-28">
+              <polyline
+                fill="none"
+                stroke="hsl(var(--primary))"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                points={(() => {
+                  const maxY = Math.max(...dailyAvgResponse.map((d) => d.avgTime), 1);
+                  return dailyAvgResponse
+                    .map((d) => {
+                      const dataDay = d.day;
+                      const idx = dailyAccuracy.findIndex((a) => a.day === dataDay);
+                      // dataIdx → slotIdx: 데이터 박힌 영역의 오프셋 박음
+                      const slotIdx = idx >= 0 ? slotCount - dailyAvgResponse.length + dailyAvgResponse.indexOf(d) : 0;
+                      const x = slotIdx * 16 + 8;
+                      const y = 80 - (d.avgTime / (maxY || 1)) * 70;
+                      return `${x},${y}`;
+                    })
+                    .join(" ");
+                })()}
+              />
+              {dailyAvgResponse.map((d, i) => {
+                const maxY = Math.max(...dailyAvgResponse.map((v) => v.avgTime), 1);
+                const slotIdx = slotCount - dailyAvgResponse.length + i;
+                const x = slotIdx * 16 + 8;
+                const y = 80 - (d.avgTime / (maxY || 1)) * 70;
+                return (
+                  <g key={d.day}>
+                    <circle cx={x} cy={y} r={3} fill="hsl(var(--primary))" />
+                    <text
+                      x={x}
+                      y={96}
+                      textAnchor="middle"
+                      fontSize="7"
+                      fill="hsl(var(--muted-foreground))"
+                    >
+                      {d.day}
+                    </text>
+                  </g>
+                );
+              })}
+            </svg>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

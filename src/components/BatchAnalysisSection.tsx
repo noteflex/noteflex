@@ -1,8 +1,10 @@
 import { useMasteryDetails, type MasteryDetail } from "@/hooks/useMasteryDetails";
 import InfoTooltip from "@/components/ui/info-tooltip";
+import { useT } from "@/contexts/LanguageContext";
+import { format as formatI18n, type Strings } from "@/i18n/strings";
 
-function clefKo(clef: "treble" | "bass"): string {
-  return clef === "treble" ? "높은음자리" : "낮은음자리";
+function clefLabel(clef: "treble" | "bass", t: Strings): string {
+  return clef === "treble" ? t.diagnosis.clefTreble : t.diagnosis.clefBass;
 }
 
 /**
@@ -25,15 +27,16 @@ function pctText(acc: number | null): string {
   return `${Math.round(acc * 100)}%`;
 }
 
-function reactionText(ms: number | null): string {
+function reactionText(ms: number | null, secondsSuffix: string): string {
   if (ms == null) return "—";
-  return `${(ms / 1000).toFixed(1)}초`;
+  return `${(ms / 1000).toFixed(1)}${secondsSuffix}`;
 }
 
-function WeaknessRow({ row }: { row: MasteryDetail }) {
+function WeaknessRow({ row, t }: { row: MasteryDetail; t: Strings }) {
   const accPct = row.recent_accuracy != null ? row.recent_accuracy * 100 : null;
   const accLow = accPct != null && accPct < 60;
   const reactionSlow = row.avg_reaction_ms != null && row.avg_reaction_ms > 3000;
+  const accLabel = formatI18n(t.diagnosis.statAccuracy, { pct: pctText(row.recent_accuracy) });
 
   return (
     <div className="flex items-center gap-3 text-sm">
@@ -41,25 +44,25 @@ function WeaknessRow({ row }: { row: MasteryDetail }) {
         {row.note_key}
       </span>
       <span className="text-xs text-muted-foreground w-16">
-        {clefKo(row.clef)}
+        {clefLabel(row.clef, t)}
       </span>
       <div className="flex-1 flex items-center justify-end gap-2">
         <span
           className={`tabular-nums text-xs ${
             accLow ? "text-destructive font-bold" : "text-muted-foreground"
           }`}
-          aria-label={`정답률 ${pctText(row.recent_accuracy)}`}
+          aria-label={accLabel}
         >
-          정답률 {pctText(row.recent_accuracy)}
+          {accLabel}
         </span>
         <span className="text-muted-foreground text-xs">·</span>
         <span
           className={`tabular-nums text-xs ${
             reactionSlow ? "text-amber-600 font-bold" : "text-muted-foreground"
           }`}
-          aria-label={`평균 반응시간 ${reactionText(row.avg_reaction_ms)}`}
+          aria-label={reactionText(row.avg_reaction_ms, t.diagnosis.secondsSuffix)}
         >
-          {reactionText(row.avg_reaction_ms)}
+          {reactionText(row.avg_reaction_ms, t.diagnosis.secondsSuffix)}
         </span>
       </div>
     </div>
@@ -67,12 +70,13 @@ function WeaknessRow({ row }: { row: MasteryDetail }) {
 }
 
 export default function BatchAnalysisSection(): JSX.Element {
+  const t = useT();
   const { weaknesses, masters, lastAnalyzedAt, loading, error } =
     useMasteryDetails();
 
   const subtitle = lastAnalyzedAt
-    ? `⏰ 마지막 분석: ${formatKst(lastAnalyzedAt)}`
-    : "⏰ 아직 분석 데이터가 없어요. 내일 아침 06:00 (KST)에 첫 분석이 완료됩니다";
+    ? formatI18n(t.diagnosis.batchLastAnalyzedAt, { time: formatKst(lastAnalyzedAt) })
+    : t.diagnosis.batchPending;
 
   return (
     <section
@@ -85,8 +89,8 @@ export default function BatchAnalysisSection(): JSX.Element {
           id="batch-analysis-heading"
           className="text-sm font-bold text-foreground flex items-center"
         >
-          🔬 공식 학습 분석
-          <InfoTooltip content="매일 자정 KST 기준 공식 판정 · 정답률과 반응 속도로 판정합니다" />
+          {t.diagnosis.batchTitle}
+          <InfoTooltip content={t.diagnosis.batchTooltip} />
         </h3>
         <p className="text-[11px] text-muted-foreground mt-1">{subtitle}</p>
       </div>
@@ -99,7 +103,7 @@ export default function BatchAnalysisSection(): JSX.Element {
           aria-live="polite"
         >
           <span className="inline-block w-4 h-4 border-2 border-muted-foreground/30 border-t-muted-foreground rounded-full animate-spin" />
-          분석 데이터 불러오는 중...
+          {t.diagnosis.batchLoading}
         </div>
       )}
 
@@ -109,7 +113,7 @@ export default function BatchAnalysisSection(): JSX.Element {
           className="rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-xs text-destructive"
           role="alert"
         >
-          ❌ 분석 데이터 로드 실패: {error}
+          {formatI18n(t.diagnosis.batchError, { err: error })}
         </div>
       )}
 
@@ -119,8 +123,7 @@ export default function BatchAnalysisSection(): JSX.Element {
         weaknesses.length === 0 &&
         masters.length === 0 && (
           <div className="rounded-lg border border-border bg-muted/20 p-4 text-center text-xs text-muted-foreground">
-            아직 분석 데이터가 없어요. 더 많이 연습하면 약점/마스터가
-            자동으로 판정됩니다.
+            {t.diagnosis.batchEmpty}
           </div>
         )}
 
@@ -128,16 +131,16 @@ export default function BatchAnalysisSection(): JSX.Element {
       {!loading && !error && (weaknesses.length > 0 || masters.length > 0) && (
         <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-3 space-y-3">
           <h4 className="text-xs font-bold text-destructive">
-            🔴 집중 훈련 필요 ({weaknesses.length})
+            {formatI18n(t.diagnosis.batchWeaknessHeading, { count: String(weaknesses.length) })}
           </h4>
           {weaknesses.length === 0 ? (
             <p className="text-xs text-muted-foreground">
-              아직 약점으로 판정된 음표가 없어요 🎉
+              {t.diagnosis.batchNoWeakness}
             </p>
           ) : (
             <div className="flex flex-col gap-2">
               {weaknesses.map((w) => (
-                <WeaknessRow key={`${w.clef}:${w.note_key}`} row={w} />
+                <WeaknessRow key={`${w.clef}:${w.note_key}`} row={w} t={t} />
               ))}
             </div>
           )}
@@ -148,12 +151,11 @@ export default function BatchAnalysisSection(): JSX.Element {
       {!loading && !error && (weaknesses.length > 0 || masters.length > 0) && (
         <div className="rounded-lg border border-primary/30 bg-primary/5 p-3 space-y-2">
           <h4 className="text-xs font-bold text-primary">
-            🏆 마스터 완료 ({masters.length})
+            {formatI18n(t.diagnosis.batchMastersHeading, { count: String(masters.length) })}
           </h4>
           {masters.length === 0 ? (
             <p className="text-xs text-muted-foreground">
-              아직 마스터한 음표가 없어요. 95%+ 정답률 20회 이상
-              달성해보세요!
+              {t.diagnosis.batchNoMasters}
             </p>
           ) : (
             <div className="flex flex-wrap gap-2">
@@ -161,7 +163,7 @@ export default function BatchAnalysisSection(): JSX.Element {
                 <span
                   key={`${m.clef}:${m.note_key}`}
                   className="inline-flex items-center gap-1 text-[11px] font-mono font-bold bg-primary/10 text-primary border border-primary/20 rounded-md px-2 py-0.5"
-                  title={`${clefKo(m.clef)} ${m.note_key} · 정답률 ${pctText(m.recent_accuracy)}`}
+                  title={`${clefLabel(m.clef, t)} ${m.note_key} · ${formatI18n(t.diagnosis.statAccuracy, { pct: pctText(m.recent_accuracy) })}`}
                 >
                   🎵 {m.note_key}
                 </span>
