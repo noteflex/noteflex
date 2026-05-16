@@ -311,35 +311,80 @@ export function useSessionRecorder() {
           offset_ms_applied: getUserEnvOffset(),
         };
 
-        const { data, error } = await supabase
-          .from("user_sessions")
-          .insert({
-            user_id: user.id,
-            level: state.level,
-            started_at: state.startedAt.toISOString(),
-            ended_at: endedAt.toISOString(),
-            duration_seconds: durationSeconds,
-            total_notes: totalNotes,
-            correct_notes: correctNotes,
-            accuracy: accuracy,
-            avg_reaction_ms: avgReactionMs,
-            xp_earned: xpBreakdown.total,
-            session_type: state.sessionType,
-            note_attempts: noteAttempts,
-            summary: summary,
-          })
-          .select()
-          .single();
+        // ─── DB 저장 (RPC 우선 → 직접 INSERT fallback) ────────────
+        // record_game_session RPC: SECURITY DEFINER → RLS 우회.
+        //   user_sessions INSERT + user_stats_daily UPSERT + profiles.last_practice_date UPDATE
+        // RPC 미적용 시(migration 미실행): 직접 INSERT fallback.
+        const todayDate = new Date().toISOString().slice(0, 10);
+        let sessionId: string | null = null;
 
-        if (error) {
-          console.error("[SessionRecorder] DB 저장 실패:", error);
-          return null;
+        // 1) RPC 시도
+        const { data: rpcData, error: rpcError } = await supabase.rpc(
+          "record_game_session",
+          {
+            p_level:             state.level,
+            p_started_at:        state.startedAt.toISOString(),
+            p_ended_at:          endedAt.toISOString(),
+            p_duration_seconds:  durationSeconds,
+            p_total_notes:       totalNotes,
+            p_correct_notes:     correctNotes,
+            p_accuracy:          accuracy,
+            p_avg_reaction_ms:   avgReactionMs,
+            p_xp_earned:         xpBreakdown.total,
+            p_session_type:      state.sessionType ?? null,
+            p_note_attempts:     noteAttempts as unknown as object,
+            p_summary:           summary as unknown as object,
+          },
+        );
+
+        if (rpcError) {
+          console.warn("[SessionRecorder] RPC 실패 (migration 미적용일 수 있음):", rpcError.message);
+          // 2) 직접 INSERT fallback
+          const { data: directData, error: directError } = await supabase
+            .from("user_sessions")
+            .insert({
+              user_id:          user.id,
+              level:            state.level,
+              started_at:       state.startedAt.toISOString(),
+              ended_at:         endedAt.toISOString(),
+              duration_seconds: durationSeconds,
+              total_notes:      totalNotes,
+              correct_notes:    correctNotes,
+              accuracy:         accuracy,
+              avg_reaction_ms:  avgReactionMs,
+              xp_earned:        xpBreakdown.total,
+              session_type:     state.sessionType,
+              note_attempts:    noteAttempts,
+              summary:          summary,
+            })
+            .select("id")
+            .single();
+
+          if (directError) {
+            console.error("[SessionRecorder] user_sessions INSERT 실패:", directError.message,
+              "| code:", directError.code,
+              "| hint: RLS 정책 확인 (20260517_record_game_session_rpc.sql apply 필요)");
+          } else {
+            sessionId = directData?.id ?? null;
+          }
+
+          // 3) RPC 실패해도 profiles.last_practice_date는 직접 업데이트
+          //    (profiles UPDATE 정책은 auth.uid()=id 이므로 reviewer도 가능)
+          const { error: profileErr } = await supabase
+            .from("profiles")
+            .update({ last_practice_date: todayDate })
+            .eq("id", user.id);
+          if (profileErr) {
+            console.error("[SessionRecorder] profiles.last_practice_date 업데이트 실패:", profileErr.message);
+          }
+        } else {
+          sessionId = typeof rpcData === "string" ? rpcData : null;
         }
 
         stateRef.current = null;
 
         return {
-          sessionId: data.id,
+          sessionId: sessionId ?? "",
           xpEarned: xpBreakdown.total,
           xpBreakdown,
           accuracy,

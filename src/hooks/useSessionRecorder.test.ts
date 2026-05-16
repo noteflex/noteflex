@@ -17,6 +17,7 @@ vi.mock("@/contexts/AuthContext", () => ({
 
 vi.mock("@/integrations/supabase/client", () => ({
   supabase: {
+    rpc: vi.fn().mockResolvedValue({ data: null, error: { message: "RPC not available in test" } }),
     from: () => ({
       insert: (data: Record<string, unknown>) => {
         capturedInsert.value = data;
@@ -27,6 +28,9 @@ vi.mock("@/integrations/supabase/client", () => ({
           }),
         };
       },
+      update: () => ({
+        eq: () => Promise.resolve({ error: null }),
+      }),
     }),
   },
 }));
