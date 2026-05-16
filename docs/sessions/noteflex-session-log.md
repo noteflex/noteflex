@@ -4,6 +4,34 @@
 
 ---
 
+## 2026-05-16 — 대시보드·게임 다이얼로그 통합 fix 5건 (i18n 전수·차트·순서·잠금·음표별 비교)
+
+### 박음
+- ✅ **통합 fix 1+3+4: Diagnosis 탭 i18n + 차트 + 순서** (`2463998`)
+  - strings.ts: `diagnosis` 섹션 40+ 키 (KO·EN) + `aiCoachingDetail` 6 키
+  - DiagnosisTab·BatchAnalysisSection 전수 useT() 분기
+  - 차트 X축 영역 슬롯 박음 (7d=7, 30d=30) — 데이터 1개도 자연스러움
+  - 핵심 숫자 강조 (최근·평균·최고 text-2xl)
+  - 순서 재배치: KPI → 약점 Top 3 → 느린 Top 3 → 공식 학습 분석 → 취약점 → 차트
+- ✅ **통합 fix 2: AI Feedback 프리미엄 잠금 검증** (`d20b96d`)
+  - §5.4 영역 그대로 박혀있음 (회귀 X) 검증
+  - PremiumBlurCard blur-layer에 `pointer-events-none` 추가 박음 (잠금 우회 차단)
+- ✅ **통합 fix 5: 음표별 비교 분석** (`ef074f1`)
+  - 신규 `src/lib/noteComparison.ts`: 최근 30 vs 이전 120 비교, ±0.1초·±2%p 노이즈 회피
+  - 신규 `src/components/AICoachingDetail.tsx`: 4 카테고리 (빠른·느린·정확도 ↑·↓) Top 2씩
+  - Guest = 박지 말 것 (useAuth 분기), 신규 음표·데이터 부족 영역 = 렌더링 X
+  - SublevelPassedDialog·GameOverDialog 안에 박음
+
+### 검증
+- 794/794 PASS (각 fix 후 회귀 X)
+- `npx tsc --noEmit` 에러 X
+
+### 짚힌 영역
+- ⚠️ `responseLinePoints` ref 영역 제거 (사용 안 함) — 출시 후 cleanup
+- ⚠️ noteComparison의 currentWindow/previousWindow = 30/120 (조정 가능 영역, 출시 후 사용자 피드백)
+
+---
+
 ## 2026-05-16 — §5.4 회귀 fix 3건 (런타임 에러·한·영 혼재·로딩 인지)
 
 ### 박음
