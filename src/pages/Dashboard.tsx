@@ -479,7 +479,9 @@ export default function Dashboard() {
   // 오늘 있음: 오늘 활동 O → KPI 정상 + 음표 + AI
   const sessionsTyped = myStats.sessions as SessionRow[];
   const hasAnySession = sessionsTyped.length > 0;
-  const isNewUser = !hasAnySession && !stats.lastPracticeDate;
+  // user_sessions RLS가 reviewer를 막을 경우 대비: user_sublevel_progress를 추가 게임 이력 신호로 사용
+  const hasAnyProgress = levelProgress.length > 0;
+  const isNewUser = !hasAnySession && !hasAnyProgress && !stats.lastPracticeDate;
   const practicedToday = isToday(stats.lastPracticeDate);
 
   const todaySessions = sessionsTyped.filter(
