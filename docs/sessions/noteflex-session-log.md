@@ -4,6 +4,45 @@
 
 ---
 
+## 2026-05-16 — §5.4 사용자 대시보드 부분 잠금 sprint (5개 영역)
+
+### 박음
+- ✅ **작업 1: Mastery Score → Mastery 이름 변경** (`ab42e61`)
+  - MasteryScoreCard·MasteryHeroCard 사용자 노출 텍스트 (KO·EN)
+  - 변수명·컴포넌트명은 유지 (영향 범위 안전 영역)
+- ✅ **작업 5: "Premium으로 보기" → "프리미엄 혜택 보기 →"** (`5a5e33b`)
+  - PremiumBlurCard·MasteryScoreCard 모두 정합
+  - EN: "View Premium Benefits →" (UpgradeModal과 동일)
+- ✅ **작업 4: 대시보드 영어 번역 누락 전수 적용** (`6c466c8`)
+  - `strings.ts`: dashboard 섹션 신규 (60+ 키, KO·EN)
+  - Dashboard.tsx: hardcoded KO 모두 useT() 분기
+  - formatDateTime → ko-KR/en-US locale 분기
+  - date-fns formatDistanceToNow → ko/enUS locale 분기
+  - DAY_LABELS → t.dashboard.dayLabels (S·M·T·W·T·F·S / 일·월·화·...)
+  - Dashboard.test.tsx: EN default 정합 (6 tests)
+- ✅ **작업 3: AI 분석 보고서 프리미엄 잠금 + blur** (`f08f341`)
+  - aiReportTier 계산: admin·reviewer·pro → premium (풀), 그 외 → free (blur)
+  - AI 피드백 카드 리포트 그리드 PremiumBlurCard 박음
+  - handleOpenUpgrade → ?upgrade=1 쿼리 + UpgradeModal 자동 노출
+  - 카드 헤더 정상 노출 (어떤 영역인지 인지)
+- ✅ **작업 2: AI Coaching 게임 결과 다이얼로그 정합** (`81c622a`)
+  - aiCoaching.ts: `historicalAccuracy` 옵션 + comparisonPrefix(up/flat/down, KO·EN)
+  - ±2%p 이내는 유지 박음 (노이즈 회피)
+  - SublevelPassedDialog·GameOverDialog: useAuth + useLevelProgress 박음
+  - 사인인 + 이전 시도 ≥5 영역만 비교 박음
+  - Guest = 현재 세션 분석만 (기존 그대로)
+
+### 검증
+- 794/794 테스트 PASS — 모든 작업 후 회귀 X
+- `npx tsc --noEmit` 에러 X
+- 5개 영역 각 별도 commit + push
+
+### 짚힌 영역
+- ⚠️ Note-level 비교 분석 (음정별 기록 있음 vs 새 음정 분기) = 출시 후 PENDING (간단 비교부터 박음)
+- ⚠️ Dashboard 주석 영역(`/* AI 피드백 */` 등) 한국어 유지 — 사용자 노출 X
+
+---
+
 ## 2026-05-16 — 블로그 6편 추가 + cover image 시각 정합
 
 ### 박음 — 블로그 신규 6편 (한·영 12파일)

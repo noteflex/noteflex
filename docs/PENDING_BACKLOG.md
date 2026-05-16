@@ -7,6 +7,25 @@
 
 ---
 
+## 2026-05-16 §5.4 추가 PENDING
+
+### 출시 후 즉시 (6월~)
+
+- [ ] **Note-level AI Coaching 비교 분석** — 음정별 기록 있음 vs 새 음정 분기
+  - 현재: 사인인 사용자 = sublevel 누적 정답률 비교 (간단 비교)
+  - 출시 후: 노트별 history 박힘 → 음정 단위 정밀 분석 (Goolsby fixation time 등)
+  - 의존성: useUserNoteLogs 데이터 활용
+
+- [ ] **AI 분석 보고서 실제 구현** — 현재 SOON 라벨 + toast 예고만
+  - 일간: 매일 자동 생성, 짧은 코멘트
+  - 주간: 매주 월요일, 패턴 분석
+  - 월간: 매월 1일, 성장 리포트
+  - 구현: Vercel Cron + Claude API (Sonnet 4.6)
+
+- [ ] **Dashboard 주석 영역 정리** — 사용자 노출 X, 유지 가능 (정리 필요 시)
+
+---
+
 ## 2026-05-15~16 추가 PENDING
 
 ### 출시 전 필수 (5/31까지)
