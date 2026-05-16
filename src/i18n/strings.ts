@@ -315,6 +315,32 @@ export interface Strings {
     aiReportLockedSubtitle: string;     // 짧은 안내
     // DAY_LABELS
     dayLabels: readonly string[];       // 일·월·화·... / S·M·T·...
+
+    // ── 신규 미니멀 대시보드 영역 ─────────────────────────────
+    /** 상태 2: 오늘 활동 없음 */
+    emptyTodayTitle: string;        // "오늘은 아직 시작하지 않았어요"
+    emptyTodaySubtitle: string;     // "스트릭 유지하려면 오늘 1회 연습해주세요"
+    emptyTodayStreakHint: string;   // "오늘 박으면 {n}일째" placeholder
+    emptyTodayCta: string;          // "지금 시작 →"
+
+    /** 상태 3: 신규 사용자 */
+    newUserTitle: string;           // "🎵 첫 세션을 시작해보세요"
+    newUserSubtitle: string;        // "연습이 누적되면 약한 음표·진행 영역이 표시됩니다"
+    newUserCta: string;             // "지금 시작하기 →"
+
+    /** KPI 비교 영역 */
+    vsLast: string;                 // "vs 최근"
+    noLastSessionYet: string;       // "첫 세션 이후 표시"
+    lastActivityTitle: string;      // "마지막 활동"
+    lastActivityFormat: string;     // "{when} · 정답률 {acc}% · 속도 {speed}s · XP {xp}" placeholder
+    daysAgo: string;                // "{n}일 전" / "{n} days ago"
+    yesterday: string;
+    today: string;
+
+    /** AI 분석 보고서 영역 (신규 미니멀 버전) */
+    aiFeedbackSubtitleActive: string;   // "연주를 검토하고 다음 목표를 제안해드려요"
+    aiFeedbackSubtitleNew: string;      // "연습을 시작하면 AI가 분석해드려요"
+    aiFeedbackPremiumOnly: string;      // "🔒 프리미엄 전용"
   };
 }
 
@@ -634,6 +660,28 @@ const ko: Strings = {
     aiReportLocked: "AI 분석 보고서",
     aiReportLockedSubtitle: "프리미엄에서 일간·주간·월간 AI 분석을 받아보세요.",
     dayLabels: ["일", "월", "화", "수", "목", "금", "토"],
+
+    // ── 신규 미니멀 대시보드 영역 ───────────────
+    emptyTodayTitle: "오늘은 아직 시작하지 않았어요",
+    emptyTodaySubtitle: "스트릭 유지하려면 오늘 1회 연습해주세요",
+    emptyTodayStreakHint: "오늘 박으면 {n}일째 ✨",
+    emptyTodayCta: "지금 시작 →",
+
+    newUserTitle: "🎵 첫 세션을 시작해보세요",
+    newUserSubtitle: "연습이 누적되면 약한 음표·진행 영역이 표시됩니다",
+    newUserCta: "지금 시작하기 →",
+
+    vsLast: "vs 최근",
+    noLastSessionYet: "첫 세션 이후 표시",
+    lastActivityTitle: "마지막 활동",
+    lastActivityFormat: "{when} · 정답률 {acc}% · 속도 {speed}s · XP {xp}",
+    daysAgo: "{n}일 전",
+    yesterday: "어제",
+    today: "오늘",
+
+    aiFeedbackSubtitleActive: "연주를 검토하고 다음 목표를 제안해드려요",
+    aiFeedbackSubtitleNew: "연습을 시작하면 AI가 분석해드려요",
+    aiFeedbackPremiumOnly: "🔒 프리미엄 전용",
   },
 };
 
@@ -953,6 +1001,28 @@ const en: Strings = {
     aiReportLocked: "AI Analytics Report",
     aiReportLockedSubtitle: "Unlock daily, weekly, and monthly AI analytics with Premium.",
     dayLabels: ["S", "M", "T", "W", "T", "F", "S"],
+
+    // ── New minimal dashboard ───────────────────
+    emptyTodayTitle: "You haven't started today yet",
+    emptyTodaySubtitle: "Practice once today to keep your streak",
+    emptyTodayStreakHint: "Today makes it day {n} ✨",
+    emptyTodayCta: "Start now →",
+
+    newUserTitle: "🎵 Start your first session",
+    newUserSubtitle: "Stats appear here as you practice",
+    newUserCta: "Start now →",
+
+    vsLast: "vs Last session",
+    noLastSessionYet: "Shown after first session",
+    lastActivityTitle: "Last activity",
+    lastActivityFormat: "{when} · Acc {acc}% · Speed {speed}s · XP {xp}",
+    daysAgo: "{n} days ago",
+    yesterday: "Yesterday",
+    today: "Today",
+
+    aiFeedbackSubtitleActive: "AI reviews your playing and suggests next goals",
+    aiFeedbackSubtitleNew: "Practice and AI will analyze your patterns",
+    aiFeedbackPremiumOnly: "🔒 Premium only",
   },
 };
 

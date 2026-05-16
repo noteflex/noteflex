@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { fetchUserNoteLogs, type UserNoteLogRecord } from "@/lib/userNoteLogs";
-import BatchAnalysisSection from "@/components/BatchAnalysisSection";
+import BatchAnalysisSection from "@/components/_archive/BatchAnalysisSection";
 import InfoTooltip from "@/components/ui/info-tooltip";
 import { useT } from "@/contexts/LanguageContext";
 

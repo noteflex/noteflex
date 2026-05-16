@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, within } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
+import { render, screen } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 
 const { mockUseAuth, mockUseUserStats, mockUseMyStats } = vi.hoisted(() => ({
@@ -29,8 +28,7 @@ vi.mock("sonner", () => ({
   },
 }));
 
-// useLevelProgress is used by MasteryHeroCard in Dashboard — stub to prevent
-// async state updates after test teardown (window is not defined in jsdom).
+// useLevelProgress 영역 — async state updates after teardown 방지
 vi.mock("@/hooks/useLevelProgress", () => ({
   useLevelProgress: () => ({
     progress: [],
@@ -41,37 +39,10 @@ vi.mock("@/hooks/useLevelProgress", () => ({
   }),
 }));
 
-// DiagnosisTab pulls user note logs via supabase — stub to keep the tab test
-// hermetic. Empty result triggers the friendly "no records yet" empty state.
+// userNoteLogs 영역 — WeakSlowNotesCards 마운트 시 호출
 vi.mock("@/lib/userNoteLogs", () => ({
   fetchUserNoteLogs: vi.fn().mockResolvedValue({ data: [], error: null }),
 }));
-
-// BatchAnalysisSection has its own supabase-dependent hook — stub it out
-// since it's covered by its own dedicated tests.
-vi.mock("@/components/BatchAnalysisSection", () => ({
-  default: () => null,
-}));
-
-// Recharts uses ResizeObserver / DOM measurement — stub out the chart
-// components so the tab content mounts without jsdom layout errors.
-vi.mock("recharts", async () => {
-  const React = await import("react");
-  const Stub = ({ children }: { children?: React.ReactNode }) =>
-    React.createElement("div", { "data-testid": "recharts-stub" }, children);
-  const Leaf = () => null;
-  return {
-    ResponsiveContainer: Stub,
-    BarChart: Stub,
-    LineChart: Stub,
-    CartesianGrid: Leaf,
-    XAxis: Leaf,
-    YAxis: Leaf,
-    Tooltip: Leaf,
-    Bar: Leaf,
-    Line: Leaf,
-  };
-});
 
 import Dashboard from "./Dashboard";
 
@@ -83,7 +54,7 @@ const defaultStats = {
   lastPracticeDate: null,
   todayXp: 50,
   weekStats: [],
-  league: { id: 1, name: "Bronze", rank: 1, icon: null, color: null, description: null },
+  league: null,
   standing: null,
   loading: false,
   error: null,
@@ -111,7 +82,7 @@ function renderAt(initialPath: string) {
   );
 }
 
-describe("Dashboard — 탭 네비게이션", () => {
+describe("Dashboard — 미니멀 단일 페이지 (3 상태 분기)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockUseAuth.mockReturnValue({
@@ -119,95 +90,135 @@ describe("Dashboard — 탭 네비게이션", () => {
       profile: { role: "user" },
       loading: false,
     });
-    mockUseUserStats.mockReturnValue(defaultStats);
-    mockUseMyStats.mockReturnValue(defaultMyStats);
   });
 
-  it("/dashboard 기본 진입 시 diagnosis 탭이 활성 (기본 변경 영역)", async () => {
+  it("상태 3 (신규 사용자): 세션 X + lastPracticeDate null → 큰 CTA + AI 카드만", () => {
+    mockUseUserStats.mockReturnValue({ ...defaultStats, lastPracticeDate: null });
+    mockUseMyStats.mockReturnValue({ ...defaultMyStats, sessions: [] });
+
     renderAt("/dashboard");
 
-    const diagnosisTab = screen.getByRole("tab", { name: /Diagnosis/ });
-    expect(diagnosisTab).toHaveAttribute("data-state", "active");
-
-    // diagnosis 탭 = 마운트 직후 Analyzing 로딩 → 빈 데이터 메시지 (mocked fetchUserNoteLogs 빈 결과)
-    expect(await screen.findByText(/No records yet/)).toBeInTheDocument();
+    // 신규 사용자 영역 박힘 (EN default)
+    expect(screen.getByText(/Start your first session/)).toBeInTheDocument();
+    // AI Feedback 카드 박힘 (Pro 후킹)
+    expect(screen.getByTestId("ai-feedback-card")).toBeInTheDocument();
+    // KPI 카드는 노출 X (신규 사용자 영역)
+    expect(screen.queryByText(/Current Streak/)).not.toBeInTheDocument();
   });
 
-  it("/dashboard?tab=diagnosis 진입 시 diagnosis 탭 활성 + DiagnosisTab 마운트", async () => {
-    renderAt("/dashboard?tab=diagnosis");
-
-    const diagnosisTab = screen.getByRole("tab", {
-      name: /Diagnosis/,
+  it("상태 2 (오늘 활동 X): notice + KPI 비활성 + 마지막 활동", () => {
+    mockUseUserStats.mockReturnValue({
+      ...defaultStats,
+      currentStreak: 5,
+      lastPracticeDate: "2026-05-13", // 이전 날짜
     });
-    expect(diagnosisTab).toHaveAttribute("data-state", "active");
+    mockUseMyStats.mockReturnValue({
+      ...defaultMyStats,
+      sessions: [
+        {
+          id: "s1",
+          level: 2,
+          started_at: "2026-05-13T10:00:00Z",
+          total_notes: 20,
+          correct_notes: 17,
+          accuracy: 0.85,
+          avg_reaction_ms: 4500,
+          xp_earned: 100,
+        },
+      ],
+    });
 
-    // DiagnosisTab은 마운트 즉시 로딩 스피너를 표시 (fetchUserNoteLogs 진행 중)
-    // EN default lang
-    expect(await screen.findByText(/Analyzing/)).toBeInTheDocument();
-  });
-
-  it("잘못된 tab 값 (?tab=invalid)은 diagnosis로 fallback", async () => {
-    renderAt("/dashboard?tab=invalid");
-
-    const diagnosisTab = screen.getByRole("tab", { name: /Diagnosis/ });
-    expect(diagnosisTab).toHaveAttribute("data-state", "active");
-    // diagnosis 탭 마운트 — async fetch 후 빈 데이터 메시지
-    expect(await screen.findByText(/No records yet/)).toBeInTheDocument();
-  });
-
-  it("탭 클릭 시 URL이 ?tab=...으로 업데이트됨", async () => {
-    const user = userEvent.setup();
     renderAt("/dashboard");
 
-    const activityTab = screen.getByRole("tab", {
-      name: /Activity/,
-    });
-    await user.click(activityTab);
-
-    expect(activityTab).toHaveAttribute("data-state", "active");
-    // activity 전용 콘텐츠 확인
-    expect(screen.getByText(/Recent Sessions/)).toBeInTheDocument();
-    // diagnosis 전용 콘텐츠는 더 이상 DOM에 없음 (Radix TabsContent는 inactive 시 unmount, async fetch도 X)
-    // No records yet 메시지가 안 나옴
-    expect(screen.queryByText(/Recent Sessions/)).toBeInTheDocument();
-  });
-
-  it("각 탭의 콘텐츠가 분리되어 렌더됨", () => {
-    // rhythm: XP 추이 / 정확도·반응속도 / 약점 음표 / AI 피드백
-    const { unmount } = renderAt("/dashboard?tab=rhythm");
-    expect(screen.getByText(/XP Trend/)).toBeInTheDocument();
-    expect(screen.getByText(/Weakest Notes — Top 10/)).toBeInTheDocument();
-    expect(
-      screen.getByText(/AI reviews your playing and suggests/)
-    ).toBeInTheDocument();
-    // rhythm에는 세션 테이블 없음
-    expect(screen.queryByText(/Recent Sessions/)).not.toBeInTheDocument();
-    unmount();
-
-    // activity: 최근 세션
-    renderAt("/dashboard?tab=activity");
-    expect(screen.getByText(/Recent Sessions/)).toBeInTheDocument();
-    // activity에는 차트/AI 피드백 없음
-    expect(screen.queryByText(/XP Trend/)).not.toBeInTheDocument();
-    expect(
-      screen.queryByText(/AI reviews your playing and suggests/)
-    ).not.toBeInTheDocument();
-  });
-
-  it("헤더/요약 섹션은 탭 바깥에서 항상 렌더됨", () => {
-    // rhythm에서
-    const { unmount } = renderAt("/dashboard?tab=rhythm");
-    expect(screen.getByText(/Playground/)).toBeInTheDocument();
+    // notice 박힘 + 스트릭 hint
+    expect(screen.getByText(/haven't started today yet/)).toBeInTheDocument();
+    // KPI 4 카드 박힘
     expect(screen.getByText(/Current Streak/)).toBeInTheDocument();
     expect(screen.getByText(/Today XP/)).toBeInTheDocument();
-    unmount();
+    // 마지막 활동 카드 박힘
+    expect(screen.getByText(/Last activity/)).toBeInTheDocument();
+    // AI Feedback 박힘
+    expect(screen.getByTestId("ai-feedback-card")).toBeInTheDocument();
+  });
 
-    // diagnosis 탭은 default tab (첫 진입 시)
+  it("상태 1 (오늘 활동 있음): KPI 정상 + 음표 + AI", () => {
+    const today = new Date();
+    const y = today.getFullYear();
+    const m = String(today.getMonth() + 1).padStart(2, "0");
+    const day = String(today.getDate()).padStart(2, "0");
+    const todayIso = `${y}-${m}-${day}`;
+
+    mockUseUserStats.mockReturnValue({
+      ...defaultStats,
+      currentStreak: 3,
+      lastPracticeDate: todayIso,
+      todayXp: 80,
+    });
+    mockUseMyStats.mockReturnValue({
+      ...defaultMyStats,
+      sessions: [
+        {
+          id: "s-today",
+          level: 2,
+          started_at: `${todayIso}T10:00:00Z`,
+          total_notes: 20,
+          correct_notes: 18,
+          accuracy: 0.9,
+          avg_reaction_ms: 4000,
+          xp_earned: 80,
+        },
+      ],
+    });
+
     renderAt("/dashboard");
-    expect(screen.getByText(/Playground/)).toBeInTheDocument();
+
+    // notice 박지 말 것 (오늘 활동 영역)
+    expect(screen.queryByText(/haven't started today yet/)).not.toBeInTheDocument();
+    // KPI 박힘
     expect(screen.getByText(/Current Streak/)).toBeInTheDocument();
+    expect(screen.getByText(/Today's practice done/)).toBeInTheDocument();
+    // AI Feedback 박힘
+    expect(screen.getByTestId("ai-feedback-card")).toBeInTheDocument();
+  });
+
+  it("AI Feedback 카드는 Free 사용자에서 blur 박힘 (PremiumBlurCard)", () => {
+    mockUseUserStats.mockReturnValue({ ...defaultStats, lastPracticeDate: null });
+    mockUseMyStats.mockReturnValue({ ...defaultMyStats });
+
+    renderAt("/dashboard");
+
+    // PremiumBlurCard 박힘 (Free 사용자 = blur)
+    expect(screen.getByTestId("blur-layer")).toBeInTheDocument();
+    expect(screen.getByTestId("upgrade-overlay")).toBeInTheDocument();
+  });
+
+  it("admin 사용자는 AI Feedback 풀 노출 (blur 없음)", () => {
+    mockUseAuth.mockReturnValue({
+      user: { id: "admin-1" },
+      profile: { role: "admin" },
+      loading: false,
+    });
+    mockUseUserStats.mockReturnValue({ ...defaultStats, lastPracticeDate: null });
+    mockUseMyStats.mockReturnValue({ ...defaultMyStats });
+
+    renderAt("/dashboard");
+
+    // admin = 풀 노출, blur 없음
+    expect(screen.queryByTestId("blur-layer")).not.toBeInTheDocument();
+  });
+
+  it("reviewer 사용자는 AI Feedback blur 박힘 (Paddle 심사관 결제 흐름 검증)", () => {
+    mockUseAuth.mockReturnValue({
+      user: { id: "reviewer-1" },
+      profile: { role: "reviewer" },
+      loading: false,
+    });
+    mockUseUserStats.mockReturnValue({ ...defaultStats, lastPracticeDate: null });
+    mockUseMyStats.mockReturnValue({ ...defaultMyStats });
+
+    renderAt("/dashboard");
+
+    // reviewer = Free 동등 → blur 박힘
+    expect(screen.getByTestId("blur-layer")).toBeInTheDocument();
   });
 });
-
-// noop to keep `within` import (used in earlier iterations, defensive)
-void within;

@@ -10,39 +10,15 @@ import { formatDistanceToNow } from "date-fns";
 import { ko, enUS } from "date-fns/locale";
 import { useLang, useT } from "@/contexts/LanguageContext";
 import { format as formatI18n } from "@/i18n/strings";
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Line,
-  LineChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 
-import { useUserStats, type DailyStat } from "@/hooks/useUserStats";
+import { useUserStats } from "@/hooks/useUserStats";
 import { useMyStats } from "@/hooks/useMyStats";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
-import DiagnosisTab from "@/components/home/DiagnosisTab";
-import InfoTooltip from "@/components/ui/info-tooltip";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import MasteryHeroCard, { MasteryHeroCardSkeleton } from "@/components/dashboard/MasteryHeroCard";
+import { WeakSlowNotesCards } from "@/components/dashboard/WeakSlowNotesCards";
 import { useLevelProgress } from "@/hooks/useLevelProgress";
 import { getUserTier } from "@/lib/subscriptionTier";
 import {
@@ -52,17 +28,7 @@ import {
 } from "@/lib/levelSystem";
 import { computeMasteryScore } from "@/components/MasteryScoreCard";
 
-const VALID_TABS = ["diagnosis", "rhythm", "activity"] as const;
-type HomeTab = (typeof VALID_TABS)[number];
-
-function parseTab(value: string | null): HomeTab {
-  if (value && (VALID_TABS as readonly string[]).includes(value)) {
-    return value as HomeTab;
-  }
-  return "diagnosis";
-}
-
-/* ---------- 공용 ---------- */
+/* ---------- 공용 helpers ---------- */
 
 function StatTile({
   label,
@@ -70,15 +36,22 @@ function StatTile({
   subtext,
   icon,
   accentClass,
+  dimmed,
 }: {
   label: string;
   value: string | number;
   subtext?: string;
   icon: string;
   accentClass?: string;
+  /** 상태 2 (오늘 활동 X) — 회색 비활성 박음 */
+  dimmed?: boolean;
 }) {
   return (
-    <div className="rounded-lg border border-border bg-card px-4 py-4">
+    <div
+      className={`rounded-lg border border-border bg-card px-4 py-4 ${
+        dimmed ? "opacity-50" : ""
+      }`}
+    >
       <div className="flex items-center gap-2">
         <span className="text-xl" aria-hidden>
           {icon}
@@ -97,31 +70,21 @@ function StatTile({
   );
 }
 
-function isToday(dateStr: string | null): boolean {
-  if (!dateStr) return false;
+function todayIso(): string {
   const d = new Date();
   const y = d.getFullYear();
   const m = String(d.getMonth() + 1).padStart(2, "0");
   const day = String(d.getDate()).padStart(2, "0");
-  return dateStr === `${y}-${m}-${day}`;
+  return `${y}-${m}-${day}`;
 }
 
-function formatDateTime(iso: string | null, lang: "ko" | "en" | "ja" | "zh"): string {
-  if (!iso) return "—";
-  const localeTag = lang === "ko" ? "ko-KR" : "en-US";
-  return new Date(iso).toLocaleString(localeTag, {
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+function isToday(dateStr: string | null): boolean {
+  if (!dateStr) return false;
+  return dateStr === todayIso();
 }
 
-function trendIcon(trend: string | null): string {
-  if (trend === "improving" || trend === "up") return "📈";
-  if (trend === "declining" || trend === "down") return "📉";
-  if (trend === "stable" || trend === "flat") return "➡️";
-  return "";
+function isoFromIsoOrTimestamp(s: string): string {
+  return s.slice(0, 10);
 }
 
 /* ---------- 최신 업데이트 스트립 ---------- */
@@ -137,7 +100,6 @@ function LastUpdatedStrip({
 }) {
   const t = useT();
   const { lang } = useLang();
-  // 1분마다 상대 시간 재렌더 (tick이 바뀌어야 useMemo가 재평가됨)
   const [tick, setTick] = useState(0);
   useEffect(() => {
     const id = setInterval(() => setTick((t) => t + 1), 60_000);
@@ -153,7 +115,6 @@ function LastUpdatedStrip({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lastActivity, tick, lang]);
 
-  // 로딩도 아니고 활동 기록도 없으면 완전히 숨김
   if (!loading && !lastActivity) return null;
 
   return (
@@ -198,203 +159,67 @@ function LastUpdatedStrip({
   );
 }
 
-/* ---------- XP 막대 그래프 (7일/30일) ---------- */
+/* ---------- AI Feedback Card (잠금 + 신규 미니멀) ---------- */
 
-function XpBarChart({
-  range,
-  weekStats,
-  dailyStats30d,
+function AiFeedbackCard({
+  aiReportTier,
+  onUpgrade,
+  isNewUser,
 }: {
-  range: "7d" | "30d";
-  weekStats: DailyStat[];
-  dailyStats30d: { stat_date: string; xp_earned: number }[];
+  aiReportTier: "guest" | "free" | "premium" | "admin";
+  onUpgrade: () => void;
+  isNewUser: boolean;
 }) {
   const t = useT();
-  const dayLabels = t.dashboard.dayLabels;
-  const chartData = useMemo(() => {
-    if (range === "7d") {
-      return weekStats.map((d) => {
-        const dt = new Date(`${d.stat_date}T00:00:00`);
-        return {
-          label: dayLabels[dt.getDay()],
-          xp: d.xp_earned,
-          date: d.stat_date,
-        };
-      });
-    } else {
-      const map = new Map<string, number>();
-      dailyStats30d.forEach((d) => map.set(d.stat_date, d.xp_earned));
-      const out: { label: string; xp: number; date: string }[] = [];
-      const today = new Date();
-      for (let i = 29; i >= 0; i--) {
-        const d = new Date(today);
-        d.setDate(d.getDate() - i);
-        const y = d.getFullYear();
-        const m = String(d.getMonth() + 1).padStart(2, "0");
-        const day = String(d.getDate()).padStart(2, "0");
-        const iso = `${y}-${m}-${day}`;
-        out.push({
-          label: `${m}-${day}`,
-          xp: map.get(iso) ?? 0,
-          date: iso,
-        });
-      }
-      return out;
-    }
-  }, [range, weekStats, dailyStats30d, dayLabels]);
-
-  const total = chartData.reduce((s, d) => s + d.xp, 0);
-
-  if (total === 0) {
-    return (
-      <div className="h-52 flex flex-col items-center justify-center text-center gap-2">
-        <p className="text-4xl" aria-hidden>
-          📈
-        </p>
-        <p className="text-sm text-muted-foreground">
-          {range === "7d" ? t.dashboard.noRecordWeek : t.dashboard.noRecord30d}
-        </p>
-      </div>
-    );
-  }
+  const subtitle = isNewUser
+    ? t.dashboard.aiFeedbackSubtitleNew
+    : t.dashboard.aiFeedbackSubtitleActive;
 
   return (
-    <div className="h-52 w-full">
-      <ResponsiveContainer width="100%" height="100%">
-        <BarChart
-          data={chartData}
-          margin={{ top: 8, right: 8, left: -16, bottom: 0 }}
-        >
-          <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.3} />
-          <XAxis
-            dataKey="label"
-            tick={{ fontSize: range === "7d" ? 12 : 9 }}
-            axisLine={false}
-            tickLine={false}
-            interval={range === "7d" ? 0 : "preserveStartEnd"}
-          />
-          <YAxis
-            tick={{ fontSize: 11 }}
-            axisLine={false}
-            tickLine={false}
-            width={32}
-          />
-          <Tooltip
-            cursor={{ fill: "rgba(0,0,0,0.04)" }}
-            contentStyle={{ fontSize: "12px", borderRadius: "8px" }}
-            formatter={(value: number) => [`${value} XP`, t.dashboard.xpEarnedLabel]}
-            labelFormatter={(_, payload) => {
-              const date = payload?.[0]?.payload?.date;
-              return date ?? "";
-            }}
-          />
-          <Bar dataKey="xp" fill="#f59e0b" radius={[6, 6, 0, 0]} />
-        </BarChart>
-      </ResponsiveContainer>
-    </div>
+    <Card data-testid="ai-feedback-card">
+      <CardHeader>
+        <CardTitle className="text-base flex items-center gap-2">
+          <span aria-hidden>🤖</span>
+          {t.dashboard.aiFeedbackTitle}
+        </CardTitle>
+        <CardDescription>{subtitle}</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <PremiumBlurCard tier={aiReportTier} onUpgrade={onUpgrade}>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <ReportTile
+              icon="💬"
+              label={t.dashboard.reportDailyLabel}
+              period={t.dashboard.reportDailyPeriod}
+            />
+            <ReportTile
+              icon="📊"
+              label={t.dashboard.reportWeeklyLabel}
+              period={t.dashboard.reportWeeklyPeriod}
+            />
+            <ReportTile
+              icon="🏆"
+              label={t.dashboard.reportMonthlyLabel}
+              period={t.dashboard.reportMonthlyPeriod}
+            />
+          </div>
+        </PremiumBlurCard>
+      </CardContent>
+    </Card>
   );
 }
-
-/* ---------- 정확도/반응속도 라인 차트 ---------- */
-
-function AccuracyReactionChart({
-  dailyStats30d,
-}: {
-  dailyStats30d: {
-    stat_date: string;
-    avg_accuracy: number | null;
-    avg_reaction_ms: number | null;
-  }[];
-}) {
-  const t = useT();
-  const data = useMemo(
-    () =>
-      dailyStats30d.map((d) => ({
-        label: d.stat_date.slice(5),
-        accuracy:
-          d.avg_accuracy != null
-            ? Number((Number(d.avg_accuracy) * 100).toFixed(1))
-            : null,
-        reaction: d.avg_reaction_ms != null ? d.avg_reaction_ms : null,
-      })),
-    [dailyStats30d]
-  );
-
-  if (data.length === 0) {
-    return (
-      <div className="h-52 flex items-center justify-center">
-        <p className="text-sm text-muted-foreground">
-          {t.dashboard.noRecord30d}
-        </p>
-      </div>
-    );
-  }
-
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <div>
-        <p className="text-xs text-muted-foreground mb-2">{t.dashboard.accuracyAxis}</p>
-        <div className="h-44 w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart
-              data={data}
-              margin={{ top: 8, right: 8, left: -16, bottom: 0 }}
-            >
-              <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.3} />
-              <XAxis dataKey="label" tick={{ fontSize: 9 }} axisLine={false} tickLine={false} interval="preserveStartEnd" />
-              <YAxis tick={{ fontSize: 10 }} axisLine={false} tickLine={false} width={32} domain={[0, 100]} />
-              <Tooltip
-                contentStyle={{ fontSize: "12px", borderRadius: "8px" }}
-                formatter={(v: number | null) => v != null ? [`${v}%`, t.dashboard.accuracyTooltip] : ["—", t.dashboard.accuracyTooltip]}
-              />
-              <Line type="monotone" dataKey="accuracy" stroke="#10b981" strokeWidth={2} dot={{ r: 2 }} connectNulls />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
-      <div>
-        <p className="text-xs text-muted-foreground mb-2">{t.dashboard.reactionAxis}</p>
-        <div className="h-44 w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart
-              data={data}
-              margin={{ top: 8, right: 8, left: -16, bottom: 0 }}
-            >
-              <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.3} />
-              <XAxis dataKey="label" tick={{ fontSize: 9 }} axisLine={false} tickLine={false} interval="preserveStartEnd" />
-              <YAxis tick={{ fontSize: 10 }} axisLine={false} tickLine={false} width={40} />
-              <Tooltip
-                contentStyle={{ fontSize: "12px", borderRadius: "8px" }}
-                formatter={(v: number | null) => v != null ? [`${v}ms`, t.dashboard.avgTooltip] : ["—", t.dashboard.avgTooltip]}
-              />
-              <Line type="monotone" dataKey="reaction" stroke="#6366f1" strokeWidth={2} dot={{ r: 2 }} connectNulls />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* ---------- AI 보고서 타일 ---------- */
 
 function ReportTile({
   label,
   period,
   icon,
-  onClick,
 }: {
   label: string;
   period: string;
   icon: string;
-  onClick: () => void;
 }) {
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="group rounded-lg border border-dashed border-border bg-card px-4 py-4 text-left transition hover:border-solid hover:border-primary/40 hover:bg-accent/30"
-    >
+    <div className="group rounded-lg border border-dashed border-border bg-card px-4 py-4 text-left">
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <span className="text-lg" aria-hidden>
@@ -407,33 +232,153 @@ function ReportTile({
         </span>
       </div>
       <p className="mt-2 text-xs text-muted-foreground">{period}</p>
-    </button>
+    </div>
+  );
+}
+
+/* ---------- Notice 영역 (상태 2: 오늘 활동 X) ---------- */
+
+function EmptyTodayNotice({
+  currentStreak,
+  onStart,
+}: {
+  currentStreak: number;
+  onStart: () => void;
+}) {
+  const t = useT();
+  const streakHint = currentStreak > 0
+    ? formatI18n(t.dashboard.emptyTodayStreakHint, { n: String(currentStreak + 1) })
+    : null;
+
+  return (
+    <div className="rounded-xl border border-amber-300/40 bg-amber-50 dark:bg-amber-950/20 p-4 flex items-center justify-between gap-3">
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-bold text-foreground">{t.dashboard.emptyTodayTitle}</p>
+        <p className="text-xs text-muted-foreground mt-0.5">{t.dashboard.emptyTodaySubtitle}</p>
+        {streakHint && (
+          <p className="text-xs text-amber-700 dark:text-amber-300 mt-1 font-semibold">{streakHint}</p>
+        )}
+      </div>
+      <Button size="sm" onClick={onStart} className="shrink-0">
+        {t.dashboard.emptyTodayCta}
+      </Button>
+    </div>
+  );
+}
+
+/* ---------- 마지막 활동 카드 (상태 2) ---------- */
+
+function LastActivityCard({
+  startedAt,
+  accuracy,
+  avgReactionMs,
+  xpEarned,
+}: {
+  startedAt: string;
+  accuracy: number | null;
+  avgReactionMs: number | null;
+  xpEarned: number;
+}) {
+  const t = useT();
+  const { lang } = useLang();
+
+  const when = useMemo(() => {
+    const d = new Date(startedAt);
+    const today = new Date();
+    const diffMs = today.getTime() - d.getTime();
+    const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    if (days === 0) return t.dashboard.today;
+    if (days === 1) return t.dashboard.yesterday;
+    return formatI18n(t.dashboard.daysAgo, { n: String(days) });
+  }, [startedAt, t, lang]);
+
+  const accDisplay = accuracy != null ? Math.round(accuracy * 100) : 0;
+  const speedDisplay = avgReactionMs != null ? +(avgReactionMs / 1000).toFixed(2) : 0;
+
+  return (
+    <div className="border-l-4 border-amber-400 bg-card rounded-r-lg px-4 py-3">
+      <p className="text-xs text-muted-foreground font-semibold mb-1">
+        {t.dashboard.lastActivityTitle}
+      </p>
+      <p className="text-sm text-foreground">
+        {formatI18n(t.dashboard.lastActivityFormat, {
+          when,
+          acc: String(accDisplay),
+          speed: String(speedDisplay),
+          xp: String(xpEarned),
+        })}
+      </p>
+    </div>
+  );
+}
+
+/* ---------- 신규 사용자 영역 (상태 3) ---------- */
+
+function NewUserView({ onStart }: { onStart: () => void }) {
+  const t = useT();
+  return (
+    <div className="rounded-2xl border-2 border-dashed border-primary/30 bg-primary/5 p-8 text-center">
+      <p className="text-2xl font-bold text-foreground mb-2">{t.dashboard.newUserTitle}</p>
+      <p className="text-sm text-muted-foreground mb-6">{t.dashboard.newUserSubtitle}</p>
+      <Button size="lg" onClick={onStart}>
+        {t.dashboard.newUserCta}
+      </Button>
+    </div>
   );
 }
 
 /* ---------- 페이지 ---------- */
 
+interface SessionRow {
+  id: string;
+  level: number;
+  started_at: string;
+  total_notes: number;
+  correct_notes: number;
+  accuracy: number | null;
+  avg_reaction_ms: number | null;
+  xp_earned: number;
+}
+
+interface SessionAgg {
+  count: number;
+  totalCorrect: number;
+  totalNotes: number;
+  reactionSum: number;
+  reactionCount: number;
+  xpSum: number;
+}
+
+function aggregateSessions(sessions: SessionRow[]): SessionAgg {
+  const agg: SessionAgg = {
+    count: 0,
+    totalCorrect: 0,
+    totalNotes: 0,
+    reactionSum: 0,
+    reactionCount: 0,
+    xpSum: 0,
+  };
+  for (const s of sessions) {
+    agg.count++;
+    agg.totalCorrect += s.correct_notes ?? 0;
+    agg.totalNotes += s.total_notes ?? 0;
+    if (s.avg_reaction_ms != null) {
+      agg.reactionSum += s.avg_reaction_ms;
+      agg.reactionCount++;
+    }
+    agg.xpSum += s.xp_earned ?? 0;
+  }
+  return agg;
+}
+
 export default function Dashboard() {
   const { user, profile, loading: authLoading } = useAuth();
   const stats = useUserStats(user);
   const myStats = useMyStats(user);
-  const [xpRange, setXpRange] = useState<"7d" | "30d">("7d");
   const t = useT();
-  const { lang } = useLang();
-
-  // 탭 상태 ↔ URL 쿼리 동기화 (?tab=rhythm|diagnosis|activity)
   const [searchParams, setSearchParams] = useSearchParams();
-  const currentTab: HomeTab = parseTab(searchParams.get("tab"));
 
-  const handleTabChange = (value: string) => {
-    const next = parseTab(value);
-    setSearchParams(
-      next === "diagnosis" ? {} : { tab: next },
-      { replace: true }
-    );
-  };
-
-  // ?upgrade=1 → UpgradeModal 자동 노출 (AdPlaceholder 프리미엄 CTA 영역)
+  // ?upgrade=1 → UpgradeModal 자동 노출
   const upgradeOpen = searchParams.get("upgrade") === "1";
   const handleUpgradeClose = () => {
     const next = new URLSearchParams(searchParams);
@@ -443,8 +388,7 @@ export default function Dashboard() {
 
   const isAdmin = profile?.role === "admin";
   const tier = getUserTier(user ?? null, profile ?? null);
-  // AI 분석 보고서 영역 권한: admin·premium → 풀 노출. 그 외 (reviewer 포함) → blur + CTA.
-  // reviewer = Free tier 동등 잠금 박음 (Paddle 심사관 결제 흐름 검증 영역).
+  // AI 분석 보고서 영역 권한: admin·premium → 풀, 그 외 (reviewer 포함) → blur (Paddle 심사관 결제 영역 검증)
   const aiReportTier: "guest" | "free" | "premium" | "admin" =
     isAdmin
       ? "admin"
@@ -459,6 +403,7 @@ export default function Dashboard() {
     next.set("upgrade", "1");
     setSearchParams(next, { replace: true });
   };
+
   const { progress: levelProgress, getProgressFor, loading: progressLoading } = useLevelProgress();
 
   // 현재 진행 단계 + 마스터리 점수 계산
@@ -480,7 +425,6 @@ export default function Dashboard() {
             progress: prog ?? null,
             score: computeMasteryScore(prog ?? null),
             accuracy: prog && prog.total_attempts > 0 ? prog.total_correct / prog.total_attempts : undefined,
-            // DB 영역 null → undefined 정합 (MasteryHeroCard null 가드는 박혀있음, 방어 박음)
             avgReactionRatio: prog?.avg_reaction_ratio ?? undefined,
             playCount: prog?.play_count ?? undefined,
             bestStreak: prog?.best_streak ?? undefined,
@@ -493,9 +437,6 @@ export default function Dashboard() {
   }, [tier, isAdmin, levelProgress, getProgressFor]);
 
   // 실제 "마지막 연습 활동" 시각 계산
-  //  - 최근 세션의 started_at (가장 정확)
-  //  - 없으면 profile.last_practice_date (날짜만)
-  //  - 둘 다 없으면 null → 스트립 숨김
   const realLastActivity = useMemo(() => {
     if (myStats.sessions.length > 0) {
       return new Date(myStats.sessions[0].started_at);
@@ -520,20 +461,6 @@ export default function Dashboard() {
     });
   };
 
-  const handleReportClick = (type: "daily" | "weekly" | "monthly") => {
-    const labels = {
-      daily: t.dashboard.reportDailyLabel,
-      weekly: t.dashboard.reportWeeklyLabel,
-      monthly: t.dashboard.reportMonthlyLabel,
-    };
-    toast.info(formatI18n(t.dashboard.reportComingSoon, { label: labels[type] }), {
-      description:
-        type === "daily"
-          ? t.dashboard.reportDailyDesc
-          : t.dashboard.reportNotDailyDesc,
-    });
-  };
-
   if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -546,7 +473,64 @@ export default function Dashboard() {
     return <Navigate to="/" replace />;
   }
 
+  // ── 상태 결정 ─────────────────────────────────────────────
+  // 신규: 세션 데이터 X → 큰 CTA + AI 카드만
+  // 오늘 없음: 세션 데이터 있음 + 오늘 활동 X → notice + KPI 비활성 + 마지막 활동 + 음표 + AI
+  // 오늘 있음: 오늘 활동 O → KPI 정상 + 음표 + AI
+  const sessionsTyped = myStats.sessions as SessionRow[];
+  const hasAnySession = sessionsTyped.length > 0;
+  const isNewUser = !hasAnySession && !stats.lastPracticeDate;
   const practicedToday = isToday(stats.lastPracticeDate);
+
+  const todaySessions = sessionsTyped.filter(
+    (s) => isoFromIsoOrTimestamp(s.started_at) === todayIso(),
+  );
+  const lastSessionNotToday = sessionsTyped.find(
+    (s) => isoFromIsoOrTimestamp(s.started_at) !== todayIso(),
+  );
+
+  // 비교 기준 — 오늘 활동 있으면 마지막 세션 (오늘 X), 없으면 가장 최근 세션
+  const todayAgg = aggregateSessions(todaySessions);
+  const lastAgg = lastSessionNotToday ? aggregateSessions([lastSessionNotToday]) : null;
+
+  const todayAcc = todayAgg.totalNotes > 0
+    ? Math.round((todayAgg.totalCorrect / todayAgg.totalNotes) * 100)
+    : null;
+  const lastAcc = lastAgg && lastAgg.totalNotes > 0
+    ? Math.round((lastAgg.totalCorrect / lastAgg.totalNotes) * 100)
+    : null;
+
+  const todaySpeed = todayAgg.reactionCount > 0
+    ? +(todayAgg.reactionSum / todayAgg.reactionCount / 1000).toFixed(2)
+    : null;
+  const lastSpeed = lastAgg && lastAgg.reactionCount > 0
+    ? +(lastAgg.reactionSum / lastAgg.reactionCount / 1000).toFixed(2)
+    : null;
+
+  const todayXp = todayAgg.xpSum;
+  const lastXp = lastAgg ? lastAgg.xpSum : null;
+
+  function formatDelta(delta: number | null, suffix = "", invert = false): string {
+    if (delta == null) return t.dashboard.noLastSessionYet;
+    if (Math.abs(delta) < 0.5) return `${t.dashboard.vsLast} ±0${suffix}`;
+    const positive = invert ? delta < 0 : delta > 0;
+    const sign = delta > 0 ? "+" : "−";
+    const arrow = positive ? "↑" : "↓";
+    const abs = invert ? Math.abs(delta) : Math.abs(delta);
+    return `${t.dashboard.vsLast} ${sign}${abs}${suffix} ${arrow}`;
+  }
+
+  const accSubtext = todayAcc != null && lastAcc != null
+    ? formatDelta(todayAcc - lastAcc, "%p")
+    : todayAcc != null
+      ? t.dashboard.noLastSessionYet
+      : t.dashboard.noLastSessionYet;
+  const speedSubtext = todaySpeed != null && lastSpeed != null
+    ? formatDelta(+(todaySpeed - lastSpeed).toFixed(2), "s", /* invert */ true)
+    : t.dashboard.noLastSessionYet;
+  const xpSubtext = lastXp != null && todayXp > 0
+    ? formatDelta(todayXp - lastXp, " XP")
+    : t.dashboard.noLastSessionYet;
 
   const homeNav = (
     <nav className="flex items-center gap-2">
@@ -567,6 +551,10 @@ export default function Dashboard() {
     </nav>
   );
 
+  const handleStart = () => {
+    window.location.href = "/play";
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Header
@@ -581,343 +569,116 @@ export default function Dashboard() {
         headerClassName="bg-card/50"
       />
 
-      <main className="max-w-3xl mx-auto px-4 py-8 space-y-8">
+      <main className="max-w-3xl mx-auto px-4 py-8 space-y-6">
         {/* 페이지 제목 */}
         <div>
           <h1 className="text-lg font-semibold tracking-tight">{t.dashboard.pageTitle}</h1>
           <p className="text-xs text-muted-foreground">{t.dashboard.pageSubtitle}</p>
         </div>
 
-        {/* 상단 요약 — LEAGUE 제거 박음 (작업 7), 3 카드 순서: Current → Longest → Today XP */}
-        <section className="space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <StatTile
-              icon="🔥"
-              label={t.dashboard.currentStreak}
-              value={formatI18n(t.dashboard.streakValueDays, { n: String(stats.currentStreak) })}
-              subtext={
-                practicedToday
-                  ? t.dashboard.streakTodayDone
-                  : stats.currentStreak > 0
-                    ? t.dashboard.streakTodayContinues
-                    : t.dashboard.streakTodayFirst
-              }
-              accentClass="text-orange-500"
+        {/* 상태 분기 — 신규 사용자 */}
+        {isNewUser ? (
+          <>
+            <NewUserView onStart={handleStart} />
+            <AiFeedbackCard
+              aiReportTier={aiReportTier}
+              onUpgrade={handleOpenUpgrade}
+              isNewUser={true}
             />
-            <StatTile
-              icon="📅"
-              label={t.dashboard.longestStreak}
-              value={formatI18n(t.dashboard.streakValueDays, { n: String(stats.longestStreak) })}
-              subtext={t.dashboard.bestRecord}
-            />
-            <StatTile
-              icon="⭐"
-              label={t.dashboard.todayXp}
-              value={stats.todayXp}
-              subtext={formatI18n(t.dashboard.totalXp, { n: stats.totalXp.toLocaleString() })}
-              accentClass="text-amber-500"
-            />
-          </div>
-
-          {stats.error ? (
-            <p className="text-xs text-destructive">
-              {formatI18n(t.dashboard.dataError, { error: stats.error })}
-            </p>
-          ) : null}
-        </section>
-
-        {/* 마스터리 히어로 카드 — 로딩 중 Skeleton 박음 (사용자 인지: "고장 X, 로딩 중") */}
-        {progressLoading && !currentMastery ? (
-          <MasteryHeroCardSkeleton />
-        ) : currentMastery ? (
-          <MasteryHeroCard
-            tier={isAdmin ? "admin" : tier}
-            bestScore={currentMastery.score}
-            level={currentMastery.level}
-            sublevel={currentMastery.sublevel}
-            accuracy={currentMastery.accuracy}
-            avgReactionRatio={currentMastery.avgReactionRatio}
-            playCount={currentMastery.playCount}
-            bestStreak={currentMastery.bestStreak}
-          />
-        ) : null}
-
-        {/* In-feed 광고 (통계 카드와 탭 사이) */}
-        <AdBanner
-          slot={getSlot("DASH_INFEED")}
-          format="rectangle"
-          placeholderVariant="horizontal-random"
-          className="w-full"
-        />
-
-        {/* 탭 네비게이션: 학습 리듬 / 실력 진단 / 활동 기록 */}
-        <Tabs
-          value={currentTab}
-          onValueChange={handleTabChange}
-          className="w-full"
-        >
-          <TabsList className="grid w-full grid-cols-3 h-auto">
-            <TabsTrigger
-              value="diagnosis"
-              className="text-xs sm:text-sm py-2 data-[state=active]:font-semibold"
-            >
-              <span aria-hidden className="mr-1">🎯</span>
-              {t.dashboard.tabDiagnosis}
-            </TabsTrigger>
-            <TabsTrigger
-              value="rhythm"
-              className="text-xs sm:text-sm py-2 data-[state=active]:font-semibold"
-            >
-              <span aria-hidden className="mr-1">📅</span>
-              {t.dashboard.tabRhythm}
-            </TabsTrigger>
-            <TabsTrigger
-              value="activity"
-              className="text-xs sm:text-sm py-2 data-[state=active]:font-semibold"
-            >
-              <span aria-hidden className="mr-1">🏆</span>
-              {t.dashboard.tabActivity}
-            </TabsTrigger>
-          </TabsList>
-
-          {/* 📅 학습 리듬 — 시간축 분석 콘텐츠 */}
-          <TabsContent value="rhythm" className="mt-4 space-y-8">
-        {/* XP 그래프 (7일/30일 토글) */}
-        <Card>
-          <CardHeader className="flex-row items-center justify-between space-y-0">
-            <div>
-              <CardTitle className="text-base">{t.dashboard.xpChartTitle}</CardTitle>
-              <CardDescription>
-                {formatI18n(t.dashboard.xpRangeEarned, {
-                  range: xpRange === "7d" ? t.dashboard.xpRangeRecent7d : t.dashboard.xpRangeRecent30d,
-                })}
-              </CardDescription>
-            </div>
-            <div className="flex items-center gap-1 bg-muted rounded-md p-0.5">
-              <button
-                type="button"
-                onClick={() => setXpRange("7d")}
-                className={`text-xs px-2.5 py-1 rounded ${
-                  xpRange === "7d"
-                    ? "bg-background shadow-sm font-medium"
-                    : "text-muted-foreground"
-                }`}
-              >
-                {t.dashboard.xpRange7d}
-              </button>
-              <button
-                type="button"
-                onClick={() => setXpRange("30d")}
-                className={`text-xs px-2.5 py-1 rounded ${
-                  xpRange === "30d"
-                    ? "bg-background shadow-sm font-medium"
-                    : "text-muted-foreground"
-                }`}
-              >
-                {t.dashboard.xpRange30d}
-              </button>
-            </div>
-          </CardHeader>
-          <CardContent>
-            {stats.loading || myStats.loading ? (
-              <div className="h-52 flex items-center justify-center">
-                <p className="text-sm text-muted-foreground">{t.dashboard.loading}</p>
-              </div>
-            ) : (
-              <XpBarChart
-                range={xpRange}
-                weekStats={stats.weekStats}
-                dailyStats30d={myStats.dailyStats30d}
+          </>
+        ) : (
+          <>
+            {/* 상태 2: 오늘 활동 없음 — notice */}
+            {!practicedToday && (
+              <EmptyTodayNotice
+                currentStreak={stats.currentStreak}
+                onStart={handleStart}
               />
             )}
-          </CardContent>
-        </Card>
 
-        {/* 정확도 + 반응속도 */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">{t.dashboard.accuracyReactionTitle}</CardTitle>
-            <CardDescription>{t.dashboard.accuracyReactionDesc}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {myStats.loading ? (
-              <div className="h-52 flex items-center justify-center">
-                <p className="text-sm text-muted-foreground">{t.dashboard.loading}</p>
-              </div>
-            ) : (
-              <AccuracyReactionChart dailyStats30d={myStats.dailyStats30d} />
+            {/* KPI 4 카드 — 스트릭·정답률·속도·오늘 XP */}
+            <section className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <StatTile
+                icon="🔥"
+                label={t.dashboard.currentStreak}
+                value={formatI18n(t.dashboard.streakValueDays, { n: String(stats.currentStreak) })}
+                subtext={
+                  practicedToday
+                    ? t.dashboard.streakTodayDone
+                    : stats.currentStreak > 0
+                      ? t.dashboard.streakTodayContinues
+                      : t.dashboard.streakTodayFirst
+                }
+                accentClass="text-orange-500"
+              />
+              <StatTile
+                icon="🎯"
+                label={t.diagnosis.kpiAccuracy}
+                value={todayAcc != null ? `${todayAcc}%` : "—"}
+                subtext={accSubtext}
+                dimmed={!practicedToday}
+                accentClass="text-primary"
+              />
+              <StatTile
+                icon="⚡"
+                label={t.diagnosis.kpiAvgReaction}
+                value={todaySpeed != null ? `${todaySpeed}s` : "—"}
+                subtext={speedSubtext}
+                dimmed={!practicedToday}
+              />
+              <StatTile
+                icon="⭐"
+                label={t.dashboard.todayXp}
+                value={todayXp}
+                subtext={xpSubtext}
+                dimmed={!practicedToday}
+                accentClass="text-amber-500"
+              />
+            </section>
+
+            {/* 상태 2: 마지막 활동 카드 (오늘 X + 이전 세션 있음) */}
+            {!practicedToday && lastSessionNotToday && (
+              <LastActivityCard
+                startedAt={lastSessionNotToday.started_at}
+                accuracy={lastSessionNotToday.accuracy}
+                avgReactionMs={lastSessionNotToday.avg_reaction_ms}
+                xpEarned={lastSessionNotToday.xp_earned}
+              />
             )}
-          </CardContent>
-        </Card>
 
-        {/* 약점 음표 */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base flex items-center">
-              <span>{t.dashboard.weakNotesTitle}</span>
-              <InfoTooltip content={t.dashboard.weakNotesTooltip} />
-            </CardTitle>
-            <CardDescription>
-              {t.dashboard.weakNotesDesc}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {myStats.loading ? (
-              <p className="text-sm text-muted-foreground py-8 text-center">
-                {t.dashboard.loading}
+            {/* 마스터리 히어로 카드 — 로딩 중 Skeleton 박음 */}
+            {progressLoading && !currentMastery ? (
+              <MasteryHeroCardSkeleton />
+            ) : currentMastery ? (
+              <MasteryHeroCard
+                tier={isAdmin ? "admin" : tier}
+                bestScore={currentMastery.score}
+                level={currentMastery.level}
+                sublevel={currentMastery.sublevel}
+                accuracy={currentMastery.accuracy}
+                avgReactionRatio={currentMastery.avgReactionRatio}
+                playCount={currentMastery.playCount}
+                bestStreak={currentMastery.bestStreak}
+              />
+            ) : null}
+
+            {/* 약점·느린 음표 Top 5 — 누적 데이터 (옥타브 + 색상) */}
+            <WeakSlowNotesCards />
+
+            {/* AI Feedback (프리미엄 전용) */}
+            <AiFeedbackCard
+              aiReportTier={aiReportTier}
+              onUpgrade={handleOpenUpgrade}
+              isNewUser={false}
+            />
+
+            {stats.error ? (
+              <p className="text-xs text-destructive">
+                {formatI18n(t.dashboard.dataError, { error: stats.error })}
               </p>
-            ) : myStats.weakNotes.length === 0 ? (
-              <p className="text-sm text-muted-foreground py-8 text-center">
-                {t.dashboard.weakNotesInsufficient}
-              </p>
-            ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
-                {myStats.weakNotes.map((n, idx) => (
-                  <div
-                    key={`${n.note_key}-${n.clef}`}
-                    className="rounded-lg border border-border bg-card px-3 py-3"
-                  >
-                    <p className="text-xs text-muted-foreground">
-                      #{idx + 1} ·{" "}
-                      {n.clef === "treble" ? t.dashboard.clefTreble : t.dashboard.clefBass}
-                    </p>
-                    <p className="text-lg font-bold mt-1">
-                      {n.note_key}{" "}
-                      <span className="text-sm">{trendIcon(n.trend)}</span>
-                    </p>
-                    <p className="text-xs text-destructive mt-1">
-                      {(Number(n.recent_accuracy) * 100).toFixed(0)}% (
-                      {n.correct_count}/{n.total_attempts})
-                    </p>
-                    {n.avg_reaction_ms != null ? (
-                      <p className="text-[10px] text-muted-foreground mt-0.5">
-                        {formatI18n(t.dashboard.avgMs, { n: String(n.avg_reaction_ms) })}
-                      </p>
-                    ) : null}
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* AI 피드백 — 프리미엄 전용 (admin·reviewer·premium 풀, Free blur + CTA) */}
-        <Card data-testid="ai-feedback-card">
-          <CardHeader>
-            <CardTitle className="text-base flex items-center gap-2">
-              <span aria-hidden>🤖</span>
-              {t.dashboard.aiFeedbackTitle}
-            </CardTitle>
-            <CardDescription>
-              {t.dashboard.aiFeedbackDesc}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <PremiumBlurCard tier={aiReportTier} onUpgrade={handleOpenUpgrade}>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <ReportTile
-                  icon="💬"
-                  label={t.dashboard.reportDailyLabel}
-                  period={t.dashboard.reportDailyPeriod}
-                  onClick={() => handleReportClick("daily")}
-                />
-                <ReportTile
-                  icon="📊"
-                  label={t.dashboard.reportWeeklyLabel}
-                  period={t.dashboard.reportWeeklyPeriod}
-                  onClick={() => handleReportClick("weekly")}
-                />
-                <ReportTile
-                  icon="🏆"
-                  label={t.dashboard.reportMonthlyLabel}
-                  period={t.dashboard.reportMonthlyPeriod}
-                  onClick={() => handleReportClick("monthly")}
-                />
-              </div>
-            </PremiumBlurCard>
-          </CardContent>
-        </Card>
-          </TabsContent>
-
-          {/* 🎯 실력 진단 — 노트별 정확도/반응 + 공식 학습 분석 */}
-          <TabsContent value="diagnosis" className="mt-4">
-            <DiagnosisTab />
-          </TabsContent>
-
-          {/* 🏆 활동 기록 — 세션 로그 · 리그 · 배지 */}
-          <TabsContent value="activity" className="mt-4 space-y-8">
-            {/* 최근 세션 */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">{t.dashboard.recentSessionsTitle}</CardTitle>
-                <CardDescription>{t.dashboard.recentSessionsDesc}</CardDescription>
-              </CardHeader>
-              <CardContent className="p-0">
-                {myStats.loading ? (
-                  <p className="text-sm text-muted-foreground py-8 text-center">
-                    {t.dashboard.loading}
-                  </p>
-                ) : myStats.sessions.length === 0 ? (
-                  <p className="text-sm text-muted-foreground py-8 text-center">
-                    {t.dashboard.noSessions}
-                  </p>
-                ) : (
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-sm">
-                      <thead className="bg-muted/30 text-xs text-muted-foreground">
-                        <tr className="text-left">
-                          <th className="px-4 py-2 font-medium">{t.dashboard.tableTime}</th>
-                          <th className="px-4 py-2 font-medium">{t.dashboard.tableLevel}</th>
-                          <th className="px-4 py-2 font-medium text-right">
-                            {t.dashboard.tableCorrectTotal}
-                          </th>
-                          <th className="px-4 py-2 font-medium text-right">
-                            {t.dashboard.tableAccuracy}
-                          </th>
-                          <th className="px-4 py-2 font-medium text-right">
-                            {t.dashboard.tableAvgReaction}
-                          </th>
-                          <th className="px-4 py-2 font-medium text-right">
-                            {t.dashboard.tableXp}
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {myStats.sessions.map((s) => (
-                          <tr
-                            key={s.id}
-                            className="border-b border-border/50 hover:bg-accent/20"
-                          >
-                            <td className="px-4 py-2 text-xs">
-                              {formatDateTime(s.started_at, lang)}
-                            </td>
-                            <td className="px-4 py-2">Lv.{s.level}</td>
-                            <td className="px-4 py-2 text-right">
-                              {s.correct_notes}/{s.total_notes}
-                            </td>
-                            <td className="px-4 py-2 text-right">
-                              {s.accuracy != null
-                                ? `${(Number(s.accuracy) * 100).toFixed(1)}%`
-                                : "—"}
-                            </td>
-                            <td className="px-4 py-2 text-right text-xs text-muted-foreground">
-                              {s.avg_reaction_ms != null
-                                ? `${s.avg_reaction_ms}ms`
-                                : "—"}
-                            </td>
-                            <td className="px-4 py-2 text-right font-medium text-amber-600">
-                              +{s.xp_earned}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+            ) : null}
+          </>
+        )}
 
         {/* 하단 배너 광고 */}
         <AdBanner
