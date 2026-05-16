@@ -34,7 +34,7 @@ export interface MasteryHeroCardProps {
 
 const STRINGS = {
   ko: {
-    title: "마스터리 점수",
+    title: "마스터리",
     sectionTitle: "이번 주 마스터리 분석",
     noDataHint: "첫 세션을 시작해보세요",
     accuracy: "정확도",
@@ -46,7 +46,7 @@ const STRINGS = {
     trend: "7일 추이",
   },
   en: {
-    title: "Mastery Score",
+    title: "Mastery",
     sectionTitle: "Your Mastery Analysis",
     noDataHint: "Start your first session",
     accuracy: "Accuracy",

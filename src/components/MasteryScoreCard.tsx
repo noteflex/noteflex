@@ -43,7 +43,7 @@ const ZERO_COMPLETION: SublevelCompletion = {
 // ── i18n ──────────────────────────────────────────────────────
 const STRINGS = {
   ko: {
-    masteryScore: "마스터리 점수",
+    masteryScore: "마스터리",
     collapse: "접기",
     expand: "상세 보기",
     accuracy: "정확도",
@@ -54,7 +54,7 @@ const STRINGS = {
     upgrade: "Premium으로 보기",
   },
   en: {
-    masteryScore: "Mastery Score",
+    masteryScore: "Mastery",
     collapse: "Collapse",
     expand: "Show details",
     accuracy: "Accuracy",
