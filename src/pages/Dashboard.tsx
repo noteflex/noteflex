@@ -42,7 +42,7 @@ import {
 } from "@/components/ui/tabs";
 import DiagnosisTab from "@/components/home/DiagnosisTab";
 import InfoTooltip from "@/components/ui/info-tooltip";
-import MasteryHeroCard from "@/components/dashboard/MasteryHeroCard";
+import MasteryHeroCard, { MasteryHeroCardSkeleton } from "@/components/dashboard/MasteryHeroCard";
 import { useLevelProgress } from "@/hooks/useLevelProgress";
 import { getUserTier } from "@/lib/subscriptionTier";
 import {
@@ -459,7 +459,7 @@ export default function Dashboard() {
     next.set("upgrade", "1");
     setSearchParams(next, { replace: true });
   };
-  const { progress: levelProgress, getProgressFor } = useLevelProgress();
+  const { progress: levelProgress, getProgressFor, loading: progressLoading } = useLevelProgress();
 
   // 현재 진행 단계 + 마스터리 점수 계산
   const currentMastery = useMemo(() => {
@@ -642,8 +642,10 @@ export default function Dashboard() {
           ) : null}
         </section>
 
-        {/* 마스터리 히어로 카드 */}
-        {currentMastery && (
+        {/* 마스터리 히어로 카드 — 로딩 중 Skeleton 박음 (사용자 인지: "고장 X, 로딩 중") */}
+        {progressLoading && !currentMastery ? (
+          <MasteryHeroCardSkeleton />
+        ) : currentMastery ? (
           <MasteryHeroCard
             tier={isAdmin ? "admin" : tier}
             bestScore={currentMastery.score}
@@ -654,7 +656,7 @@ export default function Dashboard() {
             playCount={currentMastery.playCount}
             bestStreak={currentMastery.bestStreak}
           />
-        )}
+        ) : null}
 
         {/* In-feed 광고 (통계 카드와 탭 사이) */}
         <AdBanner

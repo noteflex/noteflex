@@ -190,3 +190,31 @@ function MetricTile({ label, value }: { label: string; value: string }) {
     </div>
   );
 }
+
+/**
+ * 로딩 중 Skeleton — 실제 카드 형태 그대로 회색 박스 박음.
+ * 사용자 인지: "고장 X, 로딩 중" (사용자 편의성 영역 §18 정합).
+ */
+export function MasteryHeroCardSkeleton() {
+  return (
+    <div
+      className="rounded-2xl border border-border bg-card p-5 shadow-sm w-full animate-pulse"
+      data-testid="mastery-hero-skeleton"
+      aria-hidden="true"
+    >
+      <div className="flex items-start justify-between gap-2">
+        <div className="flex-1">
+          <div className="h-3 w-24 bg-muted rounded mb-2" />
+          <div className="h-12 w-20 bg-muted rounded" />
+        </div>
+        <div className="grid grid-cols-2 gap-1.5">
+          <div className="h-9 w-14 bg-muted/70 rounded-lg" />
+          <div className="h-9 w-14 bg-muted/70 rounded-lg" />
+          <div className="h-9 w-14 bg-muted/70 rounded-lg" />
+          <div className="h-9 w-14 bg-muted/70 rounded-lg" />
+        </div>
+      </div>
+      <div className="mt-4 h-3 w-3/4 bg-muted rounded" />
+    </div>
+  );
+}
