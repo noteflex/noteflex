@@ -12,6 +12,11 @@ export interface BlogPostMeta {
   date: string;
   description: string;
   category: string;
+  coverImage?: string;
+  coverImageAlt?: string;
+  coverImageSource?: string;
+  coverImageLicense?: string;
+  coverImageCredit?: string;
 }
 
 export interface BlogPost extends MarkdownDoc {
@@ -102,6 +107,11 @@ export function listBlogPosts(lang?: "ko" | "en"): BlogPostMeta[] {
         date: meta.date || "",
         description: meta.description || "",
         category: meta.category || "",
+        coverImage: meta.coverImage || undefined,
+        coverImageAlt: meta.coverImageAlt || undefined,
+        coverImageSource: meta.coverImageSource || undefined,
+        coverImageLicense: meta.coverImageLicense || undefined,
+        coverImageCredit: meta.coverImageCredit || undefined,
       };
     })
     .filter((post) => !lang || post.lang === lang)

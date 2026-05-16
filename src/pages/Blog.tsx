@@ -84,23 +84,41 @@ export default function Blog() {
                     key={post.slug}
                     className="border-b border-border pb-6 last:border-b-0"
                   >
-                    <Link to={`/blog/${post.slug}`} className="block group">
-                      {post.category && (
-                        <span className="text-xs text-muted-foreground mb-1 block">
-                          {post.category}
-                        </span>
+                    <Link
+                      to={`/blog/${post.slug}`}
+                      className="flex flex-col sm:flex-row gap-4 group"
+                    >
+                      {post.coverImage && (
+                        <div className="sm:w-40 sm:shrink-0">
+                          <img
+                            src={post.coverImage}
+                            alt={post.coverImageAlt || post.title}
+                            className="aspect-[16/9] w-full object-cover rounded-lg"
+                            loading="lazy"
+                            onError={(e) => {
+                              e.currentTarget.parentElement!.style.display = "none";
+                            }}
+                          />
+                        </div>
                       )}
-                      <h2 className="text-xl font-bold text-foreground group-hover:text-primary transition-colors mb-1">
-                        {post.title}
-                      </h2>
-                      {post.date && (
-                        <p className="text-xs text-muted-foreground mb-2">{post.date}</p>
-                      )}
-                      {post.description && (
-                        <p className="text-sm text-foreground/80 leading-relaxed">
-                          {post.description}
-                        </p>
-                      )}
+                      <div className="flex-1 min-w-0">
+                        {post.category && (
+                          <span className="text-xs text-muted-foreground mb-1 block">
+                            {post.category}
+                          </span>
+                        )}
+                        <h2 className="text-xl font-bold text-foreground group-hover:text-primary transition-colors mb-1">
+                          {post.title}
+                        </h2>
+                        {post.date && (
+                          <p className="text-xs text-muted-foreground mb-2">{post.date}</p>
+                        )}
+                        {post.description && (
+                          <p className="text-sm text-foreground/80 leading-relaxed">
+                            {post.description}
+                          </p>
+                        )}
+                      </div>
                     </Link>
                   </li>
                 );

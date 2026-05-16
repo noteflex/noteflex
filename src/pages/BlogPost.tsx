@@ -87,7 +87,27 @@ export default function BlogPost() {
                 {post.meta.title || post.slug}
               </h1>
               {post.meta.date && (
-                <p className="text-sm text-muted-foreground mb-10">{post.meta.date}</p>
+                <p className="text-sm text-muted-foreground mb-6">{post.meta.date}</p>
+              )}
+              {post.meta.coverImage && (
+                <figure className="mb-10">
+                  <img
+                    src={post.meta.coverImage}
+                    alt={post.meta.coverImageAlt || post.meta.title || post.slug}
+                    className="aspect-video w-full object-cover rounded-xl"
+                    onError={(e) => {
+                      e.currentTarget.parentElement!.style.display = "none";
+                    }}
+                  />
+                  {(post.meta.coverImageCredit || post.meta.coverImageSource) && (
+                    <figcaption className="mt-2 text-xs text-muted-foreground text-right">
+                      {post.meta.coverImageCredit || post.meta.coverImageSource}
+                      {post.meta.coverImageLicense && (
+                        <span className="ml-1">({post.meta.coverImageLicense})</span>
+                      )}
+                    </figcaption>
+                  )}
+                </figure>
               )}
               <MarkdownContent>{post.content}</MarkdownContent>
 
