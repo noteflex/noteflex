@@ -588,9 +588,9 @@ export default function Dashboard() {
           <p className="text-xs text-muted-foreground">{t.dashboard.pageSubtitle}</p>
         </div>
 
-        {/* 상단 요약 */}
+        {/* 상단 요약 — LEAGUE 제거 박음 (작업 7), 3 카드 순서: Current → Longest → Today XP */}
         <section className="space-y-4">
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <StatTile
               icon="🔥"
               label={t.dashboard.currentStreak}
@@ -605,33 +605,17 @@ export default function Dashboard() {
               accentClass="text-orange-500"
             />
             <StatTile
+              icon="📅"
+              label={t.dashboard.longestStreak}
+              value={formatI18n(t.dashboard.streakValueDays, { n: String(stats.longestStreak) })}
+              subtext={t.dashboard.bestRecord}
+            />
+            <StatTile
               icon="⭐"
               label={t.dashboard.todayXp}
               value={stats.todayXp}
               subtext={formatI18n(t.dashboard.totalXp, { n: stats.totalXp.toLocaleString() })}
               accentClass="text-amber-500"
-            />
-            <StatTile
-              icon="🏆"
-              label={t.dashboard.league}
-              value={stats.league?.name ?? stats.currentLeagueName ?? "—"}
-              subtext={
-                stats.standing
-                  ? stats.standing.rank_in_group
-                    ? formatI18n(t.dashboard.leagueGroupRank, {
-                        rank: String(stats.standing.rank_in_group),
-                        xp: String(stats.standing.weekly_xp),
-                      })
-                    : formatI18n(t.dashboard.leagueWeekly, { xp: String(stats.standing.weekly_xp) })
-                  : t.dashboard.leagueAfterFirst
-              }
-              accentClass=""
-            />
-            <StatTile
-              icon="📅"
-              label={t.dashboard.longestStreak}
-              value={formatI18n(t.dashboard.streakValueDays, { n: String(stats.longestStreak) })}
-              subtext={t.dashboard.bestRecord}
             />
           </div>
 
