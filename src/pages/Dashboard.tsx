@@ -480,9 +480,10 @@ export default function Dashboard() {
             progress: prog ?? null,
             score: computeMasteryScore(prog ?? null),
             accuracy: prog && prog.total_attempts > 0 ? prog.total_correct / prog.total_attempts : undefined,
-            avgReactionRatio: prog?.avg_reaction_ratio,
-            playCount: prog?.play_count,
-            bestStreak: prog?.best_streak,
+            // DB 영역 null → undefined 정합 (MasteryHeroCard null 가드는 박혀있음, 방어 박음)
+            avgReactionRatio: prog?.avg_reaction_ratio ?? undefined,
+            playCount: prog?.play_count ?? undefined,
+            bestStreak: prog?.best_streak ?? undefined,
           };
         }
       }

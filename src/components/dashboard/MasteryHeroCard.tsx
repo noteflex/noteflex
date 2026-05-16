@@ -83,10 +83,12 @@ export default function MasteryHeroCard({
   const handleUpgrade = onUpgrade ?? (() => navigate("/pricing"));
 
   // 4 metrics — 0 값 fallback when no data (Premium)
-  const accDisplay = accuracy !== undefined ? `${Math.round(accuracy * 100)}%` : "0%";
-  const reactDisplay = avgReactionRatio !== undefined ? avgReactionRatio.toFixed(2) : "—";
-  const countDisplay = playCount !== undefined ? String(playCount) : "0";
-  const streakDisplay = bestStreak !== undefined ? String(bestStreak) : "0";
+  // `!= null` 박음 — null·undefined 모두 covers. DB에서 null 박힌 영역 (avg_reaction_ratio
+  // 미기록 신규 사용자) 통과해 toFixed 호출 시 런타임 crash 회피.
+  const accDisplay = accuracy != null ? `${Math.round(accuracy * 100)}%` : "0%";
+  const reactDisplay = avgReactionRatio != null ? avgReactionRatio.toFixed(2) : "—";
+  const countDisplay = playCount != null ? String(playCount) : "0";
+  const streakDisplay = bestStreak != null ? String(bestStreak) : "0";
 
   return (
     <div
