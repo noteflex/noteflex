@@ -8,6 +8,7 @@ import { useT } from "@/contexts/LanguageContext";
 interface NoteLog extends UserNoteLogRecord {}
 
 interface NoteStat {
+  /** 표시용 — "C4", "F#3" 영역 박힘 (note_key + octave 통합) */
   noteKey: string;
   total: number;
   correct: number;
@@ -63,9 +64,10 @@ export default function DiagnosisTab() {
   })();
 
   const stats: NoteStat[] = (() => {
+    // 옥타브 박음 — note_key + octave 영역 통합 박음 (예: "C4", "F#3")
     const map = new Map<string, { total: number; correct: number; times: number[] }>();
     for (const log of filteredLogs) {
-      const k = log.note_key;
+      const k = `${log.note_key}${log.octave}`;
       const entry = map.get(k) || { total: 0, correct: 0, times: [] };
       entry.total++;
       if (log.is_correct) entry.correct++;
@@ -233,7 +235,7 @@ export default function DiagnosisTab() {
         </div>
       </div>
 
-      {/* Weakest Notes — 위로 이동 (작업 4) */}
+      {/* Weakest Notes — Top 1 빨강, Top 2·3 노랑 (작업 3) */}
       {weakest.length > 0 && (
         <div className="w-full bg-card rounded-xl border border-border p-4">
           <h3 className="text-sm font-bold text-foreground mb-3 flex items-center">
@@ -241,38 +243,39 @@ export default function DiagnosisTab() {
             <InfoTooltip content={t.diagnosis.weakestNotesTooltip} />
           </h3>
           <div className="flex flex-col gap-2">
-            {weakest.map((w, i) => (
-              <div key={i} className="flex items-center gap-3">
-                <span className="text-lg">
-                  {i === 0 ? "🥇" : i === 1 ? "🥈" : "🥉"}
-                </span>
-                <span className="font-mono font-bold text-foreground text-sm w-10">
-                  {w.noteKey}
-                </span>
-                <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
-                  <div
-                    className="h-full rounded-full transition-all"
-                    style={{
-                      width: `${w.accuracy}%`,
-                      background:
-                        w.accuracy >= 80
-                          ? "hsl(var(--primary))"
-                          : w.accuracy >= 50
-                            ? "hsl(var(--accent))"
-                            : "hsl(var(--destructive))",
-                    }}
-                  />
+            {weakest.map((w, i) => {
+              const isTop1 = i === 0;
+              const colorClass = isTop1
+                ? "text-red-600 dark:text-red-400"
+                : "text-yellow-600 dark:text-yellow-500";
+              const barClass = isTop1
+                ? "bg-red-500 dark:bg-red-600"
+                : "bg-yellow-400 dark:bg-yellow-500";
+              return (
+                <div key={i} className="flex items-center gap-3">
+                  <span className="text-lg">
+                    {i === 0 ? "🥇" : i === 1 ? "🥈" : "🥉"}
+                  </span>
+                  <span className={`font-mono font-bold text-sm w-12 ${colorClass}`}>
+                    {w.noteKey}
+                  </span>
+                  <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+                    <div
+                      className={`h-full rounded-full transition-all ${barClass}`}
+                      style={{ width: `${w.accuracy}%` }}
+                    />
+                  </div>
+                  <span className="text-xs text-muted-foreground w-12 text-right">
+                    {w.accuracy}%
+                  </span>
                 </div>
-                <span className="text-xs text-muted-foreground w-12 text-right">
-                  {w.accuracy}%
-                </span>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}
 
-      {/* Slowest Notes — 위로 이동 (작업 4) */}
+      {/* Slowest Notes — Top 1 빨강, Top 2·3 노랑 (작업 3) */}
       {slowest.length > 0 && (
         <div className="w-full bg-card rounded-xl border border-border p-4">
           <h3 className="text-sm font-bold text-foreground mb-3 flex items-center">
@@ -280,31 +283,37 @@ export default function DiagnosisTab() {
             <InfoTooltip content={t.diagnosis.slowestNotesTooltip} />
           </h3>
           <div className="flex flex-col gap-2">
-            {slowest.map((s, i) => (
-              <div key={i} className="flex items-center gap-3">
-                <span className="text-lg">
-                  {i === 0 ? "🥇" : i === 1 ? "🥈" : "🥉"}
-                </span>
-                <span className="font-mono font-bold text-foreground text-sm w-10">
-                  {s.noteKey}
-                </span>
-                <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
-                  <div
-                    className="h-full rounded-full bg-amber-400 transition-all"
-                    style={{ width: `${Math.min((s.avgTime / 7) * 100, 100)}%` }}
-                  />
+            {slowest.map((s, i) => {
+              const isTop1 = i === 0;
+              const colorClass = isTop1
+                ? "text-red-600 dark:text-red-400"
+                : "text-yellow-600 dark:text-yellow-500";
+              const barClass = isTop1
+                ? "bg-red-500 dark:bg-red-600"
+                : "bg-yellow-400 dark:bg-yellow-500";
+              return (
+                <div key={i} className="flex items-center gap-3">
+                  <span className="text-lg">
+                    {i === 0 ? "🥇" : i === 1 ? "🥈" : "🥉"}
+                  </span>
+                  <span className={`font-mono font-bold text-sm w-12 ${colorClass}`}>
+                    {s.noteKey}
+                  </span>
+                  <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+                    <div
+                      className={`h-full rounded-full transition-all ${barClass}`}
+                      style={{ width: `${Math.min((s.avgTime / 7) * 100, 100)}%` }}
+                    />
+                  </div>
+                  <span className="text-xs text-muted-foreground w-12 text-right">
+                    {s.avgTime}{t.diagnosis.secondsSuffix}
+                  </span>
                 </div>
-                <span className="text-xs text-muted-foreground w-12 text-right">
-                  {s.avgTime}{t.diagnosis.secondsSuffix}
-                </span>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}
-
-      {/* Batch Analysis (official flags) */}
-      <BatchAnalysisSection />
 
       {/* Vulnerability Insight */}
       {mostVulnerable && (
@@ -433,6 +442,9 @@ export default function DiagnosisTab() {
           </div>
         </div>
       ) : null}
+
+      {/* Formal Learning Analysis — 최하단 박음 (작업 4) — 무거운 분석 영역 마지막 위치 */}
+      <BatchAnalysisSection />
     </div>
   );
 }
