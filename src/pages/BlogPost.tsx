@@ -8,7 +8,6 @@ import { useT } from "@/contexts/LanguageContext";
 import { loadBlogPost, type BlogPost as BlogPostType } from "@/lib/markdownLoader";
 import { AdBanner } from "@/components/AdBanner";
 import { getSlot } from "@/lib/adsense";
-import { CategoryCover } from "@/components/blog/CategoryCover";
 
 export default function BlogPost() {
   // URL :lang 유지 — 콘텐츠 lang은 URL 박힌 값 사용 (SEO·linkability 영역)
@@ -88,11 +87,8 @@ export default function BlogPost() {
                 {post.meta.title || post.slug}
               </h1>
               {post.meta.date && (
-                <p className="text-sm text-muted-foreground mb-6">{post.meta.date}</p>
+                <p className="text-sm text-muted-foreground mb-10">{post.meta.date}</p>
               )}
-              <div className="mb-10">
-                <CategoryCover category={post.meta.category || ""} variant="hero" />
-              </div>
               <MarkdownContent>{post.content}</MarkdownContent>
 
               {/* 글 본문 하단 배너 (PC + 모바일 모두 노출) */}
