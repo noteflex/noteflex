@@ -106,7 +106,21 @@ export function useLevelProgress() {
       // 성공 시 로컬 progress 다시 fetch (자동 unlock된 다음 단계도 반영)
       await fetchProgress();
 
-      return data as RecordAttemptResult;
+      const result = data as RecordAttemptResult;
+      // 통과 박힌 영역 박은 영역 (just_passed=true → 다음 sublevel 자동 잠금 해제 박음)
+      if (result?.just_passed) {
+        logger.info("레벨 통과", {
+          description: `Lv ${level}-${sublevel} 통과 박음 — 다음 sublevel 자동 잠금 해제`,
+          user_id: user.id,
+          level,
+          sublevel,
+          play_count: result.play_count,
+          accuracy: result.accuracy,
+          best_streak: result.best_streak,
+          fast_track: result.fast_track ?? false,
+        });
+      }
+      return result;
     },
     [user, fetchProgress]
   );

@@ -382,6 +382,15 @@ export function useSessionRecorder() {
             });
           } else {
             sessionId = directData?.id ?? null;
+            logger.info("게임 종료 박음 (폴백 INSERT)", {
+              description: "RPC 실패 영역에서 직접 INSERT 영역 박음 — RLS 영역 박은 영역 박힘",
+              user_id: user.id,
+              level: state.level,
+              accuracy,
+              xp_earned: xpBreakdown.total,
+              session_type: state.sessionType ?? "regular",
+              duration_seconds: durationSeconds,
+            });
           }
 
           // 3) RPC 실패해도 profiles.last_practice_date는 직접 업데이트
@@ -400,6 +409,15 @@ export function useSessionRecorder() {
           }
         } else {
           sessionId = typeof rpcData === "string" ? rpcData : null;
+          logger.info("게임 종료 박음 (RPC)", {
+            description: "record_game_session RPC 박음 — user_sessions·user_stats_daily·profiles 박음",
+            user_id: user.id,
+            level: state.level,
+            accuracy,
+            xp_earned: xpBreakdown.total,
+            session_type: state.sessionType ?? "regular",
+            duration_seconds: durationSeconds,
+          });
         }
 
         stateRef.current = null;

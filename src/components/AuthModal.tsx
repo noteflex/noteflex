@@ -174,6 +174,10 @@ export default function AuthModal({ onClose }: AuthModalProps) {
         },
       });
       if (error) throw error;
+      logger.info("Magic Link 발송 박음 (로그인)", {
+        description: "로그인 영역 박음 signInWithOtp 성공 — 사용자 영역 이메일 박을 영역",
+        email_domain: email.split("@")[1],
+      });
       setStep(2);
       startCooldown();
     } catch (err: any) {
@@ -235,6 +239,11 @@ export default function AuthModal({ onClose }: AuthModalProps) {
         },
       });
       if (error) throw error;
+      logger.info("Magic Link 발송 박음 (가입)", {
+        description: "회원가입 영역 박음 signInWithOtp 성공 — 사용자 영역 이메일 박을 영역",
+        email_domain: email.split("@")[1],
+        signup_method: "magic_link",
+      });
       setStep(2);
       startCooldown();
     } catch (err: any) {
@@ -266,6 +275,10 @@ export default function AuthModal({ onClose }: AuthModalProps) {
         },
       });
       if (error) throw error;
+      logger.info("Magic Link 발송 박음 (복구)", {
+        description: "계정 복구 영역 박음 signInWithOtp 성공 — 사용자 영역 이메일 박을 영역",
+        email_domain: email.split("@")[1],
+      });
       setIsRecovery(true);
       setStep(2);
       startCooldown();
@@ -302,6 +315,10 @@ export default function AuthModal({ onClose }: AuthModalProps) {
         toast({ title: "오류가 발생했어요", description: error.message, variant: "destructive" });
         return;
       }
+      logger.info("계정 영구 삭제 박음", {
+        description: "hard_delete_account RPC 박음 → profiles + auth.users DELETE",
+        email_domain: email.split("@")[1],
+      });
       // auth.users 삭제됐으므로 shouldCreateUser: true로 신규 가입 처리
       // AuthCallback이 profiles에 동의일시 기록하도록 localStorage에 저장
       const now = new Date().toISOString();
@@ -318,6 +335,10 @@ export default function AuthModal({ onClose }: AuthModalProps) {
         },
       });
       if (otpError) throw otpError;
+      logger.info("Magic Link 발송 박음 (새로 시작)", {
+        description: "새로 시작 영역 박음 signInWithOtp 성공 — 신규 가입 흐름 박음",
+        email_domain: email.split("@")[1],
+      });
       setFreshStartConfirm(false);
       setIsRecovery(false);
       setStep(2);

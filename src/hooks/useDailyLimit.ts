@@ -147,12 +147,24 @@ export function useDailyLimit(): UseDailyLimitResult {
       });
       return;
     }
+    const newCount = typeof data === "number" ? data : 0;
     if (typeof data === "number") {
       setTodayCount(data);
     } else {
       setTodayCount((c) => c + 1);
     }
-  }, [tier]);
+    // 한도 도달 영역 박은 영역 박음 (Free tier 영역만)
+    const limitForCheck = tier === "guest" ? GUEST_LIMIT : FREE_LIMIT;
+    if (newCount >= limitForCheck) {
+      logger.warn("일일 한도 도달", {
+        description: "사용자 영역 일일 게임 한도 영역 박음",
+        user_id: user?.id,
+        session_count: newCount,
+        daily_limit: limitForCheck,
+        tier,
+      });
+    }
+  }, [tier, user?.id]);
 
   const limit = tier === "pro" ? Infinity : tier === "guest" ? GUEST_LIMIT : FREE_LIMIT;
   const hasReached = todayCount >= limit;

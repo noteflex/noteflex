@@ -36,6 +36,11 @@ export default function AuthCallback() {
           navigate("/?auth_error=deletion_failed", { replace: true });
           return;
         }
+        logger.info("계정 탈퇴 박음", {
+          description: "request_account_deletion RPC 박음 → deleted_at·is_deleted 박힘",
+          user_id: session.user.id,
+          reason: reason ?? "(none)",
+        });
         await supabase.auth.signOut();
         setDeletionDone(true);
         setTimeout(() => {
@@ -58,6 +63,10 @@ export default function AuthCallback() {
           navigate("/?auth_error=restore_failed", { replace: true });
           return;
         }
+        logger.info("계정 복구 박음", {
+          description: "restore_account RPC 박음 → is_deleted=false·deleted_at=NULL 박힘",
+          user_id: session.user.id,
+        });
         localStorage.setItem("noteflex_auth_complete", Date.now().toString());
         if ("BroadcastChannel" in window) {
           const channel = new BroadcastChannel("noteflex_auth");
@@ -71,6 +80,14 @@ export default function AuthCallback() {
         }, 3000);
         return;
       }
+
+      // 인증 영역 성공 박은 영역 — Magic Link/OAuth 콜백 박은 영역
+      logger.info("인증 콜백 박음", {
+        description: "Magic Link 영역 또는 OAuth 영역 인증 완료 영역 박음",
+        user_id: session.user.id,
+        email_domain: session.user.email?.split("@")[1],
+        signup_method: localStorage.getItem("noteflex_consent") ? "magic_link_or_oauth_signup" : "signin",
+      });
 
       // Google OAuth 가입 시 localStorage에 저장된 TOS 동의 시점을 profile에 반영
       const stored = localStorage.getItem("noteflex_consent");

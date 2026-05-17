@@ -110,6 +110,12 @@ export default function ProfilePage() {
               action: "ProfilePage.tsx:102 영역 확인",
               metadata: { new_lang: newLang, user_id: user.id },
             });
+          } else {
+            logger.info("언어 변경 박음", {
+              description: "profiles.locale UPDATE 박음",
+              user_id: user.id,
+              new_locale: newLang,
+            });
           }
         });
     }
@@ -193,6 +199,12 @@ export default function ProfilePage() {
       }
 
       await refreshProfile();
+      if (updates.nickname && updates.nickname !== profile?.nickname) {
+        logger.info("닉네임 변경 박음", {
+          description: "profiles.nickname UPDATE 박음",
+          user_id: user.id,
+        });
+      }
       toast({ title: t.profile.saveSuccess });
     } catch {
       toast({ title: t.profile.saveFailed, variant: "destructive" });

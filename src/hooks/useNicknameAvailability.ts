@@ -44,6 +44,10 @@ export function useNicknameAvailability(nickname: string, debounceMs = 500) {
         if (data === true) {
           setStatus({ state: "available" });
         } else {
+          logger.warn("닉네임 중복", {
+            description: "회원가입 영역에서 사용자 영역 박은 닉네임 영역 박혀있는 영역",
+            nickname_length: nickname.length,
+          });
           const suggestions = await generateSuggestions(nickname);
           setStatus({ state: "taken", suggestions });
         }

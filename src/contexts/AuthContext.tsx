@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState, ReactNode } from "react
 import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfile, Profile } from "@/hooks/useProfile";
+import { logger } from "@/lib/sentry";
 
 interface AuthContextType {
   session: Session | null;
@@ -37,12 +38,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       (_event, session) => {
         setSession(session);
         setLoading(false);
+        // Sentry 영역 사용자 식별 박음
+        if (session?.user) {
+          logger.setUser({
+            id: session.user.id,
+            email: session.user.email,
+          });
+        } else {
+          logger.setUser(null);
+        }
       }
     );
 
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setLoading(false);
+      if (session?.user) {
+        logger.setUser({
+          id: session.user.id,
+          email: session.user.email,
+        });
+      }
     });
 
     return () => subscription.unsubscribe();
@@ -50,6 +66,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signOut = async () => {
     await supabase.auth.signOut();
+    logger.setUser(null);
   };
 
   return (
