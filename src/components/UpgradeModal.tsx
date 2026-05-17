@@ -19,8 +19,11 @@ export default function UpgradeModal({ open, onClose }: UpgradeModalProps) {
   const t = useT();
 
   const handlePricing = () => {
-    navigate("/pricing");
+    // onClose 영역 먼저 박음 — Dashboard.setSearchParams 영역 박은 영역 박은 영역
+    // navigate 박은 영역 박은 영역 영역 setSearchParams(replace: true) 박은 영역 박은 영역 박음 박은 영역
+    // /dashboard 영역 박은 영역 URL 영역 박은 영역 영역 박은 영역 박음 박은 영역.
     onClose();
+    navigate("/pricing");
   };
 
   return (
