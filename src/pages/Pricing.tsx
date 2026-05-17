@@ -1,9 +1,12 @@
+import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import Header from "@/components/Header";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLang } from "@/contexts/LanguageContext";
 import { getUserTier } from "@/lib/subscriptionTier";
 import { PaymentErrorBoundary } from "@/components/PaymentErrorBoundary";
+import { openCheckout, PADDLE_PRICES } from "@/lib/paddle";
+import { logger } from "@/lib/sentry";
 
 // ── 다국어 콘텐츠 (ja·zh = en fallback, Phase 3에서 정식 번역 예정) ──────
 const CONTENT = {
@@ -147,16 +150,60 @@ export default function Pricing() {
   const { lang } = useLang();
   const c = CONTENT[lang === "ko" ? "ko" : "en"];
   const tier = getUserTier(user ?? null, profile ?? null);
+  const [isCheckoutLoading, setIsCheckoutLoading] = useState(false);
 
-  const handleCta = (plan: "free" | "monthly" | "yearly") => {
+  const handleCta = async (plan: "free" | "monthly" | "yearly") => {
     if (tier === "pro") return;
     if (plan === "free" && tier !== "guest") return; // Free 가입자는 현재 플랜
     if (tier === "guest") {
       navigate("/signup");
       return;
     }
-    // free 가입자 → 대시보드 UpgradeModal
-    navigate("/dashboard?upgrade=1");
+    // Free 가입자 → Paddle Checkout 호출
+    if (plan === "monthly" || plan === "yearly") {
+      const priceId = PADDLE_PRICES[plan];
+      if (!priceId) {
+        logger.error("Paddle Price ID 누락", new Error("Missing price ID"), {
+          description: "환경변수에 Price ID가 박지 X",
+          cause: `VITE_PADDLE_PRICE_${plan.toUpperCase()} 누락`,
+          impact: "결제 진행 불가",
+          action: "Vercel 환경변수 영역 확인 필요",
+          metadata: { plan },
+        });
+        return;
+      }
+      if (!user?.email) {
+        logger.warn("결제 불가 — 이메일 정보 없음", {
+          user_id: user?.id,
+          plan,
+        });
+        return;
+      }
+
+      try {
+        setIsCheckoutLoading(true);
+        logger.info("결제 시작", {
+          description: `Paddle Checkout 호출 (${plan})`,
+          user_id: user.id,
+          plan,
+        });
+        await openCheckout({
+          plan,
+          userEmail: user.email,
+          userId: user.id,
+        });
+      } catch (err) {
+        logger.error("결제 진행 실패", err, {
+          description: "openCheckout 호출 실패",
+          cause: err instanceof Error ? err.message : String(err),
+          impact: "사용자가 결제 진행 불가",
+          action: "Paddle SDK 로드 확인, Price ID 유효성 확인",
+          metadata: { plan, user_id: user.id },
+        });
+      } finally {
+        setIsCheckoutLoading(false);
+      }
+    }
   };
 
   const freeCtaLabel =
@@ -265,10 +312,10 @@ export default function Pricing() {
                 </ul>
                 <button
                   onClick={() => handleCta("monthly")}
-                  disabled={tier === "pro"}
+                  disabled={tier === "pro" || isCheckoutLoading}
                   className="w-full py-3 rounded-xl bg-primary text-primary-foreground text-sm font-semibold shadow-md hover:shadow-lg transition-all active:scale-95 disabled:opacity-60 disabled:cursor-default"
                 >
-                  {moCtaLabel}
+                  {isCheckoutLoading ? "..." : moCtaLabel}
                 </button>
                 <p className="text-[11px] text-muted-foreground text-center mt-2">
                   {c.cancelNote}
@@ -308,10 +355,10 @@ export default function Pricing() {
                 </ul>
                 <button
                   onClick={() => handleCta("yearly")}
-                  disabled={tier === "pro"}
+                  disabled={tier === "pro" || isCheckoutLoading}
                   className="w-full py-3 rounded-xl bg-orange-500 text-white text-sm font-semibold shadow-md hover:shadow-lg hover:bg-orange-600 transition-all active:scale-95 disabled:opacity-60 disabled:cursor-default"
                 >
-                  {yrCtaLabel}
+                  {isCheckoutLoading ? "..." : yrCtaLabel}
                 </button>
                 <p className="text-[11px] text-muted-foreground text-center mt-2">
                   {c.cancelNote}

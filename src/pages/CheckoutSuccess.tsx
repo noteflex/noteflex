@@ -1,17 +1,40 @@
 import { useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import Header from "@/components/Header";
+import { useAuth } from "@/contexts/AuthContext";
+import { logger } from "@/lib/sentry";
 
 export default function CheckoutSuccess() {
   const navigate = useNavigate();
+  const { user, refreshProfile } = useAuth();
+  const [searchParams] = useSearchParams();
 
-  // 5초 후 자동으로 메인으로 이동 (선택사항)
   useEffect(() => {
-    const timer = setTimeout(() => {
+    // Paddle 리다이렉트 영역 query params 박은 영역
+    const transactionId =
+      searchParams.get("transaction_id") || searchParams.get("_ptxn") || "unknown";
+
+    logger.info("결제 완료 — Success 페이지 진입", {
+      description: "Paddle Checkout 완료 후 redirect 도착",
+      user_id: user?.id ?? "(no_user)",
+      transaction_id: transactionId,
+    });
+
+    // Webhook 처리 영역 후 영역 profile 갱신 영역 (1~3초 영역 박힘)
+    const refreshTimer = setTimeout(() => {
+      refreshProfile?.();
+    }, 2000);
+
+    // 5초 후 자동으로 메인으로 이동
+    const navTimer = setTimeout(() => {
       navigate("/");
     }, 5000);
-    return () => clearTimeout(timer);
-  }, [navigate]);
+
+    return () => {
+      clearTimeout(refreshTimer);
+      clearTimeout(navTimer);
+    };
+  }, [navigate, refreshProfile, searchParams, user?.id]);
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-primary/10 via-background to-accent/10">
