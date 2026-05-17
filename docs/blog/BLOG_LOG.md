@@ -140,3 +140,26 @@
 | 2026-05-16 | §4-50 즉각 음표 인식 (이미지 1개) | `e7faded` |
 | 2026-05-16 | §1-3 학습 정체 5가지 패턴 | `e05da5d` |
 | 2026-05-16 | §3-36 같은 악보 vs 새 악보 | `a1ee536` |
+| 2026-05-16 | §M-1 조옮김 메커니즘 + 단계별 훈련 (ko+en) | `ab3eb00` |
+| 2026-05-16 | §M-2 초견 슬럼프와 메타인지 (ko+en) | `ab3eb00` |
+| 2026-05-16 | §M-3 오케스트라 첫 리허설 워크플로우 (ko+en) | `ab3eb00` |
+| 2026-05-17 | §M-4 코드 진행을 화성으로 읽기 (ko+en) | `cf045cc` |
+| 2026-05-17 | §M-5 작업 기억 4마디 한계 (ko+en) | `cf045cc` |
+| 2026-05-17 | §M-6 현악 4중주 시청각 동기화 (ko+en) | `cf045cc` |
+| 2026-05-18 | §M-7 정확도 vs 속도 vs 일관성 (ko+en) | (펜딩) |
+| 2026-05-18 | §M-8 Suzuki vs 전통 교수법 비교 (ko+en) | (펜딩) |
+| 2026-05-18 | §M-9 공연 24시간 전 워크플로우 (ko+en) | (펜딩) |
+
+## 2026-05-16~18 신규 9편 사용 이미지·인용 목록
+
+| 슬러그 | 이미지 (Wikimedia) | 학술 인용 |
+|---|---|---|
+| transposition-explained | Bach Well-Tempered Clavier fugue (DwtkII-as-dur-fuga.jpg) | Wolf (1976) — *Journal of Psycholinguistic Research* — DOI 10.1007/BF01067255 |
+| sight-reading-metacognition | Teaching rhythm in music education | Schraw & Dennison (1994) — DOI 10.1006/ceps.1994.1033 |
+| orchestra-sight-reading | Small environment of studying Score KV265 | Wolf (1976) — DOI 10.1007/BF01067255 |
+| chord-progression-reading | Sheet music | Sloboda (1985) — *The Musical Mind* — DOI 10.1093/acprof:oso/9780198521280.001.0001 |
+| working-memory-music-reading | Reading Fixations Saccades | Furneaux & Land (1999) — DOI 10.1098/rspb.1999.0943 |
+| string-ensemble-sight-reading | Bach Lute Suite (Bachlut1.png) | Buccino et al. (2001) — DOI 10.1111/j.1460-9568.2001.01385.x |
+| sight-reading-metrics | Piano practice | Lehmann & Ericsson (1996) — DOI 10.1037/h0094082 |
+| suzuki-vs-traditional-reading | Music class USA | McPherson & Gabrielsson (2002) — DOI 10.1093/acprof:oso/9780195138108.003.0007 |
+| pre-performance-24hours | Beethoven Op.90 manuscript | Stickgold & Walker (2007) — DOI 10.1016/j.sleep.2007.03.011 |
