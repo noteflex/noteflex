@@ -51,6 +51,24 @@ export const PADDLE_PRICES = {
 export type PlanType = keyof typeof PADDLE_PRICES;
 
 // ═════════════════════════════════════════════════════════════
+// Paddle locale 매핑 — 앱 언어 코드 → Paddle 지원 locale
+// ═════════════════════════════════════════════════════════════
+
+/**
+ * 앱 언어 코드를 Paddle Checkout locale로 변환.
+ * Paddle 지원: ko·en·ja·zh-Hans·zh-Hant 등.
+ */
+export function getPaddleLocale(appLang: string): string {
+  const mapping: Record<string, string> = {
+    ko: "ko",
+    en: "en",
+    ja: "ja",
+    zh: "zh-Hans", // 간체 기본. 번체 필요 시 별도 처리
+  };
+  return mapping[appLang] || "en";
+}
+
+// ═════════════════════════════════════════════════════════════
 // Checkout 실행
 // ═════════════════════════════════════════════════════════════
 
@@ -58,6 +76,7 @@ export interface OpenCheckoutOptions {
   plan: PlanType;            // "monthly" | "yearly"
   userEmail?: string;        // 로그인한 사용자 이메일 (자동 입력)
   userId?: string;           // profiles.id (Paddle에 customData로 전달)
+  locale?: string;           // Paddle locale (예: "ko" · "en" · "ja" · "zh-Hans")
   onSuccess?: () => void;    // 결제 성공 콜백
   onClose?: () => void;      // 사용자가 닫았을 때
 }
@@ -87,7 +106,7 @@ export async function openCheckout(options: OpenCheckoutOptions): Promise<void> 
     settings: {
         displayMode: "overlay",
         theme: "light",
-        locale: "ko",
+        locale: options.locale || "en", // 앱 언어 영역 박음 (호출자 영역 전달). 기본값 영어.
         successUrl: `${window.location.origin}/checkout/success`,
         // Paddle은 failureUrl 옵션이 없음 — 결제 실패는 오버레이 내에서 처리됨
         // 사용자가 닫으면 페이지 그대로 유지됨 (리다이렉트 없음)

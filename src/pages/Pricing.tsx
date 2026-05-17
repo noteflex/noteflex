@@ -5,7 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useLang } from "@/contexts/LanguageContext";
 import { getUserTier } from "@/lib/subscriptionTier";
 import { PaymentErrorBoundary } from "@/components/PaymentErrorBoundary";
-import { openCheckout, PADDLE_PRICES } from "@/lib/paddle";
+import { openCheckout, PADDLE_PRICES, getPaddleLocale } from "@/lib/paddle";
 import { logger } from "@/lib/sentry";
 
 // ── 다국어 콘텐츠 (ja·zh = en fallback, Phase 3에서 정식 번역 예정) ──────
@@ -191,6 +191,7 @@ export default function Pricing() {
           plan,
           userEmail: user.email,
           userId: user.id,
+          locale: getPaddleLocale(lang),
         });
       } catch (err) {
         logger.error("결제 진행 실패", err, {
