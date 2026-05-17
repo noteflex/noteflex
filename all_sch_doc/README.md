@@ -146,19 +146,28 @@
 | 2026-05-18 | `20260518_phase3_consolidation` | **Phase 3 Step 1-2** — Dashboard 직접 박힌 영역 10개 테이블 (`user_sessions`·`user_stats_daily`·`note_mastery`·`leagues`·`league_groups` 신규·`league_members`·`admin_actions`·`daily_batch_runs`·`user_streaks` 컬럼 3개 추가·`subscriptions`) + 3개 함수 (`handle_session_complete`·`check_nickname_available`·`get_my_league_group_id` 신규) + 1개 트리거 (`on_session_complete`) + 1개 DROP (`record_sublevel_attempt` 6-arg dead) 영역 마이그 영역 재현 박음. ⚠️ 함수 본문 영역 임시 — Step 1-3 영역 박음 영역 박음 정확 본문 영역 박음 |
 | 2026-05-18 | `20260518_device_change_events_update_policy` | **Phase 3 Step 1** — UPDATE 정책 영역 누락 영역 박음 (`userEnvironmentOffset.ts:135` silent fail 영역 해결 영역) |
 
-### 3.1 마이그레이션 영역 외 박힌 영역 (Supabase Dashboard 직접 박음)
+### 3.1 마이그레이션 외 Dashboard 직접 박은 영역 → Phase 3 영역에서 재현 완료 ✅
 
-> 이 테이블 영역 = `supabase/migrations/` 영역 CREATE TABLE 영역 없음. 직접 박힘 영역 추론 (src/ 영역 사용 영역에서).
+> 아래 10개 테이블·3개 함수·1개 트리거는 Production Dashboard에서 직접 생성됐으나,
+> **Phase 3 Step 1-2 (2026-05-18) 마이그레이션 재현 완료** — `20260518_phase3_consolidation.sql`.
+> 다른 환경(staging, 신규 dev)에서도 동일하게 박힘.
 
-| 테이블 영역 | 박힌 근거 |
-|---|---|
-| `user_sessions` | `src/hooks/useSessionRecorder.ts` + `src/hooks/useMyStats.ts` 영역 박음 |
-| `user_stats_daily` | `src/hooks/useMyStats.ts` + `src/hooks/useUserStats.ts` 영역 박음 |
-| `note_mastery` | `src/hooks/useMyStats.ts` + `useMasteryDetails.ts` + `useUserMastery.ts` 영역 박음 |
-| `leagues` | `src/hooks/useUserStats.ts` 영역 박음 |
-| `league_members` | `src/hooks/useUserStats.ts` 영역 박음 |
-| `admin_actions` | `src/hooks/useAdminLogs.ts` 영역 박음 |
-| `daily_batch_runs` | `20260424_premium_expiry.sql` 영역 ALTER 박음 (CREATE 영역 X) + `src/hooks/useBatchRuns.ts` 영역 |
+| 테이블 | 박힌 근거 | Phase 3 재현 |
+|---|---|---|
+| `user_sessions` | `useSessionRecorder.ts` + `useMyStats.ts` | ✅ `20260518_phase3_consolidation.sql` §1 |
+| `user_stats_daily` | `useMyStats.ts` + `useUserStats.ts` | ✅ §2 |
+| `note_mastery` | `useMyStats.ts` + `useMasteryDetails.ts` + `useUserMastery.ts` | ✅ §3 |
+| `leagues` | `useUserStats.ts` | ✅ §4 |
+| `league_groups` (Phase 3 신규 발견) | `get_my_league_group_id()` 영역 박음 | ✅ §5 |
+| `league_members` | `useUserStats.ts` | ✅ §6 |
+| `admin_actions` | `useAdminLogs.ts` + `admin-action` Edge Function | ✅ §7 |
+| `daily_batch_runs` | `20260424_premium_expiry.sql` ALTER + `useBatchRuns.ts` | ✅ §8 |
+| `user_streaks` (컬럼 3개 추가 발견) | `admin-action` Edge Function | ✅ §9 |
+| `subscriptions` | `paddle-webhook` Edge Function | ✅ §10 |
+| 함수 `handle_session_complete` | `user_sessions` AFTER INSERT 트리거 함수 | ✅ §11 |
+| 트리거 `on_session_complete` | `user_sessions` 게임 종료 박음 | ✅ §12 |
+| 함수 `check_nickname_available` | `useNicknameAvailability.ts:38, 73` | ✅ §13 |
+| 함수 `get_my_league_group_id` (신규 발견) | `league_members` RLS 정책 영역 박음 | ✅ §0 |
 
 ---
 
@@ -174,27 +183,36 @@
 - Supabase Dashboard 영역 직접 박힌 영역 ↔ migration 영역 ↔ src/ 영역 박힌 영역 정합 영역 검증
 - Cursor 검증 결과: 9건 불일치 발견 + Production 영역 직접 확인 영역 박음
 
-### Phase 3 — 누락·silent fail 영역 fix 박음 🟡 진행 중
-- ✅ **Step 1 (2026-05-18)** — SSoT 마이그 재현 골격 박음
-  - `scripts/phase3/01_extract_production_schema.sql` — Production schema 추출 영역 SQL
-  - `supabase/migrations/20260518_device_change_events_update_policy.sql` — UPDATE 정책 영역 누락 영역 박음 (silent fail 영역 해결 영역)
-- ✅ **Step 1-2 (2026-05-18)** — Production schema 영역 박은 영역 정확 schema 영역 박음
-  - `supabase/migrations/20260518_phase3_consolidation.sql` — 10개 테이블 + 3개 함수 + 1개 트리거 + 1개 DROP 영역 박은 영역 박음
-  - 신규 발견 영역: `league_groups` 테이블 + `get_my_league_group_id` 함수 + `user_streaks` 컬럼 3개
-  - 중복 정책 영역 영역 정리 영역 박음 (DROP IF EXISTS 영역 통일 명명 영역)
-- ✅ **Step 1-3 (2026-05-18)** — 함수 본문 영역 (handle_session_complete·check_nickname_available·get_my_league_group_id) 영역 Production 영역 추출 영역 박은 영역 박음 정확 본문 영역 박음
-  - `handle_session_complete`: user_stats_daily UPSERT + profiles.total_xp/last_practice_date UPDATE + note_mastery UPSERT (mastery_level 5단계 재계산 영역 — 95/90/80/70/50% 박음)
+### Phase 3 — SSoT 회복 + silent fail 해소 ✅ 완료
+- ✅ **Step 1-1 (2026-05-18)** — Production schema 추출 SQL 박음
+  - `scripts/phase3/01_extract_production_schema.sql` — 13개 섹션(A~M)
+- ✅ **Step 1-2 (2026-05-18)** — Production schema → 마이그레이션 재현
+  - `supabase/migrations/20260518_phase3_consolidation.sql` — 10개 테이블 + 3개 함수 + 1개 트리거 + 1개 DROP
+  - 신규 발견: `league_groups` 테이블 + `get_my_league_group_id` 함수 + `user_streaks` 컬럼 3개
+  - 중복 정책 정리 + DROP IF EXISTS → CREATE 통일 명명
+- ✅ **Step 1-3 (2026-05-18)** — 함수 본문 Production 정확본 정정
+  - `handle_session_complete`: user_stats_daily UPSERT + profiles.total_xp/last_practice_date UPDATE + note_mastery UPSERT (mastery_level 5단계 95/90/80/70/50% 재계산)
   - `check_nickname_available`: 형식 1차 검증 (3-20자 + 정규식 `^[a-z][a-z0-9_]{2,19}$`) + 중복 검사
-  - `get_my_league_group_id`: LANGUAGE sql STABLE — 가장 최근 joined_at 영역 group_id 영역 박음
-- ⏸ **Step 2** — staging 영역 박은 영역 박음 검증 영역 박음 → production apply 영역
-- ⏸ **Step 3** — 중복 정의 함수 6개 영역 production 영역 영역 영역 검증 영역 박음
+  - `get_my_league_group_id`: LANGUAGE sql STABLE — 최근 joined_at 영역 group_id
+- ✅ **Step 2-A (2026-05-18)** — device_change_events UPDATE 정책 silent fail 해소
+  - `supabase/migrations/20260518_device_change_events_update_policy.sql`
+- ✅ **Step 2-B (2026-05-18)** — `record_sublevel_attempt` 6개 인자 dead 함수 DROP
+- ✅ **Step 3 (2026-05-18)** — 중복 정의 함수 6개 production 확인 (이미 최신 영역)
+- ✅ **Step 4 (2026-05-18)** — 문서 정정 (19건) — 이 영역
 
-### Phase 4 — 로그·Admin
+### Phase 4 — 로그·Admin (출시 후)
 - Sentry 박음
-- `app_logs` 테이블 영역 박음
-- `logger` 유틸 영역 박음
-- silent fail 영역 사용자 영역 토스트 영역 박음
+- `app_logs` 테이블 박음
+- `logger` 유틸 박음
+- silent fail 영역 사용자 토스트 박음
 - `/admin/logs` 페이지 박음
+
+### 출시 박을 영역
+- 결제 시스템 (Paddle Checkout — 현재 IAP만 박힌 영역)
+- Phase 4 영역 (Sentry + app_logs + logger)
+- Phase 5 영역 (Admin `/logs` 페이지)
+- About·Contact·FAQ·OG image·PWA manifest
+- Paddle·AdSense 심사 박음
 
 ---
 

@@ -429,7 +429,7 @@ INSERT 영역 = `supabase/functions/admin-action/index.ts:261` 영역 `service_r
 | 정책 이름 | 명령 | 대상 | USING | WITH CHECK | 마이그 |
 |---|---|---|---|---|---|
 | Users can view own practice logs | SELECT | authenticated | `auth.uid() = user_id` | — | 20260410170000 |
-| Users can insert own practice logs | INSERT | authenticated | — | `auth.uid() = user_id` | 20260410170000 |
+| Users can insert own practice logs | INSERT | authenticated | — | `auth.uid() = user_id AND EXISTS (SELECT 1 FROM user_scores s WHERE s.id = practice_logs.score_id AND s.user_id = auth.uid())` | 20260410170000:27-30 |
 | Users can update own practice logs | UPDATE | authenticated | `auth.uid() = user_id` | `auth.uid() = user_id` | 20260510_rls_audit:152 |
 | Users can delete own practice logs | DELETE | authenticated | `auth.uid() = user_id` | — | 20260510_rls_audit:157 |
 | Admins can view all practice logs | SELECT | (admin) | `public.is_admin()` | — | 20260510_rls_audit:161 |
@@ -456,58 +456,91 @@ INSERT 영역 = `supabase/functions/admin-action/index.ts:261` 영역 `service_r
 |---|---|---|---|---|---|
 | Users can view own device change events | SELECT | (모두) | `auth.uid() = user_id` | — | 20260503:22 + 20260510_rls_audit:118 (재생성 영역) |
 | Users can insert own device change events | INSERT | (모두) | — | `auth.uid() = user_id` | 20260503:26 + 20260510_rls_audit:123 |
+| **device_change_events_update_own** | **UPDATE** | **authenticated** | `auth.uid() = user_id` | `auth.uid() = user_id` | **`20260518_device_change_events_update_policy.sql` (Phase 3 Step 2-A 박음)** |
 | Admins can view all device change events | SELECT | (admin) | `public.is_admin()` | — | 20260503:30 + 20260510_rls_audit:128 |
 
 #### 3. 정책별 상세
-- 자신 영역 디바이스 영역 변경 영역 이벤트 영역 SELECT/INSERT 영역. UPDATE 영역 정책 영역 없음.
+- 자신 영역 디바이스 영역 변경 영역 이벤트 영역 CRUD 영역 박음 (Phase 3 영역 박은 영역 UPDATE 영역 박음).
 - 박는 사례: `userEnvironmentOffset.ts:112` INSERT, `userEnvironmentOffset.ts:135` UPDATE.
 
 #### 4. 우회 영역
-- ⚠️ UPDATE 영역 정책 영역 없음 영역 → `userEnvironmentOffset.ts:135` 영역 UPDATE 영역 시 실패 영역 가능성 영역. ⚠️ 확인 필요.
+- 없음 (Phase 3 영역 박은 영역 UPDATE 정책 영역 박음 — silent fail 해소 영역).
 
 #### 5. 박지 X 영역
-- ⚠️ **UPDATE 정책 영역 없음 영역** → `userEnvironmentOffset.ts:135` 영역 silent fail 영역 가능.
-- ⚠️ DELETE 영역 정책 영역 없음.
+- ✅ **Phase 3 Step 2-A (2026-05-18)**: `device_change_events_update_own` 정책 영역 박음 → silent fail 영역 해소 영역 박음.
+- ⚠️ DELETE 영역 정책 영역 없음 — intentional 영역.
 
 ---
 
-### 2.17 `user_streaks` (Cursor 검증에서 발견 영역 누락 영역)
+### 2.17 `user_streaks` (Phase 3 영역 박음)
 
 #### 1. RLS 활성화 여부
-⚠️ **확인 필요** — migration 영역 없음.
+✅ ENABLE — `20260518_phase3_consolidation.sql §9` (Phase 3 Step 1-2 영역 박음)
 
 #### 2. 정책 목록
-⚠️ **migration 영역 없음**. Dashboard 영역 직접 박힘 영역 추정.
 
-`supabase/functions/admin-action/index.ts:220` 영역 = `service_role` key 영역 박힘 영역 → RLS 영역 우회 영역.
+| 정책 이름 | 명령 | 대상 | USING | WITH CHECK | 마이그 |
+|---|---|---|---|---|---|
+| user_streaks_select_own | SELECT | authenticated | `auth.uid() = user_id` | — | 20260518:§9 |
+| user_streaks_admin_select | SELECT | (admin) | `public.is_admin()` | — | 20260518:§9 |
 
 #### 3. 정책별 상세
-- ⚠️ 확인 필요.
+- 자신 영역 streak 영역 SELECT 영역만 박음.
+- INSERT/UPDATE/DELETE 영역 = Edge Function (`admin-action/index.ts:220`) 영역 박음 (service_role 영역 RLS 우회 영역).
+
+#### 4. 우회 영역
+- Edge Function (service_role) — admin streak 영역 조정 영역 박음.
+
+#### 5. 박지 X 영역
+- ⚠️ UPDATE 정책 영역 없음 영역 → 사용자 영역 영역 streak 영역 박지 X 박힘 영역 (intentional — `handle_session_complete` 영역 박음 영역 박을 영역 박음 영역 박지 X 박힌 영역 박음 영역)
+
+---
+
+### 2.18 `subscriptions` (Phase 3 영역 박음)
+
+#### 1. RLS 활성화 여부
+✅ ENABLE — `20260518_phase3_consolidation.sql §10` (Phase 3 Step 1-2 영역 박음)
+
+#### 2. 정책 목록
+
+| 정책 이름 | 명령 | 대상 | USING | WITH CHECK | 마이그 |
+|---|---|---|---|---|---|
+| subscriptions_select_own | SELECT | authenticated | `auth.uid() = user_id` | — | 20260518:§10 |
+| subscriptions_admin_select | SELECT | (admin) | `public.is_admin()` | — | 20260518:§10 |
+
+#### 3. 정책별 상세
+- 자신 영역 구독 영역 SELECT 영역만 박음.
+- INSERT/UPDATE/DELETE 영역 = Paddle webhook (`paddle-webhook/index.ts:139`) 영역 박음 (service_role).
 
 #### 4. 우회 영역
 - Edge Function (service_role).
 
 #### 5. 박지 X 영역
-- ⚠️ src/ 영역 직접 영역 SELECT 영역 없음 (Edge Function 영역에서만 박음).
+- ⚠️ Paddle Checkout 영역 production 영역 박지 X 박힘 영역 (PENDING).
 
 ---
 
-### 2.18 `subscriptions` (Edge Function 영역 발견)
+### 2.19 `league_groups` (Phase 3 영역 신규 발견 영역 박음)
 
 #### 1. RLS 활성화 여부
-⚠️ **확인 필요** — migration 영역 없음.
+✅ ENABLE — `20260518_phase3_consolidation.sql §5`
 
 #### 2. 정책 목록
-⚠️ **migration 영역 없음**. `supabase/functions/paddle-webhook/index.ts:139` 영역 = `service_role` 영역.
+
+| 정책 이름 | 명령 | 대상 | USING | WITH CHECK | 마이그 |
+|---|---|---|---|---|---|
+| league_groups_select_all | SELECT | (모두) | `true` | — | 20260518:§5 |
+| league_groups_admin_all | ALL | (admin) | `public.is_admin()` | `public.is_admin()` | 20260518:§5 |
 
 #### 3. 정책별 상세
-- ⚠️ 확인 필요.
+- 모든 사용자 영역 SELECT 박음 (마스터 데이터 영역 박음).
+- admin ALL 영역 박음 (INSERT/UPDATE/DELETE 영역 박음 영역 박음 영역 박음).
 
 #### 4. 우회 영역
-- Edge Function (service_role).
+- 없음.
 
 #### 5. 박지 X 영역
-- ⚠️ src/ 영역 사용 영역 없음 영역 (webhook 영역 박힘 영역 박힘 영역만).
+- ⚠️ UI 영역 비활성 영역 (작업 #27 영역).
 
 ---
 
@@ -535,50 +568,57 @@ grep -rn "public.is_admin()\|public.is_reviewer()" supabase/migrations/*.sql
 
 ---
 
-## 4. 정책 영역 누락·중복·의심 영역
+## 4. 정책 영역 누락·중복·의심 영역 — Phase 3 영역 박은 영역 박힘 영역 박음
 
-### 4.1 누락 영역 (Phase 3 fix 영역 박힘 영역)
+### 4.1 누락 영역 (Phase 3 완료 영역 박음)
 
-| # | 테이블 | 누락 영역 | 영향 영역 |
+| # | 테이블 | 누락 영역 | 상태 |
 |---|---|---|---|
-| 1 | `profiles` | DELETE 정책 영역 없음 | 사용자 영역 직접 DELETE 영역 차단 (intentional) |
+| 1 | `profiles` | DELETE 정책 영역 없음 | intentional 영역 — `request_account_deletion` RPC 영역 박음 |
 | 2 | `user_sessions` | UPDATE·DELETE 정책 영역 없음 | intentional (영구 영역 기록) |
 | 3 | `user_note_logs` | UPDATE·DELETE 정책 영역 없음 | intentional (영구 영역 로그) |
-| 4 | `device_change_events` | UPDATE·DELETE 정책 영역 없음 | ⚠️ `userEnvironmentOffset.ts:135` 영역 UPDATE 영역 silent fail 영역 가능 |
+| 4 | `device_change_events` | UPDATE 정책 영역 없음 | ✅ **Phase 3 Step 2-A 박음** (`20260518_device_change_events_update_policy.sql`) |
 | 5 | `payment_events` | INSERT 정책 영역 없음 | intentional (RPC 영역 전용) |
-| 6 | `user_stats_daily` | **전체 정책 영역 마이그 영역 없음** | Dashboard 직접 박힘 영역 → migration 영역 재현 영역 박음 |
-| 7 | `note_mastery` | **전체 정책 영역 마이그 영역 없음** | 동일 |
-| 8 | `leagues`·`league_members` | **전체 정책 영역 마이그 영역 없음** | UI 비활성 영역 |
-| 9 | `admin_actions`·`daily_batch_runs` | **전체 정책 영역 마이그 영역 없음** | admin 전용 영역 추정 |
-| 10 | `user_streaks` | **전체 정책 영역 마이그 영역 없음** | Edge Function 영역에서만 박음 |
-| 11 | `subscriptions` | **전체 정책 영역 마이그 영역 없음** | Webhook 영역에서만 박음 |
+| 6-12 | 마이그 영역 없는 영역 8개 테이블 | 전체 정책 영역 마이그 영역 없음 | ✅ **Phase 3 Step 1-2 박음** (`20260518_phase3_consolidation.sql` 영역 박음 영역 재현 영역) |
 
-### 4.2 중복 영역
+### 4.2 idempotent DROP+CREATE 패턴 영역 박음
 
-| # | 정책 영역 | 중복 영역 마이그 |
+> Phase 3 영역 = 모든 정책 영역 `DROP POLICY IF EXISTS → CREATE POLICY` 영역 박음 패턴 영역 박음.
+
+| # | 마이그 | 패턴 영역 박음 |
 |---|---|---|
-| 1 | `Users can view their own logs` (user_note_logs) | 20260405142021 + 20260405142751 (DROP+재생성 영역) |
-| 2 | `Users can insert their own logs` (user_note_logs) | 동일 영역 |
-| 3 | `Users can view own device change events` (device_change_events) | 20260503 + 20260510_rls_audit (재생성 영역, idempotent) |
-| 4 | `Users can insert own device change events` (device_change_events) | 동일 영역 |
-| 5 | `Admins can view all device change events` (device_change_events) | 동일 영역 |
+| 1 | `20260408001000` (profiles) | DROP POLICY IF EXISTS → CREATE POLICY |
+| 2 | `20260408003000` (payment_events) | DROP POLICY IF EXISTS → CREATE POLICY |
+| 3 | `20260509_daily_sessions` (daily_sessions) | DROP POLICY IF EXISTS → CREATE POLICY |
+| 4 | `20260516_reviewer_sessions_rls` (user_sessions) | DROP POLICY IF EXISTS → CREATE POLICY |
+| 5 | `20260518_phase3_consolidation` (10개 테이블 영역) | DROP POLICY IF EXISTS → CREATE POLICY (통일 명명 영역 `snake_case`) |
 
-### 4.3 의심 영역
+### 4.3 중복 영역 (Phase 3 영역 박은 영역 정리 영역 박음)
+
+| # | 정책 영역 | 박힌 영역 | Phase 3 박음 |
+|---|---|---|---|
+| 1 | `Users can view their own logs` (user_note_logs) | 20260405142021 + 20260405142751 (재생성 영역) | (의도 영역 박은 영역) |
+| 2 | `Users can insert their own logs` (user_note_logs) | 동일 영역 | (의도 영역 박은 영역) |
+| 3 | `Users can view own device change events` (device_change_events) | 20260503 + 20260510_rls_audit (재생성 영역, idempotent) | (의도 영역 박은 영역) |
+| 4 | user_sessions·user_stats_daily·note_mastery 영역 정책 영역 (Production 영역 박은 영역 발견 영역) | Dashboard 영역 박은 영역 영역 박힘 영역 박음 | ✅ Phase 3 영역 `DROP IF EXISTS` 영역 통일 명명 영역 박음 |
+
+### 4.4 의심 영역
 
 | # | 영역 | 의심 사항 |
 |---|---|---|
-| 1 | `is_reviewer()` 영역 | RLS 정책 영역 직접 영역 사용 영역 X. 코드 영역 분기 영역 박힘 (ComingSoonGate 우회). 활용 영역 X 영역. |
+| 1 | `is_reviewer()` 영역 | RLS 정책 영역 직접 사용 X — **dead 함수 영역**. ComingSoonGate = `useAuth().profile?.role === 'reviewer'` 클라이언트 영역 분기 영역 박음. 출시 후 DROP 박을 영역. |
 | 2 | `user_note_logs` 영역 realtime publication | 사용 영역 X 영역 추정 영역. 보안 영역 위험 영역 없으나 영역 미사용 영역 정리 영역 PENDING. |
-| 3 | `device_change_events` 영역 UPDATE 영역 | 정책 영역 없는 영역 UPDATE 영역 코드 영역 박힘 (`userEnvironmentOffset.ts:135`). ⚠️ 실패 영역 여부 영역 검증 영역 필요. |
 
-### 4.4 통계 영역
+### 4.5 통계 영역 (Phase 3 박은 영역 박힘 영역)
 
-| 영역 | 카운트 |
-|---|---|
-| 전체 CREATE POLICY 영역 (마이그) | 45개 |
-| 중복 제외 영역 (DROP+재생성 영역 제외 영역) | 약 40개 영역 |
-| 테이블 영역 정책 영역 있는 영역 (마이그) | 10개 (`profiles`·`user_sessions`·`user_sublevel_progress`·`user_note_logs`·`daily_sessions`·`payment_events`·`user_custom_scores`·`user_scores`·`practice_logs`·`device_change_events`) |
-| 테이블 영역 정책 영역 마이그 영역 없음 (Dashboard 직접 영역 추정) | 7개 (`user_stats_daily`·`note_mastery`·`leagues`·`league_members`·`admin_actions`·`daily_batch_runs`·`user_streaks`·`subscriptions`) |
-| 헬퍼 함수 | 2개 (`is_admin`, `is_reviewer`) |
+| 영역 | Phase 1 영역 | Phase 3 박은 영역 |
+|---|---|---|
+| 전체 CREATE POLICY 영역 (마이그) | 45개 | **45 + 20 (Phase 3 신규 박음) = 65개** |
+| 테이블 영역 정책 영역 있는 영역 (마이그) | 10개 | **10 + 10 (Phase 3 박은 영역) = 20개** |
+| 테이블 영역 정책 영역 마이그 영역 없음 | 8개 (Dashboard 직접 영역 추정) | ✅ **0개 (Phase 3 영역 박은 영역 모두 박음)** |
+| 헬퍼 함수 | 2개 (`is_admin`, `is_reviewer`) | 3개 (+`get_my_league_group_id` Phase 3 박음) |
+| `is_admin()` 사용 영역 admin SELECT 정책 영역 | 11개 | 11 + 10 (Phase 3 박음) = 21개 |
+| `is_reviewer()` 사용 영역 RLS 정책 영역 | **0개 (dead)** | 동일 영역 |
+| `get_my_league_group_id()` 사용 영역 정책 영역 | — | 1개 (`league_members_select_own_group`) |
 
-→ Phase 3 영역 = 마이그 영역 없는 7개 테이블 영역 `CREATE TABLE IF NOT EXISTS` + RLS 정책 영역 재현 영역 박음.
+→ ✅ **Phase 3 완료** — 마이그 영역 없는 영역 모든 영역 테이블 영역 RLS 정책 영역 박은 영역 영역 박음.

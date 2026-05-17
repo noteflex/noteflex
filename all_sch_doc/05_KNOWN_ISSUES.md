@@ -145,19 +145,19 @@ Phase 1 (Session 1-3) 영역 박힘 영역 발견된 영역 모든 영역 영역
 ---
 
 ### 1.5 silent fail 영역
-**🔴 위험** — 사용자 영역에서 알 수 없음 영역.
+**🔴 위험** — 사용자 영역에서 알 수 없음 영역. Phase 3에서 #2·#7 해소.
 
 #### 영역
 
-| # | 위치 | 영역 영역 박힘 영역 | 분류 |
-|---|---|---|---|
-| 1 | `useSessionRecorder.ts:344` 폴백 INSERT 실패 | `console.error` 영역만 박힘 영역. UI 영역 알림 X | 🔴 silent fail |
-| 2 | `userEnvironmentOffset.ts:135` 영역 `device_change_events` UPDATE | UPDATE 정책 영역 없음 → 실패 영역 박힘 영역 박힘 영역 박힘 알림 X | 🔴 silent fail |
-| 3 | `useLevelProgress.ts:72` 영역 `record_sublevel_attempt` 실패 | 잠금 해제 X 영역 — 사용자 영역 알림 X | 🔴 silent fail |
-| 4 | `useDailyLimit.ts:132` 영역 `increment_daily_session` 실패 | 한도 영역 카운트 X 영역 — 게임 차단 X | 🟡 부분 영역 fail |
-| 5 | `AuthCallback.tsx:66` 영역 consent UPDATE 실패 | try/catch 영역 박힘 영역 영역 무시 영역 | 🟢 무시 영역 박힘 |
-| 6 | trigger `trg_update_profile_after_session` 영역 미적용 영역 | `last_practice_date` 영역 갱신 X 영역 박힘 영역 — `record_game_session` 폴백 박힘 | 🟡 폴백 영역 박힘 |
-| 7 | `note_mastery` 영역 갱신 영역 진입점 영역 명확 X | 일일 배치 영역 박힘 영역 박지 X 박힐 영역 가능 | 🔴 데이터 누락 |
+| # | 위치 | 영역 영역 박힘 영역 | 분류 | 상태 |
+|---|---|---|---|---|
+| 1 | `useSessionRecorder.ts:344` 폴백 INSERT 실패 | `console.error` 영역만 박힘 영역. UI 영역 알림 X | 🔴 silent fail | ⏸ Phase 4 |
+| 2 | `userEnvironmentOffset.ts:135` 영역 `device_change_events` UPDATE | UPDATE 정책 영역 없음 → 실패 박힘 알림 X | 🔴 silent fail | ✅ **Phase 3 Step 2-A 해소** (`20260518_device_change_events_update_policy.sql`) |
+| 3 | `useLevelProgress.ts:72` 영역 `record_sublevel_attempt` 실패 | 잠금 해제 X 영역 — 사용자 알림 X | 🔴 silent fail | ⏸ Phase 4 |
+| 4 | `useDailyLimit.ts:132` 영역 `increment_daily_session` 실패 | 한도 영역 카운트 X 영역 — 게임 차단 X | 🟡 부분 fail | ⏸ Phase 4 |
+| 5 | `AuthCallback.tsx:66` 영역 consent UPDATE 실패 | try/catch 박힘 영역 무시 영역 | 🟢 무시 | 의도된 영역 |
+| 6 | trigger `trg_update_profile_after_session` 영역 미적용 영역 | `last_practice_date` 영역 갱신 X — `record_game_session` 폴백 박힘 | 🟡 폴백 박힘 | ✅ **Phase 3 Step 1-3 해소** (트리거 + `handle_session_complete` 박음) |
+| 7 | `note_mastery` 영역 갱신 영역 진입점 영역 명확 X | 일일 배치 영역 박지 X 박힐 영역 가능 | 🔴 데이터 누락 | ✅ **Phase 3 Step 1-3 해소** (`handle_session_complete` 영역 `note_mastery` UPSERT 박음 — note_attempts JSONB 순회) |
 
 #### 박을 영역 (Phase 4 — 로그·Admin)
 - [ ] Sentry 영역 박음
@@ -222,9 +222,9 @@ public.apply_payment_topup(
 
 | # | 영역 | 영역 |
 |---|---|---|
-| 1 | `user_note_logs` 영역 deprecation 영역 | `user_sessions.note_attempts` JSONB 영역 박힘 영역 박은 영역 영역 중복 영역. realtime publication 영역 박힘 영역 박힘 영역 박지 X 박힌 영역 박은 영역 박힘 영역 |
-| 2 | `get_mastery_score` RPC 영역 호출 X | `MasteryHeroCard` 영역 제거 영역 박은 영역 (작업 #28) → 함수 영역 박힘 영역 박지 X 박힘 영역 |
-| 3 | `is_reviewer()` 영역 RLS 영역 직접 사용 X | 코드 영역 분기 영역만 박음 (ComingSoonGate 영역 우회). 활용 영역 X 영역. |
+| 1 | `user_note_logs` 영역 활성 사용 박음 (deprecation 영역 X) | NoteGame.tsx:1067·1132·1196 → useNoteLogger.ts → userNoteLogs.ts:117 INSERT (매 음표 박힘). WeakSlowNotesCards.tsx:4·AICoachingDetail.tsx:5 SELECT. 출시 후 정리 박을 영역 |
+| 2 | `get_mastery_score` RPC 영역 호출 X | `MasteryHeroCard` 영역 제거 영역 박음 (작업 #28) → 함수 영역 박지 X 박힘 영역. **dead 함수 영역** |
+| 3 | `is_reviewer()` 영역 RLS 영역 직접 사용 X | RLS 정책 영역 영역 grep 0건 영역. ComingSoonGate 영역 = `useAuth().profile?.role === 'reviewer'` 클라이언트 영역 분기. **dead 함수 영역 (출시 후 DROP 박을 영역)** |
 | 4 | `hard_delete_expired_accounts()` 영역 호출 X | service_role 영역 전용 영역. cron 영역 박힘 영역 영역 PENDING — TODO 박힘 |
 | 5 | `leagues`·`league_members` 영역 | UI 영역 비활성 영역 박힘 영역 (작업 #27). 향후 부활 영역 PENDING |
 | 6 | `user_scores`·`practice_logs`·`user_custom_scores` 영역 | 현재 사용 X (PENDING — 스캔 영역 박힘 영역 영역 박은 영역 박힘 영역 박지 X 박은 영역 박힘) |
@@ -236,18 +236,28 @@ public.apply_payment_topup(
 
 ---
 
-## 2. Phase 3 작업 영역 우선순위 영역
+## 2. Phase 3 작업 영역 우선순위 영역 — 모두 ✅ 완료 (2026-05-18)
 
 | 우선순위 | # | 영역 | 작업 영역 | 상태 |
 |---|---|---|---|---|
-| 🔴 1 | 1.1 | 마이그 정의 영역 없는 10개 테이블 + 1개 RPC + `handle_session_complete` + `on_session_complete` + `get_my_league_group_id` 신규 영역 | Dashboard schema 영역 추출 + 재현 마이그 영역 박음 | ✅ **Step 1-2 완료 (2026-05-18) — 함수 본문 영역 Step 1-3 영역 박음** (`20260518_phase3_consolidation.sql`) |
-| 🔴 2 | 1.3 | 누락 RLS 정책 영역 (`device_change_events.UPDATE`) | UPDATE 정책 영역 박음 | ✅ **2026-05-18 박힘 영역** (`20260518_device_change_events_update_policy.sql`) |
-| 🔴 2b | 1.3 | 마이그 없는 영역 8개 테이블 영역 RLS 정책 | §1.1 영역 합침 영역 | 🟡 §1.1 영역 박힘 영역 박음 영역 |
-| 🟡 3 | 1.2 | 중복 정의 함수 6개 (특히 `hard_delete_account`) | Production 영역 영역 확인 + 정리 영역 박음 | ⏸ **Phase 3 Step 4** |
-| 🟡 4 | 1.6 | `apply_payment_topup` 시그니처 정정 영역 | 03_SQL_FUNCTIONS.md 정정 | ⏸ |
-| 🟢 5 | 1.4 | 컬럼 출처 영역 정정 영역 (profiles + note_mastery 영역) | Step 1-1 영역 박은 영역 영역 영역 정정 영역 | 🟡 **Step 1-1 영역 영역 박음** |
-| 🟢 6 | 1.7 | 누락 INSERT/UPDATE 위치 영역 (user_streaks, subscriptions) | 01_SCHEMA.md §17·18 영역 박음 | ⏸ |
-| 🟢 7 | 1.8 | 죽은 코드 영역 정리 영역 — `record_sublevel_attempt` 6개 인자 영역 | DROP 박음 | ✅ **2026-05-18 박힘 영역** (`20260518_phase3_consolidation.sql` §13) |
+| 🔴 1 | 1.1 | 마이그 정의 영역 없는 10개 테이블 + 3개 함수 + 1개 트리거 | Dashboard schema 영역 추출 + 재현 마이그 영역 박음 | ✅ **Step 1-1·1-2·1-3 박힘** (`20260518_phase3_consolidation.sql`) |
+| 🔴 2 | 1.3 | 누락 RLS 정책 영역 (`device_change_events.UPDATE`) | UPDATE 정책 영역 박음 | ✅ **Step 2-A 박힘** (`20260518_device_change_events_update_policy.sql`) |
+| 🔴 2b | 1.3 | 마이그 없는 영역 10개 테이블 영역 RLS 정책 | §1.1 영역 합침 영역 | ✅ Step 1-2 영역 영역 박힘 영역 |
+| 🟡 3 | 1.2 | 중복 정의 함수 6개 (특히 `hard_delete_account`) | Production 영역 영역 확인 + 정리 영역 박음 | ✅ **Step 3 박힘** (Production 영역 최신 영역 박힌 영역 확인 영역) |
+| 🟡 4 | 1.6 | `apply_payment_topup` 시그니처 정정 영역 | 03_SQL_FUNCTIONS.md 정정 | ✅ **Step 4 박힘** |
+| 🟢 5 | 1.4 | 컬럼 출처 영역 정정 영역 (profiles + note_mastery 영역) | Step 1-1 영역 박은 영역 영역 영역 정정 영역 | ✅ **Step 4 박힘** (Dashboard 직접 박음 영역 표기) |
+| 🟢 6 | 1.7 | 누락 INSERT/UPDATE 위치 영역 (user_streaks, subscriptions) | 01_SCHEMA.md §17·18 영역 박음 | ✅ **Step 4 박힘** (§17·§18·§19 신규) |
+| 🟢 7 | 1.8 | 죽은 코드 영역 정리 영역 — `record_sublevel_attempt` 6개 인자 영역 | DROP 박음 | ✅ **Step 2-B 박힘** (`20260518_phase3_consolidation.sql` §14) |
+
+### 2.1 Phase 3 박은 영역 박힘 영역 박은 영역 = 모두 영역 박은 영역
+
+**Step 1-1 (2026-05-18)**: `scripts/phase3/01_extract_production_schema.sql` — Production schema 추출 SQL 13개 섹션.
+**Step 1-2 (2026-05-18)**: `supabase/migrations/20260518_phase3_consolidation.sql` — 10개 테이블 + 3개 함수 + 1개 트리거 + 1개 DROP.
+**Step 1-3 (2026-05-18)**: 함수 본문 Production 정확본 정정 (`handle_session_complete`·`check_nickname_available`·`get_my_league_group_id`).
+**Step 2-A (2026-05-18)**: `supabase/migrations/20260518_device_change_events_update_policy.sql` — silent fail 해소.
+**Step 2-B (2026-05-18)**: `record_sublevel_attempt` 6개 인자 dead 함수 DROP.
+**Step 3 (2026-05-18)**: 중복 정의 함수 6개 Production 확인 — 모두 최신 영역 박힘.
+**Step 4 (2026-05-18)**: 6개 문서 19건 정정 박음 (이 영역).
 
 ---
 
@@ -364,29 +374,38 @@ SELECT relname AS table_name, relrowsecurity AS rls_enabled,
 
 ---
 
-## 7. Phase 1 완료 영역 영역 박힘 영역
+## 7. Phase 1·2·3 완료 영역 박음
 
-### 7.1 박힌 영역 영역
+### 7.1 박힌 영역
 
-| 영역 | 박힘 영역 | 영역 |
+| Phase | 박힘 | 영역 |
 |---|---|---|
-| Session 1 | `README.md` + `01_SCHEMA.md` | 16개 테이블 영역 (실제 영역 9개 + 마이그 없는 7개) |
-| Session 2 | `02_RLS_POLICIES.md` + `03_SQL_FUNCTIONS.md` | 45개 정책 + 22개 함수 + 4개 트리거 |
-| Session 3 | `04_DATA_FLOWS.md` + `05_KNOWN_ISSUES.md` | 12개 기능 영역 + 8개 카테고리 영역 |
+| Phase 1 Session 1 | `README.md` + `01_SCHEMA.md` | 16 + 3개 신규 (user_streaks·subscriptions·league_groups) = 19개 테이블 |
+| Phase 1 Session 2 | `02_RLS_POLICIES.md` + `03_SQL_FUNCTIONS.md` | 45 + 신규 정책 + 22 + 1개 신규 (`get_my_league_group_id`) 함수 + 4 + 1개 (`on_session_complete`) 트리거 |
+| Phase 1 Session 3 | `04_DATA_FLOWS.md` + `05_KNOWN_ISSUES.md` | 12개 기능 + 8개 카테고리 |
+| Phase 2 | Cursor 검증 + Production Dashboard 직접 확인 | 9건 불일치 + 신규 발견 영역 박힘 |
+| Phase 3 Step 1-1 | `scripts/phase3/01_extract_production_schema.sql` | Production schema 추출 SQL |
+| Phase 3 Step 1-2 | `supabase/migrations/20260518_phase3_consolidation.sql` | 10 테이블 + 3 함수 + 1 트리거 + 1 DROP |
+| Phase 3 Step 1-3 | 함수 본문 Production 정확본 정정 | `handle_session_complete`·`check_nickname_available`·`get_my_league_group_id` |
+| Phase 3 Step 2-A | `supabase/migrations/20260518_device_change_events_update_policy.sql` | silent fail 해소 |
+| Phase 3 Step 2-B | `record_sublevel_attempt(6-arg)` DROP | dead 함수 정리 |
+| Phase 3 Step 3 | 중복 정의 함수 6개 Production 확인 | 모두 최신 영역 박힘 |
+| Phase 3 Step 4 | 6개 문서 19건 정정 | 이 영역 |
 
 ### 7.2 통계 영역
 
 | 영역 | 카운트 |
 |---|---|
-| 박힌 테이블 영역 | 16개 (Session 1) + 2개 (Session 3 추가 — user_streaks·subscriptions) = **18개** |
-| 박힌 정책 영역 | 45개 (CREATE POLICY) |
-| 박힌 함수 영역 | 22개 (마이그 21 + 누락 1) |
-| 박힌 트리거 영역 | 4개 |
+| 박힌 테이블 영역 | 19개 (8개 신규 마이그 영역 박은 영역 추가 영역) |
+| 박힌 정책 영역 | 45 + 20 (Phase 3 새로 박은 영역) = **65개** |
+| 박힌 함수 영역 | 22 + 1 (`get_my_league_group_id`) = **23개** |
+| 박힌 트리거 영역 | 4 + 1 (`on_session_complete`) = **5개** |
 | 박힌 기능 영역 | 12개 (04_DATA_FLOWS) |
-| 발견된 Phase 3 영역 항목 영역 | 8개 카테고리 영역 영역 박힘 영역 |
-| 발견된 silent fail 영역 | 7개 |
+| Phase 3 박힘 영역 = silent fail 해소 | 2건 (#2 device_change_events + #7 note_mastery) |
+| Phase 4 박을 영역 = silent fail 박지 X 박힌 영역 | 5건 (#1·#3·#4 + 새로 박힐 영역) |
 
-### 7.3 Phase 2 영역 박을 영역 영역
-- 검증 영역 쿼리 영역 박음 영역 (§5 영역 박은 영역 박힘 영역)
-- 각 테이블 영역 영역 행 수·최근 INSERT·RLS 위반 영역 검증 영역
-- Supabase Dashboard 영역 직접 박힘 영역 ↔ migration ↔ src/ 영역 정합 영역 검증 영역
+### 7.3 출시 박을 영역 (Phase 4·5·5+)
+- **Phase 4** (로그·Sentry): Sentry + `app_logs` + `logger` + 토스트 박음
+- **Phase 5** (Admin): `/admin/logs` 페이지 박음
+- **결제 시스템 영역 박음** (Paddle Checkout — 현재 IAP 영역만)
+- **About·Contact·FAQ·OG·PWA·Paddle·AdSense 심사**

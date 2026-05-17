@@ -58,9 +58,9 @@
 |---|---|---|---|---|---|
 | `id` | UUID PK | NO | — | 20260408001000 | `auth.users.id` 영역 FK (ON DELETE CASCADE) |
 | `email` | TEXT | YES | — | 추론 (TS 타입 영역) | 사용자 이메일 (탈퇴 시 마스킹) |
-| `display_name` | TEXT | YES | — | 20260512 | OAuth 영역 표시 이름 (탈퇴 시 보존) |
-| `nickname` | TEXT | YES | `user_<8자>` | 20260512 | 자동 생성 영역 닉네임 (8자 prefix) |
-| `avatar_url` | TEXT | YES | — | 20260512 | OAuth 영역 아바타 URL |
+| `display_name` | TEXT | YES | — | Dashboard 직접 | OAuth 영역 표시 이름 (탈퇴 시 보존). 20260512 영역 = `handle_new_user_profile()` 함수 영역 박은 영역 박음 (ALTER X) |
+| `nickname` | TEXT | YES | `user_<8자>` | Dashboard 직접 | 자동 생성 영역 닉네임 (8자 prefix). 20260512 영역 = 함수 영역만 박음 |
+| `avatar_url` | TEXT | YES | — | Dashboard 직접 | OAuth 영역 아바타 URL. 20260512 영역 = 함수 영역만 박음 |
 | `role` | TEXT | YES | NULL | 20260515 | CHECK: NULL OR 'user'/'admin'/'reviewer' |
 | `is_premium` | BOOLEAN | YES | false | 추론 | Premium 상태 영역 |
 | `subscription_tier` | TEXT | YES | 'free' | 20260425 | CHECK: 'free'/'pro' |
@@ -80,11 +80,11 @@
 | `birth_year` | INTEGER | YES | — | 추론 | 생년 영역 |
 | `birth_month` | INTEGER | YES | — | 추론 | 생월 영역 |
 | `birth_day` | INTEGER | YES | — | 추론 | 생일 영역 |
-| `profile_completed` | BOOLEAN | YES | true | 20260512 | 프로필 영역 완성 영역 (drift 정정) |
-| `onboarding_completed` | BOOLEAN | YES | — | 추론 | 온보딩 영역 완료 영역 |
-| `tos_agreed_at` | TIMESTAMPTZ | YES | — | 20260512 | TOS 영역 동의 시점 |
-| `privacy_agreed_at` | TIMESTAMPTZ | YES | — | 20260512 | 개인정보 영역 동의 시점 |
-| `marketing_agreed_at` | TIMESTAMPTZ | YES | — | 20260512 | 마케팅 영역 동의 시점 |
+| `profile_completed` | BOOLEAN | YES | true | Dashboard 직접 + 20260512 DEFAULT 영역 ALTER | 프로필 영역 완성. 20260512 영역 = `ALTER COLUMN profile_completed SET DEFAULT true` 영역 박음 (drift 정정) |
+| `onboarding_completed` | BOOLEAN | YES | — | Dashboard 직접 | 온보딩 영역 완료 영역 |
+| `tos_agreed_at` | TIMESTAMPTZ | YES | — | Dashboard 직접 | TOS 영역 동의 시점. 20260512 영역 = `handle_new_user_profile()` 박음 영역 박음 (ALTER X) |
+| `privacy_agreed_at` | TIMESTAMPTZ | YES | — | Dashboard 직접 | 개인정보 영역 동의 시점. 20260512 함수 영역만 박음 |
+| `marketing_agreed_at` | TIMESTAMPTZ | YES | — | Dashboard 직접 | 마케팅 영역 동의 시점. 20260512 함수 영역만 박음 |
 | `is_deleted` | BOOLEAN | YES | false | 20260511 | 탈퇴 영역 플래그 |
 | `deleted_at` | TIMESTAMPTZ | YES | — | 20260511 | 탈퇴 시점 영역 |
 | `deletion_reason` | TEXT | YES | — | 20260511 | 탈퇴 사유 영역 |
@@ -121,6 +121,9 @@
 | `restore_account()` RPC (20260513) | UPDATE (탈퇴 복구) |
 | `expire_premium_users()` RPC (20260424) | UPDATE `is_premium = false` |
 | `trg_update_profile_after_session` (20260516) | UPDATE `last_practice_date` (user_sessions INSERT trigger) |
+| `record_game_session()` RPC (20260517:97-101) | UPDATE `last_practice_date` (3-table atomic 영역) |
+| `supabase/functions/admin-action/index.ts:231-234` | UPDATE (관리자 영역 액션 영역) |
+| `handle_session_complete()` trigger (Phase 3 20260518) | UPDATE `total_xp` + `last_practice_date` (note_attempts JSONB 박음 영역) |
 
 ### 1.9 읽는 영역 (SELECT)
 | 코드 영역 | 박는 영역 |
@@ -136,11 +139,18 @@
 
 ### 1.10 관련 SQL 함수 영역
 - `handle_new_user_profile()` — auth.users INSERT trigger
+- `handle_session_complete()` (Phase 3 20260518) — user_sessions INSERT trigger 영역 (total_xp + last_practice_date)
 - `set_updated_at_profiles()` — UPDATE trigger
 - `consume_scan_quota()`, `topup_scan_quota()` — 스캔 영역 차감/충전
-- `request_account_deletion()`, `restore_account()`, `hard_delete_account()` — 탈퇴/복구/영구삭제
+- `request_account_deletion()` — soft delete (이메일 영역 마스킹, 닉네임 영역 보존 — 20260513_preserve_nickname)
+- `restore_account()` — 30일 영역 내 영역 복구 (`is_deleted=false`, email=auth.users.email 영역 복원)
+- `hard_delete_account(p_email TEXT)` — 영구 삭제 (`profiles` DELETE + `auth.users` DELETE — CASCADE 박음)
+  - 마이그 영역 = `20260513_hard_delete_by_email` → `20260513_hard_delete_with_auth` → `20260514_fresh_start`
+  - Production 영역 = auth.users 삭제 박혀있음 (Phase 3 Step 3 확인 영역)
+  - 호출 영역 = `src/components/AuthModal.tsx:256`
 - `expire_premium_users()` — 일일 배치 영역
-- `is_admin()`, `is_reviewer()` — 권한 영역 헬퍼
+- `is_admin()` — RLS 정책 영역 박음 (11개 admin SELECT 영역)
+- `is_reviewer()` — ⚠️ RLS 영역 직접 사용 X (dead 함수 영역 — 출시 후 DROP 박을 영역)
 
 ### 1.11 주의 영역 / 짚을 점
 - ⚠️ `tier` 컬럼 영역 = `20260509_mastery_score.sql` 영역에서 `p.tier` 박힘. 후속 영역 20260509_fast_track 영역에서 `is_premium + subscription_tier + role` 영역 박힘으로 정정. `tier` 컬럼 영역 현재 존재 여부 영역 ⚠️ 확인 필요.
@@ -574,12 +584,13 @@
 | `mastery_level` | INTEGER | YES | — | useAdminUserDetail:141 | 영역 0-N (정의 영역 미상) |
 | `avg_reaction_ms` | INTEGER | YES | — | useMyStats:92 | 평균 반응시간 |
 | `trend` | TEXT | YES | — | useMyStats:92 | 영역 (improving/stable/declining 추정) |
-| `last_seen_at` | TIMESTAMPTZ | YES | — | 20260424 | 마지막 시도 영역 |
-| `weakness_flag` | BOOLEAN | NO | false | 20260424 | 약점 영역 플래그 |
-| `weakness_flagged_at` | TIMESTAMPTZ | YES | — | 20260424 | 약점 영역 박힌 시점 |
-| `mastery_flag` | BOOLEAN | NO | false | 20260424 | 숙련 영역 플래그 |
-| `mastery_flagged_at` | TIMESTAMPTZ | YES | — | 20260424 | 숙련 영역 박힌 시점 |
-| `last_batch_analyzed_at` | TIMESTAMPTZ | YES | — | 20260424 | 마지막 배치 영역 분석 시점 |
+| `last_seen_at` | TIMESTAMPTZ | YES | — | Dashboard 직접 | 마지막 시도 영역. 20260424 영역 = UPDATE 박음 (ALTER X) |
+| `weakness_flag` | BOOLEAN | NO | false | Dashboard 직접 | 약점 영역 플래그. 20260424 영역 = UPDATE 박음 |
+| `weakness_flagged_at` | TIMESTAMPTZ | YES | — | Dashboard 직접 | 약점 영역 박힌 시점. 20260424 영역 = UPDATE 박음 |
+| `mastery_flag` | BOOLEAN | NO | false | Dashboard 직접 | 숙련 영역 플래그. 20260424 영역 = UPDATE 박음 |
+| `mastery_flagged_at` | TIMESTAMPTZ | YES | — | Dashboard 직접 | 숙련 영역 박힌 시점. 20260424 영역 = UPDATE 박음 |
+| `last_batch_analyzed_at` | TIMESTAMPTZ | YES | — | Dashboard 직접 | 마지막 배치 영역 분석 시점. 20260424 영역 = UPDATE 박음 |
+| **출처 영역 정정 (Phase 3 Step 4)** | — | — | — | — | 20260424 영역 마이그 영역 = `note_mastery` ALTER 영역 박음 영역 박음 영역 박지 X 박힌 영역 박음 — UPDATE 영역만 박음. 컬럼 영역 모두 Dashboard 영역 직접 박힌 영역 박음. **Phase 3 영역 = `20260518_phase3_consolidation.sql §3` 영역 박음 영역 재현 영역**. |
 
 ### 6.5 인덱스 영역
 - PK 영역 추정: `(user_id, note_key, clef)` ⚠️ 확인 필요
@@ -754,7 +765,8 @@
 - ⚠️ src/ 영역 참조 영역 X (아직 사용 영역 X)
 
 ### 8.10 관련 SQL 함수 영역
-- `apply_payment_topup(p_event_id, p_user_id, p_package_id, p_credits_added, p_checkout_session_id, p_amount_cents, p_currency)` — INSERT + ON CONFLICT DO NOTHING + scan_quota 갱신
+- `apply_payment_topup(p_event_id, p_checkout_session_id, p_user_id, p_package_id, p_credits_added, p_amount_cents, p_currency)` — INSERT + ON CONFLICT DO NOTHING + scan_quota 갱신
+  - ⚠️ 인자 순서 영역 정확 — `p_checkout_session_id` 영역 2번째 (Phase 3 Step 4 정정 영역, 20260408003000.sql 영역 검증)
 
 ### 8.11 주의 영역 / 짚을 점
 - idempotent 영역 = 동일 `event_id` 영역 재전송 영역 시 INSERT 영역 X, 기존 quota 영역만 반환.
@@ -921,17 +933,22 @@
 | `user_agent` | TEXT | YES | — | useAdminLogs:78 | — |
 | `created_at` | TIMESTAMPTZ | NO | now() | useAdminLogs:78 | — |
 
-### 11.5 인덱스 영역
-- ⚠️ 확인 필요
+### 11.5 인덱스 영역 (Phase 3 영역 박힘 영역 박음)
+- `idx_admin_actions_admin` ON `(admin_id, created_at DESC)`
+- `idx_admin_actions_target` ON `(target_user_id, created_at DESC)`
+- `idx_admin_actions_type` ON `(action_type, created_at DESC)`
 
 ### 11.6 외래 키 영역
-- ⚠️ 확인 필요 (`admin_id`/`target_user_id` 영역 FK 추정)
+- `admin_id` → `profiles(id)`
+- `target_user_id` → `profiles(id)` (NULL 허용)
 
 ### 11.7 RLS 정책 영역
-- ⚠️ 확인 필요 (관리자 영역만 SELECT 추정)
+- SELECT (admin): `is_admin()` 영역 박음
+- INSERT (admin): `is_admin()` 영역 박음
 
 ### 11.8 박는 영역 (INSERT)
-- ⚠️ src/ 영역 INSERT 영역 없음 — 별도 영역 RPC 영역 박힘 영역 추정
+- **`supabase/functions/admin-action/index.ts:261-268`** — Edge Function 영역에서 박음 (service_role 영역)
+- RPC X — 직접 INSERT 영역 박음
 
 ### 11.9 읽는 영역 (SELECT)
 - `src/hooks/useAdminLogs.ts:76`
@@ -1255,18 +1272,157 @@
 
 ---
 
-## 부록 — 박지 X 박힌 영역 정리
+---
 
-> 이 문서 영역 박힘 시점 영역 (2026-05-17) 기준 영역 ⚠️ 확인 필요 영역.
+## 17. `user_streaks` (Phase 3 신규 박음)
 
-1. **`profiles.tier` 컬럼 영역 존재 여부** — `20260509_mastery_score.sql` 영역 `p.tier` 박힘 영역. `20260509_fast_track.sql` 영역에서 후속 영역 정정 영역 박힘.
-2. **`user_sessions` migration 영역** — Dashboard 직접 박힘. CREATE TABLE 영역 재현 영역 마이그 영역 박는 영역 영역 권장.
-3. **`user_stats_daily` migration 영역** — 동일.
-4. **`note_mastery` migration 영역** — 동일. INSERT/UPDATE 영역 진입점 영역 명확 X (trigger 영역 박힘 여부 영역 확인 영역 필요).
-5. **`leagues` / `league_members` migration 영역** — 동일. UI 영역 비활성 영역.
-6. **`admin_actions` migration 영역** — 동일.
-7. **`daily_batch_runs` CREATE 영역 마이그** — `20260424` 영역 ALTER 영역만 박힘.
-8. **`user_note_logs` 영역 deprecation 영역** — `user_sessions.note_attempts` JSONB 영역 박힘 영역으로 중복 영역.
-9. **`profiles.{current_streak, longest_streak, total_xp, current_league, last_practice_date}` migration 영역** — Dashboard 직접 박힘 영역 추정.
+### 17.1 한 줄 요약 영역
+> 사용자별 영역 streak 영역 = 1행. 일일 영역 연속 영역 + freeze 영역 시스템 영역.
 
-→ Phase 3 영역 (Session 3) 영역에서 정리 영역 + `CREATE TABLE IF NOT EXISTS` 영역 재현 영역 마이그 영역 박음 영역.
+### 17.2 무엇 박는 영역인지
+- current_streak·longest_streak·last_practice_date 영역
+- streak_freezes_available·freezes_used_this_month·freezes_reset_month 영역 (freeze 영역 시스템)
+
+### 17.3 어디에 박는 영역인지
+- 관리자 영역 streak 영역 조정 영역 (`admin-action/index.ts:218-222`)
+- 게임 영역 완료 영역 박힘 영역 박지 X 박힌 영역 박은 영역 ⚠️ — `handle_session_complete` 영역 user_streaks 영역 박지 X 박음 영역 (Phase 3 박은 영역 본문 영역 확인 영역)
+
+### 17.4 컬럼 영역 (Phase 3 영역 박은 영역 확인 영역)
+| 컬럼 | 타입 | NULL | default | 박힌 영역 | 설명 |
+|---|---|---|---|---|---|
+| `user_id` | uuid PK | NO | — | Dashboard 직접 | `profiles(id)` FK ON DELETE CASCADE |
+| `current_streak` | integer | NO | 0 | Dashboard 직접 | 현재 영역 연속 영역 |
+| `longest_streak` | integer | NO | 0 | Dashboard 직접 | 최장 영역 연속 영역 |
+| `last_practice_date` | date | YES | — | Dashboard 직접 | 마지막 영역 연습일 |
+| `streak_freezes_available` | integer | NO | 0 | Dashboard 직접 | 사용 가능 영역 freeze 수 |
+| `freezes_used_this_month` | integer | NO | 0 | Dashboard 직접 | 이번 달 영역 사용 영역 freeze 수 |
+| `freezes_reset_month` | date | YES | — | Dashboard 직접 | freeze 영역 리셋 영역 월 |
+| `updated_at` | timestamptz | NO | now() | Dashboard 직접 | — |
+
+### 17.5-17.7 RLS·FK·인덱스
+- PK: `user_id`
+- FK: `user_id` → `profiles(id)` ON DELETE CASCADE
+- RLS: SELECT own (`auth.uid() = user_id`) + admin SELECT (`is_admin()`)
+
+### 17.8 박는 영역
+- `supabase/functions/admin-action/index.ts:220` — UPDATE (service_role 영역)
+
+### 17.9 읽는 영역
+- ⚠️ src/ 영역 직접 영역 SELECT 영역 없음 — 향후 영역 dashboard 영역 박을 영역
+
+### 17.10-17.13
+- 관련 함수: 없음 (현재). 향후 영역 streak 영역 업데이트 trigger 영역 박을 영역
+- 주의점: ⚠️ `handle_session_complete` 영역 user_streaks 영역 박지 X 박음 → 게임 영역 박은 영역 streak 영역 갱신 영역 박지 X 박힌 영역 박음 (Phase 4 영역 박을 영역)
+- 데이터 예시: `{ user_id: "uuid", current_streak: 5, longest_streak: 12, last_practice_date: "2026-05-17", streak_freezes_available: 2, freezes_used_this_month: 0 }`
+- 연관 테이블: `profiles` (user_id)
+
+---
+
+## 18. `subscriptions` (Phase 3 신규 박음)
+
+### 18.1 한 줄 요약 영역
+> Paddle/Stripe 영역 구독 영역 = 1행. webhook 영역 박힘 영역 박음 영역 영역 박은 영역 박음.
+
+### 18.2 무엇 박는 영역인지
+- Stripe customer_id·subscription_id·price_id 영역
+- status·plan·current_period_start/end 영역
+- cancel_at_period_end·canceled_at 영역
+
+### 18.3 어디에 박는 영역인지
+- `supabase/functions/paddle-webhook/index.ts:139` 영역에서 UPSERT (service_role 영역)
+- ⚠️ Paddle Checkout 영역 production 영역 박지 X 박힘 영역 (PENDING)
+
+### 18.4 컬럼 영역 (Phase 3 영역 박은 영역 확인 영역)
+| 컬럼 | 타입 | NULL | default | 박힌 영역 | 설명 |
+|---|---|---|---|---|---|
+| `id` | uuid PK | NO | gen_random_uuid() | Dashboard 직접 | — |
+| `user_id` | uuid | NO | — | Dashboard 직접 | `profiles(id)` FK ON DELETE CASCADE |
+| `stripe_customer_id` | text | YES | — | Dashboard 직접 | — |
+| `stripe_subscription_id` | text | YES | — | Dashboard 직접 | UNIQUE 영역 박음 |
+| `stripe_price_id` | text | YES | — | Dashboard 직접 | — |
+| `status` | text | NO | 'inactive' | Dashboard 직접 | — |
+| `plan` | text | NO | 'free' | Dashboard 직접 | — |
+| `current_period_start` | timestamptz | YES | — | Dashboard 직접 | — |
+| `current_period_end` | timestamptz | YES | — | Dashboard 직접 | — |
+| `cancel_at_period_end` | boolean | NO | false | Dashboard 직접 | — |
+| `canceled_at` | timestamptz | YES | — | Dashboard 직접 | — |
+| `created_at` | timestamptz | NO | now() | Dashboard 직접 | — |
+| `updated_at` | timestamptz | NO | now() | Dashboard 직접 | — |
+
+### 18.5-18.7
+- 인덱스: `idx_subscriptions_user_id`·`idx_subscriptions_status`
+- UNIQUE: `stripe_subscription_id`
+- FK: `user_id` → `profiles(id)` ON DELETE CASCADE
+- RLS: SELECT own + admin SELECT
+
+### 18.8 박는 영역
+- `supabase/functions/paddle-webhook/index.ts:139` — UPSERT (service_role)
+
+### 18.9 읽는 영역
+- ⚠️ src/ 영역 직접 영역 SELECT 영역 없음 — Premium 영역 분기 영역 `profiles.is_premium` 영역 박음
+
+### 18.10-18.13
+- 관련 함수: 없음 (현재). 향후 영역 manage_subscription RPC 영역 박을 영역
+- 주의점: Paddle 영역 박지 X 박힘 영역 (PENDING) — 현재 영역 빈 영역
+- 데이터 예시: `{ user_id: "uuid", status: "active", plan: "pro_monthly", current_period_end: "..." }`
+- 연관 테이블: `profiles`
+
+---
+
+## 19. `league_groups` (Phase 3 신규 발견 영역)
+
+### 19.1 한 줄 요약 영역
+> 리그 영역 × 주간 영역 = 1행. 주간 영역 리그 영역 그룹 영역 박음.
+
+### 19.2 무엇 박는 영역인지
+- league_id·week_start·week_end 영역
+- status·member_count·finalized_at 영역
+
+### 19.3 어디에 박는 영역인지
+- `get_my_league_group_id()` 함수 영역에서 참조
+- ⚠️ src/ 영역 직접 영역 박지 X 박힘 영역 (UI 영역 비활성 영역)
+
+### 19.4 컬럼 영역 (Phase 3 영역 박은 영역 확인 영역)
+| 컬럼 | 타입 | NULL | default | 박힌 영역 | 설명 |
+|---|---|---|---|---|---|
+| `id` | uuid PK | NO | gen_random_uuid() | Dashboard 직접 | — |
+| `league_id` | integer | NO | — | Dashboard 직접 | `leagues(id)` FK ON DELETE CASCADE |
+| `week_start` | date | NO | — | Dashboard 직접 | — |
+| `week_end` | date | NO | — | Dashboard 직접 | — |
+| `status` | text | NO | 'active' | Dashboard 직접 | — |
+| `member_count` | integer | NO | 0 | Dashboard 직접 | — |
+| `created_at` | timestamptz | YES | now() | Dashboard 직접 | — |
+| `finalized_at` | timestamptz | YES | — | Dashboard 직접 | — |
+
+### 19.5-19.7
+- 인덱스: `idx_league_groups_league_week`·`idx_league_groups_week`·`idx_league_groups_active` (status='active' 부분 인덱스)
+- FK: `league_id` → `leagues(id)` ON DELETE CASCADE
+- RLS: SELECT all (`true`) + admin ALL (`is_admin()`)
+
+### 19.8 박는 영역
+- ⚠️ 현재 영역 코드 영역 박지 X 박힘 (UI 비활성 영역)
+
+### 19.9 읽는 영역
+- `get_my_league_group_id()` 함수 영역에서 참조
+
+### 19.10-19.13
+- 관련 함수: `get_my_league_group_id()` (Phase 3 영역 박은 영역)
+- 주의점: UI 영역 비활성 영역. 향후 부활 영역 PENDING.
+- 연관 테이블: `leagues`·`league_members`
+
+---
+
+## 부록 — Phase 1 박지 X 박힌 영역 = Phase 3 영역 박은 영역 박힘 영역
+
+> Phase 1 영역 박은 영역 (2026-05-17) 영역 ⚠️ 박은 영역 박힌 영역 → Phase 3 (2026-05-18) 박힘 영역 박은 영역.
+
+| # | 영역 | 박힌 영역 |
+|---|---|---|
+| 1 | `profiles.tier` 컬럼 영역 존재 여부 | ❌ 존재 X 영역 박음 — `20260509_mastery_score.sql` 영역 `p.tier` 박힌 영역 = `20260509_fast_track` 영역 영역 정정 영역 박은 영역 (is_premium + subscription_tier + role 영역 박음) |
+| 2 | 8개 테이블 영역 migration 영역 (user_sessions·user_stats_daily·note_mastery·leagues·league_members·admin_actions·daily_batch_runs·user_streaks·subscriptions) | ✅ Phase 3 영역 `20260518_phase3_consolidation.sql` 영역 박음 영역 재현 영역 |
+| 3 | `note_mastery` INSERT/UPDATE 진입점 영역 | ✅ `handle_session_complete()` trigger 영역 박은 영역 박음 (note_attempts JSONB 순회 영역) |
+| 4 | `user_note_logs` deprecation 영역 | ❌ 활성 사용 박는 영역 박음 — NoteGame.tsx·useNoteLogger.ts 영역 매 음표 INSERT |
+| 5 | `profiles.{current_streak, longest_streak, total_xp, current_league, last_practice_date}` migration 영역 | ✅ Dashboard 직접 박음 영역 박힌 영역 박음 (handle_session_complete 영역 갱신) |
+| 6 | `league_groups` 테이블 영역 | ✅ Phase 3 영역 신규 발견 영역 박음 |
+| 7 | `get_my_league_group_id` 함수 영역 | ✅ Phase 3 영역 신규 발견 영역 박음 |
+| 8 | `user_streaks` 컬럼 3개 (freeze 영역) | ✅ Phase 3 영역 발견 영역 박은 영역 박음 |

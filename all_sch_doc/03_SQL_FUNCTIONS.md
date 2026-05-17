@@ -55,7 +55,7 @@ INSERT INTO user_sessions (...) VALUES (...);
 ### 1.1 사용자·인증 영역 (7개)
 1. `handle_new_user_profile()` — auth.users INSERT trigger 영역
 2. `check_email_exists(p_email)` — 4-state 영역 가입 흐름 분기 영역
-3. `check_nickname_available(p_nickname)` — ⚠️ 마이그 영역 없음 (Cursor 발견 영역)
+3. `check_nickname_available(p_nickname)` — ✅ **Phase 3 영역 박은 영역 박음** (`20260518_phase3_consolidation.sql §13`)
 4. `request_account_deletion(reason)` — soft delete 영역
 5. `restore_account()` — 30일 영역 내 영역 복구 영역
 6. `hard_delete_account(p_email)` — 영구 영역 삭제 영역
@@ -80,7 +80,7 @@ INSERT INTO user_sessions (...) VALUES (...);
 
 ### 1.6 헬퍼·유틸 영역 (6개)
 1. `is_admin()` — RLS 영역 정책 영역 헬퍼
-2. `is_reviewer()` — 코드 영역 분기 영역 헬퍼
+2. `is_reviewer()` — ⚠️ **dead 함수 영역** (RLS 정책 영역 직접 사용 X, 코드 영역 grep 0건). ComingSoonGate = `useAuth().profile?.role === 'reviewer'` 클라이언트 영역 분기 영역 박음. 출시 후 DROP 박을 영역.
 3. `consume_scan_quota()` — 스캔 영역 1회 영역 차감 영역
 4. `topup_scan_quota(p_user_id, p_amount)` — 충전 영역
 5. `set_updated_at_profiles()` — trigger 영역 함수 영역
@@ -128,21 +128,21 @@ INSERT INTO user_sessions (...) VALUES (...);
 
 ---
 
-### 2.3 `check_nickname_available(p_nickname TEXT)` ⚠️
+### 2.3 `check_nickname_available(p_nickname text)` ✅
 
 | 항목 | 내용 |
 |---|---|
-| **1. 한 줄 요약** | 닉네임 영역 사용 영역 가능 영역 확인 영역 (마이그 영역 없음 — Cursor 발견 영역) |
-| **2. 시그니처** | ⚠️ **마이그 영역 없음** — 추정 영역 `RETURNS BOOLEAN`. |
-| **3. 무엇 박는 영역인지** | 닉네임 영역 활성 영역 계정 영역 중 영역 중복 영역 여부 영역 검사 영역 추정. `profiles_nickname_active_unique` 영역 부분 영역 유니크 영역 인덱스 영역 박힘 영역. |
-| **4. 단계별** | ⚠️ 정의 영역 없음. 추정 영역: SELECT 1 FROM profiles WHERE lower(nickname) = lower(p_nickname) AND is_deleted = false LIMIT 1 → NOT EXISTS → TRUE |
-| **5. 박는 테이블** | SELECT: `profiles` (추정 영역) |
+| **1. 한 줄 요약** | 닉네임 영역 사용 영역 가능 영역 확인 영역 (형식 영역 1차 검증 + 중복 검사) |
+| **2. 시그니처** | `RETURNS boolean LANGUAGE plpgsql SECURITY DEFINER SET search_path TO 'public'` |
+| **3. 무엇 박는 영역인지** | 1) 형식 영역 1차 검증 (NULL 영역 + 3-20자 + 정규식 `^[a-z][a-z0-9_]{2,19}$`) 2) 중복 검사 영역 (`lower(nickname) = lower(p_nickname)` 영역 — `is_deleted` 영역 박지 X 박음). |
+| **4. 단계별** | 1. NULL/길이 검증 → FALSE → 2. 정규식 영역 박지 X 박힘 영역 → FALSE → 3. NOT EXISTS profiles WHERE lower(nickname)=lower(p_nickname) → TRUE/FALSE |
+| **5. 박는 테이블** | SELECT: `profiles` |
 | **6. 호출 위치** | `src/hooks/useNicknameAvailability.ts:38, 73` |
-| **7. SECURITY** | ⚠️ 확인 필요 (DEFINER 영역 추정 영역 — RLS 영역 우회 영역 박음) |
-| **8. 변경 이력** | ⚠️ migration 영역 없음. Dashboard 영역 직접 박힘 영역 추정. |
+| **7. SECURITY** | DEFINER (`profiles` 영역 조회 영역 박음 영역 모든 영역 사용자 영역 박음 영역 RLS 우회 영역) |
+| **8. 변경 이력** | Production Dashboard 직접 박은 영역 → ✅ **`20260518_phase3_consolidation.sql §13` (Phase 3 Step 1-3 영역)** 영역 박음 영역 재현 영역 |
 | **9. 호출 예시** | ```ts const { data } = await supabase.rpc("check_nickname_available", { p_nickname: "myname" }); ``` |
 | **10. 반환 영역** | `boolean` (true=사용 가능 영역) |
-| **11. 주의점** | ⚠️ **Phase 3 fix 영역**: 마이그 영역 재현 영역 박음 영역 필요 영역. 현재 영역 production 영역 박혀 있다면 영역 동작 영역 박힘 (`useNicknameAvailability.ts` 영역 실패 영역 X). |
+| **11. 주의점** | `is_deleted` 영역 박지 X 박음 영역 — 탈퇴 사용자 영역 닉네임 영역 박힘 영역 박음 영역 차단 영역 박힌 영역 박음 (의도 영역 = `profiles_nickname_active_unique` 부분 인덱스 영역 박음 영역 박은 영역 박힘 영역 박음). GRANT TO anon, authenticated. |
 
 ---
 
@@ -326,7 +326,10 @@ INSERT INTO user_sessions (...) VALUES (...);
 
 ---
 
-### 2.14 `apply_payment_topup(p_event_id, p_user_id, p_package_id, p_credits_added, p_checkout_session_id, p_amount_cents, p_currency)`
+### 2.14 `apply_payment_topup(p_event_id, p_checkout_session_id, p_user_id, p_package_id, p_credits_added, p_amount_cents, p_currency)`
+
+> ⚠️ **인자 순서 정정 영역 (Phase 3 Step 4)**: `p_checkout_session_id` 영역 = **2번째** (이전 박힌 5번째 영역 잘못).
+> 마이그 영역 `20260408003000_add_payment_events.sql` 영역 확인 영역 박음.
 
 | 항목 | 내용 |
 |---|---|
@@ -335,12 +338,12 @@ INSERT INTO user_sessions (...) VALUES (...);
 | **3. 무엇 박는 영역인지** | webhook 영역 박힘 영역 = idempotent 영역 박음. event_id 영역 UNIQUE 영역 박힘 영역 박힘 영역 동일 영역 event 영역 재전송 영역 시 영역 INSERT 영역 X. inserted=true 영역 시만 영역 `topup_scan_quota` 영역 호출. |
 | **4. 단계별** | 1. credits 영역 검증 → 2. payment_events INSERT ON CONFLICT (event_id) DO NOTHING → 3. ROW_COUNT 확인 → 4. inserted=true 영역 → topup_scan_quota → 5. profiles.scan_quota 영역 조회 영역 반환 |
 | **5. 박는 테이블** | INSERT: `payment_events` · UPDATE: `profiles.scan_quota` (via `topup_scan_quota`) · SELECT: `profiles` |
-| **6. 호출 위치** | Edge Function 영역 박음 영역 (Stripe/Paddle/IAP webhook) — 현재 production 영역 미박힘 영역 추정 영역 |
+| **6. 호출 위치** | **`supabase/functions/verify-iap-receipt/index.ts:475`** — IAP 영역 webhook 영역 박힌 영역 박음. Production 영역 박힘 영역 박은 영역 박음. Paddle Checkout 영역 영역 박지 X 박힘 영역 (출시 박을 영역). |
 | **7. SECURITY** | DEFINER (payment_events INSERT 영역 RLS 영역 우회 영역) |
 | **8. 변경 이력** | 20260408003000_add_payment_events — 최초 |
-| **9. 호출 예시** | ```ts const { data } = await supabase.rpc("apply_payment_topup", { p_event_id: "...", p_user_id: "...", p_package_id: "scan_pack_10", p_credits_added: 10, ... }); ``` |
+| **9. 호출 예시** | ```ts const { data } = await supabase.rpc("apply_payment_topup", { p_event_id: "...", p_checkout_session_id: "...", p_user_id: "...", p_package_id: "scan_pack_10", p_credits_added: 10, p_amount_cents: 990, p_currency: "USD" }); ``` |
 | **10. 반환 영역** | `[{ applied: BOOLEAN, remaining_quota: INTEGER }]` |
-| **11. 주의점** | event_id 영역 idempotency 영역 보장. 결제 영역 시스템 영역 production 영역 박힘 영역 X 영역 (PENDING). |
+| **11. 주의점** | event_id 영역 idempotency 영역 보장. IAP 영역만 박힘 — Paddle Checkout 영역 production 영역 박지 X 박힘 영역 (PENDING). |
 
 ---
 
@@ -442,7 +445,43 @@ INSERT INTO user_sessions (...) VALUES (...);
 
 ---
 
-### 2.22 `set_updated_at_user_scores()` (trigger 함수)
+### 2.23 `handle_session_complete()` ⭐ Phase 3 박은 영역
+
+| 항목 | 내용 |
+|---|---|
+| **1. 한 줄 요약** | user_sessions INSERT 영역 박힘 영역 박은 영역 영역 트리거 함수 영역 — 3개 테이블 영역 갱신 영역 |
+| **2. 시그니처** | `RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER` (search_path 영역 박지 X 박음) |
+| **3. 무엇 박는 영역인지** | 1) user_stats_daily UPSERT (sessions_count·total_notes·correct_notes·xp_earned·avg_accuracy 재계산·avg_reaction_ms 평균·sessions_by_level JSONB) 2) profiles UPDATE (total_xp + last_practice_date) 3) note_mastery UPSERT (note_attempts JSONB 영역 순회 영역 박음 영역 mastery_level 영역 5단계 영역 재계산 — 95/90/80/70/50% → 5/4/3/2/1/0) |
+| **4. 단계별** | 1. session_date 영역 계산 (NEW.started_at UTC DATE) → 2. user_stats_daily UPSERT → 3. profiles UPDATE → 4. note_attempts NULL 영역 박지 X 박힘 영역 박음 → FOR LOOP (jsonb_array_elements) 영역 음표별 영역 UPSERT |
+| **5. 박는 테이블** | UPSERT: `user_stats_daily`·`note_mastery` · UPDATE: `profiles` |
+| **6. 호출 위치** | 트리거 영역 `on_session_complete` AFTER INSERT ON `user_sessions` |
+| **7. SECURITY** | DEFINER (RLS 영역 우회 영역) |
+| **8. 변경 이력** | Production Dashboard 직접 박은 영역 → ✅ **`20260518_phase3_consolidation.sql §11` (Phase 3 Step 1-3)** 박음 영역 재현 영역 |
+| **9. 호출 예시** | 자동 (트리거) — `INSERT INTO user_sessions (...)` 박음 영역 박힘 영역 박음 |
+| **10. 반환 영역** | `NEW` row |
+| **11. 주의점** | search_path 영역 박지 X 박음 (Production 영역 박은 영역 그대로). user_streaks 영역 박지 X 박음 → streak 영역 갱신 영역 박지 X 박힌 영역 박음 (Phase 4 박을 영역). |
+
+---
+
+### 2.24 `get_my_league_group_id()` ⭐ Phase 3 신규 발견 영역
+
+| 항목 | 내용 |
+|---|---|
+| **1. 한 줄 요약** | 사용자 영역 가장 최근 joined_at 영역 group_id 영역 박음 (league_members 영역 RLS 정책 영역 박음) |
+| **2. 시그니처** | `RETURNS uuid LANGUAGE sql STABLE SECURITY DEFINER SET search_path TO 'public'` |
+| **3. 무엇 박는 영역인지** | `SELECT group_id FROM league_members WHERE user_id = auth.uid() ORDER BY joined_at DESC LIMIT 1` 영역 박음. |
+| **4. 단계별** | 1. league_members 영역 박은 영역 최근 박은 영역 group_id 영역 박음 |
+| **5. 박는 테이블** | SELECT: `league_members` |
+| **6. 호출 위치** | RLS 정책 영역 `league_members_select_own_group` 영역 박음 — `group_id = public.get_my_league_group_id()` |
+| **7. SECURITY** | DEFINER STABLE (캐싱 영역 박음) |
+| **8. 변경 이력** | Production Dashboard 직접 박은 영역 → ✅ **`20260518_phase3_consolidation.sql §0` (Phase 3 Step 1-3)** 박음 |
+| **9. 호출 예시** | RLS 정책 영역 박음 영역 — 사용자 영역 박지 X 박음 영역 |
+| **10. 반환 영역** | UUID (group_id) · NULL (가입 X 박힘 영역) |
+| **11. 주의점** | `LANGUAGE sql` 영역 박음 → plpgsql 영역 영역 빠름 영역. GRANT TO authenticated. |
+
+---
+
+### 2.25 `set_updated_at_user_scores()` (trigger 함수)
 
 | 항목 | 내용 |
 |---|---|
@@ -460,7 +499,7 @@ INSERT INTO user_sessions (...) VALUES (...);
 
 ---
 
-## 3. 트리거 영역 (4개)
+## 3. 트리거 영역 (5개) — Phase 3 박은 영역 박힘 영역 박음
 
 ### 3.1 `trg_profiles_updated_at`
 
@@ -470,7 +509,7 @@ INSERT INTO user_sessions (...) VALUES (...);
 | **2. 시점** | BEFORE UPDATE |
 | **3. 대상 테이블** | `profiles` |
 | **4. 호출 함수** | `set_updated_at_profiles()` |
-| **5. 박힘 위치** | `20260408001000:43-48` |
+| **5. 박힘 위치** | `20260408001000:40-43` (라인 영역 정정 영역 Phase 3 Step 4) |
 | **6. 동작** | 행 UPDATE 시점 영역 박힘 영역 박힘 영역 NEW.updated_at = now() |
 | **7. 주의점** | 모든 UPDATE 영역 박힘 영역 = updated_at 영역 자동. 클라이언트 영역 명시 영역 박을 영역 필요 X. |
 
@@ -484,7 +523,7 @@ INSERT INTO user_sessions (...) VALUES (...);
 | **2. 시점** | AFTER INSERT |
 | **3. 대상 테이블** | `auth.users` |
 | **4. 호출 함수** | `handle_new_user_profile()` |
-| **5. 박힘 위치** | `20260408001000:62-67` |
+| **5. 박힘 위치** | `20260408001000:60-63` (라인 영역 정정 영역) |
 | **6. 동작** | 신규 영역 가입 영역 박힘 영역 박힘 영역 profiles 영역 INSERT + 닉네임 영역 자동 생성 + 약관 영역 동의 영역 박음 |
 | **7. 주의점** | Magic Link 가입 영역 의존 영역 함수 영역. 실패 영역 시 영역 가입 영역 차단. 반드시 영역 idempotent 영역 박힘 영역 박음 (ON CONFLICT DO UPDATE). |
 
@@ -498,7 +537,7 @@ INSERT INTO user_sessions (...) VALUES (...);
 | **2. 시점** | BEFORE UPDATE |
 | **3. 대상 테이블** | `user_scores` |
 | **4. 호출 함수** | `set_updated_at_user_scores()` |
-| **5. 박힘 위치** | `20260410165000:26-29` |
+| **5. 박힘 위치** | `20260410165000:25-28` (라인 영역 정정 영역) |
 | **6. 동작** | NEW.updated_at = NOW() |
 | **7. 주의점** | user_scores 영역 사용 영역 PENDING. |
 
@@ -512,21 +551,37 @@ INSERT INTO user_sessions (...) VALUES (...);
 | **2. 시점** | AFTER INSERT |
 | **3. 대상 테이블** | `user_sessions` |
 | **4. 호출 함수** | `update_profile_after_session()` |
-| **5. 박힘 위치** | `20260516_reviewer_sessions_rls:78-82` |
+| **5. 박힘 위치** | `20260516_reviewer_sessions_rls:79-82` (라인 영역 정정 영역) |
 | **6. 동작** | NEW.started_at UTC 영역 박은 영역 DATE 영역 박음 → profiles.last_practice_date 갱신 영역 (NULL 영역 박힘 영역 또는 영역 < 영역 박힘 영역 시) |
-| **7. 주의점** | ⚠️ **`record_game_session()` RPC 영역 박힘 영역 박음 영역 = user_sessions INSERT 영역 박힘 영역 박힘 영역 영역 trigger 박힘 영역. 직접 INSERT 영역 박힘 영역 박힘 영역 박힘 영역. ⚠️ production 영역 apply 영역 여부 영역 확인 필요. |
+| **7. 주의점** | ✅ Production 영역 apply 영역 확인 영역 박음 — `handle_session_complete` 영역 박은 영역 trigger 영역 박힘 영역 박음. |
+
+---
+
+### 3.5 `on_session_complete` ⭐ Phase 3 박은 영역
+
+| 항목 | 내용 |
+|---|---|
+| **1. 한 줄 요약** | user_sessions INSERT 영역 시 영역 `handle_session_complete()` 호출 — 3개 테이블 갱신 |
+| **2. 시점** | AFTER INSERT |
+| **3. 대상 테이블** | `user_sessions` |
+| **4. 호출 함수** | `handle_session_complete()` (Phase 3 §2.23 영역 박은 영역) |
+| **5. 박힘 위치** | `20260518_phase3_consolidation.sql §12` (Phase 3 Step 1-2 박음) |
+| **6. 동작** | user_stats_daily UPSERT + profiles.total_xp/last_practice_date UPDATE + note_mastery UPSERT (note_attempts JSONB 영역 순회 영역 박음) |
+| **7. 주의점** | `trg_update_profile_after_session` 영역 영역 함께 박음 영역 박음 영역 — 두 트리거 영역 같은 INSERT 영역 박힘 영역 박음 영역 (`record_game_session` 영역 RPC 영역 박은 영역 박지 X 박은 영역 박힌 영역 박음). |
 
 ---
 
 ## 4. 누락·중복·의심 영역
 
-### 4.1 마이그 영역 없는 RPC 영역 (Cursor 발견 영역 박힘 영역)
+### 4.1 마이그 영역 없는 RPC 영역 — Phase 3 영역 박은 영역 모두 박음 ✅
 
-| # | RPC | 호출 위치 | 영역 |
+| # | RPC | 호출 위치 | 상태 |
 |---|---|---|---|
-| 1 | `check_nickname_available(p_nickname)` | `useNicknameAvailability.ts:38, 73` | ⚠️ Dashboard 영역 직접 박힘 영역 추정 → Phase 3 영역에서 마이그 영역 재현 영역 박음 |
+| 1 | `check_nickname_available(p_nickname)` | `useNicknameAvailability.ts:38, 73` | ✅ Phase 3 영역 박은 영역 `20260518_phase3_consolidation.sql §13` 영역 박음 |
+| 2 | `handle_session_complete()` | trigger 영역 함수 | ✅ Phase 3 영역 박은 영역 `20260518_phase3_consolidation.sql §11` 영역 박음 |
+| 3 | `get_my_league_group_id()` | `league_members` RLS 정책 영역 | ✅ Phase 3 영역 박은 영역 `20260518_phase3_consolidation.sql §0` 영역 박음 |
 
-### 4.2 중복 정의 영역 (시그니처 변경 영역 박힘 영역)
+### 4.2 중복 정의 영역 (시그니처 변경 영역 박힘 영역) — Phase 3 영역 박은 영역 박힘 영역 박음
 
 | # | 함수 | 변경 이력 |
 |---|---|---|
@@ -537,27 +592,29 @@ INSERT INTO user_sessions (...) VALUES (...);
 | 5 | `check_email_exists` | 20260510 (v2) → 20260513_account_recovery (v3 — DROP+재생성 영역) |
 | 6 | `handle_new_user_profile` | 20260408001000 (id+scan_quota) → 20260512 (display_name+avatar_url+nickname+profile_completed+tos/privacy/marketing) |
 
-### 4.3 의심 영역
+### 4.3 의심 영역 — Phase 3 영역 박은 영역 박힘 영역 박음
 
-| # | 영역 | 의심 사항 |
+| # | 영역 | Phase 3 영역 |
 |---|---|---|
-| 1 | `hard_delete_account` 영역 최신 정의 영역 | 20260514_fresh_start 영역 = auth.users 영역 삭제 영역 미박힘. 20260513_hard_delete_with_auth 영역 = auth.users 영역 박힘. **production 영역 어느 버전 영역 박힘 영역?** ⚠️ 확인 필요 영역. |
-| 2 | `get_mastery_score` 영역 | src/ 영역 직접 호출 영역 없음. `MasteryHeroCard` 제거 후 영역 미사용 영역. |
-| 3 | `hard_delete_expired_accounts` 영역 | service_role 영역 전용 영역. 호출 영역 cron 영역 박힘 영역 X (TODO). |
-| 4 | `apply_payment_topup` 영역 | 결제 영역 시스템 영역 production 영역 박힘 영역 X (PENDING). |
-| 5 | `trg_update_profile_after_session` 영역 | record_game_session RPC 영역 박음 영역 박힘 = INSERT trigger 박힘 영역. 직접 INSERT (폴백) 영역 박힘 영역 박힘 영역. ⚠️ 두 경로 영역 모두 영역 박힘 영역 검증 영역 필요. |
+| 1 | `hard_delete_account` 영역 | ✅ **Phase 3 Step 3 확인 영역**: Production 영역 = `auth.users` 삭제 박혀있음 (20260513_hard_delete_with_auth 영역 박힘). |
+| 2 | `get_mastery_score` 영역 dead 함수 영역 | ⚠️ 현재 영역 src/ 영역 호출 X 영역 (출시 후 DROP 박을 영역) |
+| 3 | `is_reviewer()` 영역 dead 함수 영역 | ⚠️ RLS 정책 영역 + src/ 영역 호출 0건 (출시 후 DROP 박을 영역) |
+| 4 | `hard_delete_expired_accounts` 영역 | ⚠️ service_role 영역 전용 영역. cron 영역 박지 X 박힘 (PENDING — Phase 4) |
+| 5 | `apply_payment_topup` 영역 | ✅ Production 영역 박은 영역 박음 (IAP webhook 영역만 — `verify-iap-receipt/index.ts:475`) |
+| 6 | `trg_update_profile_after_session` 영역 + `on_session_complete` 영역 | ✅ 두 트리거 영역 박은 영역 같은 INSERT 영역 박힘 영역 박음 영역. `last_practice_date` 영역 같은 영역 갱신 영역 박지 X 박힘 영역 — idempotent 영역 박음. |
 
-### 4.4 통계 영역
+### 4.4 통계 영역 (Phase 3 박은 영역 박힘 영역)
 
-| 영역 | 카운트 |
-|---|---|
-| 정의된 함수 영역 (마이그 영역) | 21개 (`is_admin`·`is_reviewer`·`handle_new_user_profile`·`set_updated_at_profiles`·`set_updated_at_user_scores`·`consume_scan_quota`·`topup_scan_quota`·`check_email_exists`·`request_account_deletion`·`restore_account`·`hard_delete_account`·`hard_delete_expired_accounts`·`record_sublevel_attempt`·`get_mastery_score`·`record_game_session`·`update_profile_after_session`·`increment_daily_session`·`get_today_session_count`·`apply_payment_topup`·`expire_premium_users`·`run_daily_batch_analysis`) |
-| 누락 함수 영역 (코드 호출 영역 + 마이그 영역 X) | 1개 (`check_nickname_available`) |
-| 정의된 트리거 영역 | 4개 (`trg_profiles_updated_at`·`on_auth_user_created_profile`·`trg_user_scores_updated_at`·`trg_update_profile_after_session`) |
-| SECURITY DEFINER 영역 함수 | 17개 |
-| SECURITY INVOKER 영역 함수 (기본 영역) | 4개 (trigger 영역 함수 2개 + `set_updated_at_*` 2개 영역 박힘 영역) |
-| GRANT TO anon | 3개 (`check_email_exists`, `hard_delete_account`, `apply_payment_topup` 추정 영역) |
+| 영역 | Phase 1 영역 | Phase 3 박은 영역 |
+|---|---|---|
+| 정의된 함수 영역 (마이그) | 21개 | **24개** (+ `check_nickname_available` + `handle_session_complete` + `get_my_league_group_id`) |
+| 누락 함수 영역 | 1개 (`check_nickname_available`) | ✅ **0개** |
+| 정의된 트리거 영역 | 4개 | **5개** (+ `on_session_complete`) |
+| SECURITY DEFINER 영역 함수 | 17개 | **20개** (+ 3개 Phase 3 영역 박은 영역) |
+| SECURITY INVOKER 영역 함수 (기본 영역) | 4개 (영역 박지 X 박힘 영역) | **2개** (`set_updated_at_profiles`·`set_updated_at_user_scores`). `handle_new_user_profile` 영역 = DEFINER, `update_profile_after_session` 영역 = DEFINER (Session 2 영역 박은 영역 영역 정정 영역). |
+| GRANT TO anon | **2개** (`check_email_exists`·`hard_delete_account`·`check_nickname_available` 영역 박음 영역 = 3개) — 정확 영역 = 3개 |
 | GRANT TO authenticated | 대부분 영역 |
 | REVOKE FROM anon, authenticated | 1개 (`hard_delete_expired_accounts` — service_role 영역 전용 영역) |
+| dead 함수 영역 (출시 후 DROP 박을 영역) | — | **2개** (`is_reviewer`·`get_mastery_score`) |
 
-→ Phase 3 영역 = (1) `check_nickname_available` 마이그 영역 재현 영역 박음 (2) `hard_delete_account` 영역 production 영역 버전 영역 영역 검증 영역 (3) `trg_update_profile_after_session` 영역 production 영역 영역 검증 영역.
+→ ✅ **Phase 3 완료** — 모든 영역 함수·트리거 영역 마이그 영역 박음 영역 재현 영역.

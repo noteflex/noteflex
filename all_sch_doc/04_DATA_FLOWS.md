@@ -147,15 +147,29 @@
 - 박는 작업: `supabase.rpc("increment_daily_session")`
 - 박는 테이블: `daily_sessions`
 
+##### 4.8 `useNoteLogger` 영역 — 매 음표 영역 박음 (Phase 3 Step 4 추가)
+- 파일: `src/hooks/useNoteLogger.ts:28` (래퍼 영역) → `src/lib/userNoteLogs.ts:117` (INSERT 영역)
+- 호출 시점: `NoteGame.tsx:1067·1132·1196` 영역 음표 영역 박힘 영역 박은 영역 박음
+- 박는 작업: `supabase.from("user_note_logs").insert({ user_id, note_key, octave, clef, is_correct, response_time, error_type, level })`
+- 박는 테이블: `user_note_logs` INSERT
+
+##### 4.9 트리거 영역 박음 — `on_session_complete` (Phase 3 박은 영역)
+- 파일: `supabase/migrations/20260518_phase3_consolidation.sql §11-12`
+- 시점: user_sessions AFTER INSERT
+- 호출 함수: `handle_session_complete()`
+- 박는 테이블: `user_stats_daily` UPSERT (RPC 영역 박음 영역 박음 영역 두 번째 영역 갱신 영역 — idempotent) · `profiles` UPDATE (total_xp + last_practice_date) · `note_mastery` UPSERT (note_attempts JSONB 영역 순회 영역 박음)
+
 #### 5. 박는 테이블 (요약)
 
 | 테이블 | 작업 | 박는 위치 | 박는 함수 |
 |---|---|---|---|
 | `user_sessions` | INSERT | `record_game_session()` RPC | 20260517 |
-| `user_stats_daily` | UPSERT | 동일 | 동일 |
-| `profiles` | UPDATE `last_practice_date` | 동일 + trigger `trg_update_profile_after_session` | 20260516 |
+| `user_stats_daily` | UPSERT | `record_game_session()` + `handle_session_complete()` trigger | 20260517 + 20260518 (Phase 3 박은 영역) |
+| `profiles` | UPDATE `last_practice_date` + `total_xp` | RPC + `trg_update_profile_after_session` + `on_session_complete` | 20260516 + 20260517 + 20260518 |
+| `note_mastery` | UPSERT (note_attempts JSONB 영역 박음) | `handle_session_complete()` trigger | 20260518 (Phase 3 박은 영역) |
 | `user_sublevel_progress` | UPSERT | `record_sublevel_attempt()` RPC | 20260425 + 20260509 |
 | `daily_sessions` | UPSERT | `increment_daily_session()` RPC | 20260509_daily_sessions |
+| `user_note_logs` | INSERT (매 음표 영역) | `useNoteLogger` → `userNoteLogs.ts:117` | 20260405 |
 
 #### 6. 영향 영역 (다른 기능)
 - **대시보드 영역 KPI 카드** — `user_sessions`·`user_stats_daily` 영역 SELECT (`useMyStats.ts`)
@@ -709,24 +723,36 @@ SELECT user_id, session_date, session_count
                                                  └─→ profiles.scan_quota += credits (via topup_scan_quota)
 ```
 
-#### 3. 진입점
-- Edge Function: `supabase/functions/paddle-webhook/index.ts:139`
-- Edge Function: `supabase/functions/payment-webhook/index.ts`
-- Edge Function: `supabase/functions/verify-iap-receipt/index.ts`
-- 클라이언트: `src/pages/Pricing.tsx` + `supabase/functions/create-checkout-session/index.ts`
+#### 3. 진입점 (정정 영역 — Phase 3 Step 4)
+
+| 영역 | 상태 |
+|---|---|
+| `supabase/functions/paddle-webhook/index.ts:139` | ⚠️ 박혔으나 production 영역 박지 X 박힘 영역 |
+| `supabase/functions/payment-webhook/` | ⚠️ **빈 폴더** 영역 (현재 영역 박지 X 박힌 영역) |
+| `supabase/functions/create-checkout-session/` | ⚠️ **빈 폴더** 영역 (현재 영역 박지 X 박힌 영역) |
+| `supabase/functions/verify-iap-receipt/index.ts:475` | ✅ **유일 영역 활성 영역 — Production 영역 IAP 영역만 박음** |
+| `src/pages/Pricing.tsx` | ⚠️ 단순 영역 navigate 영역 박음 — 결제 영역 호출 영역 X 영역 |
+| `src/lib/paddle.ts:70 openCheckout` | ⚠️ 정의 영역만 박음 — 호출자 영역 X 영역 |
 
 #### 4. 거치는 영역
 
-##### 4.1 Pricing 페이지 영역 → 결제 영역 시작
+##### 4.1 Pricing 페이지 영역
 - 파일: `src/pages/Pricing.tsx`
-- 박는 작업: `/api/create-checkout-session` 영역 박음 → Edge Function 영역 박은 영역 Stripe checkout 영역 박음
+- 박는 작업: **현재 영역 단순 영역 페이지 영역 박음** — 결제 영역 호출 영역 박지 X 박힌 영역 박음.
+- `/api/create-checkout-session` 영역 호출 영역 X 영역 (Edge Function 영역 빈 영역).
+- **Paddle Checkout 영역 박을 영역 = 출시 박을 영역 (Phase 결제 영역)**.
 
-##### 4.2 결제 영역 webhook 영역 박힘
+##### 4.2 IAP webhook 영역 — 유일 영역 활성 영역
+- 파일: `supabase/functions/verify-iap-receipt/index.ts:475`
+- 박는 작업: IAP receipt 영역 검증 영역 → `apply_payment_topup()` RPC 호출
+- 박는 테이블: `payment_events` INSERT · `profiles.scan_quota` UPDATE
+
+##### 4.3 Paddle webhook 영역 — production 영역 박지 X 박힘 영역
 - 파일: `supabase/functions/paddle-webhook/index.ts:139`
 - 박는 작업: 시그니처 영역 검증 영역 → `subscriptions` INSERT/UPDATE
-- 박는 테이블: `subscriptions` (⚠️ 마이그 영역 없음)
+- 박는 테이블: `subscriptions` (✅ Phase 3 영역 박은 영역 마이그 영역 박은 영역 박음)
 
-##### 4.3 `apply_payment_topup()` 영역
+##### 4.4 `apply_payment_topup()` 영역
 - 파일: `supabase/migrations/20260408003000_add_payment_events.sql`
 - 박는 작업: idempotent INSERT + scan_quota 영역 갱신 영역
 - 박는 테이블: `payment_events` INSERT · `profiles.scan_quota` UPDATE
@@ -1129,9 +1155,10 @@ SELECT * FROM public.admin_actions
 사용자 → SignUp/SignIn → signInWithOtp → 이메일 영역 박힘 → 클릭 → email_confirmed_at 영역 자동 영역 박힘
 ```
 
-#### 3. 진입점
-- `src/pages/ResetPasswordPage.tsx` (현재 영역 박힘 영역 X — Magic Link 영역 박음 영역 박힘)
-- `src/components/AuthModal.tsx:269` — OTP 재전송 영역
+#### 3. 진입점 (정정 영역 — Phase 3 Step 4)
+- `src/pages/ResetPasswordPage.tsx` (현재 영역 박지 X 박힘 영역 — Magic Link 영역 박음 영역 박힘)
+- `src/components/AuthModal.tsx:269` = **`handleFreshStart` 박는 영역** (재가입 영역 박는 영역, OTP 재전송 X)
+- `src/components/AuthModal.tsx:289-312` = **진짜 OTP 재전송 영역** (handleResend 영역 박음 — line 293·302·312 영역 영역 `signInWithOtp` 박음)
 
 #### 4. 거치는 영역
 - `signInWithOtp({ email, options: { shouldCreateUser: false } })` 영역 박음
