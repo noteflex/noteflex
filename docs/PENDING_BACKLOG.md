@@ -1,9 +1,86 @@
 # Noteflex 펜딩 백로그
 
-> **출시 마감**: 🎯 **2026-05-31** (확정 — 약 33일)
+> **출시 마감**: 🎯 ~~**2026-05-31**~~ → **2026-06-14** (Phase 1·2·3 완료 박은 영역 박은 영역 박음 — 안전 박은 영역)
 > **목적**: 머릿속 + 채팅 + 첨부 기획서 + 코드 분석 + 설계-코드 갭에 흩어진 모든 미구현·미결정 항목을 한 곳에 모아 영구 보존.
-> **작성일**: 2026-04-27 (초안) → 2026-04-28 (자동 갱신 시스템 도입)
+> **작성일**: 2026-04-27 (초안) → 2026-04-28 (자동 갱신 시스템 도입) → 2026-05-17 (Phase 3 완료 박음 갱신)
 > **출처**: 사용자 24항목 + 첨부 기획서 5개 + 설계 PDF + Claude Code 코드 분석 + 사용자 검증 버그 + Green Billion 명세서
+
+---
+
+## 2026-05-17 DB 전수 조사 + Phase 3 완료 박은 영역
+
+### 출시 박을 영역 — Phase 3 영역 ✅ 모두 완료
+
+- [x] **Phase 3 Step 1** 마이그 박음 (커밋 `30ef37d`, `7db343c`, `e2e596a`)
+- [x] **Phase 3 Step 2-A** `device_change_events` UPDATE 정책 (silent fail 해소)
+- [x] **Phase 3 Step 2-B** `record_sublevel_attempt` 6개 인자 DROP
+- [x] **Phase 3 Step 3** 중복 정의 함수 검증 (모두 안전 박힘)
+- [x] **Phase 3 Step 4** 문서 19건 정정 (커밋 `acc8349`)
+- [x] **Production 박지 X 박힌 영역 박음** (`payment_events`·`user_scores`·`practice_logs`·`consume_scan_quota`·`topup_scan_quota`·`apply_payment_topup`)
+- [x] **`forpaddle@noteflex.app` reset** (대시보드 분기 로직 검증 박을 영역)
+
+### 출시 박을 영역 — 박지 X 박힌 영역
+
+- [ ] **결제 시스템** — Paddle Checkout 박음 (~2~3일, 🔴 출시 차단)
+  - `Pricing.tsx`에 `openCheckout` 호출 박음
+  - `/checkout/success` 페이지 박음
+  - 빈 폴더 정리 (`payment-webhook`·`create-checkout-session`)
+  - Paddle Sandbox 영역 테스트 박음
+  - Paddle 심사 신청
+- [ ] **Phase 4** — Sentry + `app_logs` + `logger` + 토스트 (~1~2일, 🔴 로그 X)
+  - Sentry SDK 박음
+  - `app_logs` 테이블 박음
+  - `logger` 유틸 박음 (silent fail 영역에 박음)
+  - 게임·결제·인증 영역 로그 박음
+- [ ] **Phase 5** — Admin `/logs` 페이지 (~1일, 🟡)
+  - 로그 조회 UI
+  - 필터·실시간 갱신
+  - resolved 처리
+- [ ] **출시 영역 영역** (~2~3일, 🟢)
+  - About 페이지
+  - Contact 페이지
+  - FAQ 페이지
+  - OG 이미지
+  - PWA manifest
+  - AdSense 심사 신청
+
+### Cursor 검증 박지 X 박힌 영역 (사용량 영역으로 중단)
+
+- [ ] Cursor 검증 Section C5 박은 영역에서 끊김 (GRANT anon 3 vs 2 확인 박은 영역)
+- [ ] Cursor 검증 Section C6~C11·D·E·F·교차 검증 박지 X 박힘
+- [ ] 추가 발견 영역 확인 박지 X
+→ 박을 영역: 다음 세션에서 Cursor 검증 완료 박음
+
+### 대시보드 분기 로직 검증 박을 영역 (forpaddle reset 박은 후)
+
+- [ ] reviewer 계정 영역 신규 상태 영역에서 대시보드 박은 영역 확인
+- [ ] 상태 3 (신규 사용자) 영역 박는 영역 정확한지
+- [ ] 게임 1회 박은 후 상태 1 (오늘 활동) 박힌 영역 박는지
+- [ ] 다음 날 박은 후 상태 2 (오늘 X) 박힌 영역 박는지
+
+### 출시 후 영역 (🟢)
+
+- [ ] `ai_reports` + `marketing_metrics_daily` 마이그 박음 (SSoT)
+- [ ] 박지 X 박힌 함수 9개 마이그 박음 (`finalize_weekly_leagues` 등)
+- [ ] `is_reviewer()` dead 함수 DROP
+- [ ] `get_mastery_score()` dead 함수 DROP
+- [ ] `record_game_session()` RPC + `handle_session_complete()` 트리거 중복 박은 영역 정리
+- [ ] `user_note_logs` 영역 처리 결정 (계속 사용 또는 `user_sessions.note_attempts` 통합)
+- [ ] `check_nickname_available`에 `is_deleted = false` 추가
+- [ ] 02 doc 라인 번호 전수 정정 (45개 정책 ±1~30행 오차)
+- [ ] `hard_delete_expired_accounts` cron 박음
+- [ ] Supabase Data API GRANT 마이그 추가 (10/30 적용 박을 영역)
+- [ ] `react-helmet-async` 동적 SEO
+- [ ] Termly Pro 해지
+- [ ] EU GDPR 16세 정합
+- [ ] Family Plan
+- [ ] e2e 테스트 (Playwright)
+- [ ] dead code 정리 (`leagues`·`league_members` 영역 UI 박을 영역인지)
+
+### 출시 일정 영역 갱신
+
+- 박힌 영역 = 5/17 → 출시 박을 영역 ~~5/31~~ → **6/14 영역** (안전 박은 영역)
+- 박을 영역 영역: 결제 ~2~3일 + Phase 4 ~1~2일 + Phase 5 ~1일 + 추가 ~2~3일 + 심사 ~1일 + 검증 ~1일 = **~10일**
 
 ---
 

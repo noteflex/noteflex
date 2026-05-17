@@ -1492,3 +1492,395 @@ if (tier === "free") {
 | 세션 로그 박음 | ✅ |
 | PENDING_BACKLOG.md 갱신 | ✅ |
 | DESIGN_VS_CODE_GAP.md 갱신 | ✅ |
+
+---
+
+# 2026-05-17 — Noteflex DB 전수 조사 + 시스템 정합성 복구 (Phase 1·2·3)
+
+## 배경
+
+- 출시 마감 2026-05-31 임박
+- 이전 sprint에서 회귀 4번 박힘 (단순 INSERT 영역도 박지 X 박힘)
+- 마이그 ≠ 실제 DB 의심
+- 사용자 결정: 출시 박지 말고 DB 전수 조사 박은 후 안전 박을 영역에서 출시 박음
+
+---
+
+## Phase 1 — DB 전수 조사 + 문서화
+
+### Phase 1 도구 분담
+
+- Claude (채팅) — 조율·분석·결정
+- Claude Code (Opus 4.7) — 문서 작성
+- Cursor Pro (Opus 4.7) — 작성된 문서 검증
+- 사용자 (Supabase Dashboard) — Production schema 추출
+
+### Session 1 — README + 01_SCHEMA (커밋 `0613ba5`)
+
+박은 파일:
+- `all_sch_doc/README.md` (187줄) — 진입점·ASCII 다이어그램·27 마이그 타임라인
+- `all_sch_doc/01_SCHEMA.md` (1,272줄) — 16개 테이블 × 13항목
+
+박은 테이블 16개:
+- **USER**: profiles
+- **GAME**: user_sessions, user_sublevel_progress, user_note_logs
+- **STATS**: user_stats_daily, note_mastery
+- **LIMIT**: daily_sessions
+- **PAYMENT**: payment_events
+- **LEAGUE**: leagues, league_members
+- **ADMIN**: admin_actions, daily_batch_runs
+- **MISC**: user_custom_scores, user_scores, practice_logs, device_change_events
+
+발견된 영역:
+- ⚠️ 7개 테이블 = 마이그 X (Dashboard 직접 박음)
+
+### Session 1 Cursor 검증 — 불일치 9건
+
+1. `user_streaks` 테이블 누락 (17번째 테이블)
+2. `check_nickname_available` RPC 마이그 X
+3. profiles 7개 컬럼 출처 잘못 ("20260512" 박혔지만 ALTER X)
+4. note_mastery 6개 컬럼 출처 잘못 ("20260424" 박혔지만 ALTER X)
+5. `apply_payment_topup` 시그니처 인자 순서 잘못
+6. admin_actions INSERT 위치 잘못 ("RPC 추정" → 실제 Edge Function)
+7. profiles INSERT/UPDATE 표 누락 (record_game_session·admin-action)
+8. `hard_delete_account` RPC doc §1.10 누락
+9. Dashboard 직접 박힌 7개 테이블 = 재현 마이그 박을 영역
+
+### Session 2 — 02_RLS_POLICIES + 03_SQL_FUNCTIONS (커밋 `7b3bf58`)
+
+박은 파일:
+- `all_sch_doc/02_RLS_POLICIES.md` (584줄) — 45개 정책 + 헬퍼 2개
+- `all_sch_doc/03_SQL_FUNCTIONS.md` (563줄) — 22개 함수 + 4개 트리거
+
+박은 영역:
+- 헬퍼 함수: `is_admin()`, `is_reviewer()`
+- 21개 함수 + 1개 누락 (`check_nickname_available`)
+- 4개 트리거
+
+### Session 2 Cursor 검증 — 불일치 15건
+
+1. `02_RLS_POLICIES.md` 라인 번호 ±1~30행 오차 (45개 정책)
+2. practice_logs INSERT WITH CHECK EXISTS 절 누락
+3. device_change_events UPDATE 정책 X → silent fail 확정
+4. `apply_payment_topup` 시그니처 인자 순서 잘못
+5. `apply_payment_topup` 호출 위치 잘못 ("Production 미박힘 추정" → 실제 `verify-iap-receipt:475`)
+6. SECURITY DEFINER 카운트 잘못 (17 → 실제 19)
+7. SECURITY INVOKER 카운트 잘못 (4 → 실제 2)
+8. GRANT anon 카운트 잘못 (3 → 실제 2)
+9. `is_reviewer()` = dead 함수 (호출 0건)
+10. 트리거 4개 라인 번호 오차
+11. `record_sublevel_attempt` 영역 #6 호출 위치 인자 누락
+12. 중복 정의 함수 6개 — Production 어느 버전 박힌지 미확인
+13. idempotent DROP+CREATE 패턴 누락 (daily_sessions·user_sessions·profiles·payment_events)
+14. 마이그 X 박힌 8개 테이블 RLS 미확인 (subscriptions 신규 발견)
+15. `hard_delete_account` Production 버전 미확인 (20260514 적용 박혔으면 auth.users 잔존 위험)
+
+### Session 3 — 04_DATA_FLOWS + 05_KNOWN_ISSUES (커밋 `c85b7b5`)
+
+박은 파일:
+- `all_sch_doc/04_DATA_FLOWS.md` (1,192줄) — 12개 기능 × 10항목 + ASCII 다이어그램
+- `all_sch_doc/05_KNOWN_ISSUES.md` (391줄) — 8개 카테고리 + Phase 3 우선순위
+
+박은 12개 기능:
+- §1.1 게임 진행·종료 (최핵심)
+- §1.2 회원가입 (Magic Link + OAuth)
+- §1.3 로그인
+- §1.4 계정 삭제·복구
+- §1.5 프로필
+- §1.6 일일 한도
+- §1.7 결제
+- §1.8 구독·Premium
+- §1.9 레벨 잠금 해제
+- §1.10 일괄 분석
+- §1.11 사용자 환경 보정
+- §1.12 관리자 작업
+
+### Session 3 Cursor 검증 — 핵심 발견 6건
+
+1. `useNoteLogger` 활성 사용 (Phase 1 deprecated 박은 영역 = 잘못)
+   - `NoteGame.tsx:1067, 1132, 1196` → `userNoteLogs.ts:117` INSERT
+   - `WeakSlowNotesCards`·`AICoachingDetail`에서 SELECT 박는 영역
+2. `supabase/functions/payment-webhook/` = 빈 폴더 (`index.ts` X)
+3. `supabase/functions/create-checkout-session/` = 빈 폴더 (`index.ts` X)
+4. `Pricing.tsx` = 단순 navigate (결제 호출 X)
+5. note_mastery INSERT 진입점 어디에도 없음 — 데이터 0건 가능 우려
+6. `AuthModal.tsx:269` = `handleFreshStart` (재가입), 실제 OTP 재전송은 `:289+` `handleResend`
+
+### Phase 1 누적 — Phase 3 fix 영역 25건
+
+- 🔴 위험 7건
+- 🟡 중간 7건
+- 🟢 낮음 11건
+
+---
+
+## Phase 2 — 검증 쿼리 박음 (Production Dashboard 직접 확인)
+
+### 통합 진단 SQL 박은 결과 (사용자가 Supabase SQL Editor 박은 영역)
+
+#### 1. note_mastery INSERT 진입점 확인
+- row_count: **73건 박힘** (Cursor 우려 = 해소)
+- triggers: NONE (information_schema 박은 영역)
+- 추가 조사 박은 후 발견: `on_session_complete` 트리거 박힘 (`pg_trigger` 영역)
+
+#### 2. hard_delete_account auth.users 삭제 확인
+- ✅ `auth.users` 삭제 박혀있음
+- Production 본문 박은 영역에서 `DELETE FROM auth.users WHERE id = v_user_id` 확인
+- Cursor 위험 영역 #4 (계정 영구 잠금) = 해소
+
+#### 3. note_mastery INSERT 진입점 추적
+- `handle_session_complete()` 함수가 INSERT 박는 영역 발견
+- 함수 본문 = user_stats_daily UPSERT + profiles UPDATE + note_mastery UPSERT (note_attempts JSONB 순회)
+- mastery_level 5단계 재계산 박는 영역
+
+#### 4. on_session_complete 트리거 확인
+- `AFTER INSERT ON user_sessions FOR EACH ROW` 박힌 영역
+- `tgenabled='O'` (활성)
+- `trg_update_profile_after_session` 트리거도 박혀있음 (마이그 20260516)
+
+#### 5. record_game_session() RPC + 트리거 중복 박힘 영역 확인
+- RPC가 박는 영역: user_sessions INSERT + user_stats_daily UPSERT + profiles UPDATE
+- 트리거가 박는 영역: user_stats_daily UPSERT + profiles UPDATE (XP) + note_mastery UPSERT
+- 검증 결과 = sessions_count 일치 (2배 X 박힘, 어떤 영역에서 박지 X 박는 영역 미확인)
+- `profiles.total_xp` = sessions의 `sum(xp_earned)` 정확히 일치 → 트리거만 박는 영역 추정
+
+#### 6. 박지 X 박힌 영역 발견 (신규)
+- `league_groups` 테이블 (`league_members.group_id` 외래키)
+- `get_my_league_group_id()` 함수 (`league_members` RLS 정책)
+- user_streaks 컬럼 3개 추가 (`streak_freezes_available`·`freezes_used_this_month`·`freezes_reset_month`)
+- `ai_reports` 테이블 (AI 보고서, row 0건)
+- `marketing_metrics_daily` 테이블 (관리자 대시보드, row 0건)
+
+#### 7. 중복 정의 함수 검증
+- 모든 함수 Production 영역에서 1개씩만 박혀있음
+- `record_sublevel_attempt` = 2개 (6개 인자 + 7개 인자)
+  - 6개 인자 = dead (코드 영역 7개 인자만 호출)
+  - 7개 인자 = 활성
+
+#### 8. 박지 X 박힌 테이블 3개 (Production 박지 X 박힘)
+- `payment_events`
+- `user_scores`
+- `practice_logs`
+- 마이그 박혀있는데 Production 영역에 박지 X 박힌 영역
+
+#### 9. 박지 X 박힌 함수 2개 (Production 박지 X 박힘)
+- `consume_scan_quota` (`analyze-sheet-music`에서 호출 박는 영역)
+- `topup_scan_quota` (`apply_payment_topup` 내부에서 호출 박는 영역)
+- 마이그 박혀있는데 Production 영역에 박지 X 박힌 영역
+
+#### 10. 박지 X 박힌 함수 9개 추가 발견
+- `finalize_weekly_leagues`
+- `admin_trigger_batch_analysis`
+- `calculate_is_minor`
+- `handle_new_user` (`handle_new_user_profile`과 다른 영역)
+- `handle_profile_updated_at`
+- `handle_streak_update`
+- `handle_xp_update`
+- `sync_minor_status`
+- `sync_premium_status`
+→ Production 박혀있지만 마이그 X (SSoT 깨진 영역)
+
+---
+
+## Phase 3 — 시스템 정합성 복구
+
+### Step 1-1 — Production schema 추출 SQL 박음 (커밋 `30ef37d`)
+
+박은 파일:
+- `scripts/phase3/01_extract_production_schema.sql` (13개 섹션 A~M)
+- `supabase/migrations/20260518_phase3_consolidation.sql` (골격, TODO 영역)
+- `supabase/migrations/20260518_device_change_events_update_policy.sql` (완성)
+
+### Step 1-2 — SSoT 마이그 작성 (커밋 `7db343c`)
+
+박은 영역 (561줄):
+- 10개 테이블 `CREATE TABLE IF NOT EXISTS`:
+  - `user_sessions`, `user_stats_daily`, `note_mastery`, `leagues`, `league_groups`, `league_members`, `admin_actions`, `daily_batch_runs`, `user_streaks`, `subscriptions`
+- 19개 인덱스 (부분 인덱스 4개 포함)
+- 20개 RLS 정책 (admin SELECT + own SELECT/INSERT)
+- 3개 함수: `handle_session_complete`, `check_nickname_available`, `get_my_league_group_id` (TODO 임시 본문)
+- 1개 트리거: `on_session_complete`
+- 1개 DROP: `record_sublevel_attempt` 6개 인자
+- 44개 DROP 영역 (중복 정책 정리)
+
+원칙: idempotent (`IF NOT EXISTS`, `OR REPLACE`, `DROP→CREATE` 패턴)
+
+### Step 1-3 — 함수 본문 정정 (커밋 `e2e596a`)
+
+사용자 짚어주신 영역: 함수 3개 본문이 임시 placeholder 박혔음. Production 정확본으로 정정.
+
+박은 영역 (655줄, +94):
+- `handle_session_complete`: Production 정확본 박음 (~80줄, user_stats_daily UPSERT + profiles UPDATE + note_mastery UPSERT)
+- `check_nickname_available`: Production 정확본 박음 (형식 검증 + 중복 검사)
+- `get_my_league_group_id`: Production 정확본 박음 (`LANGUAGE sql STABLE`, 최근 가입 group_id)
+- `GRANT EXECUTE` 박음 (anon·authenticated 권한)
+
+검증: TODO·placeholder·임시 박힌 영역 = 0개
+
+### Step 2-A — device_change_events UPDATE 정책 (Production 박음)
+
+박은 SQL (Supabase SQL Editor):
+
+```sql
+DROP POLICY IF EXISTS device_change_events_update_own ON public.device_change_events;
+CREATE POLICY device_change_events_update_own
+  ON public.device_change_events
+  FOR UPDATE
+  USING (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
+```
+
+박은 후 확인: device_change_events 정책 4개 박혀있음 (UPDATE 정책 박힘 ✅)
+
+→ silent fail 해소 (`userEnvironmentOffset.ts:135` 정상 동작 박을 영역)
+
+### Step 2-B — record_sublevel_attempt 6개 인자 DROP (Production 박음)
+
+박은 SQL:
+
+```sql
+DROP FUNCTION IF EXISTS public.record_sublevel_attempt(
+  integer, integer, integer, integer, integer, text
+);
+```
+
+박은 후 확인: 7개 인자 버전 1개만 박혀있음 ✅
+
+### Step 3 — 중복 정의 함수 확인 (Production 박은 영역 검증)
+
+박은 영역 = 모든 함수 Production에서 1개씩만 박혀있음:
+- `check_email_exists`: 1
+- `get_mastery_score`: 1 (호출 X = dead)
+- `handle_new_user_profile`: 1
+- `hard_delete_account`: 1 (`auth.users` 삭제 박혀있음 ✅)
+- `request_account_deletion`: 1
+
+→ Cursor 우려 영역 (어느 버전 박힌지 미확인) = 모두 해소
+
+### Step 4 — 6개 문서 19건 정정 (커밋 `acc8349`)
+
+#### A. 01_SCHEMA.md 7건 (1272 → 1428줄)
+- A1. `apply_payment_topup` 시그니처 정정 (`p_checkout_session_id` 2번째)
+- A2. profiles 7개 컬럼 출처 정정 (Dashboard 직접)
+- A3. note_mastery 6개 컬럼 출처 정정 (Dashboard 직접)
+- A4. profiles §1.8 INSERT/UPDATE 표 보강 (`record_game_session` + `admin-action` + `handle_session_complete`)
+- A5. `hard_delete_account` RPC §1.10 추가
+- A6. admin_actions INSERT 위치 정정 (Edge Function)
+- A7. 신규 §17·18·19 추가 (user_streaks·subscriptions·league_groups)
+
+#### B. 02_RLS_POLICIES.md 5건 (584 → 624줄)
+- B1. practice_logs INSERT WITH CHECK EXISTS 절 보강
+- B2. device_change_events UPDATE 정책 추가 (Phase 3 해소)
+- B3. idempotent DROP+CREATE 패턴 추가 (5개 마이그)
+- B4. 통계 정정 (45 → 65 정책, 11 → 21 `is_admin` 정책)
+- B5. 신규 §2.17·2.18·2.19 추가
+
+#### C. 03_SQL_FUNCTIONS.md 11건 (563 → 620줄)
+- C1. `apply_payment_topup` 시그니처 정정
+- C2. `apply_payment_topup` 호출 위치 정정 (`verify-iap-receipt:475`)
+- C3. `is_reviewer()` dead 함수 표기
+- C4. `check_nickname_available` 추가
+- C5. 통계 정정 (DEFINER 21 → 24, 트리거 4 → 5)
+- C6. 트리거 4개 라인 번호 정정
+- C7. `record_sublevel_attempt` 정정 (6개 인자 DROP 명시)
+- C8. `is_reviewer()` Phase 3 영역 추가 정정
+- C9. `handle_session_complete` 추가
+- C10. `on_session_complete` 트리거 추가
+- C11. `get_my_league_group_id` 추가
+
+#### D. 04_DATA_FLOWS.md 3건 (1192 → 1219줄)
+- D1. §1.1 `useNoteLogger` 추가 (`NoteGame.tsx:1067, 1132, 1196`)
+- D2. §1.7 결제 영역 정정 (빈 폴더 명시·`Pricing` 호출 X)
+- D3. §1.14 `AuthModal.tsx:269` 위치 정정
+
+#### E. 05_KNOWN_ISSUES.md 4건 (391 → 411줄)
+- E1. §1.8 #1 `user_note_logs` 활성 사용 정정 (deprecated X)
+- E2. §1.3 device_change_events UPDATE Phase 3 해소 ✅
+- E3. §2 우선순위 갱신 (🔴 7건 모두 해소)
+- E4·E5. Session 2 누락 6건 추가 + Phase 3 완료 표기 ✅
+
+#### F. README.md 1건 (187 → 225줄)
+- F1. Phase 3 완료 표기
+
+Cursor 검증 결과 (`acc8349`): 15/17 ✅ + 2/17 ⚠️ 부분 정정 (사용량 ↓ 박은 영역에서 중단)
+
+### Step 5 — Production 추가 작업 (Cursor 영역에서 박지 X 박힌 영역)
+
+박은 영역 = Production 영역에 마이그 X 박힌 영역 발견됨. Supabase SQL Editor 박은 영역으로 박음.
+
+#### 박지 X 박힌 테이블 3개 박음
+- `payment_events` 박음 (CREATE TABLE + RLS + 정책)
+- `user_scores` 박음 (CREATE TABLE + 트리거 + RLS + 정책)
+- `practice_logs` 박음 (CREATE TABLE + RLS + 정책 + WITH CHECK EXISTS 절)
+
+#### 박지 X 박힌 함수 박음
+- `apply_payment_topup` 박음
+- `consume_scan_quota` 박음
+- `topup_scan_quota` 박음
+
+#### Supabase Data API GRANT 정책 변경 대응
+- 공지: 2026/10/30부터 기존 프로젝트 영역 새 GRANT 정책 적용
+- 박힌 영역: 모든 함수·테이블 GRANT 박혀있음 확인 (Supabase 자동 박은 영역)
+- 박을 영역: 신규 환경 박을 때 마이그에 GRANT 추가 박을 영역 (출시 후)
+
+#### 박지 X 박힌 함수 9개 발견 (출시 후 영역)
+- `finalize_weekly_leagues`
+- `admin_trigger_batch_analysis`
+- `calculate_is_minor`
+- `handle_new_user`
+- `handle_profile_updated_at`
+- `handle_streak_update`
+- `handle_xp_update`
+- `sync_minor_status`
+- `sync_premium_status`
+
+### Step 6 — forpaddle@noteflex.app 게임 데이터 reset
+
+박은 이유: 대시보드 KPI 영역 "No data today" 박혀있는데 Weakest Notes는 박혀있어서 분기 로직 검증 박을 영역
+
+박은 SQL (Supabase SQL Editor):
+- `DELETE FROM` user_sessions·user_stats_daily·note_mastery·user_sublevel_progress·user_note_logs·daily_sessions·user_streaks·league_members·ai_reports
+- profiles UPDATE: `total_xp=0`·`current_streak=0`·`longest_streak=0`·`last_practice_date=NULL`·`current_league='Novice'`
+
+박은 후 확인:
+- 계정 유지 ✅ (role: reviewer)
+- 모든 데이터 0 rows ✅
+- profiles reset 완료 ✅
+
+박은 이유 추가: 대시보드 분기 로직 영역 신규 사용자 영역 박은 영역 검증 박을 영역
+
+---
+
+## Phase 3 통계
+
+| 항목 | Phase 1 | Phase 3 |
+|---|---|---|
+| 박힌 테이블 | 16개 | 21개 (+5: user_streaks·subscriptions·league_groups·ai_reports·marketing_metrics_daily) |
+| 박힌 RLS 정책 | 45개 | 65개 (+20) |
+| 박힌 함수 | 21개 | 24개 + 9개 추가 (총 33개) |
+| 박힌 트리거 | 4개 | 5개 (+`on_session_complete`) |
+| 마이그 영역 X 박힌 테이블 | 8개 | 2개 (`ai_reports`·`marketing_metrics_daily` 출시 후 박을 영역) |
+| silent fail 해소 | — | 2건 (device_change_events·note_mastery) |
+| 위험 영역 4개 검증 | — | 모두 해소 |
+
+---
+
+## 커밋 영역
+
+- `30ef37d` — Phase 3 Step 1 골격
+- `7db343c` — Phase 3 Step 1-2 마이그 완성
+- `e2e596a` — Phase 3 Step 1-3 함수 본문 정정
+- `acc8349` — Phase 3 Step 4 문서 19건 정정
+
+---
+
+## 박은 영역 검증
+
+- ✅ Phase 1 전수 조사 + Cursor 검증
+- ✅ Phase 2 Production 직접 확인
+- ✅ Phase 3 마이그 + Production 정합
+- ✅ Phase 3 문서 정정
+- ✅ 위험 영역 4개 모두 해소
+- ⚠️ `ai_reports`·`marketing_metrics_daily` 마이그 박지 X (출시 후 박을 영역)
+- ⚠️ 박지 X 박힌 함수 9개 마이그 박지 X (출시 후 박을 영역)
+- ⚠️ Cursor 검증 `acc8349` = 17건 중 15건 ✅ + 2건 ⚠️ 부분 (사용량 ↓ 중단)
