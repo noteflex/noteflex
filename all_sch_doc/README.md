@@ -143,7 +143,7 @@
 | 2026-05-15 | `20260515_reviewer_role` | `profiles.role` CHECK 추가 + `is_reviewer()` + `forpaddle@noteflex.app` 계정 영역 박음 |
 | 2026-05-16 | `20260516_reviewer_sessions_rls` | `user_sessions` RLS + `trg_update_profile_after_session` trigger 영역 박음 |
 | 2026-05-17 | `20260517_record_game_session_rpc` | `record_game_session()` SECURITY DEFINER RPC 영역 박음 (3개 테이블 원자적 영역 박음) |
-| 2026-05-18 | `20260518_phase3_consolidation` | **Phase 3 Step 1** — Dashboard 직접 박힌 영역 9개 테이블 + 2개 함수 + 1개 트리거 영역 마이그 영역 재현 영역 골격 박음 (Step 1-1 결과 박힘 영역 박은 영역 완성 영역) |
+| 2026-05-18 | `20260518_phase3_consolidation` | **Phase 3 Step 1-2** — Dashboard 직접 박힌 영역 10개 테이블 (`user_sessions`·`user_stats_daily`·`note_mastery`·`leagues`·`league_groups` 신규·`league_members`·`admin_actions`·`daily_batch_runs`·`user_streaks` 컬럼 3개 추가·`subscriptions`) + 3개 함수 (`handle_session_complete`·`check_nickname_available`·`get_my_league_group_id` 신규) + 1개 트리거 (`on_session_complete`) + 1개 DROP (`record_sublevel_attempt` 6-arg dead) 영역 마이그 영역 재현 박음. ⚠️ 함수 본문 영역 임시 — Step 1-3 영역 박음 영역 박음 정확 본문 영역 박음 |
 | 2026-05-18 | `20260518_device_change_events_update_policy` | **Phase 3 Step 1** — UPDATE 정책 영역 누락 영역 박음 (`userEnvironmentOffset.ts:135` silent fail 영역 해결 영역) |
 
 ### 3.1 마이그레이션 영역 외 박힌 영역 (Supabase Dashboard 직접 박음)
@@ -177,11 +177,14 @@
 ### Phase 3 — 누락·silent fail 영역 fix 박음 🟡 진행 중
 - ✅ **Step 1 (2026-05-18)** — SSoT 마이그 재현 골격 박음
   - `scripts/phase3/01_extract_production_schema.sql` — Production schema 추출 영역 SQL
-  - `supabase/migrations/20260518_phase3_consolidation.sql` — 9개 테이블 + 2개 함수 + 1개 트리거 영역 골격 (TODO 영역 박힘 영역 — Step 1-1 결과 박은 영역 박음 완성 영역)
   - `supabase/migrations/20260518_device_change_events_update_policy.sql` — UPDATE 정책 영역 누락 영역 박음 (silent fail 영역 해결 영역)
-- ⏸ Step 2 — Production schema 추출 영역 결과 박은 영역 박음 영역 마이그 영역 완성 영역
-- ⏸ Step 3 — `user_sessions` INSERT RLS 우회 (`record_game_session()` RPC 영역 적용 영역 박힘 영역 — 2026-05-17 박음)
-- ⏸ Step 4 — 중복 정의 함수 6개 영역 production 영역 영역 영역 검증 영역 박음
+- ✅ **Step 1-2 (2026-05-18)** — Production schema 영역 박은 영역 정확 schema 영역 박음
+  - `supabase/migrations/20260518_phase3_consolidation.sql` — 10개 테이블 + 3개 함수 + 1개 트리거 + 1개 DROP 영역 박은 영역 박음
+  - 신규 발견 영역: `league_groups` 테이블 + `get_my_league_group_id` 함수 + `user_streaks` 컬럼 3개
+  - 중복 정책 영역 영역 정리 영역 박음 (DROP IF EXISTS 영역 통일 명명 영역)
+- ⏸ **Step 1-3** — 함수 본문 영역 (handle_session_complete·check_nickname_available·get_my_league_group_id) 영역 Production 영역 박은 영역 박음 영역 정확 본문 영역 박음
+- ⏸ **Step 2** — staging 영역 박은 영역 박음 검증 영역 박음 → production apply 영역
+- ⏸ **Step 3** — 중복 정의 함수 6개 영역 production 영역 영역 영역 검증 영역 박음
 
 ### Phase 4 — 로그·Admin
 - Sentry 박음

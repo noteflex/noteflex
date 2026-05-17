@@ -240,7 +240,7 @@ public.apply_payment_topup(
 
 | 우선순위 | # | 영역 | 작업 영역 | 상태 |
 |---|---|---|---|---|
-| 🔴 1 | 1.1 | 마이그 정의 영역 없는 8개 테이블 + 1개 RPC + `handle_session_complete` + `on_session_complete` | Dashboard schema 영역 추출 + 재현 마이그 영역 박음 | 🟡 **Step 1 골격 박힘 영역 (2026-05-18) — Step 1-1 결과 박은 영역 박음 완성 영역** |
+| 🔴 1 | 1.1 | 마이그 정의 영역 없는 10개 테이블 + 1개 RPC + `handle_session_complete` + `on_session_complete` + `get_my_league_group_id` 신규 영역 | Dashboard schema 영역 추출 + 재현 마이그 영역 박음 | ✅ **Step 1-2 완료 (2026-05-18) — 함수 본문 영역 Step 1-3 영역 박음** (`20260518_phase3_consolidation.sql`) |
 | 🔴 2 | 1.3 | 누락 RLS 정책 영역 (`device_change_events.UPDATE`) | UPDATE 정책 영역 박음 | ✅ **2026-05-18 박힘 영역** (`20260518_device_change_events_update_policy.sql`) |
 | 🔴 2b | 1.3 | 마이그 없는 영역 8개 테이블 영역 RLS 정책 | §1.1 영역 합침 영역 | 🟡 §1.1 영역 박힘 영역 박음 영역 |
 | 🟡 3 | 1.2 | 중복 정의 함수 6개 (특히 `hard_delete_account`) | Production 영역 영역 확인 + 정리 영역 박음 | ⏸ **Phase 3 Step 4** |
