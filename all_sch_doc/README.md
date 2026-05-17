@@ -182,7 +182,10 @@
   - `supabase/migrations/20260518_phase3_consolidation.sql` — 10개 테이블 + 3개 함수 + 1개 트리거 + 1개 DROP 영역 박은 영역 박음
   - 신규 발견 영역: `league_groups` 테이블 + `get_my_league_group_id` 함수 + `user_streaks` 컬럼 3개
   - 중복 정책 영역 영역 정리 영역 박음 (DROP IF EXISTS 영역 통일 명명 영역)
-- ⏸ **Step 1-3** — 함수 본문 영역 (handle_session_complete·check_nickname_available·get_my_league_group_id) 영역 Production 영역 박은 영역 박음 영역 정확 본문 영역 박음
+- ✅ **Step 1-3 (2026-05-18)** — 함수 본문 영역 (handle_session_complete·check_nickname_available·get_my_league_group_id) 영역 Production 영역 추출 영역 박은 영역 박음 정확 본문 영역 박음
+  - `handle_session_complete`: user_stats_daily UPSERT + profiles.total_xp/last_practice_date UPDATE + note_mastery UPSERT (mastery_level 5단계 재계산 영역 — 95/90/80/70/50% 박음)
+  - `check_nickname_available`: 형식 1차 검증 (3-20자 + 정규식 `^[a-z][a-z0-9_]{2,19}$`) + 중복 검사
+  - `get_my_league_group_id`: LANGUAGE sql STABLE — 가장 최근 joined_at 영역 group_id 영역 박음
 - ⏸ **Step 2** — staging 영역 박은 영역 박음 검증 영역 박음 → production apply 영역
 - ⏸ **Step 3** — 중복 정의 함수 6개 영역 production 영역 영역 영역 검증 영역 박음
 
