@@ -3,6 +3,7 @@ import Header from "@/components/Header";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLang } from "@/contexts/LanguageContext";
 import { getUserTier } from "@/lib/subscriptionTier";
+import { PaymentErrorBoundary } from "@/components/PaymentErrorBoundary";
 
 // ── 다국어 콘텐츠 (ja·zh = en fallback, Phase 3에서 정식 번역 예정) ──────
 const CONTENT = {
@@ -172,6 +173,7 @@ export default function Pricing() {
     tier === "pro" ? c.alreadyPremium : tier === "guest" ? c.signupFirst : c.upgradeYr;
 
   return (
+    <PaymentErrorBoundary>
     <div
       className="min-h-screen flex flex-col"
       style={{ background: "radial-gradient(circle at top, #ffffff 0%, #f8f5e4 100%)" }}
@@ -411,5 +413,6 @@ export default function Pricing() {
         </div>
       </div>
     </div>
+    </PaymentErrorBoundary>
   );
 }

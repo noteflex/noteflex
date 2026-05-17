@@ -27,6 +27,7 @@ import {
 } from "@/lib/levelSystem";
 import { GameOverDialog } from "@/components/GameOverDialog";
 import { SublevelPassedDialog } from "@/components/SublevelPassedDialog";
+import { GameErrorBoundary } from "@/components/GameErrorBoundary";
 
 type PlayScreen = "levelSelect" | "game";
 
@@ -319,7 +320,7 @@ export default function PlayPage() {
 
   // game screen — h-screen, no scroll
   return (
-    <>
+    <GameErrorBoundary>
       <AuthBar
         authLoading={authLoading}
         user={user}
@@ -375,6 +376,6 @@ export default function PlayPage() {
         open={interstitialOpen}
         onClose={handleInterstitialClose}
       />
-    </>
+    </GameErrorBoundary>
   );
 }
