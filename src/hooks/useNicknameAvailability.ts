@@ -4,6 +4,7 @@ import {
   validateNicknameFormat,
   nicknameErrorMessage,
 } from "@/lib/nicknameValidation";
+import { logger } from "@/lib/sentry";
 
 export type NicknameStatus =
   | { state: "idle" }
@@ -47,7 +48,12 @@ export function useNicknameAvailability(nickname: string, debounceMs = 500) {
           setStatus({ state: "taken", suggestions });
         }
       } catch (err) {
-        console.error("[nickname check]", err);
+        logger.error("닉네임 영역 확인 박지 X", err, {
+          description: "check_nickname_available RPC 실패",
+          cause: err instanceof Error ? err.message : String(err),
+          impact: "회원가입 영역 영역 닉네임 입력 박지 X 박힘",
+          action: "check_nickname_available RPC 박힌지 확인 (Phase 3 박은 영역)",
+        });
         setStatus({ state: "idle" });
       }
     }, debounceMs);

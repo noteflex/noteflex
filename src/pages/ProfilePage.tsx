@@ -22,6 +22,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { logger } from "@/lib/sentry";
 
 const LOCALE_OPTIONS: { value: Lang; key: "ko" | "en" }[] = [
   { value: "ko", key: "ko" },
@@ -99,7 +100,18 @@ export default function ProfilePage() {
     setLang(newLang);
     if (user) {
       // best-effort: 실패해도 UI는 정상 (localStorage 폴백 박힘).
-      void supabase.from("profiles").update({ locale: newLang }).eq("id", user.id);
+      void supabase.from("profiles").update({ locale: newLang }).eq("id", user.id)
+        .then(({ error }) => {
+          if (error) {
+            logger.error("언어 영역 변경 박지 X", error, {
+              description: "profiles.locale UPDATE 실패",
+              cause: error.message,
+              impact: "사용자 영역 언어 영역 박지 X (localStorage 폴백 박음)",
+              action: "ProfilePage.tsx:102 영역 확인",
+              metadata: { new_lang: newLang, user_id: user.id },
+            });
+          }
+        });
     }
   };
 
@@ -165,6 +177,17 @@ export default function ProfilePage() {
           });
           return;
         }
+        logger.error("프로필 영역 변경 박지 X", error, {
+          description: "profiles UPDATE 실패 (ProfilePage)",
+          cause: error.message,
+          impact: "사용자 영역 프로필 영역 박지 X",
+          action: "ProfilePage.tsx:156 영역 확인",
+          metadata: {
+            user_id: user.id,
+            updated_fields: Object.keys(updates),
+            error_code: (error as any).code,
+          },
+        });
         toast({ title: t.profile.saveFailed, description: error.message, variant: "destructive" });
         return;
       }

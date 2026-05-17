@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { logger } from "@/lib/sentry";
 
 export default function AuthCallback() {
   const navigate = useNavigate();
@@ -25,6 +26,13 @@ export default function AuthCallback() {
         const reason = searchParams.get("reason") || null;
         const { error: rpcError } = await supabase.rpc("request_account_deletion", { reason });
         if (rpcError) {
+          logger.error("계정 영역 탈퇴 박지 X", rpcError, {
+            description: "request_account_deletion RPC 실패",
+            cause: rpcError.message,
+            impact: "사용자 영역 탈퇴 박지 X",
+            action: "request_account_deletion RPC 박힌지 확인",
+            metadata: { reason },
+          });
           navigate("/?auth_error=deletion_failed", { replace: true });
           return;
         }
@@ -41,6 +49,12 @@ export default function AuthCallback() {
       if (action === "restore") {
         const { error: rpcError } = await supabase.rpc("restore_account");
         if (rpcError) {
+          logger.error("계정 영역 복구 박지 X", rpcError, {
+            description: "restore_account RPC 실패",
+            cause: rpcError.message,
+            impact: "사용자 영역 탈퇴 박은 영역에서 복구 박지 X",
+            action: "restore_account RPC 박힌지 확인 (30일 영역 내 영역 박은 영역)",
+          });
           navigate("/?auth_error=restore_failed", { replace: true });
           return;
         }
@@ -64,8 +78,14 @@ export default function AuthCallback() {
         try {
           const consent = JSON.parse(stored);
           await supabase.from("profiles").update(consent).eq("id", session.user.id);
-        } catch {
-          // 실패해도 인증 흐름 차단 안 함
+        } catch (err) {
+          // 의도된 silent — 인증 흐름 차단 박지 X
+          logger.warn("Consent UPDATE 박지 X", {
+            cause: err instanceof Error ? err.message : String(err),
+            description: "인증 콜백 영역에서 약관 동의 박지 X 박은 영역",
+            impact: "약관 동의 박지 X 박혀있을 가능성 (출시 후 사용자 영역 재동의 박을 영역)",
+            metadata: { user_id: session.user.id },
+          });
         }
         localStorage.removeItem("noteflex_consent");
       }

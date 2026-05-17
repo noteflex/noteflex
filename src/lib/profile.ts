@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { logger } from "@/lib/sentry";
 
 // ═════════════════════════════════════════════════════════════
 // 국가/언어 자동 감지
@@ -70,7 +71,17 @@ export async function completeProfile(
     .eq("id", userId);
 
   if (error) {
-    console.error("[profile] Update error:", error);
+    logger.error("프로필 영역 UPDATE 실패", error, {
+      description: "profileCompletion 영역 박은 영역에서 profiles UPDATE 박지 X",
+      cause: error.message,
+      impact: "사용자 영역 프로필 영역 박지 X — 온보딩 박지 X",
+      action: "profile.ts:55 영역 확인 + RLS 정책 영역 확인",
+      metadata: {
+        user_id: userId,
+        error_code: error.code,
+        nickname_length: input.nickname.length,
+      },
+    });
     return { error: error.message, code: error.code };
   }
   return { error: null };
@@ -163,7 +174,13 @@ export async function checkEmailExists(email: string): Promise<EmailCheckResult>
   });
 
   if (error) {
-    console.warn("[profile] Email check error:", error);
+    logger.error("이메일 영역 확인 박지 X", error, {
+      description: "회원가입·로그인 영역에서 이메일 영역 박힌지 확인 박지 X",
+      cause: error.message,
+      impact: "회원가입·로그인 영역 차단 가능 — 'new' 영역으로 폴백 박음 (보수적 영역)",
+      action: "check_email_exists RPC 박힌지 확인",
+      metadata: { email_domain: normalized.split("@")[1] },
+    });
     return { accountStatus: "new", exists: false, confirmed: false };
   }
 

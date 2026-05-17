@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import type { SublevelProgress, Sublevel } from "@/lib/levelSystem";
+import { logger } from "@/lib/sentry";
 
 export interface RecordAttemptResult {
   level: number;
@@ -83,7 +84,21 @@ export function useLevelProgress() {
       );
 
       if (rpcError) {
-        console.error("[useLevelProgress] recordAttempt failed:", rpcError);
+        logger.error("Sublevel 진행 박지 X", rpcError, {
+          description: `Lv ${level}-${sublevel} 게임 종료 후 record_sublevel_attempt RPC 실패`,
+          cause: rpcError.message,
+          impact: "레벨 잠금 해제 박지 X — 사용자 다음 단계 진행 차단",
+          action: "useLevelProgress.ts:72 영역 확인",
+          metadata: {
+            level,
+            sublevel,
+            attempts,
+            correct,
+            max_streak: maxStreak,
+            avg_reaction_ratio: avgReactionRatio,
+            game_status: gameStatus,
+          },
+        });
         setError(rpcError.message);
         return null;
       }

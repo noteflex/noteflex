@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { checkEmailExists } from "@/lib/profile";
+import { logger } from "@/lib/sentry";
 
 // ─── Types ────────────────────────────────────────────────────────────────
 
@@ -145,6 +146,12 @@ export default function AuthModal({ onClose }: AuthModalProps) {
       if (error) throw error;
     } catch (err: any) {
       localStorage.removeItem("noteflex_consent");
+      logger.error("Google 로그인 실패", err, {
+        description: "Google OAuth 영역 박지 X",
+        cause: err?.message ?? String(err),
+        impact: "사용자 영역 Google 영역으로 가입·로그인 박지 X",
+        action: "Supabase OAuth 설정 확인, Google Cloud Console redirect URI 확인",
+      });
       toast({ title: "Google 로그인 실패", description: err.message, variant: "destructive" });
       setLoading(false);
     }
@@ -170,6 +177,16 @@ export default function AuthModal({ onClose }: AuthModalProps) {
       setStep(2);
       startCooldown();
     } catch (err: any) {
+      logger.error("Magic Link 영역 박지 X (로그인)", err, {
+        description: "로그인 영역에서 signInWithOtp 실패",
+        cause: err?.message ?? String(err),
+        impact: "사용자 영역 이메일 박지 X — 인증 영역 차단",
+        action: "Supabase Auth 설정 확인, 이메일 도메인 확인",
+        metadata: {
+          auth_action: "signin",
+          email_domain: email.split("@")[1],
+        },
+      });
       setEmailError("가입된 이메일이 아니에요. 회원가입을 시작해볼까요?");
     } finally {
       setLoading(false);
@@ -221,6 +238,16 @@ export default function AuthModal({ onClose }: AuthModalProps) {
       setStep(2);
       startCooldown();
     } catch (err: any) {
+      logger.error("Magic Link 영역 박지 X (가입)", err, {
+        description: "가입 영역에서 signInWithOtp 실패",
+        cause: err?.message ?? String(err),
+        impact: "사용자 영역 이메일 박지 X — 인증 영역 차단",
+        action: "Supabase Auth 설정 확인, 이메일 도메인 확인",
+        metadata: {
+          auth_action: "signup",
+          email_domain: email.split("@")[1],
+        },
+      });
       toast({ title: "오류가 발생했어요", description: err.message, variant: "destructive" });
     } finally {
       setLoading(false);
@@ -243,6 +270,16 @@ export default function AuthModal({ onClose }: AuthModalProps) {
       setStep(2);
       startCooldown();
     } catch (err: any) {
+      logger.error("Magic Link 영역 박지 X (복구)", err, {
+        description: "계정 복구 영역에서 signInWithOtp 실패",
+        cause: err?.message ?? String(err),
+        impact: "사용자 영역 복구 영역 박지 X",
+        action: "Supabase Auth 설정 확인",
+        metadata: {
+          auth_action: "recover",
+          email_domain: email.split("@")[1],
+        },
+      });
       toast({ title: "오류가 발생했어요", description: err.message, variant: "destructive" });
     } finally {
       setLoading(false);
@@ -255,6 +292,13 @@ export default function AuthModal({ onClose }: AuthModalProps) {
     try {
       const { error } = await supabase.rpc("hard_delete_account", { p_email: email });
       if (error) {
+        logger.error("계정 영역 삭제 박지 X", error, {
+          description: "hard_delete_account RPC 실패",
+          cause: error.message,
+          impact: "사용자 영역 \"새로 시작\" 박지 X — 계정 영역 잔존",
+          action: "hard_delete_account RPC 박힌지 확인, auth.users 권한 확인",
+          metadata: { email_domain: email.split("@")[1] },
+        });
         toast({ title: "오류가 발생했어요", description: error.message, variant: "destructive" });
         return;
       }
@@ -279,6 +323,16 @@ export default function AuthModal({ onClose }: AuthModalProps) {
       setStep(2);
       startCooldown();
     } catch (err: any) {
+      logger.error("Magic Link 영역 박지 X (새로 시작)", err, {
+        description: "새로 시작 영역 박은 영역 박힌 후 영역 signInWithOtp 실패",
+        cause: err?.message ?? String(err),
+        impact: "사용자 영역 재가입 영역 박지 X",
+        action: "Supabase Auth 설정 확인",
+        metadata: {
+          auth_action: "fresh_start",
+          email_domain: email.split("@")[1],
+        },
+      });
       toast({ title: "오류가 발생했어요", description: err.message, variant: "destructive" });
     } finally {
       setLoading(false);

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { getUserTier } from "@/lib/subscriptionTier";
+import { logger } from "@/lib/sentry";
 
 const GUEST_LIMIT = 3;
 const FREE_LIMIT = 7;
@@ -109,7 +110,13 @@ export function useDailyLimit(): UseDailyLimitResult {
     setIsLoading(true);
     supabase.rpc("get_today_session_count").then(({ data, error }) => {
       if (error) {
-        console.error("[useDailyLimit] get_today_session_count failed:", error);
+        logger.error("일일 한도 조회 박지 X", error, {
+          description: "get_today_session_count RPC 실패",
+          cause: error.message,
+          impact: "일일 한도 영역 박지 X — Free 사용자 영역 게임 시작 차단 가능",
+          action: "get_today_session_count RPC 박힌지 확인",
+          metadata: { user_id: user?.id, tier },
+        });
         setTodayCount(0);
       } else {
         setTodayCount(typeof data === "number" ? data : 0);
@@ -131,7 +138,13 @@ export function useDailyLimit(): UseDailyLimitResult {
     // free
     const { data, error } = await supabase.rpc("increment_daily_session");
     if (error) {
-      console.error("[useDailyLimit] increment_daily_session failed:", error);
+      logger.error("일일 한도 카운트 박지 X", error, {
+        description: "게임 박은 영역에서 daily_sessions 영역 카운트 박지 X 박힘",
+        cause: error.message,
+        impact: "사용자 영역 일일 한도 영역 초과 가능 (Free 사용자 영역)",
+        action: "useDailyLimit.ts:132 영역 확인, increment_daily_session RPC 박힌지 확인",
+        metadata: { user_id: user?.id, tier },
+      });
       return;
     }
     if (typeof data === "number") {
