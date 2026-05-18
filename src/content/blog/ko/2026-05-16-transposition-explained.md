@@ -4,7 +4,7 @@ date: "2026-05-16"
 description: "악보는 C장조인데 D장조로 연주해달라는 요청. 머릿속에서 음표가 일제히 한 칸씩 미끄러져야 한다. 왜 어렵고 어떻게 훈련하는지."
 keywords: ["조옮김", "transposition", "초견", "이조 악기", "반주"]
 slug: "transposition-explained"
-category: "음악 이론"
+category: "음악 이론 & 화성학"
 author: "Noteflex 편집부"
 ---
 

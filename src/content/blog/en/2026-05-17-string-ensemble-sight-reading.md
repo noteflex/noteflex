@@ -4,7 +4,7 @@ date: "2026-05-17"
 description: "How a string quartet starts the first note in perfect sync. The visual and auditory synchronization beneath ensemble playing."
 keywords: ["string ensemble", "string quartet", "sight-reading", "bowing", "ensemble"]
 slug: "string-ensemble-sight-reading"
-category: "Instrument-Specific"
+category: "Sight-Reading by Instrument"
 author: "Noteflex Editorial"
 ---
 

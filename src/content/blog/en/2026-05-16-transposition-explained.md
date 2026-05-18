@@ -4,7 +4,7 @@ date: "2026-05-16"
 description: "The score is in C major, but the singer asks for D. Every note must slide up in your head — instantly. Why transposition is hard, and how to train it."
 keywords: ["transposition", "sight-reading", "transposing instruments", "accompaniment", "moveable do"]
 slug: "transposition-explained"
-category: "Music Theory"
+category: "Theory & Harmony"
 author: "Noteflex Editorial"
 ---
 

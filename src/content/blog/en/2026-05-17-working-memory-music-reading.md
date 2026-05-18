@@ -4,7 +4,7 @@ date: "2026-05-17"
 description: "In sight-reading, the eye stays ahead of the hand. But how far ahead? Working memory research gives a hard ceiling."
 keywords: ["working memory", "neuroscience", "sight-reading", "eye-hand span", "cognitive load"]
 slug: "working-memory-music-reading"
-category: "Neuroscience"
+category: "Learning Science"
 author: "Noteflex Editorial"
 ---
 

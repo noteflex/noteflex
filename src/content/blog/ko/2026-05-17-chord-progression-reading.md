@@ -4,7 +4,7 @@ date: "2026-05-17"
 description: "재즈 피아니스트와 클래식 피아니스트가 같은 코드 기호를 다르게 읽는 이유. 그리고 모두에게 필요한 화성 인식 능력."
 keywords: ["코드 진행", "화성", "재즈", "클래식", "코드 기호"]
 slug: "chord-progression-reading"
-category: "음악 이론"
+category: "음악 이론 & 화성학"
 author: "Noteflex 편집부"
 ---
 

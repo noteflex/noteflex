@@ -4,7 +4,7 @@ date: "2026-05-18"
 description: "Suzuki begins with the ear. Traditional begins with the score. After five years, the two students sight-read very differently."
 keywords: ["Suzuki method", "music education", "sight-reading", "pedagogy", "comparative study"]
 slug: "suzuki-vs-traditional-reading"
-category: "Music Education"
+category: "Learning Science"
 author: "Noteflex Editorial"
 ---
 

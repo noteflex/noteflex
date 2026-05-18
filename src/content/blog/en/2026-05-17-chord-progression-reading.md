@@ -4,7 +4,7 @@ date: "2026-05-17"
 description: "A jazz pianist and a classical pianist see the same chord symbol differently. Why — and why everyone needs harmonic recognition."
 keywords: ["chord progressions", "harmony", "jazz", "classical", "chord symbols"]
 slug: "chord-progression-reading"
-category: "Music Theory"
+category: "Theory & Harmony"
 author: "Noteflex Editorial"
 ---
 

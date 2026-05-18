@@ -4,7 +4,7 @@ date: "2026-05-17"
 description: "초견에서 시선은 항상 연주 위치보다 앞서야 한다. 그런데 얼마나 앞서야 할까. 작업 기억 연구가 답을 준다."
 keywords: ["작업 기억", "신경과학", "초견", "시선 추적", "인지 부하"]
 slug: "working-memory-music-reading"
-category: "신경과학"
+category: "학습 데이터·과학"
 author: "Noteflex 편집부"
 ---
 

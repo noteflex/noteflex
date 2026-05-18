@@ -4,7 +4,7 @@ date: "2026-05-16"
 description: "It is not solo reading. Twenty-five players are going, and if you fall a bar behind, everyone hears it. The real skills that orchestral sight-reading demands."
 keywords: ["orchestra", "ensemble", "sight-reading", "rehearsal", "section playing"]
 slug: "orchestra-sight-reading"
-category: "Persona Reading"
+category: "Sight-Reading by Instrument"
 author: "Noteflex Editorial"
 ---
 

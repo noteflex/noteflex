@@ -4,7 +4,7 @@ date: "2026-05-16"
 description: "독주와 다르다. 25명이 같이 연주하는데 나만 한 마디 놓치면 모두가 안다. 오케스트라 초견에 필요한 진짜 기술들."
 keywords: ["오케스트라", "앙상블", "초견", "리허설", "관현악"]
 slug: "orchestra-sight-reading"
-category: "사용자별 초견"
+category: "악기별 초견 전략"
 author: "Noteflex 편집부"
 ---
 

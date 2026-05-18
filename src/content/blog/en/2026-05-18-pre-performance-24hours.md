@@ -4,7 +4,7 @@ date: "2026-05-18"
 description: "Tomorrow you play pieces you have not seen. Today's 24 hours decide the outcome. A stage-by-stage plan."
 keywords: ["performance", "preparation", "sight-reading", "rehearsal", "stage"]
 slug: "pre-performance-24hours"
-category: "Practical Application"
+category: "Practice Hub"
 author: "Noteflex Editorial"
 ---
 

@@ -4,7 +4,7 @@ date: "2026-05-16"
 description: "When more practice does not help, the issue is rarely your hands. It is your self-awareness. Weak metacognition repeats the same mistakes."
 keywords: ["metacognition", "plateau", "learning psychology", "self-assessment", "practice"]
 slug: "sight-reading-metacognition"
-category: "Learning Psychology"
+category: "Learning Science"
 author: "Noteflex Editorial"
 ---
 

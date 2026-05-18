@@ -4,7 +4,7 @@ date: "2026-05-18"
 description: "내일 무대에서 처음 보는 곡을 연주해야 한다. 오늘 24시간을 어떻게 쓸 것인가. 시간대별 단계."
 keywords: ["공연", "사전 준비", "초견", "리허설", "무대"]
 slug: "pre-performance-24hours"
-category: "실전 응용"
+category: "실전 연습 가이드"
 author: "Noteflex 편집부"
 ---
 

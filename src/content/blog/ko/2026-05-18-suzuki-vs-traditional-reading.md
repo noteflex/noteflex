@@ -4,7 +4,7 @@ date: "2026-05-18"
 description: "Suzuki 방식은 듣기로 시작한다. 전통 방식은 악보로 시작한다. 같은 5년이 흐른 뒤 두 학생의 초견 능력은 어떻게 다른가."
 keywords: ["Suzuki", "음악 교육", "초견", "교수법", "비교 연구"]
 slug: "suzuki-vs-traditional-reading"
-category: "음악 교육"
+category: "학습 데이터·과학"
 author: "Noteflex 편집부"
 ---
 

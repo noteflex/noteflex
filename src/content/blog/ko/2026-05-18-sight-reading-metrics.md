@@ -4,7 +4,7 @@ date: "2026-05-18"
 description: "97% 정확도와 95% 정확도, 어느 쪽이 더 잘하는가. 정답이 단순하지 않은 이유."
 keywords: ["평가지표", "정확도", "속도", "일관성", "측정"]
 slug: "sight-reading-metrics"
-category: "학습 전략"
+category: "학습 데이터·과학"
 author: "Noteflex 편집부"
 ---
 

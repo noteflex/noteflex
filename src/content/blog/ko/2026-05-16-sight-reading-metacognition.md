@@ -4,7 +4,7 @@ date: "2026-05-16"
 description: "더 연습해도 안 늘 때, 문제는 손이 아니라 자기 인식이다. 메타인지가 약하면 같은 실수를 반복한다."
 keywords: ["메타인지", "초견 슬럼프", "학습 심리학", "자기 인식", "정체기"]
 slug: "sight-reading-metacognition"
-category: "학습 심리학"
+category: "학습 데이터·과학"
 author: "Noteflex 편집부"
 ---
 

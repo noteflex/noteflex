@@ -4,7 +4,7 @@ date: "2026-05-17"
 description: "현악 4중주에서 첫 음을 같이 시작하는 것은 기적이다. 시각과 청각이 어떻게 동기화되는지 살펴봅니다."
 keywords: ["현악 합주", "현악 4중주", "초견", "보잉", "앙상블"]
 slug: "string-ensemble-sight-reading"
-category: "악기별 초견"
+category: "악기별 초견 전략"
 author: "Noteflex 편집부"
 ---
 

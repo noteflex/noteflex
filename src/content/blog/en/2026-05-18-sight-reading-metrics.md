@@ -4,7 +4,7 @@ date: "2026-05-18"
 description: "97% accuracy versus 95% accuracy — which is better? The answer is not what you'd think."
 keywords: ["metrics", "accuracy", "speed", "consistency", "measurement"]
 slug: "sight-reading-metrics"
-category: "Learning Strategy"
+category: "Learning Science"
 author: "Noteflex Editorial"
 ---
 
