@@ -117,30 +117,9 @@ const App = () => (
                   </ComingSoonGate>
                 }
               />
-              <Route
-                path="/pricing"
-                element={
-                  <ComingSoonGate>
-                    <Pricing />
-                  </ComingSoonGate>
-                }
-              />
-              <Route
-                path="/checkout/failed"
-                element={
-                  <ComingSoonGate>
-                    <CheckoutFailed />
-                  </ComingSoonGate>
-                }
-              />
-              <Route
-                path="/checkout/success"
-                element={
-                  <ComingSoonGate>
-                    <CheckoutSuccess />
-                  </ComingSoonGate>
-                }
-              />
+              <Route path="/pricing" element={<Pricing />} />
+              <Route path="/checkout/failed" element={<CheckoutFailed />} />
+              <Route path="/checkout/success" element={<CheckoutSuccess />} />
               <Route
                 path="/dashboard"
                 element={
