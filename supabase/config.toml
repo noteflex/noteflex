@@ -401,3 +401,6 @@ s3_secret_key = "env(S3_SECRET_KEY)"
 
 [functions.admin-action]
 verify_jwt = false
+
+[functions.paddle-webhook]
+verify_jwt = false
