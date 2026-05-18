@@ -2,7 +2,7 @@
 
 > **출시 마감**: 🎯 ~~**2026-05-31**~~ → **2026-06-14** (Phase 1·2·3 완료 박은 영역 박은 영역 박음 — 안전 박은 영역)
 > **목적**: 머릿속 + 채팅 + 첨부 기획서 + 코드 분석 + 설계-코드 갭에 흩어진 모든 미구현·미결정 항목을 한 곳에 모아 영구 보존.
-> **작성일**: 2026-04-27 (초안) → 2026-04-28 (자동 갱신 시스템 도입) → 2026-05-17 (Phase 3 완료 박음 갱신)
+> **작성일**: 2026-04-27 (초안) → 2026-04-28 (자동 갱신 시스템 도입) → 2026-05-17 (Phase 3 완료 박음 갱신) → 2026-05-18 (Phase 4 Sentry 완료 + Paddle 결제 통합 완료 갱신)
 > **출처**: 사용자 24항목 + 첨부 기획서 5개 + 설계 PDF + Claude Code 코드 분석 + 사용자 검증 버그 + Green Billion 명세서
 
 ---
@@ -21,28 +21,37 @@
 
 ### 출시 박을 영역 — 박지 X 박힌 영역
 
-- [ ] **결제 시스템** — Paddle Checkout 박음 (~2~3일, 🔴 출시 차단)
-  - `Pricing.tsx`에 `openCheckout` 호출 박음
-  - `/checkout/success` 페이지 박음
-  - 빈 폴더 정리 (`payment-webhook`·`create-checkout-session`)
-  - Paddle Sandbox 영역 테스트 박음
-  - Paddle 심사 신청
-- [ ] **Phase 4** — Sentry + `app_logs` + `logger` + 토스트 (~1~2일, 🔴 로그 X)
-  - Sentry SDK 박음
-  - `app_logs` 테이블 박음
-  - `logger` 유틸 박음 (silent fail 영역에 박음)
-  - 게임·결제·인증 영역 로그 박음
-- [ ] **Phase 5** — Admin `/logs` 페이지 (~1일, 🟡)
+- [x] **결제 시스템** — Paddle Checkout 통합 완료 (2026-05-18, 🔴→✅)
+  - `Pricing.tsx`에 `openCheckout` 직접 호출 추가
+  - `/checkout/success`, `/checkout/failed` 페이지·라우트 확인
+  - `settings.successUrl` 방식으로 redirect 처리 (eventCallback 시도 후 복원)
+  - `/pricing`, `/checkout/success`, `/checkout/failed`에서 `ComingSoonGate` 제거
+  - Paddle webhook: `subscription.past_due` + `adjustment.created/updated` 분기 추가
+  - Edge Function `verify_jwt = false` 설정 (JWT 검증 차단 문제 해결)
+  - Sandbox 결제 라이프사이클 전체 검증 완료
+  - ⚠️ Paddle 심사 신청 — 사업자 등록 후 진행 (출시 전)
+- [x] **Phase 4** — Sentry 도입 완료 (2026-05-18, 🔴→✅)
+  - Sentry React SDK 설치 및 초기화 완료
+  - logger.info/warn/error/setUser 총 44건 호출 추가
+  - `GameErrorBoundary` + `PaymentErrorBoundary` 도입
+  - ⚠️ `app_logs` 테이블 및 Phase 5 Admin 로그 페이지는 출시 후 영역으로 이동
+- [ ] **Phase 5** — Admin `/logs` 페이지 (~1일, 🟡, 출시 후 이동 검토)
   - 로그 조회 UI
   - 필터·실시간 갱신
   - resolved 처리
-- [ ] **출시 영역 영역** (~2~3일, 🟢)
+- [ ] **출시 전 필수 항목** (~2~3일, 🟢)
   - About 페이지
   - Contact 페이지
   - FAQ 페이지
   - OG 이미지
-  - PWA manifest
-  - AdSense 심사 신청
+  - PWA manifest 마무리
+  - sitemap.xml 생성 (현재 `public/sitemap.xml` 없음, `robots.txt`에는 참조 있음)
+  - robots.txt 정리 (Googlebot/Bingbot override가 Disallow 무효화하는 문제)
+  - 구독 취소 버튼 (프로필 페이지 또는 설정 페이지)
+  - Paddle 사용자 결제 메일 발송 설정 (Paddle Dashboard → Customer Communication)
+  - 사업자 등록
+  - AdSense 심사 신청 (사업자 등록 후)
+  - Paddle Production 심사 신청 (사업자 등록 후)
 
 ### Cursor 검증 박지 X 박힌 영역 (사용량 영역으로 중단)
 
@@ -60,22 +69,32 @@
 
 ### 출시 후 영역 (🟢)
 
-- [ ] `ai_reports` + `marketing_metrics_daily` 마이그 박음 (SSoT)
-- [ ] 박지 X 박힌 함수 9개 마이그 박음 (`finalize_weekly_leagues` 등)
+- [ ] `ai_reports` + `marketing_metrics_daily` 마이그레이션 작성 (Production에는 존재하나 마이그 파일 누락)
+- [ ] 마이그 누락 함수 9개 작성: `finalize_weekly_leagues`, `admin_trigger_batch_analysis`, `calculate_is_minor`, `handle_new_user`, `handle_profile_updated_at`, `handle_streak_update`, `handle_xp_update`, `sync_minor_status`, `sync_premium_status`
+- [ ] `is_reviewer` 컬럼 DROP (admin role로 통합)
 - [ ] `is_reviewer()` dead 함수 DROP
 - [ ] `get_mastery_score()` dead 함수 DROP
-- [ ] `record_game_session()` RPC + `handle_session_complete()` 트리거 중복 박은 영역 정리
-- [ ] `user_note_logs` 영역 처리 결정 (계속 사용 또는 `user_sessions.note_attempts` 통합)
-- [ ] `check_nickname_available`에 `is_deleted = false` 추가
+- [ ] `record_game_session()` RPC + `handle_session_complete()` 트리거 중복 정리
+- [ ] `user_note_logs` 처리 방향 결정 (계속 사용 또는 `user_sessions.note_attempts` 통합)
+- [ ] `check_nickname_available`에 `is_deleted = false` 조건 추가
 - [ ] 02 doc 라인 번호 전수 정정 (45개 정책 ±1~30행 오차)
-- [ ] `hard_delete_expired_accounts` cron 박음
-- [ ] Supabase Data API GRANT 마이그 추가 (10/30 적용 박을 영역)
+- [ ] `hard_delete_expired_accounts` cron 작성
+- [ ] Supabase Data API GRANT 마이그 추가 (2026-10-30 적용 대응)
+- [ ] Staging Supabase 프로젝트 별도 구축 (기존 프로젝트 유예: 2026-10-30)
 - [ ] `react-helmet-async` 동적 SEO
 - [ ] Termly Pro 해지
 - [ ] EU GDPR 16세 정합
+- [ ] Phase 5 Admin `/logs` 페이지 (로그 조회 UI + 필터 + resolved 처리)
+- [ ] Phase 4 `app_logs` 테이블 + DB 로깅 연동 (현재 Sentry만, DB 기록 없음)
+- [ ] 7일 트라이얼 플랜
+- [ ] Lifetime 플랜
 - [ ] Family Plan
-- [ ] e2e 테스트 (Playwright)
-- [ ] dead code 정리 (`leagues`·`league_members` 영역 UI 박을 영역인지)
+- [ ] 배치고사·랭크 시스템
+- [ ] E2E 테스트 (Playwright)
+- [ ] CI/CD 파이프라인
+- [ ] 옵션 B 블로그 (DB 기반)
+- [ ] Green Billion §7.2~7.5
+- [ ] dead code 정리 (`leagues`·`league_members` UI 재도입 여부 결정)
 
 ### 출시 일정 영역 갱신
 
