@@ -1,5 +1,4 @@
 import { initializePaddle, Paddle } from "@paddle/paddle-js";
-import { logger } from "@/lib/sentry";
 
 // ═════════════════════════════════════════════════════════════
 // Paddle 초기화 (Singleton)
@@ -28,25 +27,6 @@ export async function initPaddle(): Promise<Paddle | undefined> {
     paddleInstance = await initializePaddle({
       environment: environment || "sandbox",
       token,
-      eventCallback: (event) => {
-        console.log("[Paddle event]", event.name);
-
-        if (
-          event.name === "checkout.completed" ||
-          event.name === "checkout.payment.completed" ||
-          (typeof event.name === "string" && event.name.includes("checkout") && event.name.includes("completed"))
-        ) {
-          logger.info("Paddle Checkout 완료", {
-            description: "checkout 완료 이벤트 수신",
-            event_name: event.name,
-          });
-          window.location.href = `${window.location.origin}/checkout/success`;
-        }
-
-        if (event.name === "checkout.closed") {
-          console.log("[Paddle] checkout.closed (사용자 취소)");
-        }
-      },
     });
     return paddleInstance;
   } catch (err) {
@@ -127,7 +107,7 @@ export async function openCheckout(options: OpenCheckoutOptions): Promise<void> 
         displayMode: "overlay",
         theme: "light",
         locale: options.locale || "en",
-        // redirect는 initPaddle eventCallback의 checkout.completed 이벤트에서 처리
+        successUrl: `${window.location.origin}/checkout/success`,
       },
   });
 }
