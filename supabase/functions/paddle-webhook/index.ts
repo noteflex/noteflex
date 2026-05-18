@@ -90,6 +90,8 @@ type PaddleEventType =
   | "subscription.paused"
   | "subscription.resumed"
   | "subscription.past_due"
+  | "adjustment.created"
+  | "adjustment.updated"
   | "transaction.completed"
   | string;
 
@@ -149,6 +151,60 @@ async function handleSubscriptionEvent(
 }
 
 // ═══════════════════════════════════════════════════════════════
+// Adjustment 이벤트 처리 (chargeback 시 premium 즉시 회수)
+// ═══════════════════════════════════════════════════════════════
+
+interface PaddleAdjustmentData {
+  id: string;
+  action: string;
+  status: string;
+  transaction_id: string;
+  subscription_id?: string | null;
+  customer_id: string;
+  reason?: string;
+  totals?: { total: string; currency_code: string };
+}
+
+async function handleAdjustmentEvent(
+  eventType: PaddleEventType,
+  data: PaddleAdjustmentData,
+): Promise<void> {
+  console.log(`[Webhook] ${eventType} 처리. adjustment=${data.id}, action=${data.action}, status=${data.status}`);
+
+  if (data.action === "chargeback" && data.subscription_id) {
+    const { data: sub, error: subErr } = await supabase
+      .from("subscriptions")
+      .select("user_id")
+      .eq("stripe_subscription_id", data.subscription_id)
+      .single();
+
+    if (subErr || !sub) {
+      console.error("[Webhook] chargeback subscription 조회 실패:", subErr);
+      return;
+    }
+
+    const { error: profileErr } = await supabase
+      .from("profiles")
+      .update({
+        is_premium: false,
+        premium_until: null,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", sub.user_id);
+
+    if (profileErr) {
+      console.error("[Webhook] chargeback profile 업데이트 실패:", profileErr);
+      return;
+    }
+
+    console.log(`[Webhook] chargeback 처리 완료. user=${sub.user_id}, premium 즉시 회수`);
+    return;
+  }
+
+  console.log(`[Webhook] ${data.action} 로깅. (premium은 subscription 이벤트에서 처리)`);
+}
+
+// ═══════════════════════════════════════════════════════════════
 // 메인 핸들러
 // ═══════════════════════════════════════════════════════════════
 
@@ -201,6 +257,11 @@ serve(async (req) => {
       case "transaction.completed":
         // 일회성 결제 or 구독 갱신 시 발생. 기본은 구독 이벤트로 처리됨.
         console.log(`[Webhook] transaction.completed 로깅만. (구독은 별도 이벤트로 처리)`);
+        break;
+
+      case "adjustment.created":
+      case "adjustment.updated":
+        await handleAdjustmentEvent(eventType, event.data as PaddleAdjustmentData);
         break;
 
       default:
