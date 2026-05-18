@@ -89,6 +89,7 @@ type PaddleEventType =
   | "subscription.activated"
   | "subscription.paused"
   | "subscription.resumed"
+  | "subscription.past_due"
   | "transaction.completed"
   | string;
 
@@ -193,6 +194,7 @@ serve(async (req) => {
       case "subscription.resumed":
       case "subscription.paused":
       case "subscription.canceled":
+      case "subscription.past_due":
         await handleSubscriptionEvent(eventType, eventData as PaddleSubscriptionData);
         break;
 
