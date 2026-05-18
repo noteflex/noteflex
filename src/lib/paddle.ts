@@ -1,4 +1,5 @@
 import { initializePaddle, Paddle } from "@paddle/paddle-js";
+import { logger } from "@/lib/sentry";
 
 // ═════════════════════════════════════════════════════════════
 // Paddle 초기화 (Singleton)
@@ -27,6 +28,19 @@ export async function initPaddle(): Promise<Paddle | undefined> {
     paddleInstance = await initializePaddle({
       environment: environment || "sandbox",
       token,
+      eventCallback: (event) => {
+        if (event.name === "checkout.completed") {
+          logger.info("Paddle Checkout 완료", {
+            description: "checkout.completed 이벤트 수신",
+            transaction_id: (event.data as Record<string, unknown>)?.transaction_id,
+          });
+          console.log("[Paddle] checkout.completed 이벤트 수신, /checkout/success 이동");
+          window.location.href = `${window.location.origin}/checkout/success`;
+        }
+        if (event.name === "checkout.closed") {
+          console.log("[Paddle] checkout.closed (사용자 취소)");
+        }
+      },
     });
     return paddleInstance;
   } catch (err) {
@@ -106,10 +120,8 @@ export async function openCheckout(options: OpenCheckoutOptions): Promise<void> 
     settings: {
         displayMode: "overlay",
         theme: "light",
-        locale: options.locale || "en", // 앱 언어 영역 박음 (호출자 영역 전달). 기본값 영어.
-        successUrl: `${window.location.origin}/checkout/success`,
-        // Paddle은 failureUrl 옵션이 없음 — 결제 실패는 오버레이 내에서 처리됨
-        // 사용자가 닫으면 페이지 그대로 유지됨 (리다이렉트 없음)
+        locale: options.locale || "en",
+        // redirect는 initPaddle eventCallback의 checkout.completed 이벤트에서 처리
       },
   });
 }
