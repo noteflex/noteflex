@@ -29,14 +29,20 @@ export async function initPaddle(): Promise<Paddle | undefined> {
       environment: environment || "sandbox",
       token,
       eventCallback: (event) => {
-        if (event.name === "checkout.completed") {
+        console.log("[Paddle event]", event.name);
+
+        if (
+          event.name === "checkout.completed" ||
+          event.name === "checkout.payment.completed" ||
+          (typeof event.name === "string" && event.name.includes("checkout") && event.name.includes("completed"))
+        ) {
           logger.info("Paddle Checkout 완료", {
-            description: "checkout.completed 이벤트 수신",
-            transaction_id: (event.data as Record<string, unknown>)?.transaction_id,
+            description: "checkout 완료 이벤트 수신",
+            event_name: event.name,
           });
-          console.log("[Paddle] checkout.completed 이벤트 수신, /checkout/success 이동");
           window.location.href = `${window.location.origin}/checkout/success`;
         }
+
         if (event.name === "checkout.closed") {
           console.log("[Paddle] checkout.closed (사용자 취소)");
         }
