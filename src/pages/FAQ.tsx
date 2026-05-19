@@ -28,6 +28,38 @@ const CONTENT = {
         q: "환불 정책이 궁금해요.",
         a: "결제 후 14일 이내 요청 시 전액 환불해 드립니다. 자세한 내용은 환불 정책 페이지를 확인해 주세요.",
       },
+      {
+        q: "Noteflex는 어떤 사람에게 적합한가요?",
+        a: "피아노·다른 악기를 시작했거나 다시 시작한 분, 악보 읽기가 느려 답답한 분, 매일 짧게 초견을 연습하고 싶은 분. 클래식·재즈·교회 반주·합창 어느 영역이든 도움이 됩니다.",
+      },
+      {
+        q: "악기 없이도 사용할 수 있나요?",
+        a: "네. Noteflex는 악기 없이 화면만으로 계이름 읽기를 훈련합니다. 출퇴근·휴식 시간 등 어디서든 짧게 연습할 수 있습니다.",
+      },
+      {
+        q: "하루에 얼마나 연습해야 하나요?",
+        a: "매일 5~10분이면 충분합니다. 짧고 자주가 길고 가끔보다 효과적입니다.",
+      },
+      {
+        q: "진도를 어떻게 추적하나요?",
+        a: "대시보드에서 일일·주간 학습 통계, 약점 음표 분석, 정확도와 속도 변화를 확인할 수 있습니다.",
+      },
+      {
+        q: "계정을 삭제하면 데이터는 어떻게 되나요?",
+        a: "탈퇴 후 30일 동안은 같은 이메일로 다시 가입하면 학습 기록이 자동으로 복원됩니다. 30일이 지나면 모든 학습 기록과 개인 정보가 완전히 삭제되며, 이후에는 복구할 수 없습니다.",
+      },
+      {
+        q: "여러 기기에서 동시에 사용할 수 있나요?",
+        a: "여러 기기에서 사용할 수 있지만, 한 번에 한 기기에서만 로그인할 수 있습니다. 다른 기기에서 로그인하면 기존 기기의 세션은 자동으로 종료됩니다. 학습 기록은 모든 기기에서 동기화됩니다.",
+      },
+      {
+        q: "앱 스토어에서 다운로드할 수 있나요?",
+        a: "현재 Noteflex는 웹 앱입니다. 모바일에서는 홈 화면에 추가하면 앱처럼 사용할 수 있습니다 (PWA 지원). 앱 스토어 정식 출시는 추후 반영 예정입니다.",
+      },
+      {
+        q: "오프라인에서도 사용할 수 있나요?",
+        a: "안정적인 학습 기록 동기화를 위해 인터넷에 연결된 상태에서 사용해 주세요.",
+      },
     ],
   },
   en: {
@@ -53,6 +85,38 @@ const CONTENT = {
       {
         q: "What is the refund policy?",
         a: "You may request a full refund within 14 days of purchase. See the Refund Policy page for details.",
+      },
+      {
+        q: "Who is Noteflex for?",
+        a: "Anyone starting or returning to piano or another instrument, struggling with reading sheet music, or wanting a short daily sight-reading habit. Whether you play classical, jazz, church accompaniment, or choral music — Noteflex helps.",
+      },
+      {
+        q: "Can I use Noteflex without an instrument?",
+        a: "Yes. Noteflex trains note reading entirely on screen. Practice anywhere — commute, breaks, downtime — without a piano or sheet music.",
+      },
+      {
+        q: "How long should I practice each day?",
+        a: "5–10 minutes daily is enough. Short and frequent beats long and rare.",
+      },
+      {
+        q: "How do I track my progress?",
+        a: "The dashboard shows daily and weekly stats, weak-note analysis, and changes in accuracy and speed over time.",
+      },
+      {
+        q: "What happens to my data if I delete my account?",
+        a: "For 30 days after deletion, signing up again with the same email will automatically restore your learning records. After 30 days, all data is permanently deleted and cannot be recovered.",
+      },
+      {
+        q: "Can I use Noteflex on multiple devices simultaneously?",
+        a: "You can use Noteflex on multiple devices, but only one device can be signed in at a time. Signing in on a new device automatically signs you out of the previous one. Your learning records sync across all devices.",
+      },
+      {
+        q: "Is there a mobile app on the App Store?",
+        a: "Noteflex is currently a web app. On mobile, you can add it to your home screen to use it like a native app (PWA supported). A dedicated app store release is planned for the future.",
+      },
+      {
+        q: "Can I use Noteflex offline?",
+        a: "For reliable sync of your learning records, please use Noteflex while connected to the internet.",
       },
     ],
   },
