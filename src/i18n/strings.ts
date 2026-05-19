@@ -346,6 +346,30 @@ export interface Strings {
     aiFeedbackSubtitleNew: string;      // "연습을 시작하면 AI가 분석해드려요"
     aiFeedbackPremiumOnly: string;      // "🔒 프리미엄 전용"
   };
+  checkout: {
+    backHome: string;
+    success: {
+      title: string;
+      subtitle: string;
+      receiptNote: string;
+      benefitsHeading: string;
+      benefits: readonly string[];
+      startCta: string;
+      autoRedirect: string;
+    };
+    failed: {
+      cancelledTitle: string;
+      cancelledSubtitle: string;
+      failedTitle: string;
+      failedSubtitle: string;
+      checkHeading: string;
+      checkItems: readonly string[];
+      retryCta: string;
+      homeCta: string;
+      supportPrefix: string;
+      supportSuffix: string;
+    };
+  };
 }
 
 const ko: Strings = {
@@ -690,6 +714,39 @@ const ko: Strings = {
     aiFeedbackSubtitleNew: "연습을 시작하면 AI가 분석해드려요",
     aiFeedbackPremiumOnly: "🔒 프리미엄 전용",
   },
+  checkout: {
+    backHome: "← 홈으로",
+    success: {
+      title: "결제가 완료되었습니다!",
+      subtitle: "Noteflex Premium을 시작해보세요 🎹",
+      receiptNote: "영수증은 이메일로 발송됩니다.",
+      benefitsHeading: "🎁 이제 사용 가능한 기능",
+      benefits: [
+        "모든 레벨 (1~7) 무제한 이용",
+        "광고 완전 제거",
+        "상세 학습 통계 및 약점 분석",
+      ],
+      startCta: "🎹 시작하기",
+      autoRedirect: "5초 후 자동으로 홈으로 이동합니다",
+    },
+    failed: {
+      cancelledTitle: "결제가 취소되었어요",
+      cancelledSubtitle: "언제든 다시 시도하실 수 있어요",
+      failedTitle: "결제를 완료하지 못했어요",
+      failedSubtitle: "일시적인 문제일 수 있으니 다시 시도해주세요",
+      checkHeading: "💡 다음을 확인해주세요",
+      checkItems: [
+        "카드 정보가 정확한지 확인",
+        "카드 한도 또는 해외 결제 가능 여부",
+        "다른 카드로 다시 시도",
+        "인터넷 연결 상태 확인",
+      ],
+      retryCta: "다시 결제하기",
+      homeCta: "홈으로 돌아가기",
+      supportPrefix: "문제가 계속되면 ",
+      supportSuffix: "으로 문의해주세요",
+    },
+  },
 };
 
 const en: Strings = {
@@ -1033,6 +1090,39 @@ const en: Strings = {
     aiFeedbackSubtitleActive: "AI reviews your playing and suggests next goals",
     aiFeedbackSubtitleNew: "Practice and AI will analyze your patterns",
     aiFeedbackPremiumOnly: "🔒 Premium only",
+  },
+  checkout: {
+    backHome: "← Home",
+    success: {
+      title: "Payment Successful!",
+      subtitle: "Start using Noteflex Premium 🎹",
+      receiptNote: "Your receipt will be sent to your email.",
+      benefitsHeading: "🎁 Features now available",
+      benefits: [
+        "Unlimited access to all levels (1~7)",
+        "Ad-free experience",
+        "Detailed learning analytics and weakness analysis",
+      ],
+      startCta: "🎹 Get Started",
+      autoRedirect: "Redirecting to home in 5 seconds",
+    },
+    failed: {
+      cancelledTitle: "Payment Cancelled",
+      cancelledSubtitle: "You can try again anytime",
+      failedTitle: "Payment Failed",
+      failedSubtitle: "This may be temporary. Please try again.",
+      checkHeading: "💡 Please check the following",
+      checkItems: [
+        "Verify your card details",
+        "Check card limit or international payment availability",
+        "Try with a different card",
+        "Check your internet connection",
+      ],
+      retryCta: "Try Again",
+      homeCta: "Back to Home",
+      supportPrefix: "If the problem persists, contact ",
+      supportSuffix: "",
+    },
   },
 };
 

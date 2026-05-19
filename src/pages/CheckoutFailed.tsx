@@ -1,10 +1,12 @@
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import Header from "@/components/Header";
+import { useT } from "@/contexts/LanguageContext";
 
 export default function CheckoutFailed() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const reason = searchParams.get("reason"); // ?reason=cancelled 등
+  const reason = searchParams.get("reason");
+  const t = useT();
 
   const isCancelled = reason === "cancelled";
 
@@ -13,7 +15,7 @@ export default function CheckoutFailed() {
       <Header
         right={
           <Link to="/" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-            ← 홈으로
+            {t.checkout.backHome}
           </Link>
         }
       />
@@ -31,12 +33,10 @@ export default function CheckoutFailed() {
         style={{ animationDelay: "0.2s" }}
       >
         <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
-          {isCancelled ? "결제가 취소되었어요" : "결제를 완료하지 못했어요"}
+          {isCancelled ? t.checkout.failed.cancelledTitle : t.checkout.failed.failedTitle}
         </h1>
         <p className="text-muted-foreground text-sm sm:text-base">
-          {isCancelled
-            ? "언제든 다시 시도하실 수 있어요"
-            : "일시적인 문제일 수 있으니 다시 시도해주세요"}
+          {isCancelled ? t.checkout.failed.cancelledSubtitle : t.checkout.failed.failedSubtitle}
         </p>
       </div>
 
@@ -47,25 +47,15 @@ export default function CheckoutFailed() {
           style={{ animationDelay: "0.4s" }}
         >
           <p className="text-sm font-semibold text-foreground mb-1">
-            💡 다음을 확인해주세요
+            {t.checkout.failed.checkHeading}
           </p>
           <ul className="space-y-1.5 text-sm text-muted-foreground">
-            <li className="flex items-start gap-2">
-              <span className="text-orange-500">•</span>
-              <span>카드 정보가 정확한지 확인</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-orange-500">•</span>
-              <span>카드 한도 또는 해외 결제 가능 여부</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-orange-500">•</span>
-              <span>다른 카드로 다시 시도</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-orange-500">•</span>
-              <span>인터넷 연결 상태 확인</span>
-            </li>
+            {t.checkout.failed.checkItems.map((item) => (
+              <li key={item} className="flex items-start gap-2">
+                <span className="text-orange-500">•</span>
+                <span>{item}</span>
+              </li>
+            ))}
           </ul>
         </div>
       )}
@@ -79,13 +69,13 @@ export default function CheckoutFailed() {
           to="/pricing"
           className="px-8 py-3 rounded-xl bg-primary text-primary-foreground font-semibold text-sm shadow-lg hover:shadow-xl transition-all active:scale-95 text-center"
         >
-          다시 결제하기
+          {t.checkout.failed.retryCta}
         </Link>
         <button
           onClick={() => navigate("/")}
           className="px-8 py-3 rounded-xl border border-border text-foreground font-semibold text-sm hover:bg-muted transition-colors"
         >
-          홈으로 돌아가기
+          {t.checkout.failed.homeCta}
         </button>
       </div>
 
@@ -94,14 +84,14 @@ export default function CheckoutFailed() {
         className="text-xs text-muted-foreground text-center animate-fade-up"
         style={{ animationDelay: "0.8s" }}
       >
-        문제가 계속되면{" "}
+        {t.checkout.failed.supportPrefix}
         <a
           href="mailto:support@noteflex.app"
           className="text-primary underline hover:text-primary/80"
         >
           support@noteflex.app
         </a>
-        으로 문의해주세요
+        {t.checkout.failed.supportSuffix}
       </p>
       </div>
     </div>

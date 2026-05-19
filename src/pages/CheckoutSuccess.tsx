@@ -2,15 +2,16 @@ import { useEffect } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import Header from "@/components/Header";
 import { useAuth } from "@/contexts/AuthContext";
+import { useT } from "@/contexts/LanguageContext";
 import { logger } from "@/lib/sentry";
 
 export default function CheckoutSuccess() {
   const navigate = useNavigate();
   const { user, refreshProfile } = useAuth();
   const [searchParams] = useSearchParams();
+  const t = useT();
 
   useEffect(() => {
-    // Paddle 리다이렉트 영역 query params 박은 영역
     const transactionId =
       searchParams.get("transaction_id") || searchParams.get("_ptxn") || "unknown";
 
@@ -20,12 +21,10 @@ export default function CheckoutSuccess() {
       transaction_id: transactionId,
     });
 
-    // Webhook 처리 영역 후 영역 profile 갱신 영역 (1~3초 영역 박힘)
     const refreshTimer = setTimeout(() => {
       refreshProfile?.();
     }, 2000);
 
-    // 5초 후 자동으로 메인으로 이동
     const navTimer = setTimeout(() => {
       navigate("/");
     }, 5000);
@@ -41,7 +40,7 @@ export default function CheckoutSuccess() {
       <Header
         right={
           <Link to="/" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-            ← 홈으로
+            {t.checkout.backHome}
           </Link>
         }
       />
@@ -57,38 +56,28 @@ export default function CheckoutSuccess() {
       {/* 메시지 */}
       <div className="flex flex-col items-center gap-2 text-center max-w-md animate-fade-up" style={{ animationDelay: "0.2s" }}>
         <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
-          결제가 완료되었습니다!
+          {t.checkout.success.title}
         </h1>
         <p className="text-muted-foreground text-sm sm:text-base">
-          Piano Note Trainer Premium을 시작해보세요 🎹
+          {t.checkout.success.subtitle}
         </p>
         <p className="text-xs text-muted-foreground mt-2">
-          영수증은 이메일로 발송됩니다.
+          {t.checkout.success.receiptNote}
         </p>
       </div>
 
       {/* 혜택 안내 */}
       <div className="flex flex-col gap-2 p-4 rounded-2xl bg-card border border-border shadow-sm max-w-md w-full animate-fade-up" style={{ animationDelay: "0.4s" }}>
         <p className="text-sm font-semibold text-foreground mb-1">
-          🎁 이제 사용 가능한 기능
+          {t.checkout.success.benefitsHeading}
         </p>
         <ul className="space-y-1.5 text-sm text-muted-foreground">
-          <li className="flex items-start gap-2">
-            <span className="text-primary">✓</span>
-            <span>모든 레벨 (1~7) 무제한 이용</span>
-          </li>
-          <li className="flex items-start gap-2">
-            <span className="text-primary">✓</span>
-            <span>광고 완전 제거</span>
-          </li>
-          <li className="flex items-start gap-2">
-            <span className="text-primary">✓</span>
-            <span>상세 학습 통계 및 약점 분석</span>
-          </li>
-          <li className="flex items-start gap-2">
-            <span className="text-primary">✓</span>
-            <span>악보 업로드 및 커스텀 연습</span>
-          </li>
+          {t.checkout.success.benefits.map((item) => (
+            <li key={item} className="flex items-start gap-2">
+              <span className="text-primary">✓</span>
+              <span>{item}</span>
+            </li>
+          ))}
         </ul>
       </div>
 
@@ -98,11 +87,11 @@ export default function CheckoutSuccess() {
         className="px-8 py-3 rounded-xl bg-primary text-primary-foreground font-semibold text-sm shadow-lg hover:shadow-xl transition-all active:scale-95 animate-fade-up"
         style={{ animationDelay: "0.6s" }}
       >
-        🎹 시작하기
+        {t.checkout.success.startCta}
       </Link>
 
       <p className="text-xs text-muted-foreground animate-fade-up" style={{ animationDelay: "0.8s" }}>
-        5초 후 자동으로 홈으로 이동합니다
+        {t.checkout.success.autoRedirect}
       </p>
       </div>
     </div>
