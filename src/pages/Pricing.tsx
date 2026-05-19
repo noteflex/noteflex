@@ -51,13 +51,13 @@ const CONTENT = {
     compareTitle: "플랜 비교",
     compareHeaders: ["기능", "비가입", "Free", "Premium"],
     compareRows: [
-      ["Level 1-1", "✓ (3회/일)", "✓ Sub1", "✓"],
-      ["Level 2-1", "—", "✓ Sub1", "✓"],
-      ["Level 3-1 ~ 5-1", "—", "✓ Sub1 순차", "✓"],
-      ["Level 1~5 Sub2·3", "—", "—", "✓"],
-      ["Level 6·7", "—", "—", "✓"],
-      ["광고 없음", "—", "—", "✓"],
-      ["AI 분석 (일·주·월)", "—", "—", "✓"],
+      ["일일 연습 횟수", "3회", "7회", "무제한"],
+      ["이용 가능 레벨", "맛보기", "기초", "전체"],
+      ["약점 음표 분석", "—", "—", "✓"],
+      ["AI 학습 코치", "—", "—", "✓"],
+      ["광고", "있음", "있음", "없음"],
+      ["기록·통계", "기본", "기본", "자세히"],
+      ["신기능 우선 이용", "—", "—", "우선"],
     ],
     faqTitle: "자주 묻는 질문",
     faqMore: "자주 묻는 질문 전체 보기 →",
@@ -117,13 +117,13 @@ const CONTENT = {
     compareTitle: "Plan Comparison",
     compareHeaders: ["Feature", "Guest", "Free", "Premium"],
     compareRows: [
-      ["Level 1-1", "✓ (3/day)", "✓ Sub1", "✓"],
-      ["Level 2-1", "—", "✓ Sub1", "✓"],
-      ["Level 3-1 ~ 5-1", "—", "✓ Sub1 sequential", "✓"],
-      ["Level 1~5 Sub2·3", "—", "—", "✓"],
-      ["Level 6·7", "—", "—", "✓"],
-      ["Ad-free", "—", "—", "✓"],
-      ["AI analytics (daily/weekly/monthly)", "—", "—", "✓"],
+      ["Daily sessions", "3", "7", "Unlimited"],
+      ["Levels", "Taste", "Basics", "Everything"],
+      ["Weak-note analysis", "—", "—", "✓"],
+      ["AI learning coach", "—", "—", "✓"],
+      ["Ads", "Yes", "Yes", "None"],
+      ["Stats", "Basic", "Basic", "Detailed"],
+      ["Early access", "—", "—", "First"],
     ],
     faqTitle: "Frequently Asked Questions",
     faqMore: "See all FAQs →",
@@ -376,36 +376,52 @@ export default function Pricing() {
             <h2 className="text-xl font-bold text-foreground text-center mb-5">
               {c.compareTitle}
             </h2>
-            <div className="rounded-2xl border border-border bg-card overflow-hidden max-w-3xl mx-auto">
+            <div className="overflow-hidden rounded-2xl border border-border/50 bg-card shadow-sm max-w-3xl mx-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="bg-muted/50 border-b border-border">
-                    {c.compareHeaders.map((h, i) => (
-                      <th
-                        key={h}
-                        className={`px-4 py-3 font-semibold ${
-                          i === 0
-                            ? "text-left text-foreground"
-                            : i === 3
-                            ? "text-center text-primary"
-                            : "text-center text-muted-foreground"
-                        }`}
-                      >
-                        {h}
-                      </th>
-                    ))}
+                  <tr className="border-b border-border/30">
+                    {c.compareHeaders.map((header, idx) => {
+                      const isPremium = idx === c.compareHeaders.length - 1;
+                      return (
+                        <th
+                          key={header}
+                          className={`px-5 py-4 text-left font-semibold ${
+                            isPremium
+                              ? "text-primary bg-primary/5"
+                              : "text-foreground"
+                          }`}
+                        >
+                          {isPremium && <span className="mr-1">✨</span>}
+                          {header}
+                        </th>
+                      );
+                    })}
                   </tr>
                 </thead>
                 <tbody>
-                  {c.compareRows.map((row, i) => (
+                  {c.compareRows.map((row, rowIdx) => (
                     <tr
-                      key={row[0]}
-                      className={i < c.compareRows.length - 1 ? "border-b border-border" : ""}
+                      key={rowIdx}
+                      className="border-b border-border/20 last:border-0 hover:bg-muted/30 transition-colors"
                     >
-                      <td className="px-4 py-3 text-foreground">{row[0]}</td>
-                      <td className="text-center px-4 py-3 text-muted-foreground">{row[1]}</td>
-                      <td className="text-center px-4 py-3 text-muted-foreground">{row[2]}</td>
-                      <td className="text-center px-4 py-3 text-primary font-semibold">{row[3]}</td>
+                      {row.map((cell, cellIdx) => {
+                        const isFirstCol = cellIdx === 0;
+                        const isPremiumCol = cellIdx === row.length - 1;
+                        return (
+                          <td
+                            key={cellIdx}
+                            className={`px-5 py-4 ${
+                              isFirstCol
+                                ? "font-medium text-foreground"
+                                : isPremiumCol
+                                ? "text-primary font-semibold bg-primary/5"
+                                : "text-muted-foreground"
+                            }`}
+                          >
+                            {cell}
+                          </td>
+                        );
+                      })}
                     </tr>
                   ))}
                 </tbody>
