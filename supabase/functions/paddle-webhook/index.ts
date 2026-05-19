@@ -126,9 +126,9 @@ async function handleSubscriptionEvent(
 
   const row = {
     user_id: userId,
-    stripe_customer_id: data.customer_id,      // 컬럼명 재활용 (paddle_customer_id 역할)
-    stripe_subscription_id: data.id,
-    stripe_price_id: priceId,
+    paddle_customer_id: data.customer_id,
+    paddle_subscription_id: data.id,
+    paddle_price_id: priceId,
     status: data.status,
     plan: planLabel,
     current_period_start: data.current_billing_period?.starts_at ?? null,
@@ -137,10 +137,10 @@ async function handleSubscriptionEvent(
     canceled_at: data.canceled_at ?? null,
   };
 
-  // UPSERT by stripe_subscription_id
+  // UPSERT by paddle_subscription_id
   const { error } = await supabase
     .from("subscriptions")
-    .upsert(row, { onConflict: "stripe_subscription_id" });
+    .upsert(row, { onConflict: "paddle_subscription_id" });
 
   if (error) {
     console.error("[Webhook] subscriptions UPSERT 실패:", error);
@@ -175,7 +175,7 @@ async function handleAdjustmentEvent(
     const { data: sub, error: subErr } = await supabase
       .from("subscriptions")
       .select("user_id")
-      .eq("stripe_subscription_id", data.subscription_id)
+      .eq("paddle_subscription_id", data.subscription_id)
       .single();
 
     if (subErr || !sub) {

@@ -397,9 +397,9 @@ CREATE POLICY user_streaks_admin_select ON public.user_streaks
 CREATE TABLE IF NOT EXISTS public.subscriptions (
   id                       uuid          PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id                  uuid          NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
-  stripe_customer_id       text,
-  stripe_subscription_id   text          UNIQUE,
-  stripe_price_id          text,
+  paddle_customer_id       text,
+  paddle_subscription_id   text          UNIQUE,
+  paddle_price_id          text,
   status                   text          NOT NULL DEFAULT 'inactive',
   plan                     text          NOT NULL DEFAULT 'free',
   current_period_start     timestamptz,

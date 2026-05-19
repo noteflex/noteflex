@@ -263,7 +263,7 @@ export default function AdminUserDetail() {
             />
             <Field label="국가" value={profile.country_code} />
             <Field label="언어" value={profile.locale} />
-            <Field label="Stripe 고객 ID" value={profile.stripe_customer_id} />
+            <Field label="Paddle 고객 ID" value={profile.paddle_customer_id} />
           </CardContent>
         </Card>
 

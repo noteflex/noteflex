@@ -27,7 +27,7 @@ export interface AdminUserProfile {
   tos_agreed_at: string | null;
   privacy_agreed_at: string | null;
   marketing_agreed_at: string | null;
-  stripe_customer_id: string | null;
+  paddle_customer_id: string | null;
   created_at: string;
   updated_at: string;
 }
