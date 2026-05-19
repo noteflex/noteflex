@@ -39,19 +39,69 @@
   - 로그 조회 UI
   - 필터·실시간 갱신
   - resolved 처리
-- [ ] **출시 전 필수 항목** (~2~3일, 🟢)
-  - About 페이지
-  - Contact 페이지
-  - FAQ 페이지
-  - OG 이미지
-  - PWA manifest 마무리
-  - sitemap.xml 생성 (현재 `public/sitemap.xml` 없음, `robots.txt`에는 참조 있음)
-  - robots.txt 정리 (Googlebot/Bingbot override가 Disallow 무효화하는 문제)
-  - 구독 취소 버튼 (프로필 페이지 또는 설정 페이지)
-  - Paddle 사용자 결제 메일 발송 설정 (Paddle Dashboard → Customer Communication)
-  - 사업자 등록
-  - AdSense 심사 신청 (사업자 등록 후)
-  - Paddle Production 심사 신청 (사업자 등록 후)
+- [x] **출시 전 필수 항목** (2026-05-19 다수 항목 완료, 🟢→일부 ✅)
+  - [x] About 페이지 ✅ (2026-05-19 `ea6986b` — 1인 개발자 시점 미션 글, ko·en)
+  - [x] Contact 페이지 ✅ (2026-05-19 `3b9ee72` — 비즈니스·기술·결제 3섹션, ko·en)
+  - [x] FAQ 페이지 ✅ (2026-05-19 `a384165` — 13개 항목 ko·en, 기존 5 + 신규 8)
+  - [x] sitemap.xml 생성 ✅ (2026-05-19 `4556985` — 자동 생성 스크립트, 126개 URL)
+  - [x] robots.txt 정리 ✅ (2026-05-19 `4556985` + `830b75c` — Googlebot override 제거 + 빌드 후 강제 복사 fix)
+  - [x] 구독 취소 버튼 ✅ (2026-05-19 `38c2c58` — ProfilePage Customer Portal 버튼)
+  - [ ] OG 이미지
+  - [ ] PWA manifest 마무리
+  - [ ] Paddle 사용자 결제 메일 발송 설정 (Paddle Dashboard → Customer Communication)
+  - [ ] 사업자 등록
+  - [ ] AdSense 심사 신청 (사업자 등록 후) — 5/24(일) 예정
+  - [ ] Paddle Production 심사 신청 (사업자 등록 후) — 5/24(일) 예정
+
+### 2026-05-19 추가 완료 항목 ✅
+
+- [x] **Paddle Customer Portal 통합 완료** (2026-05-19, `38c2c58`·`1cb5a8c`)
+  - Edge Function `paddle-customer-portal` 생성 + 자체 JWT 검증
+  - ProfilePage "구독 관리" 버튼 (Premium 사용자 전용)
+  - 표준 Paddle 페이지에서 취소·결제수단 변경·인보이스 조회 가능
+  - webhook `handleSubscriptionEvent`에서 `profiles.paddle_customer_id` 자동 동기화 추가
+  - i18n: `manageSubscription`·`manageSubscriptionLoading` (ko·en) 추가
+- [x] **DB 컬럼명 정리: stripe_* → paddle_*** (2026-05-19, `fb437bb`)
+  - profiles·subscriptions 테이블 컬럼 4개 일괄 변경
+  - 영향 코드 4개 파일 일괄 정정
+  - 마이그레이션 2개 (consolidation 갱신 + rename 신규)
+- [x] **CheckoutSuccess·CheckoutFailed i18n 적용** (2026-05-19, `63e36da`)
+  - "Piano Note Trainer" 옛 이름 → "Noteflex" 정정
+  - 미구현 기능 항목("악보 업로드 및 커스텀 연습") 제거
+  - `strings.ts` checkout 영역 신규 추가
+- [x] **Pricing 비교표 정리 + 잡스 스타일 UI** (2026-05-19, `ea202fe`)
+  - 레벨 몰빵 제거 → 사용자 가치 중심 7행 (일일 연습·레벨·약점 분석·AI 코치·광고·통계·우선 이용)
+  - Sub1·Sub2 같은 내부 용어 노출 제거
+  - Premium 컬럼만 강조(✨)·행 호버 효과·미니멀 보더
+
+### 2026-05-19 신규 추가 항목 (출시 전 필수)
+
+- [ ] **게임 영역 검증**
+  - UI 정비 (오선지·음표 배열·사이즈 — 메모리 #16 정책 기준)
+  - Hooking (게임 진입·결과·복귀 흐름)
+  - Anchor 다이얼로그 작성
+  - 실제 게임 플레이 후 기록 적재 확인 (DB·대시보드 동작)
+- [ ] **PWA 구현**
+  - manifest.json 작성
+  - vite-plugin-pwa 설정
+  - service worker
+  - 홈 화면 추가 팝업 (iOS·Android, 메모리 #12 정책 기준)
+- [ ] **출시 준비 (5/24 예정)**
+  - AdSense 심사 신청
+  - Paddle Production 심사 신청
+  - Google Search Console에 `sitemap.xml` 제출
+  - Vercel 환경변수 production 전환 (메모리 #1 체크리스트)
+  - OG 이미지 작성
+
+### 2026-05-19 신규 추가 항목 (출시 후)
+
+- [ ] **paddle-webhook fail-open 검증 강화** — `PADDLE_WEBHOOK_SECRET` 미설정 시 fail-closed로 변경
+  - 현재: secret 미설정 시 모든 webhook 통과 (개발 편의)
+  - 출시 후: 명시적 보안 강화 필요
+- [ ] `ai_reports` + `marketing_metrics_daily` 마이그레이션 작성
+- [ ] 누락 함수 9개 마이그레이션 작성
+- [ ] GRANT 마이그 통합 (10/30 유예)
+- [ ] `hard_delete_account` 함수 검증
 
 ### Cursor 검증 박지 X 박힌 영역 (사용량 영역으로 중단)
 

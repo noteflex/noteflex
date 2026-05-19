@@ -4,6 +4,125 @@
 
 ---
 
+## 2026-05-19 (화) — 결제 시스템 마무리 · SEO · 콘텐츠 페이지 · Pricing 정리
+
+### 주요 작업 — 결제 시스템 완전 종료
+
+1. **Customer Portal redirect 기능 추가** (`38c2c58`)
+   - `supabase/functions/paddle-customer-portal/index.ts` 신규 생성
+   - ProfilePage "구독 관리" 버튼 추가 (Premium 사용자 전용)
+   - Paddle Customer Portal로 redirect → 사용자가 표준 페이지에서 취소·결제수단 변경·인보이스 조회 가능
+   - Edge Function 자체 JWT 검증(`supabase.auth.getUser`) + `verify_jwt = false` 설정
+   - i18n: `strings.ts`에 `manageSubscription`·`manageSubscriptionLoading` 추가 (ko·en)
+
+2. **DB 컬럼명 정리: stripe_* → paddle_*** (`fb437bb`)
+   - `profiles.stripe_customer_id` → `paddle_customer_id`
+   - `subscriptions.stripe_customer_id` → `paddle_customer_id`
+   - `subscriptions.stripe_subscription_id` → `paddle_subscription_id`
+   - `subscriptions.stripe_price_id` → `paddle_price_id`
+   - 영향 파일: `paddle-webhook/index.ts`, `useAdminUserDetail.ts`, `AdminUserDetail.tsx`, 마이그레이션 2개
+   - 사용자 데이터 0건 시점에서 안전하게 진행
+
+3. **profile.paddle_customer_id 자동 동기화 fix** (`1cb5a8c`)
+   - 발견: webhook이 `subscriptions` 테이블에만 customer_id 기록, `profiles` 테이블에는 NULL 유지
+   - 증상: 구독 관리 버튼 클릭 시 Edge Function 404 (Paddle customer not found)
+   - 원인: webhook 코드가 `profiles` 테이블 UPDATE 누락
+   - fix: `handleSubscriptionEvent`에서 subscriptions UPSERT 후 profiles UPDATE 추가
+   - 신규 사용자도 결제 즉시 구독 관리 가능
+
+4. **Paddle API key 권한 추가**
+   - 발견: Customer portal sessions API 호출 시 403 forbidden
+   - 원인: 기존 API key가 모든 권한 Read 전용으로 설정됨
+   - fix: Paddle Dashboard에서 Customer portal sessions = Write 권한 추가
+   - 사용자가 직접 Paddle Dashboard에서 진행
+
+5. **PADDLE_ENVIRONMENT 환경변수 추가**
+   - Supabase Edge Function secrets에 `PADDLE_ENVIRONMENT=sandbox` 명시적 설정
+   - 기존 Edge Function 코드는 기본값 sandbox로 동작했으나 명시적 설정으로 안전성 확보
+
+6. **CheckoutSuccess·CheckoutFailed i18n 적용** (`63e36da`)
+   - 한글 하드코딩 → `useT()` 다국어
+   - "Piano Note Trainer" 옛 이름 → "Noteflex" 정정
+   - "악보 업로드 및 커스텀 연습" 항목 삭제 (미구현 기능)
+   - `strings.ts`에 `checkout` 영역 신규 추가 (ko·en)
+
+### SEO 정리
+
+- **robots.txt 빌드 후 강제 복사 fix** (`830b75c`)
+  - 원인: vite 빌드 과정에서 어딘가 `robots.txt`를 짧은 버전으로 덮어쓰는 현상
+  - fix: `package.json` build script에 `cp public/robots.txt dist/robots.txt` 추가
+  - 결과: `dist/robots.txt` 476 bytes (Allow/Disallow 전체 포함) 정상 유지
+- **sitemap.xml 자동 생성** (`4556985`)
+  - `scripts/generate-sitemap.ts` 신규 작성 (vite-node 기반)
+  - `npm run sitemap` 명령으로 정적 페이지 10개 + KO 블로그 58편 + EN 블로그 58편 = 총 126개 URL 자동 생성
+  - 빌드 시 자동 갱신되도록 `build` 스크립트에 통합
+
+### 콘텐츠 페이지 작성 — About · Contact · FAQ
+
+1. **About 페이지** (`ea6986b`)
+   - "Coming soon" 제거 → 1인 개발자 시점 미션 글 작성
+   - 4문단: 시작·문제·해결·약속
+   - ko·en 동시 작성
+   - 핵심 문장: "여러분의 초견 실력과 함께 자라는 서비스가 되겠다고 약속합니다"
+
+2. **Contact 페이지** (`3b9ee72`)
+   - 3섹션 분리: 비즈니스 문의·기술 지원·결제 영역
+   - contact@noteflex.app (mailto), support@noteflex.app (mailto), Paddle Help (외부 링크)
+   - 응답 시간 명시 제외 (사용자 결정)
+   - 사업자 정보는 Footer만 사용 (중복 회피)
+   - tax@ 영역 미포함 (결제는 Paddle 책임)
+
+3. **FAQ 확장** (`a384165`)
+   - 기존 5개(취소·결제 수단·무료 체험·업그레이드·환불) 유지
+   - 신규 8개 추가: 적합한 사용자·악기 없이 사용·일일 연습 시간·진도 추적·계정 삭제(30일 grace period)·여러 기기 동시 사용(불가능 명시)·앱 스토어(추후 반영)·오프라인(온라인 권장)
+   - 총 13개 (ko·en)
+   - 레벨 구성 질문 제외 (향후 레벨 추가 예정)
+
+### Pricing 비교표 정리 (`ea202fe`)
+
+- 기존: 레벨 5행 + 광고 + AI 분석 = 7행. 레벨에 몰빵, Sub1·Sub2·Sub3 같은 내부 용어 노출
+- 신규: 사용자 가치 중심 7행 + 잡스 스타일 미니멀 디자인
+- `compareRows`: 일일 연습 횟수 / 이용 가능 레벨(맛보기·기초·전체) / 약점 음표 분석 / AI 학습 코치 / 광고 / 기록·통계 / 신기능 우선 이용
+- UI: 둥근 모서리·Premium 컬럼만 강조(✨ + `bg-primary/5`)·행 호버 효과·미니멀 보더
+- ko·en 양쪽 적용
+
+### 디버그 기록
+
+- **30분 디버그: 구독 관리 버튼 무반응** (`7f18178`)
+  - 1차 진단: 버튼 DOM·onClick 정상 → 함수 진입 확인 위해 console.log 단계별 추가
+  - 2차 진단: env URL 정상·session 정상 → fetch URL 정상 → response 404 "Paddle customer not found"
+  - 3차 진단: `profile.paddle_customer_id` NULL 확인 → webhook 누락
+  - fix: webhook에 `profiles` UPDATE 추가 + Paddle API key 권한 추가
+  - 학습: 단계별 console.log로 어느 지점에서 멈추는지 추적이 가장 빠른 진단 방법
+
+### 누적 commit (2026-05-19)
+
+- `38c2c58`: feat(payment) Customer Portal redirect
+- `fb437bb`: refactor(db) stripe→paddle 컬럼명 변경
+- `1cb5a8c`: fix(payment) webhook profile.paddle_customer_id 동기화
+- `7f18178`: debug(payment) handleManageSubscription 단계별 console.log
+- `4556985`: feat(seo) robots.txt 정리 + sitemap.xml 자동 생성
+- `830b75c`: fix(build) robots.txt 빌드 후 강제 복사
+- `63e36da`: i18n(checkout) CheckoutSuccess·CheckoutFailed 다국어 적용
+- `ea6986b`: content(about) About 페이지 작성
+- `3b9ee72`: content(contact) Contact 페이지 작성
+- `a384165`: content(faq) FAQ 8개 추가
+- `ea202fe`: refactor(pricing) 비교표 정리 + 잡스 스타일 UI
+
+### 출시 일정 갱신
+
+- 기존 5/31 마감 → 6월 첫째주 출시로 1주 연기
+- 5/24(일) AdSense + Paddle Production 심사 신청 예정
+- 심사 거절 시: 출시 강행 후 재심사 진행 (사용자 결정)
+
+### 사용자 정서 메모
+
+- 2일 누적 작업으로 피곤 누적
+- 새벽 1시 작업 종료
+- 결제 시스템 100% 완성 + 콘텐츠 4개 페이지 + Pricing 정리 = 큰 진전
+
+---
+
 ## 2026-05-17 — 대시보드 회귀 fix 3건 + 전날 회귀 fix 2건 (reviewer + 페이지 제목)
 
 ### 박음
