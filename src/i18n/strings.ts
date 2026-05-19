@@ -130,6 +130,8 @@ export interface Strings {
     deleteCancel: string;
     deleteCloseModal: string;
     deleteSendFailed: string;
+    manageSubscription: string;
+    manageSubscriptionLoading: string;
   };
   adPlaceholder: {
     premium: {
@@ -509,6 +511,8 @@ const ko: Strings = {
     deleteCancel: "취소",
     deleteCloseModal: "닫기",
     deleteSendFailed: "전송 실패",
+    manageSubscription: "구독 관리",
+    manageSubscriptionLoading: "이동 중...",
   },
   adPlaceholder: {
     premium: {
@@ -886,6 +890,8 @@ const en: Strings = {
     deleteCancel: "Cancel",
     deleteCloseModal: "Close",
     deleteSendFailed: "Failed to send",
+    manageSubscription: "Manage Subscription",
+    manageSubscriptionLoading: "Loading...",
   },
   adPlaceholder: {
     premium: {

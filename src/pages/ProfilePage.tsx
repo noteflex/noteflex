@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useRef } from "react";
+import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
 import { useAuth } from "@/contexts/AuthContext";
@@ -42,6 +42,60 @@ export default function ProfilePage() {
   const { system, setSystem } = useSolfegeSystem();
   const { lang, setLang } = useLang();
   const t = useT();
+
+  const [isLoadingPortal, setIsLoadingPortal] = useState(false);
+
+  const handleManageSubscription = useCallback(async () => {
+    if (!user) return;
+
+    try {
+      setIsLoadingPortal(true);
+
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) {
+        logger.warn("구독 관리 — 세션 토큰 누락", { user_id: user.id });
+        return;
+      }
+
+      logger.info("구독 관리 portal 요청 시작", {
+        description: "Paddle customer portal URL 생성",
+        user_id: user.id,
+      });
+
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/paddle-customer-portal`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        const err = await response.json();
+        logger.error("구독 관리 portal 생성 실패", new Error(err.error), {
+          description: "Edge Function 호출 실패",
+          cause: err.error,
+          impact: "사용자가 구독 관리 페이지 접근 불가",
+          metadata: { status: response.status, user_id: user.id },
+        });
+        return;
+      }
+
+      const { portalUrl } = await response.json();
+      window.location.href = portalUrl;
+    } catch (err) {
+      logger.error("구독 관리 처리 실패", err, {
+        description: "Paddle portal redirect 처리 중 예외",
+        cause: err instanceof Error ? err.message : String(err),
+        metadata: { user_id: user.id },
+      });
+    } finally {
+      setIsLoadingPortal(false);
+    }
+  }, [user]);
 
   // 계이름·언어 옵션 라벨 영역 (KO/EN 분기)
   const localeLabels: Record<Lang, string> = {
@@ -482,9 +536,22 @@ export default function ProfilePage() {
               <span className="text-muted-foreground">{t.profile.accountInfoSubscription}</span>
               <span>
                 {profile?.is_premium ? (
-                  <span className="text-amber-600 font-semibold">
-                    ✨ Premium{premiumUntil ? ` (~${premiumUntil})` : ""}
-                  </span>
+                  <div className="flex flex-col items-end gap-2">
+                    <span className="text-amber-600 font-semibold">
+                      ✨ Premium{premiumUntil ? ` (~${premiumUntil})` : ""}
+                    </span>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleManageSubscription}
+                      disabled={isLoadingPortal}
+                      data-testid="manage-subscription-btn"
+                    >
+                      {isLoadingPortal
+                        ? t.profile.manageSubscriptionLoading
+                        : t.profile.manageSubscription}
+                    </Button>
+                  </div>
                 ) : (
                   <span className="text-muted-foreground">{t.profile.accountInfoFree}</span>
                 )}

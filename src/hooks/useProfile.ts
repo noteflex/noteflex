@@ -10,6 +10,7 @@ export interface Profile {
   avatar_url: string | null;
   is_premium: boolean;
   premium_until: string | null;
+  paddle_customer_id: string | null;
   locale: string | null;
   created_at: string;
   updated_at: string;
