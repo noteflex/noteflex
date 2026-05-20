@@ -320,6 +320,15 @@ export function useSessionRecorder() {
         let sessionId: string | null = null;
 
         // 1) RPC 시도
+        console.log("[SessionRecorder] RPC 인자 검증", {
+          level: { value: state.level, type: typeof state.level, isInt: Number.isInteger(state.level) },
+          duration_seconds: { value: durationSeconds, type: typeof durationSeconds, isInt: Number.isInteger(durationSeconds) },
+          total_notes: { value: totalNotes, type: typeof totalNotes, isInt: Number.isInteger(totalNotes) },
+          correct_notes: { value: correctNotes, type: typeof correctNotes, isInt: Number.isInteger(correctNotes) },
+          accuracy: { value: accuracy, type: typeof accuracy },
+          avg_reaction_ms: { value: avgReactionMs, type: typeof avgReactionMs, isInt: Number.isInteger(avgReactionMs) },
+          xp_earned: { value: xpBreakdown.total, type: typeof xpBreakdown.total, isInt: Number.isInteger(xpBreakdown.total) },
+        });
         const { data: rpcData, error: rpcError } = await supabase.rpc(
           "record_game_session",
           {
