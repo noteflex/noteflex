@@ -357,6 +357,11 @@ export default function NoteGame({
   } = useUserEnvOffset();
   const isAdminOrDev  = profile?.role === "admin" || import.meta.env.DEV;
   const noteStartTime = useRef<number>(performance.now());
+  const updateNoteStartTime = (label: string) => {
+    const now = performance.now();
+    noteStartTime.current = now;
+    console.log(`[noteStartTime] ${label} @ ${now.toFixed(0)}ms`);
+  };
   const turnCounterRef = useRef<number>(0);
   // §0.1 전역 dedup — 직전에 화면에 떠 있던 음표 (정답·오답 모두 갱신).
   // popDueOrNull에 전달해 같은 ID retry pop을 1턴 지연시킨다.
@@ -783,7 +788,7 @@ export default function NoteGame({
             setDisabledNotes(new Set());
             setAnsweredNotes([]);
             setTimerKey(prev => prev + 1);
-            noteStartTime.current = performance.now();
+            updateNoteStartTime("final-retry 진입");
             playNote(getSoundKey(result.batch[0]));
             return;
           }
@@ -859,7 +864,7 @@ export default function NoteGame({
         setCurrentIndex(0);
         setDisabledNotes(new Set());
         setTimerKey(prev => prev + 1);
-        noteStartTime.current = performance.now();
+        updateNoteStartTime("set 완료 - 새 batch");
 
         playNote(getSoundKey(result.batch[0]));
       }
@@ -867,7 +872,7 @@ export default function NoteGame({
       setCurrentIndex(nextIndex);
       setDisabledNotes(new Set());
       setTimerKey(prev => prev + 1);
-      noteStartTime.current = performance.now();
+      updateNoteStartTime("다음 turn (같은 batch)");
 
       prepareNextTurn();
       playNote(getSoundKey(currentBatch[nextIndex]));
@@ -952,7 +957,7 @@ export default function NoteGame({
     // §0.3 (개정 2026-05-01): grace setTimeout 제거 — setTimerKey가 startRef를 동기 리셋해 Sub3 안전 보장.
     setShowCountdown(false);
     setTimerKey(prev => prev + 1);
-    noteStartTime.current = performance.now();
+    updateNoteStartTime("카운트다운 종료");
     if (currentBatch.length === 0) return;
     // §1 (2026-05-01): audio context 활성화 보장 후 playNote.
     //  - sampler 미준비 시 initSound 완료 대기
@@ -993,7 +998,7 @@ export default function NoteGame({
       setCurrentIndex(nextIndex);
       setDisabledNotes(new Set());
       setTimerKey(prevKey => prevKey + 1);
-      noteStartTime.current = performance.now();
+      updateNoteStartTime("advanceFinalRetry 같은 batch 다음");
       playNote(getSoundKey(currentBatch[nextIndex]));
       return;
     }
@@ -1018,7 +1023,7 @@ export default function NoteGame({
           setAnsweredNotes([]);
         }
         setTimerKey(prevKey => prevKey + 1);
-        noteStartTime.current = performance.now();
+        updateNoteStartTime("final-retry 새 batch");
         playNote(getSoundKey(result.batch[0]));
       }
       return next;
@@ -1074,6 +1079,7 @@ export default function NoteGame({
         level,
       });
 
+      console.log(`[recordNote] 정답 reactionMs=${responseTimeMs.toFixed(0)}`);
       recorder.recordNote({
         note: `${currentTarget.key}${currentTarget.octave}`,
         correct: true,
@@ -1139,6 +1145,7 @@ export default function NoteGame({
         level,
       });
 
+      console.log(`[recordNote] 오답 reactionMs=${responseTimeMs.toFixed(0)}`);
       recorder.recordNote({
         note: `${currentTarget.key}${currentTarget.octave}`,
         correct: false,
@@ -1182,7 +1189,7 @@ export default function NoteGame({
 
       // 같은 자리 유지하되 사용자가 다시 풀 시간을 줘야 하므로 타이머만 리셋.
       setTimerKey(prev => prev + 1);
-      noteStartTime.current = performance.now();
+      updateNoteStartTime("오답 후 재시도");
     }
   }, [phase, currentTarget, currentIndex, batchAndKey.retryCount, currentStageConfig.batchSize, lives, individualStreak, logNote, recorder, level, isCustom, customClef, retryQueue, advanceToNextTurn, addMissedNote, removeMissedNote, missedNoteIdOf, advanceFinalRetry]);
 
@@ -1203,6 +1210,7 @@ export default function NoteGame({
       level,
     });
 
+    console.log(`[recordNote] 타임아웃 reactionMs=${TIMER_SECONDS * 1000}`);
     recorder.recordNote({
       note: `${currentTarget.key}${currentTarget.octave}`,
       correct: false,
@@ -1249,7 +1257,7 @@ export default function NoteGame({
 
     // 타이머만 리셋해서 사용자가 같은 음표를 다시 풀 시간 확보.
     setTimerKey(prev => prev + 1);
-    noteStartTime.current = performance.now();
+    updateNoteStartTime("타임아웃 후 재시도");
   }, [phase, lives, currentTarget, currentIndex, batchAndKey.retryCount, logNote, recorder, level, isCustom, customClef, retryQueue, addMissedNote, missedNoteIdOf, advanceFinalRetry]);
 
   const handleReplay = () => {
@@ -1292,7 +1300,7 @@ export default function NoteGame({
       if (isSamplerReady()) {
         playNote(getSoundKey(notes[0]));
       }
-      noteStartTime.current = performance.now();
+      updateNoteStartTime("handleReplay");
     }
   };
 
