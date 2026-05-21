@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
+import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   getUserEnvOffset,
@@ -12,6 +13,7 @@ import {
   onDeviceChange,
   logDeviceChangeEvent,
   updateDeviceChangeEvent,
+  measureSystemLatency,
 } from "@/lib/userEnvironmentOffset";
 
 export interface UseUserEnvOffsetReturn {
@@ -83,11 +85,27 @@ export function useUserEnvOffset(): UseUserEnvOffsetReturn {
     })();
   }, [user]);
 
-  // Q-F: device 변경 감지 → 자동 재측정 (메모리 #19) + A2 이벤트 로깅
+  // 초기 로드 완료 후 outputLatency 기반 자동 측정
+  // DB·localStorage 값이 없을 때만 측정 — 기존 값 있으면 덮어쓰지 않음
+  useEffect(() => {
+    if (isLoading) return;
+    if (isCalibrated) return;
+    measureSystemLatency().then((ms) => {
+      setUserEnvOffset(ms);
+      setOffsetMs(ms);
+      setIsCalibrated(true);
+      if (userRef.current) {
+        void syncOffsetToProfile(userRef.current.id, ms);
+      }
+    });
+  // isLoading, isCalibrated 변화 시 1회만 실행
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoading]);
+
+  // Q-F: device 변경 감지 → outputLatency 자동 재측정 + A2 이벤트 로깅
   useEffect(() => {
     return onDeviceChange((event) => {
       setDeviceChanged(true);
-      setIsCalibrated(false); // needsCalibration → true → 다음 게임 진입 시 자동 모달
       if (userRef.current) {
         void logDeviceChangeEvent({
           userId: userRef.current.id,
@@ -98,6 +116,22 @@ export function useUserEnvOffset(): UseUserEnvOffsetReturn {
           if (id) pendingDeviceEventRef.current = id;
         });
       }
+      measureSystemLatency().then(async (newMs) => {
+        const prev = hasStoredOffset() ? getUserEnvOffset() : 0;
+        if (Math.abs(newMs - prev) > 50) {
+          setUserEnvOffset(newMs);
+          setOffsetMs(newMs);
+          setIsCalibrated(true);
+          if (userRef.current) {
+            await syncOffsetToProfile(userRef.current.id, newMs);
+            if (pendingDeviceEventRef.current) {
+              await updateDeviceChangeEvent(pendingDeviceEventRef.current, newMs);
+              pendingDeviceEventRef.current = null;
+            }
+          }
+          toast.info("오디오 환경 변경 감지 — 지연 보정값 업데이트");
+        }
+      });
     });
   }, []);
 

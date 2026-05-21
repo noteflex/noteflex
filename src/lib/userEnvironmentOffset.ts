@@ -38,6 +38,25 @@ export function setCalibrationSkippedOnce(): void {
   localStorage.setItem(SKIP_KEY, "true");
 }
 
+// ─── AudioContext 기반 시스템 지연 자동 측정 ────────────────
+
+export async function measureSystemLatency(): Promise<number> {
+  try {
+    const AudioContextClass =
+      window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+    if (!AudioContextClass) return 0;
+    const ctx = new AudioContextClass();
+    const latencySeconds = (ctx as AudioContext & { outputLatency?: number }).outputLatency ?? 0;
+    const baseLatencySeconds = ctx.baseLatency ?? 0;
+    const totalLatencyMs = Math.round((latencySeconds + baseLatencySeconds) * 1000);
+    ctx.close();
+    return Math.min(Math.max(totalLatencyMs, 0), 1000);
+  } catch (err) {
+    console.warn("[calibration] outputLatency 측정 실패:", err);
+    return 0;
+  }
+}
+
 // ─── reactionMs 보정 (Q-K: clamp 0) ────────────────────────
 
 export function clampReactionMs(rawMs: number, offsetMs: number): number {

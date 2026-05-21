@@ -8,7 +8,6 @@ import AccidentalSwipeTutorial, {
   hasSeenSwipeTutorial,
   markSwipeTutorialSeen,
 } from "./AccidentalSwipeTutorial";
-import CalibrationModal from "./CalibrationModal";
 import { useUserEnvOffset } from "@/hooks/useUserEnvOffset";
 import { useDailyLimit } from "@/hooks/useDailyLimit";
 import { useAuth } from "@/contexts/AuthContext";
@@ -349,11 +348,7 @@ export default function NoteGame({
   const { profile } = useAuth();
   const dailyLimit = useDailyLimit();
   const {
-    needsCalibration,
     isLoading: calibrationLoading,
-    canSkip: calibrationCanSkip,
-    setOffset: setCalibrationOffset,
-    skipCalibration,
   } = useUserEnvOffset();
   const isAdminOrDev  = profile?.role === "admin" || import.meta.env.DEV;
   const noteStartTime = useRef<number>(performance.now());
@@ -878,9 +873,8 @@ export default function NoteGame({
     }
   }, [stages, stageIdx, currentIndex, currentBatch, setProgress, currentSet, composeBatch, handleSetComplete, prepareNextTurn]);
   
-  // §calibration + §swipe-modal (메모리 #18): calibration → swipe → 카운트다운 → 첫 음표.
-  // isLoading 중 모달 X (메모리 #19 깜박임 방지 — Option A race condition fix 2026-05-04).
-  const [showCalibration, setShowCalibration] = useState(false);
+  // §swipe-modal → 카운트다운 → 첫 음표 흐름 (calibration 제거됨)
+  // isLoading 중 모달 X (깜박임 방지 — race condition fix 2026-05-04).
   const [showSwipeTutorial, setShowSwipeTutorial] = useState(false);
   const [showCountdown, setShowCountdown] = useState(false);
   useEffect(() => {
@@ -910,47 +904,12 @@ export default function NoteGame({
     // 통과 시 recordSession (fire-and-forget — DB 실패해도 게임 진행)
     void dailyLimitRef.current.recordSession();
 
-    if (needsCalibration) {
-      setShowCalibration(true);
-    } else if (level >= 5 && !hasSeenSwipeTutorial(level)) {
-      setShowSwipeTutorial(true);
-    } else if (!skipCountdown) {
-      setShowCountdown(true);
-    }
-  }, [calibrationLoading, needsCalibration, level, skipCountdown, onLevelSelect]);
-
-  // 안전망: 로드 완료 후 needsCalibration이 false로 바뀌면 모달 닫기
-  useEffect(() => {
-    if (calibrationLoading) return;
-    if (!needsCalibration && showCalibration) {
-      setShowCalibration(false);
-      if (level >= 5 && !hasSeenSwipeTutorial(level)) {
-        setShowSwipeTutorial(true);
-      } else if (!skipCountdown) {
-        setShowCountdown(true);
-      }
-    }
-  }, [calibrationLoading, needsCalibration, showCalibration, level, skipCountdown]);
-
-  const handleCalibrationComplete = useCallback(async (offsetMs: number) => {
-    await setCalibrationOffset(offsetMs);
-    setShowCalibration(false);
     if (level >= 5 && !hasSeenSwipeTutorial(level)) {
       setShowSwipeTutorial(true);
     } else if (!skipCountdown) {
       setShowCountdown(true);
     }
-  }, [level, skipCountdown, setCalibrationOffset]);
-
-  const handleCalibrationSkip = useCallback(() => {
-    skipCalibration();
-    setShowCalibration(false);
-    if (level >= 5 && !hasSeenSwipeTutorial(level)) {
-      setShowSwipeTutorial(true);
-    } else if (!skipCountdown) {
-      setShowCountdown(true);
-    }
-  }, [level, skipCountdown, skipCalibration]);
+  }, [calibrationLoading, level, skipCountdown, onLevelSelect]);
 
   const handleSwipeTutorialClose = useCallback((markAsSeen: boolean) => {
     if (markAsSeen) markSwipeTutorialSeen(level);
@@ -1340,12 +1299,6 @@ export default function NoteGame({
         <CountdownOverlay seconds={3} onComplete={handleCountdownComplete} />
       )}
 
-      <CalibrationModal
-        isOpen={showCalibration}
-        canSkip={calibrationCanSkip}
-        onComplete={handleCalibrationComplete}
-        onSkip={handleCalibrationSkip}
-      />
       <AccidentalSwipeTutorial isOpen={showSwipeTutorial} onClose={handleSwipeTutorialClose} />
 
       <span className="sr-only">
@@ -1399,33 +1352,33 @@ export default function NoteGame({
             duration={TIMER_SECONDS}
             resetKey={timerKey}
             onExpire={handleTimerExpire}
-            paused={(phase !== "playing" && phase !== "final-retry") || showCountdown || showSwipeTutorial || showCalibration || calibrationLoading}
+            paused={(phase !== "playing" && phase !== "final-retry") || showCountdown || showSwipeTutorial || calibrationLoading}
           />
         </div>
 
         {/* §검증73 (2026-05-05, 메모리 #28 게이팅 확장 — 옵션 A): wrapper에 invisible 추가 → staff·clef·brace까지 hidden.
             메모리 #16 정책 P1 강화: 카운트다운 끝 시점에 staff·음표·조표·사운드 모두 동시 등장. */}
-        <div className={`w-full max-w-[612px] mx-auto ${(showCountdown || showSwipeTutorial || showCalibration || calibrationLoading) ? "invisible" : ""}`}>
+        <div className={`w-full max-w-[612px] mx-auto ${(showCountdown || showSwipeTutorial || calibrationLoading) ? "invisible" : ""}`}>
           <GrandStaffPractice
             // §2 (2026-05-01): 카운트다운 중 음표·조표 숨김 (clef·오선만 표시).
             // §swipe-modal-perf (2026-05-02): swipe 모달 동안에도 동일하게 음표·조표 숨김.
             // §enter-flicker (2026-05-05, 메모리 #28): calibrationLoading=true 동안 음표·조표 숨김 — 마운트 직후 한 frame 노출 영역 차단.
-            targetNote={(showCountdown || showSwipeTutorial || showCalibration || calibrationLoading) ? null : targetNoteStr}
-            targetAccidental={(showCountdown || showSwipeTutorial || showCalibration || calibrationLoading) ? null : targetAccidental}
-            noteHistory={(showCountdown || showSwipeTutorial || showCalibration || calibrationLoading) ? [] : answeredNotes}
-            batchNotes={(showCountdown || showSwipeTutorial || showCalibration || calibrationLoading) ? undefined : batchNotesForDisplay}
-            batchIndex={!showCountdown && !showSwipeTutorial && !showCalibration && !calibrationLoading && isBatchDisplay ? currentIndex : undefined}
+            targetNote={(showCountdown || showSwipeTutorial || calibrationLoading) ? null : targetNoteStr}
+            targetAccidental={(showCountdown || showSwipeTutorial || calibrationLoading) ? null : targetAccidental}
+            noteHistory={(showCountdown || showSwipeTutorial || calibrationLoading) ? [] : answeredNotes}
+            batchNotes={(showCountdown || showSwipeTutorial || calibrationLoading) ? undefined : batchNotesForDisplay}
+            batchIndex={!showCountdown && !showSwipeTutorial && !calibrationLoading && isBatchDisplay ? currentIndex : undefined}
             clef={currentClef}
             level={level}
             batchSize={currentStageConfig.batchSize}
             maxVisibleN={maxVisibleN}
             keySignature={currentKeySignature.abcKey}
-            keySharps={needsKeySig && !(showCountdown || showSwipeTutorial || showCalibration || calibrationLoading) ? currentKeySignature.sharps : undefined}
-            keyFlats={needsKeySig && !(showCountdown || showSwipeTutorial || showCalibration || calibrationLoading) ? currentKeySignature.flats : undefined}
+            keySharps={needsKeySig && !(showCountdown || showSwipeTutorial || calibrationLoading) ? currentKeySignature.sharps : undefined}
+            keyFlats={needsKeySig && !(showCountdown || showSwipeTutorial || calibrationLoading) ? currentKeySignature.flats : undefined}
           />
         </div>
 
-        <div className={`w-full mt-1 ${(showCountdown || showSwipeTutorial || showCalibration || calibrationLoading) ? "invisible" : ""}`}>
+        <div className={`w-full mt-1 ${(showCountdown || showSwipeTutorial || calibrationLoading) ? "invisible" : ""}`}>
           <p className="text-center text-sm text-muted-foreground mb-3">
             {isBatchDisplay
               ? `${currentIndex + 1}/${currentBatch.length}번째 음표의 이름은?`
@@ -1434,7 +1387,7 @@ export default function NoteGame({
 
           <NoteButtons
             onNoteClick={handleAnswer}
-            disabled={(phase !== "playing" && phase !== "final-retry") || showCountdown || showSwipeTutorial || showCalibration || calibrationLoading}
+            disabled={(phase !== "playing" && phase !== "final-retry") || showCountdown || showSwipeTutorial || calibrationLoading}
             disabledNotes={disabledNotes}
             keySharps={needsKeySig ? currentKeySignature.sharps : undefined}
             keyFlats={needsKeySig ? currentKeySignature.flats : undefined}
