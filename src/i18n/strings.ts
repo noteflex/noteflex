@@ -594,7 +594,7 @@ const ko: Strings = {
     slowerNotesTitle: "🐢 느려진 음표",
     accuracyUpTitle: "🎯 정확도 ↑",
     accuracyDownTitle: "🎯 정확도 ↓",
-    insufficientData: "이전 기록이 충분하지 않아 비교 분석은 다음 세션부터 박혀요.",
+    insufficientData: "이전 기록이 충분하지 않아 비교 분석은 다음 세션부터 나타납니다.",
     noteDeltaSeconds: "{note} ({sign}{delta}초)",
     noteDeltaPp: "{note} ({sign}{delta}%p)",
   },
@@ -696,7 +696,7 @@ const ko: Strings = {
     // ── 신규 미니멀 대시보드 영역 ───────────────
     emptyTodayTitle: "오늘은 아직 시작하지 않았어요",
     emptyTodaySubtitle: "스트릭 유지하려면 오늘 1회 연습해주세요",
-    emptyTodayStreakHint: "오늘 박으면 {n}일째 ✨",
+    emptyTodayStreakHint: "오늘 연습하면 {n}일째 ✨",
     emptyTodayCta: "지금 시작 →",
 
     newUserTitle: "🎵 첫 세션을 시작해보세요",
@@ -1075,7 +1075,7 @@ const en: Strings = {
     // ── New minimal dashboard ───────────────────
     emptyTodayTitle: "You haven't started today yet",
     emptyTodaySubtitle: "Practice once today to keep your streak",
-    emptyTodayStreakHint: "Today makes it day {n} ✨",
+    emptyTodayStreakHint: "Practice today to make it day {n} ✨",
     emptyTodayCta: "Start now →",
 
     newUserTitle: "🎵 Start your first session",

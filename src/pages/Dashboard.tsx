@@ -372,6 +372,18 @@ export default function Dashboard() {
   const t = useT();
   const [searchParams, setSearchParams] = useSearchParams();
 
+  useEffect(() => {
+    const handleVisibility = () => {
+      if (document.visibilityState === "visible") {
+        myStats.refresh();
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibility);
+    return () => document.removeEventListener("visibilitychange", handleVisibility);
+  // myStats.refresh는 useCallback으로 안정화되어 있어야 하지만, 호출 빈도가 낮으므로 안전
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [myStats.refresh]);
+
   // ?upgrade=1 → UpgradeModal 자동 노출
   const upgradeOpen = searchParams.get("upgrade") === "1";
   const handleUpgradeClose = () => {
