@@ -360,8 +360,13 @@ export default function NoteGame({
   const updateNoteStartTime = (label: string) => {
     const now = performance.now();
     noteStartTime.current = now;
-    console.log(`[noteStartTime] ${label} @ ${now.toFixed(0)}ms`);
   };
+  useEffect(() => {
+    if (showCountdown) return;
+    if (phase !== "playing" && phase !== "final-retry") return;
+    if (!currentTarget) return;
+    noteStartTime.current = performance.now();
+  }, [currentIndex, currentTarget, phase, showCountdown]);
   const turnCounterRef = useRef<number>(0);
   // §0.1 전역 dedup — 직전에 화면에 떠 있던 음표 (정답·오답 모두 갱신).
   // popDueOrNull에 전달해 같은 ID retry pop을 1턴 지연시킨다.
@@ -1079,7 +1084,6 @@ export default function NoteGame({
         level,
       });
 
-      console.log(`[recordNote] 정답 reactionMs=${responseTimeMs.toFixed(0)}`);
       recorder.recordNote({
         note: `${currentTarget.key}${currentTarget.octave}`,
         correct: true,
@@ -1145,7 +1149,6 @@ export default function NoteGame({
         level,
       });
 
-      console.log(`[recordNote] 오답 reactionMs=${responseTimeMs.toFixed(0)}`);
       recorder.recordNote({
         note: `${currentTarget.key}${currentTarget.octave}`,
         correct: false,
@@ -1210,7 +1213,6 @@ export default function NoteGame({
       level,
     });
 
-    console.log(`[recordNote] 타임아웃 reactionMs=${TIMER_SECONDS * 1000}`);
     recorder.recordNote({
       note: `${currentTarget.key}${currentTarget.octave}`,
       correct: false,
