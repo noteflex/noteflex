@@ -90,6 +90,9 @@ export function useUserEnvOffset(): UseUserEnvOffsetReturn {
   useEffect(() => {
     if (isLoading) return;
     if (isCalibrated) return;
+    // V1 키 자동 cleanup (calibration 재설계 마이그)
+    localStorage.removeItem("noteflex.userEnvOffset");
+    localStorage.removeItem("noteflex.calibrationSkippedOnce");
     measureSystemLatency().then((ms) => {
       setUserEnvOffset(ms);
       setOffsetMs(ms);

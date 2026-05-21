@@ -1,8 +1,8 @@
 import { supabase } from "@/integrations/supabase/client";
 import { logger } from "@/lib/sentry";
 
-const STORAGE_KEY = "noteflex.userEnvOffset";
-const SKIP_KEY = "noteflex.calibrationSkippedOnce";
+const STORAGE_KEY = "noteflex.userEnvOffsetV2";
+const SKIP_KEY = "noteflex.calibrationSkippedOnceV2";
 
 export const DEFAULT_OFFSET_MS = 0;
 
@@ -22,6 +22,9 @@ export function setUserEnvOffset(offsetMs: number): void {
 export function clearUserEnvOffset(): void {
   localStorage.removeItem(STORAGE_KEY);
   localStorage.removeItem(SKIP_KEY);
+  // V1 cleanup (calibration 시스템 재설계 — 옛 사용자 반응시간 측정값 폐기)
+  localStorage.removeItem("noteflex.userEnvOffset");
+  localStorage.removeItem("noteflex.calibrationSkippedOnce");
 }
 
 export function hasStoredOffset(): boolean {
