@@ -1,6 +1,124 @@
 # Noteflex 세션 로그
 
-> **운영 원칙**: 1개 파일에 모든 세션 누적. 시간 역순 (최신 위). 매 세션 마무리 시 Claude Code가 박음.
+> **운영 원칙**: 1개 파일에 모든 세션 누적. 시간 역순 (최신 위). 매 세션 마무리 시 Claude Code가 작성.
+
+---
+
+## 2026-05-21 (수) — 게임 데이터 적재 fix · calibration 재설계 · UI 카피·타임존 fix
+
+### 게임 데이터 적재 진단·fix
+
+1. forpaddle 계정 Level 1 플레이 → 5개 테이블 중 3개 INSERT 누락 발견
+   - 적재 OK: user_note_logs, daily_sessions, user_streaks
+   - 적재 X: user_sessions, user_stats_daily, practice_logs
+
+2. record_game_session RPC 실패 원인 추적
+   - Sentry: "invalid input syntax for type integer: '986.7666666507721'"
+   - 클라이언트는 정수만 전달 (console.log 단계별 검증)
+   - 진짜 원인: handle_session_complete 트리거의 `(attempt->>'reaction_ms')::INT` 캐스팅
+   - clampReactionMs(rawMs - offsetMs) 결과 소수 → JSONB 저장 후 트리거 ::INT 거부
+
+3. fix 적용
+   - `src/hooks/useSessionRecorder.ts:287-288`: noteAttempts 생성 시 reaction_ms·reaction_ms_raw 모두 Math.round() 적용
+   - `supabase/migrations/20260520_fix_session_trigger_int_cast.sql`: 트리거의 `::INT` → `::NUMERIC::INT` 변경
+
+### reaction_ms 누적 버그 fix
+
+1. 2차 버그 발견 — 첫 19개 음표가 게임 시작부터 누적 시간 기록(1492ms→27727ms), 20번째부터 정상화
+
+2. 원인 추적
+   - noteStartTime 갱신 위치 11곳 분산
+   - batch 내 음표 진행 시 currentIndex 변화에 갱신 누락
+   - 디버그 console.log로 정답 처리 후 [noteStartTime] 로그 빠지는 경로 확인
+
+3. fix 적용 — useEffect 안전 그물 추가
+   - `src/components/NoteGame.tsx`에 currentIndex·currentTarget·phase·showCountdown 변화 시 noteStartTime 자동 갱신 useEffect 추가
+   - 초기 line 362에 추가했다가 TDZ 에러 발생, line 891로 이동
+   - 검증: avg_reaction_ms 8830ms → 688ms 정상화
+
+### Calibration 시스템 재설계
+
+1. 치명 결함 발견
+   - 기존 CalibrationModal이 사용자 자극→탭 반응시간(444ms)을 그대로 offset으로 저장
+   - 시스템 지연이 아닌 사용자 반응시간을 모든 음표 반응시간에서 차감
+   - 결과: 모든 사용자 반응시간이 비정상적으로 빨라 보임 (실제 1.1초 → 표시 0.6초)
+
+2. 새 설계 적용
+   - AudioContext.outputLatency + baseLatency 기반 자동 측정
+   - 백그라운드 자동 진행 (UI X, 사용자 조작 X)
+   - 디바이스 변경 시 자동 재측정 (navigator.mediaDevices.ondevicechange)
+   - 첫 측정 알림 X, 디바이스 변경 시 토스트만
+
+3. 구현 내역
+   - `src/lib/userEnvironmentOffset.ts`에 measureSystemLatency() 함수 추가
+   - `src/hooks/useUserEnvOffset.ts`에 자동 측정 + devicechange 이벤트 리스너 추가
+   - `src/components/NoteGame.tsx`에서 CalibrationModal 렌더링·관련 state 제거
+   - CalibrationModal.tsx 파일 자체는 유지 (롤백 대비)
+
+4. localStorage V1→V2 키 마이그
+   - 기존 `noteflex.userEnvOffset` → `noteflex.userEnvOffsetV2`
+   - 기존 `noteflex.calibrationSkippedOnce` → `noteflex.calibrationSkippedOnceV2`
+   - 새 코드 배포 시 V1 키 자동 cleanup
+   - 모든 기존 사용자 옛 측정값(444ms 등) 자동 폐기
+
+5. 검증
+   - 사용자 환경: outputLatency=0, baseLatency=5.3ms → user_env_offset_ms=5
+   - avg_reaction_ms 1122ms, raw_avg 1127ms → 보정 영향 미미 (정상)
+
+### UI 카피·자동 갱신·타임존 fix
+
+1. UI 카피 수정 (`src/i18n/strings.ts`)
+   - line 597 ko: "...다음 세션부터 박혀요." → "...다음 세션부터 나타납니다."
+   - line 699 ko: "오늘 박으면 {n}일째 ✨" → "오늘 연습하면 {n}일째 ✨"
+   - line 1078 en: "Today makes it day {n} ✨" → "Practice today to make it day {n} ✨"
+
+2. 대시보드 자동 갱신
+   - `src/pages/Dashboard.tsx`에 visibilitychange 이벤트 리스너 추가
+   - 탭/앱 복귀 시 myStats.refresh() 자동 호출
+   - 사용자 새로고침 버튼 수동 클릭 불필요
+
+3. 타임존 버그 fix
+   - isoFromIsoOrTimestamp 함수가 UTC 문자열을 slice(0,10)으로 자르기만 함
+   - 한국 자정 이후·UTC 자정 전 게임 진행 시 "오늘 시작 안 함" 잘못 표시
+   - 글로벌 출시 시 모든 시간대 사용자 영향 (자정 근처 게임 시 발생)
+   - fix: `new Date(s)`로 변환 후 사용자 로컬 시간 기준 ISO 추출
+
+### 메모리 정리
+
+- 메모리 30개 본문에서 "박다" 표현 일괄 제거 (#1, #2, #3, #11, #15, #16, #20, #25, #26, #27)
+- 메모리 #4에 "박다 동사 사용 절대 금지" 규칙 추가
+- 메모리 #5 출시 마감일 갱신 (5/31 → 6/7)
+
+### 작업 효율 분담 학습
+
+- 사용자 피드백: 채팅 Claude가 함수 본문 전체를 프롬프트에 작성하는 등 토큰 낭비
+- 합의: 채팅 Claude는 진단·결정·간결한 지시, Claude Code는 코드 변경·파일 작업·빌드·commit
+- 프롬프트 작성 전 사용자 의견 묻기
+
+---
+
+## 2026-05-20 (화) — UpgradeModal 후킹 다이얼로그 이동 + 콘텐츠 페이지 완료
+
+### 주요 작업
+
+1. About 페이지 작성 완료 (commit `ea6986b`)
+   - 1인 개발자 시점 미션, ko·en, 4문단 구조
+
+2. Contact 페이지 작성 완료 (commit `3b9ee72`)
+   - 비즈니스(contact@)·기술지원(support@)·결제(Paddle Help) 분리
+
+3. FAQ 페이지 확장 완료 (commit `a384165`)
+   - 5개 → 13개로 확장
+   - 핵심: 30일 grace period 복원, 동시 접속 불가 명시, 앱스토어 추후 안내
+
+4. Pricing 비교표 정리 (commit `ea202fe`)
+   - 레벨 집중 제거 → 사용자 가치 중심 7행 (일일 연습 횟수·이용 가능 레벨·약점 음표 분석·AI 학습 코치·광고·기록·통계·신기능 우선 이용)
+   - 잡스 스타일 UI: ✨ Premium 강조, 좌측 정렬, 미니멀 보더
+
+5. UpgradeModal 후킹 다이얼로그 → 출시 후로 이동
+   - 정교화 작업 (랜덤 노출·광고 충돌 방지·카피 풀·"오늘 안 보기") 출시 후 진행
+
+6. 블로그 3편 작성 (출근 전 자동 작성)
 
 ---
 
