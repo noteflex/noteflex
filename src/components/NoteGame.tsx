@@ -361,12 +361,6 @@ export default function NoteGame({
     const now = performance.now();
     noteStartTime.current = now;
   };
-  useEffect(() => {
-    if (showCountdown) return;
-    if (phase !== "playing" && phase !== "final-retry") return;
-    if (!currentTarget) return;
-    noteStartTime.current = performance.now();
-  }, [currentIndex, currentTarget, phase, showCountdown]);
   const turnCounterRef = useRef<number>(0);
   // §0.1 전역 dedup — 직전에 화면에 떠 있던 음표 (정답·오답 모두 갱신).
   // popDueOrNull에 전달해 같은 ID retry pop을 1턴 지연시킨다.
@@ -889,6 +883,12 @@ export default function NoteGame({
   const [showCalibration, setShowCalibration] = useState(false);
   const [showSwipeTutorial, setShowSwipeTutorial] = useState(false);
   const [showCountdown, setShowCountdown] = useState(false);
+  useEffect(() => {
+    if (showCountdown) return;
+    if (phase !== "playing" && phase !== "final-retry") return;
+    if (!currentTarget) return;
+    noteStartTime.current = performance.now();
+  }, [currentIndex, currentTarget, phase, showCountdown]);
 
   // 1회 초기화 guard — isLoading 완료 후 modal 흐름 결정
   const calibrationInitRef = useRef(false);
