@@ -443,22 +443,22 @@ describe("isValidSublevel", () => {
 });
 
 describe("SUBLEVEL_CONFIGS — stage 구성", () => {
-  it("sublevel 1 (입문): 33노트, 4 stages", () => {
+  it("sublevel 1 (입문): 30노트, 2 stages", () => {
     const stages = SUBLEVEL_CONFIGS[1].stages;
-    expect(stages).toHaveLength(4);
-    expect(totalNotesInStages(stages)).toBe(33);
+    expect(stages).toHaveLength(2);
+    expect(totalNotesInStages(stages)).toBe(30);
   });
 
-  it("sublevel 2 (숙련): 42노트, 5 stages", () => {
+  it("sublevel 2 (숙련): 36노트, 2 stages", () => {
     const stages = SUBLEVEL_CONFIGS[2].stages;
-    expect(stages).toHaveLength(5);
-    expect(totalNotesInStages(stages)).toBe(42);
+    expect(stages).toHaveLength(2);
+    expect(totalNotesInStages(stages)).toBe(36);
   });
 
-  it("sublevel 3 (마스터): 52노트, 4 stages", () => {
+  it("sublevel 3 (마스터): 42노트, 3 stages", () => {
     const stages = SUBLEVEL_CONFIGS[3].stages;
-    expect(stages).toHaveLength(4);
-    expect(totalNotesInStages(stages)).toBe(52);
+    expect(stages).toHaveLength(3);
+    expect(totalNotesInStages(stages)).toBe(42);
   });
 
   it("모든 sublevel의 stage는 batchSize, totalSets, notesPerSet > 0", () => {
@@ -480,50 +480,42 @@ describe("SUBLEVEL_CONFIGS — stage 구성", () => {
     }
   });
 
-  it("Sub 1: batchSize=1 stage 3개(totalSets 5·6·7) + batchSize=3 stage 1개", () => {
+  it("Sub 1: stage[0] batchSize=2·totalSets=3, stage[1] batchSize=3·totalSets=8", () => {
     const stages = SUBLEVEL_CONFIGS[1].stages;
-    expect(stages[0]).toMatchObject({ batchSize: 1, totalSets: 5 });
-    expect(stages[1]).toMatchObject({ batchSize: 1, totalSets: 6 });
-    expect(stages[2]).toMatchObject({ batchSize: 1, totalSets: 7 });
-    expect(stages[3]).toMatchObject({ batchSize: 3, totalSets: 5 });
+    expect(stages[0]).toMatchObject({ batchSize: 2, totalSets: 3, notesPerSet: 2 });
+    expect(stages[1]).toMatchObject({ batchSize: 3, totalSets: 8, notesPerSet: 3 });
   });
 
-  it("Sub 2: batchSize=1 stage 3개(totalSets 5·6·7) + batchSize=3·5 stage", () => {
+  it("Sub 2: stage[0] batchSize=3·totalSets=2, stage[1] batchSize=5·totalSets=6", () => {
     const stages = SUBLEVEL_CONFIGS[2].stages;
-    expect(stages[0]).toMatchObject({ batchSize: 1, totalSets: 5 });
-    expect(stages[1]).toMatchObject({ batchSize: 1, totalSets: 6 });
-    expect(stages[2]).toMatchObject({ batchSize: 1, totalSets: 7 });
-    expect(stages[3]).toMatchObject({ batchSize: 3, totalSets: 3 });
-    expect(stages[4]).toMatchObject({ batchSize: 5, totalSets: 3 });
+    expect(stages[0]).toMatchObject({ batchSize: 3, totalSets: 2, notesPerSet: 3 });
+    expect(stages[1]).toMatchObject({ batchSize: 5, totalSets: 6, notesPerSet: 5 });
   });
 
-  it("Sub 3: batchSize=1 stage 1개(totalSets 7) + batchSize=3·5·7 stage", () => {
+  it("Sub 3: stage[0] batchSize=3·totalSets=2, stage[1] batchSize=5·totalSets=3, stage[2] batchSize=7·totalSets=3", () => {
     const stages = SUBLEVEL_CONFIGS[3].stages;
-    expect(stages[0]).toMatchObject({ batchSize: 1, totalSets: 7 });
-    expect(stages[1]).toMatchObject({ batchSize: 3, totalSets: 3 });
-    expect(stages[2]).toMatchObject({ batchSize: 5, totalSets: 3 });
-    expect(stages[3]).toMatchObject({ batchSize: 7, totalSets: 3 });
+    expect(stages[0]).toMatchObject({ batchSize: 3, totalSets: 2, notesPerSet: 3 });
+    expect(stages[1]).toMatchObject({ batchSize: 5, totalSets: 3, notesPerSet: 5 });
+    expect(stages[2]).toMatchObject({ batchSize: 7, totalSets: 3, notesPerSet: 7 });
   });
 
-  it("batchSize=1 stage: notesPerSet=1", () => {
+  it("SUBLEVEL_CONFIGS에 batchSize=1 stage 없음", () => {
     for (const sublevel of [1, 2, 3] as const) {
       for (const s of SUBLEVEL_CONFIGS[sublevel].stages) {
-        if (s.batchSize === 1) {
-          expect(s.notesPerSet).toBe(1);
-        }
+        expect(s.batchSize).not.toBe(1);
       }
     }
   });
 
-  it("Lv 5~7 구조 변경 X — LV5_SUBLEVEL_STAGES는 모두 batchSize ≥ 3", () => {
+  it("LV5_SUBLEVEL_STAGES는 모두 batchSize ≥ 3", () => {
     for (const sublevel of [1, 2, 3] as const) {
       for (const s of LV5_SUBLEVEL_STAGES[sublevel]) {
         expect(s.batchSize).toBeGreaterThanOrEqual(3);
       }
     }
-    expect(totalNotesInStages(LV5_SUBLEVEL_STAGES[1])).toBe(51);
-    expect(totalNotesInStages(LV5_SUBLEVEL_STAGES[2])).toBe(51);
-    expect(totalNotesInStages(LV5_SUBLEVEL_STAGES[3])).toBe(57);
+    expect(totalNotesInStages(LV5_SUBLEVEL_STAGES[1])).toBe(48);
+    expect(totalNotesInStages(LV5_SUBLEVEL_STAGES[2])).toBe(54);
+    expect(totalNotesInStages(LV5_SUBLEVEL_STAGES[3])).toBe(60);
   });
 });
 
@@ -559,30 +551,30 @@ describe("getStagesFor", () => {
 });
 
 describe("LV5_SUBLEVEL_STAGES — Lv5~7 stage 구성", () => {
-  it("sublevel 1 (입문): 51노트, 3 stages (batchSize 3·5·7)", () => {
+  it("sublevel 1 (입문): 48노트, 3 stages (batchSize 3·5·7)", () => {
     const stages = LV5_SUBLEVEL_STAGES[1];
     expect(stages).toHaveLength(3);
-    expect(totalNotesInStages(stages)).toBe(51);
+    expect(totalNotesInStages(stages)).toBe(48);
     expect(stages[0].batchSize).toBe(3);
     expect(stages[1].batchSize).toBe(5);
     expect(stages[2].batchSize).toBe(7);
   });
 
-  it("sublevel 2 (숙련): 51노트, 3 stages (batchSize 3·5·7)", () => {
+  it("sublevel 2 (숙련): 54노트, 3 stages (batchSize 3·5·7)", () => {
     const stages = LV5_SUBLEVEL_STAGES[2];
     expect(stages).toHaveLength(3);
-    expect(totalNotesInStages(stages)).toBe(51);
+    expect(totalNotesInStages(stages)).toBe(54);
     expect(stages[0].batchSize).toBe(3);
     expect(stages[1].batchSize).toBe(5);
     expect(stages[2].batchSize).toBe(7);
   });
 
-  it("sublevel 3 (마스터): 57노트, 3 stages (batchSize 5·7·7)", () => {
+  it("sublevel 3 (마스터): 60노트, 3 stages (batchSize 3·5·7)", () => {
     const stages = LV5_SUBLEVEL_STAGES[3];
     expect(stages).toHaveLength(3);
-    expect(totalNotesInStages(stages)).toBe(57);
-    expect(stages[0].batchSize).toBe(5);
-    expect(stages[1].batchSize).toBe(7);
+    expect(totalNotesInStages(stages)).toBe(60);
+    expect(stages[0].batchSize).toBe(3);
+    expect(stages[1].batchSize).toBe(5);
     expect(stages[2].batchSize).toBe(7);
   });
 
