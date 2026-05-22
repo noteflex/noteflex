@@ -14,6 +14,7 @@ const mockSetCalibrationSkippedOnce = vi.fn();
 const mockOnDeviceChange = vi.fn(() => () => {});
 const mockLogDeviceChangeEvent = vi.fn(() => Promise.resolve(null));
 const mockUpdateDeviceChangeEvent = vi.fn(() => Promise.resolve());
+const mockMeasureSystemLatency = vi.fn(() => new Promise<number>(() => {}));
 
 vi.mock("@/lib/userEnvironmentOffset", () => ({
   getUserEnvOffset: (...args: unknown[]) => mockGetUserEnvOffset(...args),
@@ -27,6 +28,7 @@ vi.mock("@/lib/userEnvironmentOffset", () => ({
   onDeviceChange: (...args: unknown[]) => mockOnDeviceChange(...args),
   logDeviceChangeEvent: (...args: unknown[]) => mockLogDeviceChangeEvent(...args),
   updateDeviceChangeEvent: (...args: unknown[]) => mockUpdateDeviceChangeEvent(...args),
+  measureSystemLatency: (...args: unknown[]) => mockMeasureSystemLatency(...args),
 }));
 
 const mockUseAuth = vi.fn();
@@ -42,6 +44,7 @@ describe("useUserEnvOffset", () => {
     mockGetCalibrationSkippedOnce.mockReturnValue(false);
     mockLoadOffsetFromProfile.mockResolvedValue(null);
     mockOnDeviceChange.mockReturnValue(() => {});
+    mockMeasureSystemLatency.mockReturnValue(new Promise<number>(() => {}));
   });
 
   describe("isLoading state", () => {

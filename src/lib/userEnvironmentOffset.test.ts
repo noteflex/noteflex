@@ -298,7 +298,7 @@ describe("logDeviceChangeEvent", () => {
   });
 
   it("supabase error 시 null 반환 (throw X)", async () => {
-    const consoleSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
     mockFrom.mockImplementation((table: string) => {
       if (table === "device_change_events")
         return {
@@ -338,7 +338,7 @@ describe("updateDeviceChangeEvent", () => {
   });
 
   it("supabase error 시 console.warn (throw X)", async () => {
-    const consoleSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
     mockFrom.mockImplementation((table: string) => {
       if (table === "device_change_events")
         return { update: vi.fn().mockReturnValue({ eq: vi.fn().mockResolvedValue({ data: null, error: { message: "err" } }) }) };
