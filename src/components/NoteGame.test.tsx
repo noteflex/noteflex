@@ -254,7 +254,11 @@ describe("NoteGame - Retry Queue 통합", () => {
 
     const q2 = getCurrentQuestion()!;
     expect(q2.key).not.toBe(q1.key);
-    await user.click(getCorrectButton(q2));  // turn=2 → q1 due 도달, pop
+    await user.click(getCorrectButton(q2));  // turn=2
+
+    // batchSize=3: q3(batch[2]) 완료 후 retry pop
+    const q3 = getCurrentQuestion()!;
+    await user.click(getCorrectButton(q3));
 
     // q1 재출제
     const qRetry = getCurrentQuestion()!;
@@ -279,7 +283,11 @@ describe("NoteGame - Retry Queue 통합", () => {
     await user.click(getCorrectButton(q1));  // due=2
 
     const q2 = getCurrentQuestion()!;
-    await user.click(getCorrectButton(q2));  // turn=2 → q1 재출제
+    await user.click(getCorrectButton(q2));  // turn=2
+
+    // batchSize=3: q3(batch[2]) 완료 후 retry pop
+    const q3 = getCurrentQuestion()!;
+    await user.click(getCorrectButton(q3));
 
     const qRetry = getCurrentQuestion()!;
     expect(qRetry.key).toBe(q1.key);
@@ -307,7 +315,11 @@ describe("NoteGame - Retry Queue 통합", () => {
     const q2 = getCurrentQuestion()!;
     await user.click(getCorrectButton(q2));
 
-    // q1 재출제 시점 (turn=2)
+    // batchSize=3: q3(batch[2]) 완료 후 retry pop
+    const q3 = getCurrentQuestion()!;
+    await user.click(getCorrectButton(q3));
+
+    // q1 재출제
     const qRetry = getCurrentQuestion()!;
     expect(qRetry.key).toBe(q1.key);
     const turnBeforeWrong = getDebugTurn();

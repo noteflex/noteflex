@@ -277,11 +277,15 @@ describe("NoteGame 신규 정책 - 재출제 등장 타이밍", () => {
     await user.click(getCorrectButton(q1));
     expect(getDebugTurn()).toBe(1);
 
-    // q2 정답 (turn=2): popDueOrNull(2) → q1 pop
+    // q2 정답 (turn=2)
     const q2 = getCurrentQuestion()!;
     expect(q2.key).not.toBe(q1.key); // 다른 letter 보장
     await user.click(getCorrectButton(q2));
     expect(getDebugTurn()).toBe(2);
+
+    // batchSize=3: q3(batch[2]) 완료 후 retry pop
+    const q3 = getCurrentQuestion()!;
+    await user.click(getCorrectButton(q3));
 
     // q1과 같은 음표 재출제
     const qRetry = getCurrentQuestion()!;
@@ -311,7 +315,11 @@ describe("NoteGame 신규 정책 - 재출제 음표 정답 시 (12=P)", () => {
     const q2 = getCurrentQuestion()!;
     await user.click(getCorrectButton(q2));
 
-    // q1 재출제 중 (turn=2)
+    // batchSize=3: q3(batch[2]) 완료 후 retry pop
+    const q3 = getCurrentQuestion()!;
+    await user.click(getCorrectButton(q3));
+
+    // q1 재출제
     const qRetry = getCurrentQuestion()!;
     expect(qRetry.key).toBe(q1.key);
 
@@ -343,6 +351,10 @@ describe("NoteGame 신규 정책 - 재출제 음표 오답 시", () => {
     await user.click(getCorrectButton(q1));
     const q2 = getCurrentQuestion()!;
     await user.click(getCorrectButton(q2));
+
+    // batchSize=3: q3(batch[2]) 완료 후 retry pop
+    const q3 = getCurrentQuestion()!;
+    await user.click(getCorrectButton(q3));
 
     const qRetry = getCurrentQuestion()!;
     expect(qRetry.key).toBe(q1.key);

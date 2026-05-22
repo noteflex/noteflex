@@ -106,6 +106,18 @@ vi.mock("@/hooks/useDailyLimit", () => ({
   }),
 }));
 
+// CUSTOM_SCORE_STAGES(level=0) 사용 시 필요한 최소 노트 풀.
+// stage1 batchSize=1 → history 모드 커버리지 유지에 사용.
+const HISTORY_TEST_NOTES = [
+  { name: "도", key: "C", y: 0, octave: "4" },
+  { name: "레", key: "D", y: 0, octave: "4" },
+  { name: "미", key: "E", y: 0, octave: "4" },
+  { name: "파", key: "F", y: 0, octave: "4" },
+  { name: "솔", key: "G", y: 0, octave: "4" },
+  { name: "라", key: "A", y: 0, octave: "4" },
+  { name: "시", key: "B", y: 0, octave: "4" },
+];
+
 interface CurrentQuestion {
   key: string;
   octave: string;
@@ -191,9 +203,10 @@ describe("§0.4.1 batchSize=1 history 누적 + 화면 리셋", () => {
     capturedProps.current = { noteHistory: [], batchNotes: [], targetNote: null };
   });
 
-  it("Lv1 Sub1 stage1 (batchSize=1): 정답 4개 답 후 noteHistory 길이 4", async () => {
+  it("CUSTOM stage1 (batchSize=1): 정답 4개 답 후 noteHistory 길이 4", async () => {
     const user = userEvent.setup();
-    render(<NoteGame level={1} sublevel={1} skipCountdown />);
+    // CUSTOM_SCORE_STAGES stage1: batchSize=1 → history 모드
+    render(<NoteGame level={0} customNotes={HISTORY_TEST_NOTES} sublevel={1} skipCountdown />);
     await settle();
 
     for (let i = 1; i <= 4; i++) {
@@ -209,26 +222,25 @@ describe("§0.4.1 batchSize=1 history 누적 + 화면 리셋", () => {
     expect(capturedProps.current.batchNotes.length).toBe(0);
   });
 
-  it("Lv1 Sub1 stage1 (batchSize=1): set 전환 시 history 유지 (클리어 X)", async () => {
+  it("CUSTOM stage1 (batchSize=1): set 전환 후 history 유지 (클리어 X)", async () => {
     const user = userEvent.setup();
-    render(<NoteGame level={1} sublevel={1} skipCountdown />);
+    // CUSTOM_SCORE_STAGES stage1: notesPerSet=3, 3번째 정답 시 set 2 시작
+    render(<NoteGame level={0} customNotes={HISTORY_TEST_NOTES} sublevel={1} skipCountdown />);
     await settle();
 
-    // 정답 1: stage1의 set 1 끝 → set 2 시작 (batchSize=1, notesPerSet=1)
     const q1 = getCurrentQuestion();
     expect(q1).not.toBeNull();
     await answerCorrect(user, q1!);
     await settle();
     expect(capturedProps.current.noteHistory.length).toBe(1);
 
-    // 정답 2: set 2 끝 → set 3 시작. set 전환에도 history 유지되어야 함.
     const q2 = getCurrentQuestion();
     expect(q2).not.toBeNull();
     await answerCorrect(user, q2!);
     await settle();
     expect(capturedProps.current.noteHistory.length).toBe(2);
 
-    // 정답 3: set 3 끝 → set 4 시작.
+    // 3번째 정답 → set 1 완료, set 2 시작. history 유지돼야 함.
     const q3 = getCurrentQuestion();
     expect(q3).not.toBeNull();
     await answerCorrect(user, q3!);
@@ -285,14 +297,16 @@ describe("§0.4.1 visibleNoteCount", () => {
   }
 
   it("history 모드 초기: visibleNoteCount=1 (history 0 + target 1)", async () => {
-    render(<NoteGame level={1} sublevel={1} skipCountdown />);
+    // CUSTOM_SCORE_STAGES stage1 (batchSize=1) → history 모드
+    render(<NoteGame level={0} customNotes={HISTORY_TEST_NOTES} sublevel={1} skipCountdown />);
     await settle();
     expect(getVisibleCount()).toBe(1);
   });
 
   it("history 모드 3개 정답 후: visibleNoteCount=4", async () => {
     const user = userEvent.setup();
-    render(<NoteGame level={1} sublevel={1} skipCountdown />);
+    // CUSTOM_SCORE_STAGES stage1 (batchSize=1) → history 모드
+    render(<NoteGame level={0} customNotes={HISTORY_TEST_NOTES} sublevel={1} skipCountdown />);
     await settle();
 
     for (let i = 0; i < 3; i++) {

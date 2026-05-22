@@ -443,9 +443,9 @@ describe("isValidSublevel", () => {
 });
 
 describe("SUBLEVEL_CONFIGS — stage 구성", () => {
-  it("sublevel 1 (입문): 30노트, 2 stages", () => {
+  it("sublevel 1 (입문): 30노트, 1 stage", () => {
     const stages = SUBLEVEL_CONFIGS[1].stages;
-    expect(stages).toHaveLength(2);
+    expect(stages).toHaveLength(1);
     expect(totalNotesInStages(stages)).toBe(30);
   });
 
@@ -480,10 +480,9 @@ describe("SUBLEVEL_CONFIGS — stage 구성", () => {
     }
   });
 
-  it("Sub 1: stage[0] batchSize=2·totalSets=3, stage[1] batchSize=3·totalSets=8", () => {
+  it("Sub 1: stage[0] batchSize=3·totalSets=10·notesPerSet=3 (단일 stage)", () => {
     const stages = SUBLEVEL_CONFIGS[1].stages;
-    expect(stages[0]).toMatchObject({ batchSize: 2, totalSets: 3, notesPerSet: 2 });
-    expect(stages[1]).toMatchObject({ batchSize: 3, totalSets: 8, notesPerSet: 3 });
+    expect(stages[0]).toMatchObject({ batchSize: 3, totalSets: 10, notesPerSet: 3 });
   });
 
   it("Sub 2: stage[0] batchSize=3·totalSets=2, stage[1] batchSize=5·totalSets=6", () => {

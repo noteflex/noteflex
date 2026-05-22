@@ -112,7 +112,7 @@ function ToggleGroup<T extends string | number>({
 
 export default function StaffPreview() {
   const [level, setLevel]           = useState(1);
-  const [batchSize, setBatchSize]   = useState<1 | 2 | 3 | 5 | 7>(1);
+  const [batchSize, setBatchSize]   = useState<1 | 3 | 5 | 7>(1);
   const [keySigType, setKeySigType] = useState<"none" | "sharps" | "flats">("none");
   const [keySigCount, setKeySigCount] = useState(2);
   const [historyCount, setHistoryCount] = useState(3);

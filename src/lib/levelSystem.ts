@@ -9,7 +9,7 @@
  *   서브레벨 3: 3초 / 목숨 3 (마스터)
  *
  * 단계별 stage 구성 (NoteGame이 사용):
- *   [Lv 1~4] 서브레벨 1: 30노트 / 2 stages (batchSize 2·3)
+ *   [Lv 1~4] 서브레벨 1: 30노트 / 1 stage (batchSize 3)
  *   [Lv 1~4] 서브레벨 2: 36노트 / 2 stages (batchSize 3·5)
  *   [Lv 1~4] 서브레벨 3: 42노트 / 3 stages (batchSize 3·5·7)
  *   [Lv 5~7] 서브레벨 1: 48노트 / 3 stages (batchSize 3·5·7, 조표 본격 도입)
@@ -100,10 +100,9 @@ export const SUBLEVEL_CONFIGS: Record<Sublevel, SublevelConfig> = {
     timeLimit: 7,
     lives: 5,
     label: "입문",
-    // 30노트 — batchSize 2·3
+    // 30노트 — batchSize 3
     stages: [
-      { stage: 1, batchSize: 2, totalSets: 3, notesPerSet: 2 }, //  6
-      { stage: 2, batchSize: 3, totalSets: 8, notesPerSet: 3 }, // 24
+      { stage: 1, batchSize: 3, totalSets: 10, notesPerSet: 3 }, // 30
     ],
   },
   2: {
