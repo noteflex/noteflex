@@ -160,14 +160,14 @@ describe("StaffPreview — C2 M-등분 고정 슬롯 정책", () => {
 });
 
 describe("StaffPreview — §S3 scale·viewport·grand staff 토글", () => {
-  it("scale-preset 1.0 → uniscale=1.00, scale-preset 0.75 → uniscale=0.75", async () => {
+  it("scale-preset 무관 uniscale=0.75 고정 (computeScale 상수화)", async () => {
     renderPage();
     await userEvent.click(screen.getByTestId("toggle-scale-preset-1.0"));
-    expect(screen.getByTestId("meta-uniscale")).toHaveTextContent("1.00");
+    expect(screen.getByTestId("meta-uniscale")).toHaveTextContent("0.75");
     await userEvent.click(screen.getByTestId("toggle-scale-preset-0.75"));
     expect(screen.getByTestId("meta-uniscale")).toHaveTextContent("0.75");
     await userEvent.click(screen.getByTestId("toggle-scale-preset-0.55"));
-    expect(screen.getByTestId("meta-uniscale")).toHaveTextContent("0.55");
+    expect(screen.getByTestId("meta-uniscale")).toHaveTextContent("0.75");
   });
 
   it("viewport portrait → meta-viewport 노출 + 375×667 포함", async () => {

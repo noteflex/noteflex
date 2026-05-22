@@ -132,7 +132,7 @@ type LevelStyle = {
   noteStartX?: number;
   noteSpacing?: number;
   keySigToNoteGap?: number;
-  /** §S1 Uniform scale: M 기반 전체 비율 (1.0·0.85·0.75·0.65·0.55). */
+  /** §S1 Uniform scale: 고정 0.75 (배치 무관 동일 프레임). */
   uniscale?: number;
 };
 
@@ -173,17 +173,8 @@ const LEVEL_STYLES: Record<number, LevelStyle> = {
 
 export type ResolvedStyle = Required<LevelStyle>;
 
-/**
- * §S1 Uniform scale: 음표·오선·음자리표·조표 모두 같은 비율.
- * M = stage·batch 최대 슬롯 수.
- */
-export function computeScale(M: number): number {
-  if (M <= 3)  return 1.0;
-  if (M <= 5)  return 0.85;
-  if (M <= 7)  return 0.75;
-  if (M <= 10) return 0.65;
-  return 0.55;
-}
+/** §S1 Uniform scale: 고정 0.75 (배치 무관 동일 프레임). */
+export function computeScale(_M: number): number { return 0.75; }
 
 /**
  * §C1 M-등분 고정 슬롯: stage·phase·batchSize 기반 M 결정.
