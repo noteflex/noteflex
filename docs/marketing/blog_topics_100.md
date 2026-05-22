@@ -870,6 +870,8 @@ AI·정밀 데이터·Noteflex 기능·음악 교육의 미래.
 | 2026-05-20 | — | §6-68 | Guitar Notation vs Piano Notation (en) | guitar-vs-piano-notation | Instrument Guides | ~1291 words | guitar notation, piano notation, tablature, TAB, instrument comparison | Stewart + Apel 전통 |
 | 2026-05-20 | — | §2-25 | 셈여림 기호 — pp부터 fff까지 (ko) | dynamics-markings-explained | 음악 이론 & 화성학 | ~4202자 | 셈여림, 다이내믹, pp, ff, 피아니시모, 포르테 | Goebl + Brown 전통 |
 | 2026-05-20 | — | §2-25 | Dynamics Markings Explained — From pp to fff (en) | dynamics-markings-explained | Theory & Harmony | ~1325 words | dynamics, pianissimo, fortissimo, score reading | Goebl + Brown 전통 |
+| 2026-05-22 | — | §5-63 | 시니어의 초견 학습 — 늦게 시작하는 것이 약점이 아닌 이유 (ko) ✅ 작성 완료 | senior-sight-reading | 직군별 학습 전략 | ~2200자 | 시니어 음악 학습, 늦은 시작, 신경가소성, 성인 초견 | Hanna-Pladdy + MacKay 전통 |
+| 2026-05-22 | — | §5-63 | Sight-Reading for Seniors (en) ✅ 작성 완료 | senior-sight-reading | Learning Strategies by Role | ~950 words | senior music learning, adult sight-reading, neuroplasticity, older adult piano | Hanna-Pladdy + MacKay 전통 |
 
 ---
 
