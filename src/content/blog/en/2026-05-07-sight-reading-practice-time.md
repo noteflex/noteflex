@@ -3,7 +3,7 @@ title: "How Much Sight-Reading Practice — Time and Distribution That Actually 
 slug: "sight-reading-practice-time"
 date: "2026-05-07"
 category: "Practice Hub"
-excerpt: "Is one long hour-long session better than five-minute slices spread across the week? For sight-reading, distribution matters more than total minutes — and short, focused passes consistently outperform long, drifting ones."
+description: "Is one long hour-long session better than five-minute slices spread across the week? For sight-reading, distribution matters more than total minutes — and short, focused passes consistently outperform long, drifting ones."
 keywords: ["sight-reading practice", "distributed practice", "deliberate practice", "music practice routine", "music learning"]
 day: 8
 coverImage: "https://upload.wikimedia.org/wikipedia/commons/1/1a/Music_class_usa.jpg"

@@ -3,7 +3,7 @@ title: "The Note-by-Note Trap — How Chunk-Based Recognition Transforms Sight-R
 slug: "chunk-based-sight-reading"
 date: "2026-05-05"
 category: "Practice Hub"
-excerpt: "Reading one note at a time creates a structural speed limit. Skilled sight-readers process music in patterns — and that ability can be trained."
+description: "Reading one note at a time creates a structural speed limit. Skilled sight-readers process music in patterns — and that ability can be trained."
 keywords: ["sight-reading chunks", "music pattern recognition", "note reading", "sight-reading training", "music notation"]
 coverImage: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/62/Music_notation.svg/500px-Music_notation.svg.png"
 coverImageAlt: "Music notation — the starting point for chunk-based pattern recognition"

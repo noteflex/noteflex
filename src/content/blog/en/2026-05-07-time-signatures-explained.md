@@ -3,7 +3,7 @@ title: "How to Read Time Signatures — What 4/4, 3/4, and 6/8 Actually Mean"
 slug: "time-signatures-explained"
 date: "2026-05-07"
 category: "Theory & Harmony"
-excerpt: "The two numbers next to the clef aren't just notation — they define the temporal grid of an entire piece. Once the top and bottom numbers click into place, the breath of the music shows up the moment a reader sees them."
+description: "The two numbers next to the clef aren't just notation — they define the temporal grid of an entire piece. Once the top and bottom numbers click into place, the breath of the music shows up the moment a reader sees them."
 keywords: ["time signature", "simple meter", "compound meter", "4/4", "3/4", "6/8", "music reading"]
 day: 8
 coverImage: "https://upload.wikimedia.org/wikipedia/commons/7/79/Time_signature_example.svg"

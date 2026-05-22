@@ -3,7 +3,7 @@ title: "Daily 5-Minute Sight-Reading Practice — Building an Effective Routine"
 slug: "daily-5min-sight-reading-routine"
 date: "2026-05-05"
 category: "Practice Hub"
-excerpt: "A short daily session can do more for sight-reading improvement than occasional long practice sessions. Here is why, and how to structure those five minutes."
+description: "A short daily session can do more for sight-reading improvement than occasional long practice sessions. Here is why, and how to structure those five minutes."
 keywords: ["sight-reading practice", "daily routine", "distributed practice", "deliberate practice", "music learning"]
 coverImage: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e6/Piano_practice.jpg/500px-Piano_practice.jpg"
 coverImageAlt: "A piano practice scene — the desk where a daily five-minute routine takes shape"

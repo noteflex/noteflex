@@ -3,7 +3,7 @@ title: "Note Recognition Speed — The Visual-Motor Automation Behind Sight-Read
 slug: "note-recognition-speed"
 date: "2026-05-06"
 category: "Sight-Reading Lab"
-excerpt: "When sight-reading stalls at a certain tempo, the cause is rarely the fingers or the metronome. The visual step — naming the note — sets the ceiling for everything that follows."
+description: "When sight-reading stalls at a certain tempo, the cause is rarely the fingers or the metronome. The visual step — naming the note — sets the ceiling for everything that follows."
 keywords: ["note recognition", "sight-reading speed", "visual processing", "eye-hand span", "music reading"]
 coverImage: "https://upload.wikimedia.org/wikipedia/commons/2/21/Bruhns-Choralfantasie-Thema.svg"
 coverImageAlt: "Bruhns's chorale fantasia theme — a notation segment where note-recognition speed is decided"

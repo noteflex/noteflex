@@ -3,7 +3,7 @@ title: "Note Values Explained — From Whole Notes to Thirty-Second Notes"
 slug: "note-values-explained"
 date: "2026-05-08"
 category: "Theory & Harmony"
-excerpt: "Whole notes, half notes, quarters, eighths, sixteenths, thirty-seconds. What each shape means, how they relate to each other, and why understanding the system matters for sight-reading."
+description: "Whole notes, half notes, quarters, eighths, sixteenths, thirty-seconds. What each shape means, how they relate to each other, and why understanding the system matters for sight-reading."
 keywords: ["note values", "whole note", "quarter note", "eighth note", "rhythm", "music notation"]
 day: 9
 coverImage: "https://upload.wikimedia.org/wikipedia/commons/8/8c/Sheet_music.jpg"

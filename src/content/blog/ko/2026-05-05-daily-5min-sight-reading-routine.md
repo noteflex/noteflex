@@ -3,7 +3,7 @@ title: "매일 5분 초견 연습 — 효과적인 루틴 만들기"
 slug: "daily-5min-sight-reading-routine"
 date: "2026-05-05"
 category: "실전 연습 가이드"
-excerpt: "하루 5분이라는 짧은 시간이 초견 실력을 키우는 데 왜 효과적인지, 그 원리와 구체적인 루틴 구성을 살펴본다."
+description: "하루 5분이라는 짧은 시간이 초견 실력을 키우는 데 왜 효과적인지, 그 원리와 구체적인 루틴 구성을 살펴본다."
 keywords: ["초견 연습", "매일 연습 루틴", "분산 연습", "의도적 연습", "악보 읽기"]
 coverImage: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e6/Piano_practice.jpg/500px-Piano_practice.jpg"
 coverImageAlt: "피아노를 연습하는 모습 — 매일 5분 루틴이 자리 잡는 책상 풍경"

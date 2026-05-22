@@ -3,7 +3,7 @@ title: "한 음씩 천천히 읽기의 함정 — 청크 단위 인식"
 slug: "chunk-based-sight-reading"
 date: "2026-05-05"
 category: "실전 연습 가이드"
-excerpt: "초견이 느린 이유 중 하나는 음표를 하나씩 읽는 습관이다. 숙련된 연주자들이 악보를 패턴 단위로 처리하는 방식과 그 훈련법을 살펴본다."
+description: "초견이 느린 이유 중 하나는 음표를 하나씩 읽는 습관이다. 숙련된 연주자들이 악보를 패턴 단위로 처리하는 방식과 그 훈련법을 살펴본다."
 keywords: ["초견 청크", "악보 패턴 인식", "음악 읽기", "초견 훈련", "음표 인식"]
 coverImage: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/62/Music_notation.svg/500px-Music_notation.svg.png"
 coverImageAlt: "음악 기보 표기 — 청크 단위로 묶이는 음표 패턴의 시작점"

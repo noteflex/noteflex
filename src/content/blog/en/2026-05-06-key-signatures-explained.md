@@ -3,7 +3,7 @@ title: "How to Read Key Signatures — Why the Order of Sharps and Flats Reveals
 slug: "key-signatures-explained"
 date: "2026-05-06"
 category: "Theory & Harmony"
-excerpt: "When two sharps or three flats sit at the start of a staff, can you name the key right away? Key signatures are not arbitrary — they follow a fixed circle-of-fifths order that lets you read the tonal center at a glance."
+description: "When two sharps or three flats sit at the start of a staff, can you name the key right away? Key signatures are not arbitrary — they follow a fixed circle-of-fifths order that lets you read the tonal center at a glance."
 keywords: ["key signatures", "circle of fifths", "music theory", "tonal recognition", "music reading"]
 coverImage: "https://upload.wikimedia.org/wikipedia/commons/a/a7/Cycle_des_quintes_et_tonalites_majeures.svg"
 coverImageAlt: "The circle of fifths and major key layout — sharps and flats fixed in order"
