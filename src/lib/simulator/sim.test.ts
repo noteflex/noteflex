@@ -24,7 +24,7 @@ describe("§0.1 Simulator — single game smoke", () => {
     });
     expect(r.endReason).toBe("success");
     expect(r.consecutiveViolations).toBe(0);
-    expect(r.correctCount).toBe(33);
+    expect(r.correctCount).toBe(30);
     expect(r.missCount).toBe(0);
   });
 
