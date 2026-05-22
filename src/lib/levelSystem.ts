@@ -9,12 +9,12 @@
  *   서브레벨 3: 3초 / 목숨 3 (마스터)
  *
  * 단계별 stage 구성 (NoteGame이 사용):
- *   [Lv 1~4] 서브레벨 1: 33노트 / 4 stages (batchSize=1 × 3 + batchSize=3)
- *   [Lv 1~4] 서브레벨 2: 42노트 / 5 stages (batchSize=1 × 3 + batchSize=3·5)
- *   [Lv 1~4] 서브레벨 3: 52노트 / 4 stages (batchSize=1 × 1 + batchSize=3·5·7)
- *   [Lv 5~7] 서브레벨 1: 51노트 / 3 stages (batchSize 3·5·7, 조표 본격 도입)
- *   [Lv 5~7] 서브레벨 2: 51노트 / 3 stages (batchSize 3·5·7)
- *   [Lv 5~7] 서브레벨 3: 57노트 / 3 stages (batchSize 5·7·7)
+ *   [Lv 1~4] 서브레벨 1: 30노트 / 2 stages (batchSize 2·3)
+ *   [Lv 1~4] 서브레벨 2: 36노트 / 2 stages (batchSize 3·5)
+ *   [Lv 1~4] 서브레벨 3: 42노트 / 3 stages (batchSize 3·5·7)
+ *   [Lv 5~7] 서브레벨 1: 48노트 / 3 stages (batchSize 3·5·7, 조표 본격 도입)
+ *   [Lv 5~7] 서브레벨 2: 54노트 / 3 stages (batchSize 3·5·7)
+ *   [Lv 5~7] 서브레벨 3: 60노트 / 3 stages (batchSize 3·5·7)
  *
  * 단계 통과 조건 (4개 모두 충족):
  *   - 플레이 횟수 ≥ 10회
@@ -100,37 +100,31 @@ export const SUBLEVEL_CONFIGS: Record<Sublevel, SublevelConfig> = {
     timeLimit: 7,
     lives: 5,
     label: "입문",
-    // 33노트 — batchSize=1 준비 3단계 + batchSize=3 진입
+    // 30노트 — batchSize 2·3
     stages: [
-      { stage: 1, batchSize: 1, totalSets: 5, notesPerSet: 1 }, //  5
-      { stage: 2, batchSize: 1, totalSets: 6, notesPerSet: 1 }, //  6
-      { stage: 3, batchSize: 1, totalSets: 7, notesPerSet: 1 }, //  7
-      { stage: 4, batchSize: 3, totalSets: 5, notesPerSet: 3 }, // 15
+      { stage: 1, batchSize: 2, totalSets: 3, notesPerSet: 2 }, //  6
+      { stage: 2, batchSize: 3, totalSets: 8, notesPerSet: 3 }, // 24
     ],
   },
   2: {
     timeLimit: 5,
     lives: 4,
     label: "숙련",
-    // 42노트 — batchSize=1 준비 3단계 + batchSize=3·5
+    // 36노트 — batchSize 3·5
     stages: [
-      { stage: 1, batchSize: 1, totalSets: 5, notesPerSet: 1 }, //  5
-      { stage: 2, batchSize: 1, totalSets: 6, notesPerSet: 1 }, //  6
-      { stage: 3, batchSize: 1, totalSets: 7, notesPerSet: 1 }, //  7
-      { stage: 4, batchSize: 3, totalSets: 3, notesPerSet: 3 }, //  9
-      { stage: 5, batchSize: 5, totalSets: 3, notesPerSet: 5 }, // 15
+      { stage: 1, batchSize: 3, totalSets: 2, notesPerSet: 3 }, //  6
+      { stage: 2, batchSize: 5, totalSets: 6, notesPerSet: 5 }, // 30
     ],
   },
   3: {
     timeLimit: 3,
     lives: 3,
     label: "마스터",
-    // 52노트 — batchSize=1 준비 1단계 + batchSize=3·5·7
+    // 42노트 — batchSize 3·5·7
     stages: [
-      { stage: 1, batchSize: 1, totalSets: 7, notesPerSet: 1 }, //  7
-      { stage: 2, batchSize: 3, totalSets: 3, notesPerSet: 3 }, //  9
-      { stage: 3, batchSize: 5, totalSets: 3, notesPerSet: 5 }, // 15
-      { stage: 4, batchSize: 7, totalSets: 3, notesPerSet: 7 }, // 21
+      { stage: 1, batchSize: 3, totalSets: 2, notesPerSet: 3 }, //  6
+      { stage: 2, batchSize: 5, totalSets: 3, notesPerSet: 5 }, // 15
+      { stage: 3, batchSize: 7, totalSets: 3, notesPerSet: 7 }, // 21
     ],
   },
 };
@@ -149,19 +143,19 @@ export const CUSTOM_SCORE_STAGES: readonly GameStageConfig[] = [
  */
 export const LV5_SUBLEVEL_STAGES: Record<Sublevel, readonly GameStageConfig[]> = {
   1: [
-    { stage: 1, batchSize: 3, totalSets: 5, notesPerSet: 3 }, // 15
-    { stage: 2, batchSize: 5, totalSets: 3, notesPerSet: 5 }, // 15
-    { stage: 3, batchSize: 7, totalSets: 3, notesPerSet: 7 }, // 21
+    { stage: 1, batchSize: 3, totalSets: 1, notesPerSet: 3 }, //  3
+    { stage: 2, batchSize: 5, totalSets: 2, notesPerSet: 5 }, // 10
+    { stage: 3, batchSize: 7, totalSets: 5, notesPerSet: 7 }, // 35
   ],
   2: [
-    { stage: 1, batchSize: 3, totalSets: 5, notesPerSet: 3 }, // 15
-    { stage: 2, batchSize: 5, totalSets: 3, notesPerSet: 5 }, // 15
-    { stage: 3, batchSize: 7, totalSets: 3, notesPerSet: 7 }, // 21
+    { stage: 1, batchSize: 3, totalSets: 2, notesPerSet: 3 }, //  6
+    { stage: 2, batchSize: 5, totalSets: 4, notesPerSet: 5 }, // 20
+    { stage: 3, batchSize: 7, totalSets: 4, notesPerSet: 7 }, // 28
   ],
   3: [
-    { stage: 1, batchSize: 5, totalSets: 3, notesPerSet: 5 }, // 15
-    { stage: 2, batchSize: 7, totalSets: 3, notesPerSet: 7 }, // 21
-    { stage: 3, batchSize: 7, totalSets: 3, notesPerSet: 7 }, // 21
+    { stage: 1, batchSize: 3, totalSets: 1, notesPerSet: 3 }, //  3
+    { stage: 2, batchSize: 5, totalSets: 3, notesPerSet: 5 }, // 15
+    { stage: 3, batchSize: 7, totalSets: 6, notesPerSet: 7 }, // 42
   ],
 };
 
