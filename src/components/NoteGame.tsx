@@ -1308,7 +1308,7 @@ export default function NoteGame({
       <div className="w-full max-w-[612px] flex flex-col gap-3">
 
         {onLevelSelect && (
-          <div className="w-full flex justify-start pt-1">
+          <div className="w-full flex justify-start pt-1 mt-[10px]">
             <button
               onClick={() => setIsPaused(true)}
               aria-label={t.gameDialogs.exitLabel}
