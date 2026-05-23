@@ -11,12 +11,24 @@ export default function CountdownTimer({ duration, resetKey, onExpire, paused = 
   const [remaining, setRemaining] = useState(duration * 1000);
   const startRef = useRef(performance.now());
   const expiredRef = useRef(false);
+  const pausedAtRef = useRef<number | null>(null);
 
   useEffect(() => {
     setRemaining(duration * 1000);
     startRef.current = performance.now();
     expiredRef.current = false;
+    pausedAtRef.current = null;
   }, [resetKey, duration]);
+
+  // pause/resume 보정: resume 시 멈췄던 시간만큼 startRef를 밀어 elapsed에서 제외.
+  useEffect(() => {
+    if (paused) {
+      pausedAtRef.current = performance.now();
+    } else if (pausedAtRef.current !== null) {
+      startRef.current += performance.now() - pausedAtRef.current;
+      pausedAtRef.current = null;
+    }
+  }, [paused]);
 
   useEffect(() => {
     if (paused) return;

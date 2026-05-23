@@ -234,6 +234,12 @@ export interface Strings {
     backToSelect: string;        // "단계 선택으로"
     replaySameLevel: string;     // "같은 단계 한 번 더"
     nextLevelButton: string;     // "{nextLabel}로 →" / "{nextLabel} →"
+    // PauseDialog
+    pauseTitle: string;
+    pauseBody: string;
+    pauseResume: string;
+    pauseExit: string;
+    exitLabel: string;
   };
   dashboard: {
     backToHome: string;
@@ -627,6 +633,11 @@ const ko: Strings = {
     backToSelect: "단계 선택으로",
     replaySameLevel: "같은 단계 한 번 더",
     nextLevelButton: "{nextLabel}로 →",
+    pauseTitle: "일시정지",
+    pauseBody: "이어서 할까요, 레벨 선택으로 나갈까요?",
+    pauseResume: "계속하기",
+    pauseExit: "레벨 선택으로",
+    exitLabel: "나가기",
   },
   dashboard: {
     backToHome: "메인",
@@ -1023,6 +1034,11 @@ const en: Strings = {
     backToSelect: "Back to level select",
     replaySameLevel: "Play this stage again",
     nextLevelButton: "{nextLabel} →",
+    pauseTitle: "Paused",
+    pauseBody: "Resume, or exit to level select?",
+    pauseResume: "Resume",
+    pauseExit: "Exit to levels",
+    exitLabel: "Exit",
   },
   dashboard: {
     backToHome: "Home",

@@ -1,9 +1,11 @@
 import { useState, useCallback, useRef, useEffect } from "react";
+import { Pause } from "lucide-react";
 import GameHeader from "./GameHeader";
 import NoteButtons from "./NoteButtons";
 import MissionSuccessModal from "./MissionSuccessModal";
 import CountdownTimer from "./CountdownTimer";
 import CountdownOverlay from "./CountdownOverlay";
+import { PauseDialog } from "./PauseDialog";
 import AccidentalSwipeTutorial, {
   hasSeenSwipeTutorial,
   markSwipeTutorialSeen,
@@ -11,6 +13,7 @@ import AccidentalSwipeTutorial, {
 import { useUserEnvOffset } from "@/hooks/useUserEnvOffset";
 import { useDailyLimit } from "@/hooks/useDailyLimit";
 import { useAuth } from "@/contexts/AuthContext";
+import { useT } from "@/contexts/LanguageContext";
 import { playNote, playWrong, isSamplerReady, initSound, ensureAudioReady } from "@/lib/sound";
 import { useNoteLogger } from "@/hooks/useNoteLogger";
 import { useSessionRecorder } from "@/hooks/useSessionRecorder";
@@ -346,6 +349,7 @@ export default function NoteGame({
   const { masteryMap } = useUserMastery();
   const { recordAttempt } = useLevelProgress();
   const { profile } = useAuth();
+  const t = useT();
   const dailyLimit = useDailyLimit();
   const {
     isLoading: calibrationLoading,
@@ -419,6 +423,7 @@ export default function NoteGame({
   const [missedNotes, setMissedNotes] = useState<Map<string, NoteType>>(new Map());
   const [disabledNotes,       setDisabledNotes]       = useState<Set<string>>(new Set());
   const [timerKey,            setTimerKey]            = useState(0);
+  const [isPaused,            setIsPaused]            = useState(false);
   const [individualStreak,    setIndividualStreak]    = useState(0);
   const [lifeRecovered,       setLifeRecovered]       = useState(false);
   const [answeredNotes,       setAnsweredNotes]       = useState<StaffHistoryEntry[]>([]);
@@ -1305,10 +1310,11 @@ export default function NoteGame({
         {onLevelSelect && (
           <div className="w-full flex justify-start">
             <button
-              onClick={onLevelSelect}
-              className="text-xs px-3 py-1.5 rounded-lg border border-border text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+              onClick={() => setIsPaused(true)}
+              className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-border text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
             >
-              ← 레벨 선택
+              <Pause className="w-3.5 h-3.5" aria-hidden="true" />
+              {t.gameDialogs.exitLabel}
             </button>
           </div>
         )}
@@ -1345,7 +1351,7 @@ export default function NoteGame({
             duration={TIMER_SECONDS}
             resetKey={timerKey}
             onExpire={handleTimerExpire}
-            paused={(phase !== "playing" && phase !== "final-retry") || showCountdown || showSwipeTutorial || calibrationLoading}
+            paused={(phase !== "playing" && phase !== "final-retry") || showCountdown || showSwipeTutorial || calibrationLoading || isPaused}
           />
         </div>
 
@@ -1380,7 +1386,7 @@ export default function NoteGame({
 
           <NoteButtons
             onNoteClick={handleAnswer}
-            disabled={(phase !== "playing" && phase !== "final-retry") || showCountdown || showSwipeTutorial || calibrationLoading}
+            disabled={(phase !== "playing" && phase !== "final-retry") || showCountdown || showSwipeTutorial || calibrationLoading || isPaused}
             disabledNotes={disabledNotes}
             keySharps={needsKeySig ? currentKeySignature.sharps : undefined}
             keyFlats={needsKeySig ? currentKeySignature.flats : undefined}
@@ -1392,11 +1398,17 @@ export default function NoteGame({
 
       <button
         onClick={() => { if (currentTarget) playNote(getSoundKey(currentTarget)); }}
-        disabled={phase !== "playing"}
+        disabled={phase !== "playing" || isPaused}
         className="mt-2 text-sm text-muted-foreground hover:text-foreground transition-colors duration-150 active:scale-95 disabled:opacity-40"
       >
         🔊 다시 듣기
       </button>
+
+      <PauseDialog
+        open={isPaused}
+        onResume={() => setIsPaused(false)}
+        onQuit={() => { setIsPaused(false); onLevelSelect?.(); }}
+      />
 
       <MissionSuccessModal
         open={phase === "success" && !useExternalDialogs}
