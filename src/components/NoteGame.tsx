@@ -892,7 +892,7 @@ export default function NoteGame({
   dailyLimitRef.current = dailyLimit;
 
   useEffect(() => {
-    if (dailyLimitRef.current.isLoading || calibrationInitRef.current) return;
+    if (calibrationLoading || dailyLimitRef.current.isLoading || calibrationInitRef.current) return;
     calibrationInitRef.current = true;
 
     // §B-0 daily limit gate — 안전망 영역 (LevelSelect가 메인 게이트, F3 정정).
@@ -909,7 +909,7 @@ export default function NoteGame({
     } else if (!skipCountdown) {
       setShowCountdown(true);
     }
-  }, [level, skipCountdown, onLevelSelect]);
+  }, [calibrationLoading, level, skipCountdown, onLevelSelect]);
 
   const handleSwipeTutorialClose = useCallback((markAsSeen: boolean) => {
     if (markAsSeen) markSwipeTutorialSeen(level);
