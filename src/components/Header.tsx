@@ -45,7 +45,11 @@ export default function Header({
   ) : (
     <div className="flex items-center gap-2">
       <Link to="/" className="flex items-center gap-2 text-base font-bold">
-        <span className="text-xl">🎼</span> {isPremium ? "Premium" : "Noteflex"}
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5" aria-hidden="true">
+          <circle cx="6" cy="17" r="3" /><circle cx="16" cy="17" r="3" />
+          <path d="M9 17V4h10v13" /><path d="M9 8h10" />
+        </svg>
+        {isPremium ? "Premium" : "Noteflex"}
       </Link>
     </div>
   );

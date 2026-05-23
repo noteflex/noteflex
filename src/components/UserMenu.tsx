@@ -9,7 +9,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
-import { ChevronDown, LayoutDashboard, LogOut, UserCog, Sparkles } from "lucide-react";
+import { LayoutDashboard, LogOut, UserCog, Sparkles } from "lucide-react";
 
 export default function UserMenu() {
   const { user, profile, loading, signOut } = useAuth();
@@ -37,7 +37,9 @@ export default function UserMenu() {
           className="inline-flex items-center gap-1.5 max-w-[40vw] rounded-full border border-border bg-card px-3 py-1.5 text-sm font-medium text-foreground hover:bg-muted active:scale-95 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
         >
           <span className="truncate">{displayName}</span>
-          <ChevronDown className="w-4 h-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold">
+            {displayName.charAt(0).toUpperCase()}
+          </span>
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-48">
