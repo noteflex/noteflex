@@ -328,7 +328,7 @@ export default function PlayPage() {
       />
       {showAuth && <AuthModal onClose={() => setShowAuth(false)} />}
       <div
-        className="safe-area-page h-screen overflow-hidden flex flex-col items-center pt-10 px-4"
+        className="safe-area-page h-[100dvh] overflow-hidden flex flex-col items-center pt-10 px-4"
         style={{ background: "radial-gradient(circle at top, #ffffff 0%, #f8f5e4 100%)" }}
       >
         <NoteGame

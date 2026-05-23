@@ -47,10 +47,9 @@ export function useNoteLogger() {
         return;
       }
 
-      toast({
-        title: "기록 저장 성공",
-        description: `log id: ${data?.id ?? "created"}`,
-      });
+      if (import.meta.env.DEV) {
+        console.log("[NoteLogger] saved, id:", data?.id ?? "created");
+      }
     },
     [user]
   );
