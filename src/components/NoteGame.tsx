@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from "react";
-import { Pause } from "lucide-react";
+import { LogOut } from "lucide-react";
 import GameHeader from "./GameHeader";
 import NoteButtons from "./NoteButtons";
 import MissionSuccessModal from "./MissionSuccessModal";
@@ -1308,12 +1308,12 @@ export default function NoteGame({
       <div className="w-full max-w-[612px] flex flex-col gap-3">
 
         {onLevelSelect && (
-          <div className="w-full flex justify-start">
+          <div className="w-full flex justify-start pt-2">
             <button
               onClick={() => setIsPaused(true)}
-              className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-border text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+              className="flex items-center gap-1.5 text-xs font-medium px-3.5 py-2 rounded-full bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors active:scale-95"
             >
-              <Pause className="w-3.5 h-3.5" aria-hidden="true" />
+              <LogOut className="w-3.5 h-3.5" aria-hidden="true" />
               {t.gameDialogs.exitLabel}
             </button>
           </div>

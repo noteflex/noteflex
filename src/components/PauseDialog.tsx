@@ -4,7 +4,6 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
-  DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useT } from "@/contexts/LanguageContext";
@@ -31,14 +30,14 @@ export function PauseDialog({ open, onResume, onQuit }: PauseDialogProps) {
             {t.gameDialogs.pauseBody}
           </DialogDescription>
         </DialogHeader>
-        <DialogFooter className="flex flex-col gap-2 sm:flex-col">
-          <Button onClick={onResume} className="w-full">
+        <div className="flex flex-col gap-2 mt-2">
+          <Button onClick={onResume} className="w-full ring-offset-0 focus-visible:ring-inset">
             {t.gameDialogs.pauseResume}
           </Button>
           <Button variant="outline" onClick={onQuit} className="w-full">
             {t.gameDialogs.pauseExit}
           </Button>
-        </DialogFooter>
+        </div>
       </DialogContent>
     </Dialog>
   );
