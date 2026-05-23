@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { PremiumBadge } from "@/components/PremiumBadge";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface HeaderProps {
   /** Page-specific right-side content */
@@ -7,8 +7,8 @@ interface HeaderProps {
   /** Extra content below the main header row (renders inside <header>) */
   below?: React.ReactNode;
   /**
-   * Left-side title. Defaults to the "🎼 Noteflex" logo link.
-   * Pass a ReactNode to override — PremiumBadge is automatically appended.
+   * Left-side title. Defaults to the "🎼 Noteflex / Premium" logo link.
+   * Pass a ReactNode to override.
    */
   title?: React.ReactNode;
   /**
@@ -30,12 +30,13 @@ export default function Header({
   headerClassName,
   containerClassName,
 }: HeaderProps) {
+  const { profile } = useAuth();
+  const isPremium = !!profile?.is_premium;
   const container = `${containerClassName ?? "max-w-3xl"} mx-auto px-4`;
   const left = title ? (
     <div className="min-w-0">
       <div className="flex items-center gap-2">
         {title}
-        <PremiumBadge />
       </div>
       {subtitle && (
         <p className="text-xs text-muted-foreground truncate">{subtitle}</p>
@@ -44,9 +45,8 @@ export default function Header({
   ) : (
     <div className="flex items-center gap-2">
       <Link to="/" className="flex items-center gap-2 text-base font-bold">
-        <span className="text-xl">🎼</span> Noteflex
+        <span className="text-xl">🎼</span> {isPremium ? "Premium" : "Noteflex"}
       </Link>
-      <PremiumBadge />
     </div>
   );
 

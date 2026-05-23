@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
 import { initSound } from "@/lib/sound";
 import AuthModal from "@/components/AuthModal";
@@ -7,13 +7,7 @@ import Footer from "@/components/Footer";
 import { useAuth } from "@/contexts/AuthContext";
 import { useT } from "@/contexts/LanguageContext";
 import { GAME_ENABLED } from "@/lib/featureFlags";
-import { cn } from "@/lib/utils";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import UserMenu from "@/components/UserMenu";
 
 function ComingSoonNotice() {
   const t = useT();
@@ -42,93 +36,31 @@ function ComingSoonNotice() {
 }
 
 export default function Index() {
-  const { user, profile, loading: authLoading, signOut } = useAuth();
+  const { user, profile, loading: authLoading } = useAuth();
   const t = useT();
   const navigate = useNavigate();
   const [showAuth, setShowAuth] = useState(false);
 
   // admin·reviewer는 GAME_ENABLED 무관하게 게임 UI 노출.
-  // - admin: 내부 테스트
-  // - reviewer: Paddle 심사관 게임 영역 확인
   const isPrivilegedRole =
     profile?.role === "admin" || profile?.role === "reviewer";
   const showGameUI = GAME_ENABLED || isPrivilegedRole;
-
-  const handleAuthClose = () => {
-    setShowAuth(false);
-  };
 
   const handleStart = async () => {
     initSound().catch(() => {});
     navigate("/play", { state: { fromNav: true } });
   };
 
-  const handleSignOut = async () => {
-    await signOut();
-  };
-
-  // 헤더 displayName chip 박음:
-  //   - 자동 닉네임(user_xxx) → 이메일 prefix + Tooltip "닉네임 설정하기 →"
-  //   - 정상 닉네임 → 닉네임 그대로 + Tooltip X (마우스 가림 회피)
-  const nickname = profile?.nickname ?? "";
-  const email = user?.email ?? "";
-  const isAutoNickname = nickname.startsWith("user_");
-  const displayName = isAutoNickname ? email.split("@")[0] : nickname;
-
-  const chipLink = (
-    <Link
-      to="/profile"
-      className={cn(
-        "inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium",
-        "bg-secondary/60 text-secondary-foreground",
-        "hover:bg-secondary transition-colors",
-        "cursor-pointer truncate max-w-[150px]",
-      )}
-      data-testid="header-display-name"
-    >
-      {displayName}
-    </Link>
-  );
-
-  const pageHeaderRight = showGameUI && !authLoading ? (
-    user ? (
-      <div className="flex items-center gap-3">
-        {profile?.role !== "admin" && (
-          <Link
-            to="/dashboard"
-            className="text-xs px-3 py-1.5 rounded-lg border border-border text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-          >
-            {t.header.dashboard}
-          </Link>
-        )}
-        {isAutoNickname ? (
-          <TooltipProvider delayDuration={150}>
-            <Tooltip>
-              <TooltipTrigger asChild>{chipLink}</TooltipTrigger>
-              <TooltipContent side="bottom" sideOffset={8}>
-                <p className="text-xs">{t.header.setNicknameHint}</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        ) : (
-          chipLink
-        )}
-        <button
-          onClick={handleSignOut}
-          className="text-xs px-3 py-1.5 rounded-lg border border-border text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-        >
-          {t.header.signOut}
-        </button>
-      </div>
-    ) : (
+  const pageHeaderRight = !showGameUI ? null
+    : user ? <UserMenu />
+    : !authLoading ? (
       <button
         onClick={() => setShowAuth(true)}
         className="text-xs px-4 py-1.5 rounded-lg bg-primary text-primary-foreground font-semibold hover:bg-primary/90 transition-colors"
       >
         {t.header.signIn}
       </button>
-    )
-  ) : null;
+    ) : null;
 
   return (
     <div

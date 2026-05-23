@@ -387,6 +387,12 @@ export interface Strings {
     aria: { proOnly: string; locked: string; select: string; passedReplay: string; inProgress: string };
     levels: { name: string; label: string }[];   // 길이 7
   };
+  userMenu: {
+    premiumActive: string;
+    profile: string;
+    dashboard: string;
+    logout: string;
+  };
 }
 
 const ko: Strings = {
@@ -788,6 +794,12 @@ const ko: Strings = {
       { name: "마스터", label: "마스터 믹스 (♯♭)" },
     ],
   },
+  userMenu: {
+    premiumActive: "프리미엄 이용중",
+    profile: "프로필 수정",
+    dashboard: "대시보드",
+    logout: "로그아웃",
+  },
 };
 
 const en: Strings = {
@@ -1188,6 +1200,12 @@ const en: Strings = {
       { name: "Expert",       label: "Flat mastery (♭)" },
       { name: "Master",       label: "Master mix (♯♭)" },
     ],
+  },
+  userMenu: {
+    premiumActive: "Premium member",
+    profile: "Edit profile",
+    dashboard: "Dashboard",
+    logout: "Log out",
   },
 };
 
