@@ -1308,12 +1308,13 @@ export default function NoteGame({
       <div className="w-full max-w-[612px] flex flex-col gap-3">
 
         {onLevelSelect && (
-          <div className="w-full flex justify-start pt-2">
+          <div className="w-full flex justify-start pt-1">
             <button
               onClick={() => setIsPaused(true)}
-              className="flex items-center gap-1.5 text-xs font-medium px-3.5 py-2 rounded-full bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors active:scale-95"
+              aria-label={t.gameDialogs.exitLabel}
+              className="inline-flex items-center gap-1.5 rounded-full bg-card border border-border px-3.5 py-2 text-sm font-medium text-muted-foreground shadow-sm hover:bg-muted hover:text-foreground active:scale-95 transition-all"
             >
-              <LogOut className="w-3.5 h-3.5" aria-hidden="true" />
+              <LogOut className="w-4 h-4" aria-hidden="true" />
               {t.gameDialogs.exitLabel}
             </button>
           </div>
