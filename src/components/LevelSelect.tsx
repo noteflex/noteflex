@@ -1,5 +1,4 @@
 import { memo, useCallback, useMemo, useRef, useState } from "react";
-import { Music, Sprout, Star, Flame, Gem, Crown } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useT } from "@/contexts/LanguageContext";
 import { useLevelProgress } from "@/hooks/useLevelProgress";
@@ -22,16 +21,8 @@ import MasteryScoreCard from "./MasteryScoreCard";
 import { AdBanner } from "./AdBanner";
 import { getSlot } from "@/lib/adsense";
 
-// ── 레벨 메타 (언어 중립: 아이콘·색·로마숫자만) ──────────────────
-const LEVEL_META = [
-  { kind: "icon",  Icon: Sprout, color: "text-emerald-500", numeral: "Ⅰ" },
-  { kind: "stars", count: 1,     color: "text-amber-500",   numeral: "Ⅱ" },
-  { kind: "stars", count: 2,     color: "text-amber-500",   numeral: "Ⅰ" },
-  { kind: "stars", count: 3,     color: "text-amber-500",   numeral: "Ⅱ" },
-  { kind: "icon",  Icon: Flame,  color: "text-orange-500",  numeral: null },
-  { kind: "icon",  Icon: Gem,    color: "text-cyan-500",    numeral: null },
-  { kind: "icon",  Icon: Crown,  color: "text-violet-500",  numeral: null },
-] as const;
+// ── 레벨 메타 (언어 중립: 이모지만) ────────────────────────────
+const LEVEL_META = ["🌱", "⭐", "⭐⭐", "⭐⭐⭐", "🔥", "💎", "👑"] as const;
 
 // ── Props ────────────────────────────────────────────────────
 interface LevelSelectProps {
@@ -225,11 +216,8 @@ export default function LevelSelect({
   return (
     <div className="flex flex-col items-center gap-5 w-full max-w-lg mx-auto px-2 pb-8 animate-fade-up">
 
-      {/* 헤더 */}
-      <div className="flex flex-col items-center gap-1 w-full pt-2">
-        <Music className="w-8 h-8 text-primary" aria-hidden="true" />
-        <h2 className="text-xl font-bold text-foreground tracking-tight">{t.levelSelect.title}</h2>
-      </div>
+      {/* 상단 여백 */}
+      <div className="w-full pt-2" />
 
       {/* 로딩 */}
       {loading && (
@@ -248,7 +236,7 @@ export default function LevelSelect({
 
       {/* 레벨 그룹 */}
       <div className="flex flex-col gap-3 w-full">
-        {LEVEL_META.flatMap((meta, idx) => {
+        {LEVEL_META.flatMap((emoji, idx) => {
           const level = idx + 1;
           const levelInfo = t.levelSelect.levels[idx];
           const card = (
@@ -258,20 +246,8 @@ export default function LevelSelect({
             >
               {/* 레벨 헤더 */}
               <div className="flex items-center gap-2 mb-2 px-0.5 flex-wrap">
-                {/* 아이콘 또는 별 */}
-                {meta.kind === "icon" ? (
-                  <meta.Icon className={`w-4 h-4 shrink-0 ${meta.color}`} aria-hidden="true" />
-                ) : (
-                  <span className="flex gap-0.5 shrink-0">
-                    {Array.from({ length: meta.count }).map((_, i) => (
-                      <Star key={i} className={`w-3.5 h-3.5 fill-current ${meta.color}`} aria-hidden="true" />
-                    ))}
-                  </span>
-                )}
+                <span className="text-base leading-none" aria-hidden="true">{emoji}</span>
                 <span className="text-sm font-bold text-foreground">{levelInfo.name}</span>
-                {meta.numeral && (
-                  <span className="text-[11px] text-muted-foreground/70">{meta.numeral}</span>
-                )}
                 <span className="text-xs text-muted-foreground">{levelInfo.label}</span>
               </div>
 

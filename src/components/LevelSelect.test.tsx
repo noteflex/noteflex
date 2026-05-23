@@ -114,10 +114,10 @@ describe("LevelSelect - 렌더링", () => {
     expect(countSublevelCells()).toBe(21);
   });
 
-  it("7개 레벨 이름이 표시됨 (Beginner×2, Elementary×2, Intermediate, Advanced, Master)", () => {
+  it("7개 레벨 이름이 표시됨 (Novice, Beginner, Elementary, Intermediate, Advanced, Expert, Master)", () => {
     renderLevelSelect();
     // en 기본 언어 — strings.ts의 en.levelSelect.levels 이름
-    const names = ["Beginner", "Beginner", "Elementary", "Elementary", "Intermediate", "Advanced", "Master"];
+    const names = ["Novice", "Beginner", "Elementary", "Intermediate", "Advanced", "Expert", "Master"];
     for (const name of names) {
       expect(screen.getAllByText(name).length).toBeGreaterThanOrEqual(1);
     }
