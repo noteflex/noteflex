@@ -99,6 +99,10 @@
     @apply border-border;
   }
 
+  html {
+    background-color: hsl(var(--background));
+  }
+
   html, body {
     overflow-x: hidden;
     overscroll-behavior: none;
