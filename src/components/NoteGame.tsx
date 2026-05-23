@@ -873,10 +873,14 @@ export default function NoteGame({
     }
   }, [stages, stageIdx, currentIndex, currentBatch, setProgress, currentSet, composeBatch, handleSetComplete, prepareNextTurn]);
   
-  // §swipe-modal → 카운트다운 → 첫 음표 흐름 (calibration 제거됨)
-  // isLoading 중 모달 X (깜박임 방지 — race condition fix 2026-05-04).
-  const [showSwipeTutorial, setShowSwipeTutorial] = useState(false);
-  const [showCountdown, setShowCountdown] = useState(false);
+  // §countdown-instant (2026-05-23): START를 동기 초기 state로 — 마운트 첫 프레임부터 카운트다운 노출.
+  //   hasSeenSwipeTutorial = 동기 localStorage 읽기라 initializer에서 안전(마운트 1회만 읽힘). skipCountdown은 테스트 경로.
+  const [showSwipeTutorial, setShowSwipeTutorial] = useState(
+    level >= 5 && !hasSeenSwipeTutorial(level)
+  );
+  const [showCountdown, setShowCountdown] = useState(
+    !skipCountdown && !(level >= 5 && !hasSeenSwipeTutorial(level))
+  );
   useEffect(() => {
     if (showCountdown) return;
     if (phase !== "playing" && phase !== "final-retry") return;
@@ -884,32 +888,21 @@ export default function NoteGame({
     noteStartTime.current = performance.now();
   }, [currentIndex, currentTarget, phase, showCountdown]);
 
-  // 1회 초기화 guard — isLoading 완료 후 modal 흐름 결정
-  const calibrationInitRef = useRef(false);
-
-  // dailyLimit 영역 ref로 안정화 (객체 reference가 매 render 변경되어도 effect 재실행 X)
-  const dailyLimitRef = useRef(dailyLimit);
-  dailyLimitRef.current = dailyLimit;
-
+  // §B-0 dailyLimit 안전망 (2026-05-23 분리): LevelSelect가 메인 게이트. 여기는 URL 직접 진입·stale state 대비.
+  //   카운트다운 START와 완전 분리 — dailyLimit DB가 느리거나 에러로 isLoading이 안 풀려도 카운트다운은 안 막힌다.
+  //   dailyLimit 해소 후 1회: hasReached면 LevelSelect 복귀, 통과면 recordSession(fire-and-forget).
+  const dailyLimitGateRef = useRef(false);
   useEffect(() => {
-    if (calibrationLoading || dailyLimitRef.current.isLoading || calibrationInitRef.current) return;
-    calibrationInitRef.current = true;
-
-    // §B-0 daily limit gate — 안전망 영역 (LevelSelect가 메인 게이트, F3 정정).
-    // 한도 도달 상태에서 NoteGame 마운트 시 onLevelSelect 콜백으로 LevelSelect 복귀.
-    if (dailyLimitRef.current.hasReached) {
+    if (dailyLimit.isLoading || dailyLimitGateRef.current) return;
+    dailyLimitGateRef.current = true;
+    if (dailyLimit.hasReached) {
       if (onLevelSelect) onLevelSelect();
       return;
     }
-    // 통과 시 recordSession (fire-and-forget — DB 실패해도 게임 진행)
-    void dailyLimitRef.current.recordSession();
-
-    if (level >= 5 && !hasSeenSwipeTutorial(level)) {
-      setShowSwipeTutorial(true);
-    } else if (!skipCountdown) {
-      setShowCountdown(true);
-    }
-  }, [calibrationLoading, level, skipCountdown, onLevelSelect]);
+    void dailyLimit.recordSession();
+    // recordSession은 1회 fire-and-forget — deps에서 제외(매 render 신규 참조).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dailyLimit.isLoading, dailyLimit.hasReached, onLevelSelect]);
 
   const handleSwipeTutorialClose = useCallback((markAsSeen: boolean) => {
     if (markAsSeen) markSwipeTutorialSeen(level);
