@@ -372,6 +372,15 @@ export interface Strings {
       supportSuffix: string;
     };
   };
+  levelSelect: {
+    title: string;
+    loading: string;
+    passed: string;
+    proBadge: string;
+    achieved: string;          // "{n}" 치환
+    aria: { proOnly: string; locked: string; select: string; passedReplay: string; inProgress: string };
+    levels: { name: string; label: string }[];   // 길이 7
+  };
 }
 
 const ko: Strings = {
@@ -751,6 +760,23 @@ const ko: Strings = {
       supportSuffix: "으로 문의해주세요",
     },
   },
+  levelSelect: {
+    title: "연습",
+    loading: "진도 불러오는 중...",
+    passed: "통과",
+    proBadge: "PRO",
+    achieved: "{n}/4 달성",
+    aria: { proOnly: "Pro 전용", locked: "잠금", select: "선택", passedReplay: "통과 (재플레이 가능)", inProgress: "진행 중" },
+    levels: [
+      { name: "입문", label: "높은음자리표 (C4–C6)" },
+      { name: "입문", label: "낮은음자리표 (C2–C4)" },
+      { name: "초급", label: "고급 높은음자리표" },
+      { name: "초급", label: "고급 낮은음자리표" },
+      { name: "중급", label: "샵 마스터리 (♯)" },
+      { name: "고급", label: "플랫 마스터리 (♭)" },
+      { name: "마스터", label: "마스터 믹스 (♯♭)" },
+    ],
+  },
 };
 
 const en: Strings = {
@@ -1129,6 +1155,23 @@ const en: Strings = {
       supportPrefix: "If the problem persists, contact ",
       supportSuffix: "",
     },
+  },
+  levelSelect: {
+    title: "Practice",
+    loading: "Loading progress...",
+    passed: "Passed",
+    proBadge: "PRO",
+    achieved: "{n}/4 done",
+    aria: { proOnly: "Pro only", locked: "Locked", select: "Select", passedReplay: "Passed (replay available)", inProgress: "In progress" },
+    levels: [
+      { name: "Beginner", label: "Treble clef (C4–C6)" },
+      { name: "Beginner", label: "Bass clef (C2–C4)" },
+      { name: "Elementary", label: "Advanced treble" },
+      { name: "Elementary", label: "Advanced bass" },
+      { name: "Intermediate", label: "Sharp mastery (♯)" },
+      { name: "Advanced", label: "Flat mastery (♭)" },
+      { name: "Master", label: "Master mix (♯♭)" },
+    ],
   },
 };
 

@@ -1,6 +1,7 @@
 import { memo, useCallback, useMemo, useRef, useState } from "react";
-import { Home } from "lucide-react";
+import { Music, Sprout, Star, Flame, Gem, Crown } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useT } from "@/contexts/LanguageContext";
 import { useLevelProgress } from "@/hooks/useLevelProgress";
 import { useDailyLimit } from "@/hooks/useDailyLimit";
 import { getUserTier } from "@/lib/subscriptionTier";
@@ -14,7 +15,6 @@ import {
   type Sublevel,
   type SublevelProgress,
 } from "@/lib/levelSystem";
-import { Button } from "@/components/ui/button";
 import UpgradeModal from "./UpgradeModal";
 import DailyLimitModal from "./DailyLimitModal";
 import LockedByProgressDialog from "./LockedByProgressDialog";
@@ -22,21 +22,20 @@ import MasteryScoreCard from "./MasteryScoreCard";
 import { AdBanner } from "./AdBanner";
 import { getSlot } from "@/lib/adsense";
 
-// ── 레벨 메타 정보 ───────────────────────────────────────────
-const LEVEL_INFO = [
-  { name: "입문",        label: "높은음자리표 (C4–C6)",  emoji: "🌱" },
-  { name: "기본",        label: "낮은음자리표 (C2–C4)",  emoji: "🌿" },
-  { name: "중급",        label: "고급 높은음자리표",     emoji: "🔥" },
-  { name: "상급",        label: "고급 낮은음자리표",     emoji: "⚡" },
-  { name: "고수",        label: "Sharp Mastery (♯)",    emoji: "🎯" },
-  { name: "마스터",      label: "Flat Mastery (♭)",     emoji: "💎" },
-  { name: "그랜드마스터", label: "마스터 믹스 (♯♭)",   emoji: "👑" },
+// ── 레벨 메타 (언어 중립: 아이콘·색·로마숫자만) ──────────────────
+const LEVEL_META = [
+  { kind: "icon",  Icon: Sprout, color: "text-emerald-500", numeral: "Ⅰ" },
+  { kind: "stars", count: 1,     color: "text-amber-500",   numeral: "Ⅱ" },
+  { kind: "stars", count: 2,     color: "text-amber-500",   numeral: "Ⅰ" },
+  { kind: "stars", count: 3,     color: "text-amber-500",   numeral: "Ⅱ" },
+  { kind: "icon",  Icon: Flame,  color: "text-orange-500",  numeral: null },
+  { kind: "icon",  Icon: Gem,    color: "text-cyan-500",    numeral: null },
+  { kind: "icon",  Icon: Crown,  color: "text-violet-500",  numeral: null },
 ] as const;
 
 // ── Props ────────────────────────────────────────────────────
 interface LevelSelectProps {
   onSelectSublevel: (level: number, sublevel: Sublevel) => void;
-  onBack: () => void;
   onLoginRequest?: () => void;
 }
 
@@ -58,10 +57,10 @@ interface CellState {
 // ════════════════════════════════════════════════════════════
 export default function LevelSelect({
   onSelectSublevel,
-  onBack,
   onLoginRequest,
 }: LevelSelectProps) {
   const { user, profile } = useAuth();
+  const t = useT();
   const { progress, loading, getProgressFor } = useLevelProgress();
   const dailyLimit = useDailyLimit();
   const tier = getUserTier(user ?? null, profile ?? null);
@@ -75,8 +74,6 @@ export default function LevelSelect({
   // 스크롤 + 하이라이트 영역
   const cellRefs = useRef<Map<string, HTMLButtonElement | null>>(new Map());
   const [highlightedKey, setHighlightedKey] = useState<string | null>(null);
-
-  const totalPassed = progress.filter((p) => p.passed).length;
 
   // 현재 플레이 중인 단계 = 접근 가능 + 미통과 중 첫 번째 (MasteryScoreCard 기준)
   const currentSublevel = useMemo(() => {
@@ -228,31 +225,15 @@ export default function LevelSelect({
   return (
     <div className="flex flex-col items-center gap-5 w-full max-w-lg mx-auto px-2 pb-8 animate-fade-up">
 
-      {/* 헤더 + 메인 버튼 (우측 상단) */}
-      <div className="flex items-start justify-between w-full pt-2">
-        <div className="flex flex-col items-center gap-1 flex-1">
-          <span className="text-4xl">🎼</span>
-          <h2 className="text-xl font-bold text-foreground tracking-tight">단계 선택</h2>
-          <p className="text-sm text-muted-foreground" data-testid="progress-summary">
-            내 진도:{" "}
-            <span className="font-semibold text-foreground">{totalPassed}</span> / 21 통과
-          </p>
-        </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={onBack}
-          className="gap-1.5 shrink-0"
-          data-testid="back-to-home-btn"
-        >
-          <Home className="w-4 h-4" aria-hidden="true" />
-          메인
-        </Button>
+      {/* 헤더 */}
+      <div className="flex flex-col items-center gap-1 w-full pt-2">
+        <Music className="w-8 h-8 text-primary" aria-hidden="true" />
+        <h2 className="text-xl font-bold text-foreground tracking-tight">{t.levelSelect.title}</h2>
       </div>
 
       {/* 로딩 */}
       {loading && (
-        <p className="text-sm text-muted-foreground">진도 불러오는 중...</p>
+        <p className="text-sm text-muted-foreground">{t.levelSelect.loading}</p>
       )}
 
       {/* 현재 단계 마스터리 점수 */}
@@ -267,22 +248,31 @@ export default function LevelSelect({
 
       {/* 레벨 그룹 */}
       <div className="flex flex-col gap-3 w-full">
-        {LEVEL_INFO.flatMap((info, idx) => {
+        {LEVEL_META.flatMap((meta, idx) => {
           const level = idx + 1;
+          const levelInfo = t.levelSelect.levels[idx];
           const card = (
             <div
               key={level}
               className="rounded-2xl border border-border bg-card/60 p-3 shadow-sm"
             >
               {/* 레벨 헤더 */}
-              <div className="flex items-center gap-2 mb-2 px-0.5">
-                <span className="text-base">{info.emoji}</span>
-                <span className="text-sm font-bold text-foreground">
-                  Lv {level} — {info.name}
-                </span>
-                <span className="text-xs text-muted-foreground hidden sm:inline">
-                  {info.label}
-                </span>
+              <div className="flex items-center gap-2 mb-2 px-0.5 flex-wrap">
+                {/* 아이콘 또는 별 */}
+                {meta.kind === "icon" ? (
+                  <meta.Icon className={`w-4 h-4 shrink-0 ${meta.color}`} aria-hidden="true" />
+                ) : (
+                  <span className="flex gap-0.5 shrink-0">
+                    {Array.from({ length: meta.count }).map((_, i) => (
+                      <Star key={i} className={`w-3.5 h-3.5 fill-current ${meta.color}`} aria-hidden="true" />
+                    ))}
+                  </span>
+                )}
+                <span className="text-sm font-bold text-foreground">{levelInfo.name}</span>
+                {meta.numeral && (
+                  <span className="text-[11px] text-muted-foreground/70">{meta.numeral}</span>
+                )}
+                <span className="text-xs text-muted-foreground">{levelInfo.label}</span>
               </div>
 
               {/* 서브레벨 3개 */}
@@ -299,6 +289,7 @@ export default function LevelSelect({
                       onSelect={handleSelect}
                       highlighted={highlightedKey === key}
                       cellRef={(el) => { cellRefs.current.set(key, el); }}
+                      t={t.levelSelect}
                     />
                   );
                 })}
@@ -358,6 +349,12 @@ interface SublevelCellProps {
   onSelect: (level: number, sublevel: Sublevel) => void;
   highlighted?: boolean;
   cellRef?: (el: HTMLButtonElement | null) => void;
+  t: {
+    passed: string;
+    proBadge: string;
+    achieved: string;
+    aria: { proOnly: string; locked: string; select: string; passedReplay: string; inProgress: string };
+  };
 }
 
 const SublevelCell = memo(function SublevelCell({
@@ -367,6 +364,7 @@ const SublevelCell = memo(function SublevelCell({
   onSelect,
   highlighted = false,
   cellRef,
+  t,
 }: SublevelCellProps) {
   const onClick = () => onSelect(level, sublevel);
   const config    = SUBLEVEL_CONFIGS[sublevel];
@@ -380,7 +378,7 @@ const SublevelCell = memo(function SublevelCell({
     : "";
 
   const baseClass =
-    "flex flex-col items-center gap-0.5 rounded-xl border-2 p-2 min-h-[72px] " +
+    "flex flex-col items-center gap-0.5 rounded-xl border-2 p-2 min-h-[76px] " +
     "transition-all duration-200 active:scale-95 text-center w-full " +
     highlightClass;
 
@@ -389,20 +387,19 @@ const SublevelCell = memo(function SublevelCell({
     return (
       <button
         ref={cellRef}
-        aria-label={`${label} Pro 전용`}
+        aria-label={`${label} ${t.aria.proOnly}`}
         onClick={onClick}
         className={
-          `${baseClass} bg-gradient-to-b from-purple-50 to-amber-50 ` +
-          "border-purple-200 opacity-75 hover:opacity-90 cursor-pointer " +
-          "dark:from-purple-950/30 dark:to-amber-950/30"
+          `${baseClass} bg-muted/30 border-border/50 opacity-70 ` +
+          "hover:opacity-90 cursor-pointer"
         }
       >
         <span className="text-sm leading-tight">🔒</span>
         <span className="text-[11px] font-bold text-foreground">{shortLabel}</span>
-        <span className="text-[9px] font-bold text-purple-600 bg-purple-100 rounded px-1 dark:bg-purple-900/40 dark:text-purple-300">
-          PRO
+        <span className="text-[10px] font-bold text-amber-600 bg-amber-100 rounded px-1 dark:bg-amber-900/40 dark:text-amber-300">
+          {t.proBadge}
         </span>
-        <span className="text-[9px] text-muted-foreground">{configStr}</span>
+        <span className="text-[10px] text-muted-foreground">{configStr}</span>
       </button>
     );
   }
@@ -412,7 +409,7 @@ const SublevelCell = memo(function SublevelCell({
     return (
       <button
         ref={cellRef}
-        aria-label={`${label} 잠금`}
+        aria-label={`${label} ${t.aria.locked}`}
         onClick={onClick}
         className={
           `${baseClass} bg-muted/40 border-border/40 opacity-50 ` +
@@ -421,7 +418,7 @@ const SublevelCell = memo(function SublevelCell({
       >
         <span className="text-sm leading-tight">🔒</span>
         <span className="text-[11px] font-semibold text-foreground">{shortLabel}</span>
-        <span className="text-[9px] text-muted-foreground">{configStr}</span>
+        <span className="text-[10px] text-muted-foreground">{configStr}</span>
       </button>
     );
   }
@@ -431,7 +428,7 @@ const SublevelCell = memo(function SublevelCell({
     return (
       <button
         ref={cellRef}
-        aria-label={`${label} 통과 (재플레이 가능)`}
+        aria-label={`${label} ${t.aria.passedReplay}`}
         onClick={onClick}
         className={
           `${baseClass} bg-emerald-50 border-emerald-300 ` +
@@ -443,10 +440,10 @@ const SublevelCell = memo(function SublevelCell({
         <span className="text-[11px] font-bold text-emerald-700 dark:text-emerald-400">
           {shortLabel}
         </span>
-        <span className="text-[9px] font-semibold text-emerald-600 dark:text-emerald-500">
-          통과
+        <span className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-500">
+          {t.passed}
         </span>
-        <span className="text-[9px] text-muted-foreground">{configStr}</span>
+        <span className="text-[10px] text-muted-foreground">{configStr}</span>
       </button>
     );
   }
@@ -457,7 +454,7 @@ const SublevelCell = memo(function SublevelCell({
     return (
       <button
         ref={cellRef}
-        aria-label={`${label} 진행 중`}
+        aria-label={`${label} ${t.aria.inProgress}`}
         onClick={onClick}
         className={
           `${baseClass} bg-amber-50 border-amber-300 ` +
@@ -468,8 +465,8 @@ const SublevelCell = memo(function SublevelCell({
         <span className="text-[11px] font-bold text-amber-800 dark:text-amber-300">
           {shortLabel}
         </span>
-        <span className="text-[9px] font-semibold text-amber-600 dark:text-amber-400">
-          {state.criteriaCount}/4 달성
+        <span className="text-[10px] font-semibold text-amber-600 dark:text-amber-400">
+          {t.achieved.replace("{n}", String(state.criteriaCount))}
         </span>
         <div className="w-full bg-amber-200 dark:bg-amber-800 rounded-full h-1 mt-0.5">
           <div
@@ -477,7 +474,7 @@ const SublevelCell = memo(function SublevelCell({
             style={{ width: `${pct}%` }}
           />
         </div>
-        <span className="text-[9px] text-muted-foreground">{configStr}</span>
+        <span className="text-[10px] text-muted-foreground">{configStr}</span>
       </button>
     );
   }
@@ -486,7 +483,7 @@ const SublevelCell = memo(function SublevelCell({
   return (
     <button
       ref={cellRef}
-      aria-label={`${label} 선택`}
+      aria-label={`${label} ${t.aria.select}`}
       onClick={onClick}
       className={
         `${baseClass} bg-card border-border ` +
@@ -494,7 +491,7 @@ const SublevelCell = memo(function SublevelCell({
       }
     >
       <span className="text-[11px] font-semibold text-foreground">{shortLabel}</span>
-      <span className="text-[9px] text-muted-foreground mt-auto">{configStr}</span>
+      <span className="text-[10px] text-muted-foreground mt-auto">{configStr}</span>
     </button>
   );
 });

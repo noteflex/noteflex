@@ -70,7 +70,6 @@ function renderLevelSelect(onSelectSublevel = vi.fn()) {
     <MemoryRouter>
       <LevelSelect
         onSelectSublevel={onSelectSublevel}
-        onBack={vi.fn()}
       />
     </MemoryRouter>
   );
@@ -93,7 +92,7 @@ describe("LevelSelect — daily limit gate (Group B Fix Sprint)", () => {
     it("Lv 1-1 클릭 → DailyLimitModal 노출, onSelectSublevel 호출 X", async () => {
       const { onSelectSublevel } = renderLevelSelect();
 
-      await userEvent.click(screen.getByLabelText("Lv 1-1 선택"));
+      await userEvent.click(screen.getByLabelText("Lv 1-1 Select"));
 
       // Guest 영역 CTA 버튼 (가입하기 / Sign up) — 모달 노출 영역 확인
       expect(await screen.findByRole("button", { name: /가입|sign up/i })).toBeInTheDocument();
@@ -116,7 +115,7 @@ describe("LevelSelect — daily limit gate (Group B Fix Sprint)", () => {
     it("Lv 2-1 클릭 → DailyLimitModal 노출 (free), onSelectSublevel 호출 X", async () => {
       const { onSelectSublevel } = renderLevelSelect();
 
-      await userEvent.click(screen.getByLabelText("Lv 2-1 선택"));
+      await userEvent.click(screen.getByLabelText("Lv 2-1 Select"));
 
       // Free 영역 닫기 버튼은 "내일 다시 오기" — 모달 노출 영역 확인
       expect(await screen.findByRole("button", { name: /내일|tomorrow/i })).toBeInTheDocument();
@@ -126,7 +125,7 @@ describe("LevelSelect — daily limit gate (Group B Fix Sprint)", () => {
     it("모달 onClose → 모달 닫힘, LevelSelect 그대로 (navigate X)", async () => {
       const { onSelectSublevel } = renderLevelSelect();
 
-      await userEvent.click(screen.getByLabelText("Lv 2-1 선택"));
+      await userEvent.click(screen.getByLabelText("Lv 2-1 Select"));
       const closeBtn = await screen.findByRole("button", { name: /내일|tomorrow/i });
       await userEvent.click(closeBtn);
 
@@ -147,7 +146,7 @@ describe("LevelSelect — daily limit gate (Group B Fix Sprint)", () => {
       mockDailyLimitState.current.hasReached = false; // pro = Infinity 무조건 false
 
       const { onSelectSublevel } = renderLevelSelect();
-      await userEvent.click(screen.getByLabelText("Lv 1-1 선택"));
+      await userEvent.click(screen.getByLabelText("Lv 1-1 Select"));
 
       expect(onSelectSublevel).toHaveBeenCalledWith(1, 1);
       // DailyLimitModal CTA 버튼 (가입/Premium) 노출 X
@@ -163,7 +162,7 @@ describe("LevelSelect — daily limit gate (Group B Fix Sprint)", () => {
       mockDailyLimitState.current.hasReached = false;
 
       const { onSelectSublevel } = renderLevelSelect();
-      await userEvent.click(screen.getByLabelText("Lv 1-1 선택"));
+      await userEvent.click(screen.getByLabelText("Lv 1-1 Select"));
 
       expect(onSelectSublevel).toHaveBeenCalledWith(1, 1);
     });
@@ -174,7 +173,7 @@ describe("LevelSelect — daily limit gate (Group B Fix Sprint)", () => {
       mockDailyLimitState.current.hasReached = false;
 
       const { onSelectSublevel } = renderLevelSelect();
-      await userEvent.click(screen.getByLabelText("Lv 1-1 선택"));
+      await userEvent.click(screen.getByLabelText("Lv 1-1 Select"));
 
       expect(onSelectSublevel).toHaveBeenCalledWith(1, 1);
     });
@@ -188,7 +187,7 @@ describe("LevelSelect — daily limit gate (Group B Fix Sprint)", () => {
 
       const { onSelectSublevel } = renderLevelSelect();
       // Lv 1-2 = guest 입장에선 subscription 잠금
-      await userEvent.click(screen.getByLabelText("Lv 1-2 Pro 전용"));
+      await userEvent.click(screen.getByLabelText("Lv 1-2 Pro only"));
 
       // UpgradeModal "View Premium Benefits" CTA 노출 (Pro 구독 안내)
       expect(await screen.findByTestId("upgrade-modal-cta")).toBeInTheDocument();

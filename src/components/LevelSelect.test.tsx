@@ -77,7 +77,6 @@ function mockProgressHook(progressList: SublevelProgress[]) {
 function renderLevelSelect(
   props: {
     onSelectSublevel?: (level: number, sublevel: Sublevel) => void;
-    onBack?: () => void;
     onLoginRequest?: () => void;
   } = {}
 ) {
@@ -85,7 +84,6 @@ function renderLevelSelect(
     <MemoryRouter>
       <LevelSelect
         onSelectSublevel={props.onSelectSublevel ?? vi.fn()}
-        onBack={props.onBack ?? vi.fn()}
         onLoginRequest={props.onLoginRequest}
       />
     </MemoryRouter>
@@ -116,23 +114,13 @@ describe("LevelSelect - 렌더링", () => {
     expect(countSublevelCells()).toBe(21);
   });
 
-  it("7개 레벨 헤더가 표시됨 (Lv 1 ~ Lv 7)", () => {
+  it("7개 레벨 이름이 표시됨 (Beginner×2, Elementary×2, Intermediate, Advanced, Master)", () => {
     renderLevelSelect();
-    for (let l = 1; l <= 7; l++) {
-      expect(screen.getByText(new RegExp(`Lv ${l} —`))).toBeInTheDocument();
+    // en 기본 언어 — strings.ts의 en.levelSelect.levels 이름
+    const names = ["Beginner", "Beginner", "Elementary", "Elementary", "Intermediate", "Advanced", "Master"];
+    for (const name of names) {
+      expect(screen.getAllByText(name).length).toBeGreaterThanOrEqual(1);
     }
-  });
-
-  it("'내 진도: 0 / 21' 표시", () => {
-    renderLevelSelect();
-    const p = screen.getByText(/내 진도:/, { selector: "p" });
-    expect(p).toBeInTheDocument();
-    expect(p.textContent).toMatch(/0\s*\/\s*21/);
-  });
-
-  it("우측 상단 메인 버튼 표시", () => {
-    renderLevelSelect();
-    expect(screen.getByTestId("back-to-home-btn")).toBeInTheDocument();
   });
 });
 
@@ -144,31 +132,31 @@ describe("LevelSelect - Guest 구독 게이트", () => {
     mockUseLevelProgress.mockReturnValue(mockProgressHook([]));
   });
 
-  it("Lv 1-1: 미시작 → '선택' 라벨 (클릭 가능)", () => {
+  it("Lv 1-1: 미시작 → 'Select' 라벨 (클릭 가능)", () => {
     renderLevelSelect();
-    expect(screen.getByLabelText("Lv 1-1 선택")).toBeInTheDocument();
+    expect(screen.getByLabelText("Lv 1-1 Select")).toBeInTheDocument();
   });
 
   it("Lv 1-2: 구독 잠금 (guest → Sub2 접근 불가)", () => {
     renderLevelSelect();
-    expect(screen.getByLabelText("Lv 1-2 Pro 전용")).toBeInTheDocument();
+    expect(screen.getByLabelText("Lv 1-2 Pro only")).toBeInTheDocument();
   });
 
   it("Lv 2-1: 구독 잠금 (guest → Pro 전용)", () => {
     renderLevelSelect();
-    expect(screen.getByLabelText("Lv 2-1 Pro 전용")).toBeInTheDocument();
+    expect(screen.getByLabelText("Lv 2-1 Pro only")).toBeInTheDocument();
   });
 
   it("Lv 7-3: 구독 잠금", () => {
     renderLevelSelect();
-    expect(screen.getByLabelText("Lv 7-3 Pro 전용")).toBeInTheDocument();
+    expect(screen.getByLabelText("Lv 7-3 Pro only")).toBeInTheDocument();
   });
 
   it("Lv 1-1 클릭 → onSelectSublevel(1, 1) 호출", async () => {
     const onSelectSublevel = vi.fn();
     renderLevelSelect({ onSelectSublevel });
 
-    await userEvent.click(screen.getByLabelText("Lv 1-1 선택"));
+    await userEvent.click(screen.getByLabelText("Lv 1-1 Select"));
 
     expect(onSelectSublevel).toHaveBeenCalledWith(1, 1);
   });
@@ -176,7 +164,7 @@ describe("LevelSelect - Guest 구독 게이트", () => {
   it("Lv 2-1 클릭 → UpgradeModal 열림", async () => {
     renderLevelSelect();
 
-    await userEvent.click(screen.getByLabelText("Lv 2-1 Pro 전용"));
+    await userEvent.click(screen.getByLabelText("Lv 2-1 Pro only"));
 
     expect(screen.getByText(/Unlock All Levels with Pro/)).toBeInTheDocument();
   });
@@ -184,7 +172,7 @@ describe("LevelSelect - Guest 구독 게이트", () => {
   it("Lv 1-2 클릭 → UpgradeModal 열림 (guest → Sub2 구독 잠금)", async () => {
     renderLevelSelect();
 
-    await userEvent.click(screen.getByLabelText("Lv 1-2 Pro 전용"));
+    await userEvent.click(screen.getByLabelText("Lv 1-2 Pro only"));
 
     expect(screen.getByText(/Unlock All Levels with Pro/)).toBeInTheDocument();
   });
@@ -205,54 +193,54 @@ describe("LevelSelect - Free 구독 게이트", () => {
 
   it("Lv 1-1: 통과 셀", () => {
     renderLevelSelect();
-    expect(screen.getByLabelText("Lv 1-1 통과 (재플레이 가능)")).toBeInTheDocument();
+    expect(screen.getByLabelText("Lv 1-1 Passed (replay available)")).toBeInTheDocument();
   });
 
   it("Lv 1-2: 구독 잠금 (free → Sub2 Premium 전용)", () => {
     renderLevelSelect();
-    expect(screen.getByLabelText("Lv 1-2 Pro 전용")).toBeInTheDocument();
+    expect(screen.getByLabelText("Lv 1-2 Pro only")).toBeInTheDocument();
   });
 
   it("Lv 1-3: 구독 잠금 (free → Sub3 Premium 전용)", () => {
     renderLevelSelect();
-    expect(screen.getByLabelText("Lv 1-3 Pro 전용")).toBeInTheDocument();
+    expect(screen.getByLabelText("Lv 1-3 Pro only")).toBeInTheDocument();
   });
 
   it("Lv 2-1: 구독 OK + 진도 잠금 (1-1 통과 확인 후 2-1 접근 가능, 진행 X)", () => {
     renderLevelSelect();
     // Lv 2-1 → free에서 canAccessSublevel=true, getProgressGatePrev("free", 2, 1) = Lv1-1 (passed)
-    // 따라서 선택 가능 (진행 없음 → '선택' 라벨)
-    expect(screen.getByLabelText("Lv 2-1 선택")).toBeInTheDocument();
+    // 따라서 선택 가능 (진행 없음 → 'Select' 라벨)
+    expect(screen.getByLabelText("Lv 2-1 Select")).toBeInTheDocument();
   });
 
   it("Lv 3-1: 구독 OK + 진도 잠금 (2-1 미통과)", () => {
     renderLevelSelect();
     // getProgressGatePrev("free", 3, 1) = {level:2, sublevel:1} → 2-1 미통과 → 잠금
-    expect(screen.getByLabelText("Lv 3-1 잠금")).toBeInTheDocument();
+    expect(screen.getByLabelText("Lv 3-1 Locked")).toBeInTheDocument();
   });
 
   it("Lv 3-2: 구독 잠금 (free → Sub2 Premium 전용)", () => {
     renderLevelSelect();
-    expect(screen.getByLabelText("Lv 3-2 Pro 전용")).toBeInTheDocument();
+    expect(screen.getByLabelText("Lv 3-2 Pro only")).toBeInTheDocument();
   });
 
   it("Lv 5-1: 구독 OK + 진도 잠금 (4-1 미통과)", () => {
     renderLevelSelect();
     // canAccessSublevel("free", 5, 1) = true (5/9 결정: Lv1~5 Sub1 접근 가능)
     // getProgressGatePrev("free", 5, 1) = {level:4, sublevel:1} → 4-1 미통과 → 잠금
-    expect(screen.getByLabelText("Lv 5-1 잠금")).toBeInTheDocument();
+    expect(screen.getByLabelText("Lv 5-1 Locked")).toBeInTheDocument();
   });
 
   it("Lv 6-1: 구독 잠금 (free → Lv6 Premium 전용)", () => {
     renderLevelSelect();
-    expect(screen.getByLabelText("Lv 6-1 Pro 전용")).toBeInTheDocument();
+    expect(screen.getByLabelText("Lv 6-1 Pro only")).toBeInTheDocument();
   });
 
   it("Lv 2-1 클릭 → onSelectSublevel(2, 1) 호출 (1-1 통과 후 접근 가능)", async () => {
     const onSelectSublevel = vi.fn();
     renderLevelSelect({ onSelectSublevel });
 
-    await userEvent.click(screen.getByLabelText("Lv 2-1 선택"));
+    await userEvent.click(screen.getByLabelText("Lv 2-1 Select"));
 
     expect(onSelectSublevel).toHaveBeenCalledWith(2, 1);
   });
@@ -260,7 +248,7 @@ describe("LevelSelect - Free 구독 게이트", () => {
   it("Lv 1-2 클릭 → UpgradeModal 열림 (Sub2 구독 잠금)", async () => {
     renderLevelSelect();
 
-    await userEvent.click(screen.getByLabelText("Lv 1-2 Pro 전용"));
+    await userEvent.click(screen.getByLabelText("Lv 1-2 Pro only"));
 
     expect(screen.getByText(/Unlock All Levels with Pro/)).toBeInTheDocument();
   });
@@ -268,7 +256,7 @@ describe("LevelSelect - Free 구독 게이트", () => {
   it("Lv 3-2 클릭 → UpgradeModal 열림", async () => {
     renderLevelSelect();
 
-    await userEvent.click(screen.getByLabelText("Lv 3-2 Pro 전용"));
+    await userEvent.click(screen.getByLabelText("Lv 3-2 Pro only"));
 
     expect(screen.getByText(/Unlock All Levels with Pro/)).toBeInTheDocument();
   });
@@ -290,23 +278,19 @@ describe("LevelSelect - Pro 구독 (전 단계 통과)", () => {
     expect(screen.queryByText(/Pro — 전 단계 이용 중/)).not.toBeInTheDocument();
   });
 
-  it("21개 통과 → 내 진도 21 표시", () => {
+  it("21개 통과 → 모든 셀 통과 라벨", () => {
     renderLevelSelect();
-    // "내 진도: 21 / 21 통과" 텍스트가 존재하는지 확인
-    const progressEl = screen.getByText(/내 진도:/);
-    expect(progressEl).toBeInTheDocument();
-    // totalPassed = 21 이 근처에 표시됨
     const passedCells = screen
       .getAllByRole("button")
-      .filter((b) => b.getAttribute("aria-label")?.includes("통과 (재플레이 가능)"));
+      .filter((b) => b.getAttribute("aria-label")?.includes("Passed (replay available)"));
     expect(passedCells).toHaveLength(21);
   });
 
-  it("모든 셀 '통과 (재플레이 가능)' 라벨", () => {
+  it("모든 셀 'Passed (replay available)' 라벨", () => {
     renderLevelSelect();
     const passedCells = screen
       .getAllByRole("button")
-      .filter((b) => b.getAttribute("aria-label")?.includes("통과 (재플레이 가능)"));
+      .filter((b) => b.getAttribute("aria-label")?.includes("Passed (replay available)"));
     expect(passedCells).toHaveLength(21);
   });
 
@@ -314,7 +298,7 @@ describe("LevelSelect - Pro 구독 (전 단계 통과)", () => {
     const onSelectSublevel = vi.fn();
     renderLevelSelect({ onSelectSublevel });
 
-    await userEvent.click(screen.getByLabelText("Lv 7-3 통과 (재플레이 가능)"));
+    await userEvent.click(screen.getByLabelText("Lv 7-3 Passed (replay available)"));
 
     expect(onSelectSublevel).toHaveBeenCalledWith(7, 3);
   });
@@ -342,22 +326,22 @@ describe("LevelSelect - 진행 중 셀", () => {
     mockUseLevelProgress.mockReturnValue(mockProgressHook(progress));
   });
 
-  it("Lv 2-1: '진행 중' 라벨 표시", () => {
+  it("Lv 2-1: 'In progress' 라벨 표시", () => {
     renderLevelSelect();
-    expect(screen.getByLabelText("Lv 2-1 진행 중")).toBeInTheDocument();
+    expect(screen.getByLabelText("Lv 2-1 In progress")).toBeInTheDocument();
   });
 
-  it("Lv 2-1 셀에 달성 조건 수 표시 (2/4 달성)", () => {
+  it("Lv 2-1 셀에 달성 조건 수 표시 (2/4 done)", () => {
     renderLevelSelect();
-    const cell = screen.getByLabelText("Lv 2-1 진행 중");
-    expect(cell).toHaveTextContent("2/4 달성");
+    const cell = screen.getByLabelText("Lv 2-1 In progress");
+    expect(cell).toHaveTextContent("2/4 done");
   });
 
   it("진행 중 셀 클릭 → onSelectSublevel(2, 1) 호출", async () => {
     const onSelectSublevel = vi.fn();
     renderLevelSelect({ onSelectSublevel });
 
-    await userEvent.click(screen.getByLabelText("Lv 2-1 진행 중"));
+    await userEvent.click(screen.getByLabelText("Lv 2-1 In progress"));
 
     expect(onSelectSublevel).toHaveBeenCalledWith(2, 1);
   });
@@ -375,7 +359,7 @@ describe("LevelSelect - UpgradeModal → Pricing 이동", () => {
     renderLevelSelect();
 
     // 구독 잠금 셀 클릭 → 모달 오픈
-    await userEvent.click(screen.getByLabelText("Lv 2-1 Pro 전용"));
+    await userEvent.click(screen.getByLabelText("Lv 2-1 Pro only"));
     expect(screen.getByText(/Unlock All Levels with Pro/)).toBeInTheDocument();
 
     // View Premium Benefits 클릭
@@ -387,7 +371,7 @@ describe("LevelSelect - UpgradeModal → Pricing 이동", () => {
   it("UpgradeModal 닫기 → 모달 닫힘", async () => {
     renderLevelSelect();
 
-    await userEvent.click(screen.getByLabelText("Lv 2-1 Pro 전용"));
+    await userEvent.click(screen.getByLabelText("Lv 2-1 Pro only"));
     expect(screen.getByText(/Unlock All Levels with Pro/)).toBeInTheDocument();
 
     await userEvent.click(screen.getByTestId("upgrade-modal-close"));
@@ -398,25 +382,3 @@ describe("LevelSelect - UpgradeModal → Pricing 이동", () => {
   });
 });
 
-// ─────────────────────────────────────────────────────────
-describe("LevelSelect - 메인 버튼", () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-    mockUseAuth.mockReturnValue({ user: null, profile: null });
-    mockUseLevelProgress.mockReturnValue(mockProgressHook([]));
-  });
-
-  it("메인 버튼 클릭 → onBack 호출", async () => {
-    const onBack = vi.fn();
-    renderLevelSelect({ onBack });
-
-    await userEvent.click(screen.getByTestId("back-to-home-btn"));
-
-    expect(onBack).toHaveBeenCalledTimes(1);
-  });
-
-  it("하단 '메인으로 돌아가기' 영역 삭제됨", () => {
-    renderLevelSelect();
-    expect(screen.queryByText(/메인으로 돌아가기/)).not.toBeInTheDocument();
-  });
-});

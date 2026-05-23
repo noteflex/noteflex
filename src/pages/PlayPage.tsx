@@ -303,7 +303,6 @@ export default function PlayPage() {
         <div className="safe-area-page flex-1 flex flex-col items-center px-4 overflow-y-auto">
           <LevelSelect
             onSelectSublevel={handleSelectSublevel}
-            onBack={handleGoMain}
             onLoginRequest={() => setShowAuth(true)}
           />
           <div className="w-full max-w-lg px-4 pb-6">
