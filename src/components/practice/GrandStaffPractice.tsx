@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { cn } from "@/lib/utils";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export type StaffHistoryEntry = {
   id: number;
@@ -173,8 +174,13 @@ const LEVEL_STYLES: Record<number, LevelStyle> = {
 
 export type ResolvedStyle = Required<LevelStyle>;
 
-/** §S1 Uniform scale: 고정 0.75 (배치 무관 동일 프레임). */
-export function computeScale(_M: number): number { return 0.75; }
+// 모바일 오선지 확대 배율 (인게임에서 Lv1 고음/Lv7 그랜드staff 안 잘리면 1.1까지 상향 가능)
+export const MOBILE_UNISCALE = 1.0;
+
+/** §S1 Uniform scale: 고정 0.75 (배치 무관 동일 프레임). 모바일은 MOBILE_UNISCALE. */
+export function computeScale(_M: number, isMobile = false): number {
+  return isMobile ? MOBILE_UNISCALE : 0.75;
+}
 
 /**
  * §C1 M-등분 고정 슬롯: stage·phase·batchSize 기반 M 결정.
@@ -199,6 +205,7 @@ export function resolveStyle(
   keySigCount: number,
   batchSize?: number,
   maxN?: number,
+  isMobile = false,
 ): ResolvedStyle {
   const raw = LEVEL_STYLES[level] ?? LEVEL_STYLES[1];
   const merged = { ...DEFAULT_STYLE, ...raw } as ResolvedStyle;
@@ -207,7 +214,7 @@ export function resolveStyle(
   const M = maxN ?? (batchSize ?? 1);
 
   // §S1 Uniform scale: 음표·오선·음자리표·조표 모두 동일 비율.
-  const uniscale = computeScale(M);
+  const uniscale = computeScale(M, isMobile);
   merged.uniscale = uniscale;
 
   if (uniscale !== 1.0) {
@@ -541,7 +548,8 @@ export function GrandStaffPractice({
     : Math.min((noteHistory ?? []).length + 1, TOTAL_SLOTS);
   const M = maxVisibleN ?? visibleN;
 
-  const style = resolveStyle(level, keySigCount, batchSize, M);
+  const isMobile = useIsMobile();
+  const style = resolveStyle(level, keySigCount, batchSize, M, isMobile);
 
   const notes = useMemo((): NoteEntry[] => {
     // ── Batch 모드: 한 batch 전체를 동시에 그림, 인덱스에 따라 색상 분기 ──
