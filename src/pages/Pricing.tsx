@@ -18,15 +18,15 @@ const CONTENT = {
     freePriceSub: "영원히 무료",
     freeDesc: "핵심 기능, 평생 무료",
     moName: "Premium",
-    moPrice: "$2.99",
+    moPrice: "$4.99",
     moPriceSub: "/월",
     moBadge: "Most Popular",
     moDesc: "악보가 음악으로 보이는 순간까지",
     yrName: "Premium",
-    yrPrice: "$24.99",
+    yrPrice: "$39.99",
     yrPriceSub: "/년",
-    yrBadge: "Save 30%",
-    yrDesc: "1년 약속, 30% 절약",
+    yrBadge: "Save 33%",
+    yrDesc: "1년 약속, 33% 절약",
     freeFeatures: [
       "Level 1~5 서브레벨 1 순차 해금",
       "7회/일 세션 한도",
@@ -84,15 +84,15 @@ const CONTENT = {
     freePriceSub: "forever",
     freeDesc: "Core features. No credit card. Forever.",
     moName: "Premium",
-    moPrice: "$2.99",
+    moPrice: "$4.99",
     moPriceSub: "/mo",
     moBadge: "Most Popular",
     moDesc: "Until the notes become music.",
     yrName: "Premium",
-    yrPrice: "$24.99",
+    yrPrice: "$39.99",
     yrPriceSub: "/yr",
-    yrBadge: "Save 30%",
-    yrDesc: "One year. 30% off. Done.",
+    yrBadge: "Save 33%",
+    yrDesc: "One year. 33% off. Done.",
     freeFeatures: [
       "Level 1–5 Sub1 sequential unlock",
       "7 sessions/day limit",
@@ -164,7 +164,7 @@ export default function Pricing() {
       const priceId = PADDLE_PRICES[plan];
       if (!priceId) {
         logger.error("Paddle Price ID 누락", new Error("Missing price ID"), {
-          description: "환경변수에 Price ID가 박지 X",
+          description: "환경변수에 Price ID 누락",
           cause: `VITE_PADDLE_PRICE_${plan.toUpperCase()} 누락`,
           impact: "결제 진행 불가",
           action: "Vercel 환경변수 영역 확인 필요",
@@ -324,7 +324,7 @@ export default function Pricing() {
               </div>
             </div>
 
-            {/* Premium Annual — Save 30% */}
+            {/* Premium Annual — Save 33% */}
             <div className="relative rounded-3xl bg-card border-2 border-orange-400 shadow-xl overflow-hidden flex flex-col">
               <div className="absolute top-0 left-0 right-0 py-1.5 bg-orange-500 text-white text-xs font-bold text-center tracking-wide">
                 {c.yrBadge}
@@ -341,9 +341,9 @@ export default function Pricing() {
                   <span className="text-sm text-muted-foreground">{c.yrPriceSub}</span>
                 </div>
                 <p className="text-xs text-muted-foreground mb-5">
-                  <span className="line-through">$35.88</span>
+                  <span className="line-through">$59.88</span>
                   <span className="ml-2 text-orange-500 font-semibold">
-                    {lang === "ko" ? "월 $2.08 · $10.89 절약" : "$2.08/mo · save $10.89"}
+                    {lang === "ko" ? "월 $3.33 · $19.89 절약" : "$3.33/mo · save $19.89"}
                   </span>
                 </p>
                 <ul className="space-y-2 mb-8 flex-1">

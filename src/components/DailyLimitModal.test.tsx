@@ -107,11 +107,11 @@ describe("DailyLimitModal — Free 영역 (ko)", () => {
     expect(screen.getByText(/광고 없는 집중/)).toBeInTheDocument();
   });
 
-  it("Free 가격 영역 표시 ($2.99·$24.99·30% 절약)", () => {
+  it("Free 가격 영역 표시 ($4.99·$39.99·33% 절약)", () => {
     renderModal({ tier: "free" });
-    expect(screen.getByText(/\$2\.99/)).toBeInTheDocument();
-    expect(screen.getByText(/\$24\.99/)).toBeInTheDocument();
-    expect(screen.getByText(/30%/)).toBeInTheDocument();
+    expect(screen.getByText(/\$4\.99/)).toBeInTheDocument();
+    expect(screen.getByText(/\$39\.99/)).toBeInTheDocument();
+    expect(screen.getByText(/33%/)).toBeInTheDocument();
   });
 
   it("Free CTA + 보조 버튼 표시", () => {
@@ -185,7 +185,7 @@ describe("DailyLimitModal — 영어", () => {
     expect(screen.getByText(/Unlimited daily sessions/)).toBeInTheDocument();
     expect(screen.getByText(/All 21 stages unlocked/)).toBeInTheDocument();
     expect(screen.getByText(/Ad-free focus/)).toBeInTheDocument();
-    expect(screen.getByText(/\$2\.99\/mo/)).toBeInTheDocument();
+    expect(screen.getByText(/\$4\.99\/mo/)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Start Premium" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Try tomorrow" })).toBeInTheDocument();
   });
@@ -207,7 +207,7 @@ describe("DailyLimitModal — 메모리 #25 스타일 (Quick Mastery 영역 X)",
     expect(screen.queryByText(/Quick Mastery|빠른 통과/i)).not.toBeInTheDocument();
   });
 
-  it("'모든 단계 열림'은 21단계 표현으로 정확 박힘 (Sub1만이 아닌 전체)", () => {
+  it("'모든 단계 열림'은 21단계 표현으로 정확히 반영됨 (Sub1만이 아닌 전체)", () => {
     renderModal({ tier: "free" });
     expect(screen.getByText(/21단계 모두 열림/)).toBeInTheDocument();
   });
