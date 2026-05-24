@@ -1,5 +1,5 @@
-// 글로벌 UI 텍스트. 한·영 박음, 일·중은 영어 fallback (Phase 3 영역).
-// 신규 키 박을 시 Strings 인터페이스 + ko + en 모두 박음.
+// 글로벌 UI 텍스트. 한·영 작성, 일·중은 영어 fallback (Phase 3 영역).
+// 신규 키 추가 시 Strings 인터페이스 + ko + en 모두 추가.
 
 import type { Lang } from "@/contexts/LanguageContext";
 
@@ -13,7 +13,7 @@ export interface Strings {
   };
   comingSoon: {
     badge: string;
-    /** {email} placeholder 박힘 */
+    /** {email} placeholder 포함 */
     body: string;
     blogButton: string;
   };
@@ -29,6 +29,7 @@ export interface Strings {
     privacy: string;
     refund: string;
     cookies: string;
+    businessInfo: string;
     home: string;
     effectiveDate: string;
   };
@@ -157,7 +158,7 @@ export interface Strings {
       cta: string;
       close: string;
     };
-    /** "{hours}h {minutes}m" placeholder 박힘 */
+    /** "{hours}h {minutes}m" placeholder 포함 */
     countdown: string;
   };
   diagnosis: {
@@ -420,6 +421,7 @@ const ko: Strings = {
     privacy: "개인정보처리방침",
     refund: "환불 정책",
     cookies: "쿠키 정책",
+    businessInfo: "사업자 정보",
     home: "← 홈으로",
     effectiveDate: "시행일:",
   },
@@ -827,6 +829,7 @@ const en: Strings = {
     privacy: "Privacy Policy",
     refund: "Refund Policy",
     cookies: "Cookie Policy",
+    businessInfo: "Business Information",
     home: "← Home",
     effectiveDate: "Effective:",
   },
@@ -1209,7 +1212,7 @@ const en: Strings = {
   },
 };
 
-// TODO(i18n-phase-3): 일본어·중국어 번역 박음
+// TODO(i18n-phase-3): 일본어·중국어 번역 추가
 const ja: Strings = en;
 const zh: Strings = en;
 

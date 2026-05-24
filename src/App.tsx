@@ -88,6 +88,7 @@ const App = () => (
               <Route path="/privacy" element={<LegalPage slug="privacy" />} />
               <Route path="/refund" element={<LegalPage slug="refund" />} />
               <Route path="/cookies" element={<LegalPage slug="cookies" />} />
+              <Route path="/business-info" element={<LegalPage slug="business-info" />} />
 
               {/* 블로그 (항상 노출) */}
               <Route path="/blog" element={<Blog />} />

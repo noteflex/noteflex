@@ -84,17 +84,18 @@ export default function Footer() {
                   {t.legal.refund}
                 </Link>
               </li>
+              <li>
+                <Link to="/business-info" className="text-sm text-foreground/70 hover:text-foreground transition-colors">
+                  {t.legal.businessInfo}
+                </Link>
+              </li>
             </ul>
           </div>
         </div>
 
-        {/* Company Info + Copyright */}
-        <div className="border-t border-border/50 pt-4 space-y-0.5 text-xs text-muted-foreground">
-          <p>{t.footer.companyName} · {t.footer.ceo}</p>
-          <p>{t.footer.bizReg} · {t.footer.ecommerceReg}</p>
-          <p>{t.footer.address}</p>
-          <p>{t.footer.email}</p>
-          <p className="mt-2">{t.footer.copyright}</p>
+        {/* Copyright */}
+        <div className="border-t border-border/50 pt-4 text-xs text-muted-foreground">
+          <p>{t.footer.copyright}</p>
         </div>
 
       </div>

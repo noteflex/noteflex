@@ -6,7 +6,7 @@ import MarkdownContent from "@/components/MarkdownContent";
 import { useLang, useT } from "@/contexts/LanguageContext";
 import { loadLegalContent } from "@/lib/markdownLoader";
 
-export type LegalSlug = "terms" | "privacy" | "refund" | "cookies";
+export type LegalSlug = "terms" | "privacy" | "refund" | "cookies" | "business-info";
 
 interface Props {
   slug: LegalSlug;
@@ -24,6 +24,7 @@ export default function LegalPage({ slug }: Props) {
     privacy: t.legal.privacy,
     refund: t.legal.refund,
     cookies: t.legal.cookies,
+    "business-info": t.legal.businessInfo,
   };
 
   return (
