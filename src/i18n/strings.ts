@@ -10,6 +10,23 @@ export interface Strings {
   };
   game: {
     start: string;
+    gameOver: string;
+    scoreLabel: string;
+    xpEarned: string;
+    tryAgain: string;
+    backToHome: string;
+    finalStage: string;
+    notesSequential: string;
+    notesSimultaneous: string;
+    setProgress: string;
+    questionOfTotal: string;
+    question: string;
+    listenAgain: string;
+    answerHint: string;
+    showAnswerDev: string;
+    answerAlert: string;
+    ariaNoteInput: string;
+    ariaSelectNote: string;
   };
   comingSoon: {
     badge: string;
@@ -403,6 +420,23 @@ const ko: Strings = {
   },
   game: {
     start: "Play",
+    gameOver: "게임 오버",
+    scoreLabel: "정답 수:",
+    xpEarned: "+{xp} XP 획득!",
+    tryAgain: "다시 도전해 주세요!",
+    backToHome: "메인으로 돌아가기 🔥",
+    finalStage: "마무리 단계 — {n}개 남음",
+    notesSequential: "음표 {n}개 순차",
+    notesSimultaneous: "음표 {n}개 동시",
+    setProgress: "({cur}/{total} 세트)",
+    questionOfTotal: "{a}/{b}번째 음표의 이름은?",
+    question: "{a}번째 음표의 이름은?",
+    listenAgain: "🔊 다시 듣기",
+    answerHint: "💡 정답: {ans}",
+    showAnswerDev: "💡 정답 보기 (DEV)",
+    answerAlert: "정답: {ans}",
+    ariaNoteInput: "음표 정답 입력",
+    ariaSelectNote: "{label} 선택",
   },
   comingSoon: {
     badge: "🚀 2026년 5월 출시 예정",
@@ -811,6 +845,23 @@ const en: Strings = {
   },
   game: {
     start: "Play",
+    gameOver: "Game Over",
+    scoreLabel: "Correct:",
+    xpEarned: "+{xp} XP earned!",
+    tryAgain: "Try again!",
+    backToHome: "Back to Home 🔥",
+    finalStage: "Final stage — {n} left",
+    notesSequential: "{n} notes in sequence",
+    notesSimultaneous: "{n} notes at once",
+    setProgress: "({cur}/{total} sets)",
+    questionOfTotal: "What is note {a} of {b}?",
+    question: "What is note {a}?",
+    listenAgain: "🔊 Listen again",
+    answerHint: "💡 Answer: {ans}",
+    showAnswerDev: "💡 Show answer (DEV)",
+    answerAlert: "Answer: {ans}",
+    ariaNoteInput: "Note answer input",
+    ariaSelectNote: "Select {label}",
   },
   comingSoon: {
     badge: "🚀 Launching May 2026",

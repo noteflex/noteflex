@@ -136,6 +136,7 @@ beforeEach(() => {
   mockPopDueOrNull.mockReturnValue(null); // retry 큐 항상 비어있다고 가정 → 일반 batch만
   mockHas.mockReturnValue(false);
   localStorage.setItem("noteflex.solfege_system", "en");
+  localStorage.setItem("noteflex.lang", "ko");
 });
 
 describe("§0.1 호출 횟수 invariant", () => {

@@ -19,11 +19,9 @@ interface LanguageContextValue {
   setLang: (lang: Lang) => void;
 }
 
-// AuthContext와 동일 패턴: Provider 미박 환경 (테스트·SSR)에서 default fallback 박음.
-const LanguageContext = createContext<LanguageContextValue>({
-  lang: DEFAULT_LANG,
-  setLang: () => {},
-});
+// sentinel 객체: useContext 반환값이 이것과 같으면 Provider가 없는 환경.
+const NO_PROVIDER = Symbol("no-provider");
+const LanguageContext = createContext<LanguageContextValue | typeof NO_PROVIDER>(NO_PROVIDER);
 
 function isSupportedLang(value: string | null): value is Lang {
   return value !== null && (SUPPORTED_LANGS as readonly string[]).includes(value);
@@ -93,7 +91,19 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
 }
 
 export function useLang(): LanguageContextValue {
-  return useContext(LanguageContext);
+  const ctx = useContext(LanguageContext);
+  if (ctx === NO_PROVIDER) {
+    // Provider 없는 환경 — localStorage 우선, 없으면 DEFAULT_LANG
+    let lang: Lang = DEFAULT_LANG;
+    if (typeof window !== "undefined") {
+      try {
+        const stored = window.localStorage.getItem(LANG_STORAGE_KEY);
+        if (isSupportedLang(stored)) lang = stored;
+      } catch {}
+    }
+    return { lang, setLang: () => {} };
+  }
+  return ctx;
 }
 
 export function useT(): Strings {

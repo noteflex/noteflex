@@ -272,6 +272,7 @@ describe("§0.1 전역 dedup invariant — 같은 음표 연속 등장 0건", ()
   beforeEach(() => {
     vi.clearAllMocks();
     localStorage.setItem("noteflex.solfege_system", "en");
+    localStorage.setItem("noteflex.lang", "ko");
   });
 
   describe.each([1, 2, 3, 4] as const)("Level %d", (level) => {

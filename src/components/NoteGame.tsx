@@ -509,12 +509,14 @@ export default function NoteGame({
       : undefined;
 
   const stageLabel = phase === "final-retry"
-    ? `마무리 단계 — ${missedNotes.size}개 남음`
+    ? t.game.finalStage.replace("{n}", String(missedNotes.size))
     : `Stage ${currentStageConfig.stage}: ${
         currentStageConfig.batchSize === 1
-          ? `음표 ${currentStageConfig.notesPerSet}개 순차`
-          : `음표 ${currentStageConfig.batchSize}개 동시`
-      } (${currentSet}/${currentStageConfig.totalSets} 세트)`;
+          ? t.game.notesSequential.replace("{n}", String(currentStageConfig.notesPerSet))
+          : t.game.notesSimultaneous.replace("{n}", String(currentStageConfig.batchSize))
+      } ${t.game.setProgress
+          .replace("{cur}", String(currentSet))
+          .replace("{total}", String(currentStageConfig.totalSets))}`;
 
   useEffect(() => {
     const sessionType: "regular" | "custom_score" = isCustom ? "custom_score" : "regular";
@@ -563,8 +565,8 @@ export default function NoteGame({
           avgReactionRatio,
         );
       }).then((result) => {
-        // 비로그인 시 result=null — fake payload 박음 (DB unlock X, 모달 노출 영역 보장).
-        // just_passed=false 고정 → AdInterstitial 박지 X (메모리 #1 일관).
+        // 비로그인 시 result=null — fake payload 생성 (DB unlock X, 모달 노출 영역 보장).
+        // just_passed=false 고정 → AdInterstitial 생략 (메모리 #1 일관).
         const payload: RecordAttemptResult = result ?? {
           level,
           sublevel,
@@ -700,7 +702,7 @@ export default function NoteGame({
    *  2. 부족분 = batchSize - retryCount, 새 음표 generateNewBatch (학습 보조)
    *  3. retry 음표 idx<retryCount, 새 음표 idx>=retryCount
    *
-   * §0.1 dedup (2026-05-01 검증 + 박힘):
+   * §0.1 dedup (2026-05-01 검증 + 확정):
    *  - 옵션 5: lastShown과 다른 ID retry 우선 정렬 (batch[0] dedup 보장)
    *  - 옵션 7: missedArray 모두 lastShown 같은 ID인 좁은 케이스 → retry skip + 새 음표만 batch
    *    (다음 batch에서 lastShown 변경 후 retry 정상 처리)
@@ -1270,21 +1272,21 @@ export default function NoteGame({
     return (
       <div className="flex flex-col items-center gap-6 animate-fade-up">
         <div className="text-6xl">🎹</div>
-        <h2 className="text-2xl font-bold text-foreground">게임 오버</h2>
+        <h2 className="text-2xl font-bold text-foreground">{t.game.gameOver}</h2>
         <p className="text-lg text-muted-foreground">
-          정답 수: <span className="font-bold text-foreground tabular-nums">{score}</span>
+          {t.game.scoreLabel} <span className="font-bold text-foreground tabular-nums">{score}</span>
         </p>
         {sessionResult && (
           <p className="text-sm text-primary font-semibold">
-            +{sessionResult.xpEarned} XP 획득!
+            {t.game.xpEarned.replace("{xp}", String(sessionResult.xpEarned))}
           </p>
         )}
-        <p className="text-muted-foreground">다시 도전해 주세요!</p>
+        <p className="text-muted-foreground">{t.game.tryAgain}</p>
         <button
           onClick={onReset}
           className="px-8 py-3 rounded-xl bg-primary text-primary-foreground font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-200 active:scale-95"
         >
-          메인으로 돌아가기 🔥
+          {t.game.backToHome}
         </button>
       </div>
     );
@@ -1323,7 +1325,7 @@ export default function NoteGame({
         {isAdminOrDev && currentTarget && (
           <div className="w-full flex justify-center mt-1">
             <div className="px-4 py-1.5 rounded-lg bg-yellow-100 border border-yellow-300 text-yellow-900 text-sm font-mono font-bold shadow-sm">
-              💡 정답: {getNoteAnswer(currentTarget)}
+              {t.game.answerHint.replace("{ans}", getNoteAnswer(currentTarget))}
               <span className="ml-2 text-xs font-sans font-normal text-yellow-700">
                 (admin/dev only)
               </span>
@@ -1381,8 +1383,10 @@ export default function NoteGame({
         <div className={`w-full mt-1 ${(showCountdown || showSwipeTutorial || calibrationLoading) ? "invisible" : ""}`}>
           <p className="text-center text-sm text-muted-foreground mb-3">
             {isBatchDisplay
-              ? `${currentIndex + 1}/${currentBatch.length}번째 음표의 이름은?`
-              : `${currentIndex + 1}번째 음표의 이름은?`}
+              ? t.game.questionOfTotal
+                  .replace("{a}", String(currentIndex + 1))
+                  .replace("{b}", String(currentBatch.length))
+              : t.game.question.replace("{a}", String(currentIndex + 1))}
           </p>
 
           <NoteButtons
@@ -1402,7 +1406,7 @@ export default function NoteGame({
         disabled={phase !== "playing" || isPaused}
         className="mt-2 text-sm text-muted-foreground hover:text-foreground transition-colors duration-150 active:scale-95 disabled:opacity-40"
       >
-        🔊 다시 듣기
+        {t.game.listenAgain}
       </button>
 
       <PauseDialog
@@ -1428,11 +1432,11 @@ export default function NoteGame({
         <div className="fixed bottom-4 right-4 z-50">
           <button
             type="button"
-            onClick={() => alert(`정답: ${getNoteAnswer(currentTarget)}`)}
+            onClick={() => alert(t.game.answerAlert.replace("{ans}", getNoteAnswer(currentTarget)))}
             className="px-3 py-1 bg-yellow-200 text-yellow-900 text-xs rounded shadow"
             aria-label="dev-hint"
           >
-            💡 정답 보기 (DEV)
+            {t.game.showAnswerDev}
           </button>
         </div>
       )}

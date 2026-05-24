@@ -175,6 +175,7 @@ describe("NoteGame - Retry Queue 통합", () => {
     vi.clearAllMocks();
     mockRecordAttempt.mockResolvedValue(null);
     localStorage.setItem("noteflex.solfege_system", "en");
+    localStorage.setItem("noteflex.lang", "ko");
   });
 
   it("초기 상태: 큐 비어있고 첫 음표 출제됨", () => {
@@ -348,6 +349,7 @@ describe("NoteGame - 서브레벨 설정", () => {
     vi.clearAllMocks();
     mockRecordAttempt.mockResolvedValue(null);
     localStorage.setItem("noteflex.solfege_system", "en");
+    localStorage.setItem("noteflex.lang", "ko");
   });
 
   it("sublevel=2: 목숨 4개 → 4번 오답 시 게임오버", async () => {
@@ -399,6 +401,7 @@ describe("NoteGame - 진도 기록 (recordAttempt)", () => {
     vi.clearAllMocks();
     mockRecordAttempt.mockResolvedValue(null);
     localStorage.setItem("noteflex.solfege_system", "en");
+    localStorage.setItem("noteflex.lang", "ko");
   });
 
   it("gameover 시 recordAttempt 호출됨 (level, sublevel, gameStatus)", async () => {

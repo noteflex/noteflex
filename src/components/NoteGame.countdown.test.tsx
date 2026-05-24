@@ -144,6 +144,7 @@ describe("§0.3 countdown → first note (grace 제거 후, 2026-05-01 개정)",
     mockPlayNote.mockClear();
     mockEnsureAudioReady.mockClear();
     localStorage.setItem("noteflex.solfege_system", "en");
+    localStorage.setItem("noteflex.lang", "ko");
   });
 
   afterEach(() => {
@@ -253,6 +254,7 @@ describe("§swipe-modal — Lv5+ 첫 진입 시 모달 → 카운트다운 → �
     mockEnsureAudioReady.mockClear();
     localStorage.clear();
     localStorage.setItem("noteflex.solfege_system", "en");
+    localStorage.setItem("noteflex.lang", "ko");
   });
 
   afterEach(() => {

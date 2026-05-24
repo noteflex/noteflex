@@ -147,6 +147,7 @@ beforeEach(() => {
   vi.clearAllMocks();
   mockRecordAttempt.mockResolvedValue(null);
   localStorage.setItem("noteflex.solfege_system", "en");
+  localStorage.setItem("noteflex.lang", "ko");
 });
 
 // ────────────────────────────────────────────────

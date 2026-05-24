@@ -200,6 +200,7 @@ describe("§0.4.1 batchSize=1 history 누적 + 화면 리셋", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     localStorage.setItem("noteflex.solfege_system", "en");
+    localStorage.setItem("noteflex.lang", "ko");
     capturedProps.current = { noteHistory: [], batchNotes: [], targetNote: null };
   });
 
@@ -287,6 +288,7 @@ describe("§0.4.1 visibleNoteCount", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     localStorage.setItem("noteflex.solfege_system", "en");
+    localStorage.setItem("noteflex.lang", "ko");
     capturedProps.current = { noteHistory: [], batchNotes: [], targetNote: null };
   });
 

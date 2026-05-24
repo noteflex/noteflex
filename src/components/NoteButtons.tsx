@@ -2,6 +2,7 @@ import { cn } from "@/lib/utils";
 import { useSolfegeSystem } from "@/hooks/useSolfegeSystem";
 import { toSolfege, toSolfegeAriaLabel } from "@/lib/solfege";
 import { useSwipeAccidental, type SwipeDirection } from "@/hooks/useSwipeAccidental";
+import { useT } from "@/contexts/LanguageContext";
 
 /**
  * 고정형 7버튼 — 애플 아이콘 스타일
@@ -127,9 +128,10 @@ export default function NoteButtons({
   swipeEnabled = false,
 }: NoteButtonsProps) {
   const { system } = useSolfegeSystem();
+  const t = useT();
 
   return (
-    <div className="w-full px-2 sm:px-0" role="group" aria-label="음표 정답 입력">
+    <div className="w-full px-2 sm:px-0" role="group" aria-label={t.game.ariaNoteInput}>
       <div className="grid grid-cols-7 gap-1.5 sm:gap-2.5 max-w-2xl mx-auto">
         {NOTE_LETTERS.map((letter) => {
           // swipe 모드에서는 조표 라벨을 강제로 떼고 자연음만 표시.
@@ -145,7 +147,7 @@ export default function NoteButtons({
           const solfegeLabel = toSolfege(baseDisplay, system);
           const displayLabel = `${solfegeLabel}${accidentalSuffix}`;
           const ariaLabel = accidentalSuffix
-            ? `${solfegeLabel}${accidentalSuffix} 선택`
+            ? t.game.ariaSelectNote.replace("{label}", `${solfegeLabel}${accidentalSuffix}`)
             : toSolfegeAriaLabel(baseDisplay, system);
 
           const handleCommit = (direction: SwipeDirection) => {
