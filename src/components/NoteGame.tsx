@@ -1,5 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { LogOut } from "lucide-react";
+import UserMenu from "@/components/UserMenu";
 import GameHeader from "./GameHeader";
 import NoteButtons from "./NoteButtons";
 import MissionSuccessModal from "./MissionSuccessModal";
@@ -1309,8 +1310,8 @@ export default function NoteGame({
 
       <div className="w-full max-w-[612px] flex flex-col gap-3">
 
-        {onLevelSelect && (
-          <div className="w-full flex justify-start pt-1 mt-[10px]">
+        <div className="w-full flex justify-between items-center pt-1 mt-[10px]">
+          {onLevelSelect ? (
             <button
               onClick={() => setIsPaused(true)}
               aria-label={t.gameDialogs.exitLabel}
@@ -1319,8 +1320,11 @@ export default function NoteGame({
               <LogOut className="w-4 h-4" aria-hidden="true" />
               {t.gameDialogs.exitLabel}
             </button>
-          </div>
-        )}
+          ) : (
+            <span />
+          )}
+          <UserMenu />
+        </div>
 
         {isAdminOrDev && currentTarget && (
           <div className="w-full flex justify-center mt-1">

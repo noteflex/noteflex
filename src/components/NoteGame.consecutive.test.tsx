@@ -92,6 +92,8 @@ vi.mock("@/components/practice/GrandStaffPractice", () => ({
   ),
 }));
 
+vi.mock("@/components/UserMenu", () => ({ default: () => null }));
+
 interface CurrentQuestion {
   key: string;
   octave: string;

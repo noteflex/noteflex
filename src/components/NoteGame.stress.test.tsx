@@ -108,6 +108,8 @@ vi.mock("@/components/practice/GrandStaffPractice", () => ({
   ),
 }));
 
+vi.mock("@/components/UserMenu", () => ({ default: () => null }));
+
 // ────────────────────────────────────────────────
 // 헬퍼
 // ────────────────────────────────────────────────

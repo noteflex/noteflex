@@ -112,6 +112,8 @@ vi.mock("@/components/practice/GrandStaffPractice", () => ({
   ),
 }));
 
+vi.mock("@/components/UserMenu", () => ({ default: () => null }));
+
 function getCurrentQuestion(): { key: string; octave: string; accidental?: string } | null {
   const el = screen.queryByText(/현재 정답:/);
   if (!el) return null;

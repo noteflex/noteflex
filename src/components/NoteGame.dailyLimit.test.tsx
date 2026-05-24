@@ -75,6 +75,8 @@ vi.mock("@/components/practice/GrandStaffPractice", () => ({
   GrandStaffPractice: () => <div data-testid="staff" />,
 }));
 
+vi.mock("@/components/UserMenu", () => ({ default: () => null }));
+
 function renderGame(skipCountdown = false, onLevelSelect = vi.fn()) {
   render(
     <MemoryRouter>
