@@ -175,7 +175,7 @@ const LEVEL_STYLES: Record<number, LevelStyle> = {
 export type ResolvedStyle = Required<LevelStyle>;
 
 // 모바일 오선지 확대 배율 (인게임에서 Lv1 고음/Lv7 그랜드staff 안 잘리면 1.1까지 상향 가능)
-export const MOBILE_UNISCALE = 1.0;
+export const MOBILE_UNISCALE = 1.1;
 
 /** §S1 Uniform scale: 고정 0.75 (배치 무관 동일 프레임). 모바일은 MOBILE_UNISCALE. */
 export function computeScale(_M: number, isMobile = false): number {
