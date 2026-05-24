@@ -277,6 +277,19 @@ export interface Strings {
     pauseExit: string;
     exitLabel: string;
   };
+  accidentalTutorial: {
+    title: string;
+    intro: string;
+    sharpTitle: string;
+    sharpDesc: string;
+    flatTitle: string;
+    flatDesc: string;
+    naturalTitle: string;
+    naturalDesc: string;
+    confirm: string;
+    dontShowAgain: string;
+    ariaLabel: string;
+  };
   dashboard: {
     backToHome: string;
     libraryPreviewTitle: string;
@@ -715,6 +728,19 @@ const ko: Strings = {
     pauseResume: "계속하기",
     pauseExit: "레벨 선택으로",
     exitLabel: "나가기",
+  },
+  accidentalTutorial: {
+    title: "새로운 조작법 안내",
+    intro: "이 레벨부터는 조표(♯, ♭)가 등장합니다. 아래 방식으로 답을 입력해 주세요.",
+    sharpTitle: "샵(♯) 음표",
+    sharpDesc: "해당 음 버튼을 위로 끌어올려 주세요",
+    flatTitle: "플랫(♭) 음표",
+    flatDesc: "해당 음 버튼을 아래로 내려 주세요",
+    naturalTitle: "자연음 (♯, ♭ 없음)",
+    naturalDesc: "해당 음 버튼을 그냥 클릭해 주세요",
+    confirm: "확인했습니다",
+    dontShowAgain: "앞으로 더 이상 보지 않기",
+    ariaLabel: "조표 입력 사용법",
   },
   dashboard: {
     backToHome: "메인",
@@ -1157,6 +1183,19 @@ const en: Strings = {
     pauseResume: "Resume",
     pauseExit: "Exit to levels",
     exitLabel: "Exit",
+  },
+  accidentalTutorial: {
+    title: "New controls",
+    intro: "From this level, accidentals (♯, ♭) appear. Enter your answer as shown below.",
+    sharpTitle: "Sharp (♯)",
+    sharpDesc: "Drag the note button up",
+    flatTitle: "Flat (♭)",
+    flatDesc: "Drag the note button down",
+    naturalTitle: "Natural (no ♯ or ♭)",
+    naturalDesc: "Just tap the note button",
+    confirm: "Got it",
+    dontShowAgain: "Don't show this again",
+    ariaLabel: "How to enter accidentals",
   },
   dashboard: {
     backToHome: "Home",

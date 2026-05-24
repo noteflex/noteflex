@@ -2,6 +2,8 @@
 // 5/2 (2026-05-02): controlled 변경 — NoteGame이 isOpen·onClose 직접 제어.
 // 사용자 정책 (메모리 #18): 모달 → 카운트다운 → 첫 음표 순서 보장.
 
+import { useT } from "@/contexts/LanguageContext";
+
 const STORAGE_KEY_PREFIX = "noteflex.swipe_tutorial_seen.lv";
 
 function getStorageKey(level: number) {
@@ -31,6 +33,7 @@ interface Props {
 }
 
 export default function AccidentalSwipeTutorial({ isOpen, onClose }: Props) {
+  const t = useT();
   if (!isOpen) return null;
 
   return (
@@ -38,36 +41,34 @@ export default function AccidentalSwipeTutorial({ isOpen, onClose }: Props) {
       className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/60"
       role="dialog"
       aria-modal="true"
-      aria-label="조표 입력 사용법"
+      aria-label={t.accidentalTutorial.ariaLabel}
     >
       <div className="bg-background border border-border rounded-2xl shadow-2xl max-w-md w-full p-6 sm:p-8 animate-fade-up">
         <div className="flex flex-col items-center gap-4 mb-6">
           <span className="text-5xl">✨</span>
           <h2 className="text-xl sm:text-2xl font-bold text-foreground text-center">
-            새로운 조작법 안내
+            {t.accidentalTutorial.title}
           </h2>
           <p className="text-sm text-muted-foreground text-center leading-relaxed">
-            이 레벨부터는 조표(♯, ♭)가 등장합니다.
-            <br />
-            아래 방식으로 답을 입력해 주세요.
+            {t.accidentalTutorial.intro}
           </p>
         </div>
 
         <div className="space-y-4 mb-8">
           <TutorialRow
             icon="↑"
-            title="샵(♯) 음표"
-            description="해당 음 버튼을 위로 끌어올려 주세요"
+            title={t.accidentalTutorial.sharpTitle}
+            description={t.accidentalTutorial.sharpDesc}
           />
           <TutorialRow
             icon="↓"
-            title="플랫(♭) 음표"
-            description="해당 음 버튼을 아래로 내려 주세요"
+            title={t.accidentalTutorial.flatTitle}
+            description={t.accidentalTutorial.flatDesc}
           />
           <TutorialRow
             icon="•"
-            title="자연음 (♯, ♭ 없음)"
-            description="해당 음 버튼을 그냥 클릭해 주세요"
+            title={t.accidentalTutorial.naturalTitle}
+            description={t.accidentalTutorial.naturalDesc}
           />
         </div>
 
@@ -76,13 +77,13 @@ export default function AccidentalSwipeTutorial({ isOpen, onClose }: Props) {
             onClick={() => onClose(false)}
             className="w-full px-6 py-3 rounded-xl bg-primary text-primary-foreground font-semibold hover:bg-primary/90 transition-colors active:scale-[0.98]"
           >
-            확인했습니다
+            {t.accidentalTutorial.confirm}
           </button>
           <button
             onClick={() => onClose(true)}
             className="w-full px-6 py-2 text-xs text-muted-foreground hover:text-foreground transition-colors"
           >
-            앞으로 더 이상 보지 않기
+            {t.accidentalTutorial.dontShowAgain}
           </button>
         </div>
       </div>
