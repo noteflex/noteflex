@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { useT } from "@/contexts/LanguageContext";
 import {
   Dialog,
   DialogContent,
@@ -25,6 +26,7 @@ export default function PremiumRequiredDialog({
   onCancel,
 }: PremiumRequiredDialogProps) {
   const navigate = useNavigate();
+  const t = useT();
 
   const handleSubscribe = () => {
     onOpenChange(false);
@@ -50,39 +52,38 @@ export default function PremiumRequiredDialog({
             <span className="text-3xl" aria-hidden>
               ✨
             </span>
-            <DialogTitle>Premium 전용 레벨</DialogTitle>
+            <DialogTitle>{t.premiumRequired.title}</DialogTitle>
           </div>
           <DialogDescription>
             {attemptedLevel
-              ? `Level ${attemptedLevel}은 Premium 구독자만 이용할 수 있어요.`
-              : "이 레벨은 Premium 구독자만 이용할 수 있어요."}
+              ? t.premiumRequired.bodyLevel.replace("{n}", String(attemptedLevel))
+              : t.premiumRequired.body}
           </DialogDescription>
         </DialogHeader>
 
         <div className="rounded-lg bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 px-4 py-3 my-2">
           <p className="text-sm font-semibold text-amber-900 mb-1">
-            Premium 혜택
+            {t.premiumRequired.benefitsTitle}
           </p>
           <ul className="text-xs text-amber-800 space-y-1">
-            <li>• 모든 레벨 잠금 해제 (Lv1 ~ Lv7)</li>
-            <li>• 악보 업로드 및 커스텀 연습</li>
-            <li>• 약점 음표 집중 훈련 모드</li>
-            <li>• 광고 없이 학습 집중</li>
+            <li>• {t.premiumRequired.benefitAllLevels}</li>
+            <li>• {t.premiumRequired.benefitWeakNotes}</li>
+            <li>• {t.premiumRequired.benefitAdFree}</li>
           </ul>
           <p className="text-xs text-amber-700 mt-2 font-medium">
-            연간 $24.99 · Save 30%
+            {t.premiumRequired.price}
           </p>
         </div>
 
         <DialogFooter className="gap-2">
           <Button variant="outline" onClick={handleCancel}>
-            취소
+            {t.premiumRequired.cancel}
           </Button>
           <Button
             onClick={handleSubscribe}
             className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white border-0"
           >
-            구독하러 가기 →
+            {t.premiumRequired.subscribe}
           </Button>
         </DialogFooter>
       </DialogContent>

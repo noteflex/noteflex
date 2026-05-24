@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useT } from "@/contexts/LanguageContext";
 
 interface CountdownOverlayProps {
   /** 카운트 시작 (3부터). 0이면 표시 안 함 */
@@ -15,6 +16,7 @@ export default function CountdownOverlay({
   seconds = 3,
   onComplete,
 }: CountdownOverlayProps) {
+  const t = useT();
   const [count, setCount] = useState(seconds);
 
   useEffect(() => {
@@ -34,7 +36,7 @@ export default function CountdownOverlay({
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-background/95"
       aria-live="polite"
-      aria-label={`${count}초 뒤 시작`}
+      aria-label={t.game.countdownAria.replace("{count}", String(count))}
     >
       <div className="flex flex-col items-center gap-4">
         <span
@@ -44,7 +46,7 @@ export default function CountdownOverlay({
           {count}
         </span>
         <span className="text-sm text-muted-foreground font-medium tracking-wide">
-          곧 시작합니다
+          {t.game.countdownStarting}
         </span>
       </div>
 

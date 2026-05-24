@@ -27,6 +27,24 @@ export interface Strings {
     answerAlert: string;
     ariaNoteInput: string;
     ariaSelectNote: string;
+    countdownStarting: string;
+    countdownAria: string;
+    errorTitle: string;
+    errorBody: string;
+    errorRetry: string;
+    errorHome: string;
+  };
+  premiumRequired: {
+    title: string;
+    bodyLevel: string;
+    body: string;
+    benefitsTitle: string;
+    benefitAllLevels: string;
+    benefitWeakNotes: string;
+    benefitAdFree: string;
+    price: string;
+    cancel: string;
+    subscribe: string;
   };
   comingSoon: {
     badge: string;
@@ -437,6 +455,24 @@ const ko: Strings = {
     answerAlert: "정답: {ans}",
     ariaNoteInput: "음표 정답 입력",
     ariaSelectNote: "{label} 선택",
+    countdownStarting: "곧 시작합니다",
+    countdownAria: "{count}초 뒤 시작",
+    errorTitle: "게임 중 문제가 발생했습니다",
+    errorBody: "잠시 후 다시 시도해주세요. 게임 데이터는 안전합니다.",
+    errorRetry: "다시 시도",
+    errorHome: "홈으로",
+  },
+  premiumRequired: {
+    title: "Premium 전용 레벨",
+    bodyLevel: "Level {n}은 Premium 구독자만 이용할 수 있어요.",
+    body: "이 레벨은 Premium 구독자만 이용할 수 있어요.",
+    benefitsTitle: "Premium 혜택",
+    benefitAllLevels: "모든 레벨 잠금 해제 (Lv1 ~ Lv7)",
+    benefitWeakNotes: "약점 음표 집중 훈련 모드",
+    benefitAdFree: "광고 없이 학습 집중",
+    price: "연간 $39.99 · Save 33%",
+    cancel: "취소",
+    subscribe: "구독하러 가기 →",
   },
   comingSoon: {
     badge: "🚀 2026년 5월 출시 예정",
@@ -862,6 +898,24 @@ const en: Strings = {
     answerAlert: "Answer: {ans}",
     ariaNoteInput: "Note answer input",
     ariaSelectNote: "Select {label}",
+    countdownStarting: "Get ready",
+    countdownAria: "Starting in {count}s",
+    errorTitle: "Something went wrong",
+    errorBody: "Please try again in a moment. Your game data is safe.",
+    errorRetry: "Try again",
+    errorHome: "Home",
+  },
+  premiumRequired: {
+    title: "Premium-only level",
+    bodyLevel: "Level {n} is available to Premium subscribers only.",
+    body: "This level is available to Premium subscribers only.",
+    benefitsTitle: "Premium benefits",
+    benefitAllLevels: "Unlock all levels (Lv1–Lv7)",
+    benefitWeakNotes: "Focused weak-note training mode",
+    benefitAdFree: "Ad-free, focused learning",
+    price: "$39.99/yr · Save 33%",
+    cancel: "Cancel",
+    subscribe: "Go to subscribe →",
   },
   comingSoon: {
     badge: "🚀 Launching May 2026",
