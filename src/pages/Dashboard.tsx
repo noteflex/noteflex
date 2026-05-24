@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, Navigate, useSearchParams } from "react-router-dom";
-import { BookOpen, RefreshCw } from "lucide-react";
+import { RefreshCw } from "lucide-react";
+import UserMenu from "@/components/UserMenu";
 import Header from "@/components/Header";
 import { AdBanner } from "@/components/AdBanner";
 import UpgradeModal from "@/components/UpgradeModal";
@@ -36,7 +37,7 @@ function StatTile({
   subtext?: string;
   icon: string;
   accentClass?: string;
-  /** 상태 2 (오늘 활동 X) — 회색 비활성 박음 */
+  /** 상태 2 (오늘 활동 X) — 회색 비활성 처리 */
   dimmed?: boolean;
 }) {
   return (
@@ -434,13 +435,6 @@ export default function Dashboard() {
     toast.success(t.dashboard.refreshSuccess);
   };
 
-  const handleLibraryClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    toast.info(t.dashboard.libraryPreviewTitle, {
-      description: t.dashboard.libraryPreviewDesc,
-    });
-  };
-
   if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -585,25 +579,6 @@ export default function Dashboard() {
     myStats.dailyStats30d, sessionsTyped.length, hasAnyProgress,
   ]);
 
-  const homeNav = (
-    <nav className="flex items-center gap-2">
-      <Button variant="outline" size="sm" asChild>
-        <Link to="/">{t.dashboard.backToHome}</Link>
-      </Button>
-      {isAdmin ? (
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={handleLibraryClick}
-          aria-label={t.dashboard.libraryPreviewTitle}
-          title={t.dashboard.libraryPreviewTitle}
-        >
-          <BookOpen className="h-5 w-5" />
-        </Button>
-      ) : null}
-    </nav>
-  );
-
   const handleStart = () => {
     window.location.href = "/play";
   };
@@ -611,7 +586,7 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-background">
       <Header
-        right={homeNav}
+        right={<UserMenu />}
         below={
           <LastUpdatedStrip
             lastActivity={realLastActivity}
