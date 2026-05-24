@@ -472,9 +472,14 @@ function renderNotes(
     const leds   = getLedgerSteps(step, clef);
     const stemUp = step <= midStep;
 
+    const STD_STEM = 7 * stepH;                              // 3.5칸(1옥타브)=7 step
+    const midY     = stepToY(midStep, clef, staffBot, yOff, stepH);
+
     const stemX  = stemUp ? n.x + attachDX - 0.3 : n.x - attachDX + 0.3;
     const stemY1 = stemUp ? y + attachDY        : y - attachDY;
-    const stemY2 = stemUp ? y - style.stemLen   : y + style.stemLen;
+    const stemY2 = stemUp
+      ? Math.min(y - STD_STEM, midY)   // 위로: 기본 또는 중앙선까지(더 먼 쪽)
+      : Math.max(y + STD_STEM, midY);  // 아래로: 기본 또는 중앙선까지(더 먼 쪽)
 
     return (
       <g key={`note-${clef}-${i}-${n.note}`}>
