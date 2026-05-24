@@ -175,8 +175,12 @@ export default function PlayPage() {
   return (
     <GameErrorBoundary>
       {GAME_ENABLED && (
-        <div className="fixed top-0 right-0 z-40 flex items-center px-4 py-2">
-          <UserMenu />
+        <div className="fixed top-0 left-0 right-0 z-40 flex justify-center px-4 py-2 pointer-events-none">
+          <div className="w-full max-w-[612px] flex justify-end">
+            <div className="pointer-events-auto">
+              <UserMenu />
+            </div>
+          </div>
         </div>
       )}
       {showAuth && <AuthModal onClose={() => setShowAuth(false)} />}
