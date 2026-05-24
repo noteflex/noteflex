@@ -162,14 +162,18 @@ const DEFAULT_STYLE = {
   uniscale:           1,
 } as const;
 
+// 그랜드 staff bass yOff: bass bottomStep(-10)→treble bottomStep(2) = 12 step.
+// 12*STEP_H(=144) 에서 두 clef의 stepToY가 동일 → C4(가온다) 단일 축 = 표준 그랜드 staff.
+const GRAND_BASS_YOFF = 12 * STEP_H; // 144
+
 const LEVEL_STYLES: Record<number, LevelStyle> = {
-  1: { staffTop:  98, staffBot: 194, svgH: 294, bassYOff:   0 },
-  2: { staffTop:  74, staffBot: 170, svgH: 294, bassYOff:   0 },
-  3: { staffTop: 182, staffBot: 278, svgH: 420, bassYOff:   0 },
-  4: { staffTop: 158, staffBot: 254, svgH: 420, bassYOff:   0 },
-  5: { staffTop: 182, staffBot: 278, svgH: 656, bassYOff: 220 },
-  6: { staffTop: 182, staffBot: 278, svgH: 656, bassYOff: 220 },
-  7: { staffTop: 182, staffBot: 278, svgH: 656, bassYOff: 220 },
+  1: { staffTop:  98, staffBot: 194, svgH: 294, bassYOff:              0 },
+  2: { staffTop:  74, staffBot: 170, svgH: 294, bassYOff:              0 },
+  3: { staffTop: 182, staffBot: 278, svgH: 420, bassYOff:              0 },
+  4: { staffTop: 158, staffBot: 254, svgH: 420, bassYOff:              0 },
+  5: { staffTop: 182, staffBot: 278, svgH: 656, bassYOff: GRAND_BASS_YOFF },
+  6: { staffTop: 182, staffBot: 278, svgH: 656, bassYOff: GRAND_BASS_YOFF },
+  7: { staffTop: 182, staffBot: 278, svgH: 656, bassYOff: GRAND_BASS_YOFF },
 };
 
 export type ResolvedStyle = Required<LevelStyle>;
