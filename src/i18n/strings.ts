@@ -364,7 +364,7 @@ export interface Strings {
     /** 상태 2: 오늘 활동 없음 */
     emptyTodayTitle: string;        // "오늘은 아직 시작하지 않았어요"
     emptyTodaySubtitle: string;     // "스트릭 유지하려면 오늘 1회 연습해주세요"
-    emptyTodayStreakHint: string;   // "오늘 박으면 {n}일째" placeholder
+    emptyTodayStreakHint: string;   // "오늘 달성하면 {n}일째" placeholder
     emptyTodayCta: string;          // "지금 시작 →"
 
     /** 상태 3: 신규 사용자 */
@@ -475,7 +475,7 @@ const ko: Strings = {
     subscribe: "구독하러 가기 →",
   },
   comingSoon: {
-    badge: "🚀 2026년 5월 출시 예정",
+    badge: "🚀 2026년 6월 출시 예정",
     body: "정식 출시까지 마지막 다듬기 중입니다. 출시 알림을 원하시면 {email}으로 메일을 보내주세요.",
     blogButton: "📝 블로그 읽기",
   },
@@ -543,7 +543,6 @@ const ko: Strings = {
     benefits: [
       "🎵 Lv 1-7 전체 21단계 이용",
       "📊 음표별 약점·마스터 분석",
-      "🎯 개인화 출제 가중치",
       "✨ 광고 없는 집중 연습",
     ],
     cta: "프리미엄 혜택 보기 →",
@@ -918,7 +917,7 @@ const en: Strings = {
     subscribe: "Go to subscribe →",
   },
   comingSoon: {
-    badge: "🚀 Launching May 2026",
+    badge: "🚀 Launching June 2026",
     body: "Final polishing before official launch. For launch notifications, email {email}.",
     blogButton: "📝 Read Blog",
   },
@@ -986,7 +985,6 @@ const en: Strings = {
     benefits: [
       "🎵 Access all 21 levels (Lv 1-7)",
       "📊 Per-note weakness & mastery analytics",
-      "🎯 Personalized practice weighting",
       "✨ Distraction-free, ad-free experience",
     ],
     cta: "View Premium Benefits →",

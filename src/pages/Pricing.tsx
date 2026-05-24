@@ -36,8 +36,8 @@ const CONTENT = {
     premiumFeatures: [
       "Level 1~7 모든 레벨, 서브레벨까지 전부 해제",
       "광고 없는 몰입 — 오직 음악에만",
-      "AI 학습 코치 — 일·주·월 분석으로 약점 발견",
-      "약점 음표 집중 훈련 — 못 읽는 음표만 골라서",
+      "AI 학습 코치 — 일일 분석으로 약점 발견",
+      "상세 약점 분석 — 약한 음표를 한눈에",
       "무제한 플레이 — 멈출 이유 없음",
       "기록 대시보드 + 자세한 통계",
       "새 기능 우선 이용 — 항상 한 걸음 앞서",
@@ -102,8 +102,8 @@ const CONTENT = {
     premiumFeatures: [
       "All levels 1–7, every sublevel unlocked",
       "Ad-free focus — just music",
-      "AI learning coach — daily, weekly, monthly insights",
-      "Targeted practice on weak notes — only what you need",
+      "AI learning coach — daily insights",
+      "Detailed weak-note analysis — see your weak spots at a glance",
       "Unlimited play — no reason to stop",
       "Performance dashboard with detailed stats",
       "Early access to new features — always one step ahead",
