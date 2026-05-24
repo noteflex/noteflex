@@ -17,7 +17,7 @@ import { supabase } from "@/integrations/supabase/client";
  *   4. /play 로 navigate (reviewer = ComingSoonGate 우회)
  *
  * 보안:
- *   - 가드 X — 로그인 자체가 목적이라 인증 X 영역 박혀야 함
+ *   - 가드 X — 로그인 자체가 목적이라 인증 없는 영역에 위치해야 함
  *   - 401 노출은 "Invalid credentials"만 (구체 사유 X)
  */
 export default function ReviewerLogin() {
