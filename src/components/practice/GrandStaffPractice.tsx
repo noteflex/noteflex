@@ -162,9 +162,9 @@ const DEFAULT_STYLE = {
   uniscale:           1,
 } as const;
 
-// 그랜드 staff bass yOff: bass bottomStep(-10)→treble bottomStep(2) = 12 step.
-// 12*STEP_H(=144) 에서 두 clef의 stepToY가 동일 → C4(가온다) 단일 축 = 표준 그랜드 staff.
-const GRAND_BASS_YOFF = 12 * STEP_H; // 144
+// 두 오선 시각 분리값. 표준 그랜드 staff(=12*STEP_H=144, C4 단일축)는
+// 음표 이름 맞히기 게임엔 너무 붙어 보여 의도적으로 넓게 둠. unify 금지.
+const GRAND_BASS_YOFF = 220;
 
 const LEVEL_STYLES: Record<number, LevelStyle> = {
   1: { staffTop:  98, staffBot: 194, svgH: 294, bassYOff:              0 },
