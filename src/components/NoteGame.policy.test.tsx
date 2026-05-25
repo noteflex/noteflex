@@ -26,7 +26,7 @@ const mockLogNote = vi.fn();
 const mockRecordAttempt = vi.fn().mockResolvedValue(null);
 
 vi.mock("@/hooks/useNoteLogger", () => ({
-  useNoteLogger: () => ({ logNote: mockLogNote }),
+  useNoteLogger: () => ({ logNote: mockLogNote, resetPrevNote: vi.fn() }),
 }));
 
 vi.mock("@/hooks/useSessionRecorder", () => ({

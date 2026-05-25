@@ -25,7 +25,7 @@ const { mockPlayWrong, mockPlayNote, mockEnsureAudioReady } = vi.hoisted(() => (
 // 표준 외부 의존성 모킹
 // ──────────────────────────────────────────────────
 vi.mock("@/hooks/useNoteLogger", () => ({
-  useNoteLogger: () => ({ logNote: vi.fn() }),
+  useNoteLogger: () => ({ logNote: vi.fn(), resetPrevNote: vi.fn() }),
 }));
 
 vi.mock("@/hooks/useSessionRecorder", () => ({

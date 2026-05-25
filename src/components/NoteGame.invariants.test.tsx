@@ -40,7 +40,7 @@ vi.mock("@/hooks/useRetryQueue", () => ({
 }));
 
 vi.mock("@/hooks/useNoteLogger", () => ({
-  useNoteLogger: () => ({ logNote: vi.fn() }),
+  useNoteLogger: () => ({ logNote: vi.fn(), resetPrevNote: vi.fn() }),
 }));
 
 vi.mock("@/hooks/useSessionRecorder", () => ({

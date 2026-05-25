@@ -24,7 +24,7 @@ import NoteGame from "./NoteGame";
 // Mock: 외부 의존성 차단 (DB·Auth·사운드)
 // ────────────────────────────────────────────────
 vi.mock("@/hooks/useNoteLogger", () => ({
-  useNoteLogger: () => ({ logNote: vi.fn() }),
+  useNoteLogger: () => ({ logNote: vi.fn(), resetPrevNote: vi.fn() }),
 }));
 
 vi.mock("@/hooks/useSessionRecorder", () => ({

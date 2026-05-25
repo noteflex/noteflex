@@ -32,7 +32,7 @@ const mockEndSession = vi.fn().mockResolvedValue(null);
 const mockCancelSession = vi.fn();
 
 vi.mock("@/hooks/useNoteLogger", () => ({
-  useNoteLogger: () => ({ logNote: mockLogNote }),
+  useNoteLogger: () => ({ logNote: mockLogNote, resetPrevNote: vi.fn() }),
 }));
 
 vi.mock("@/hooks/useSessionRecorder", () => ({

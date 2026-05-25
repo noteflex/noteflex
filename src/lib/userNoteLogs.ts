@@ -9,6 +9,7 @@ export interface UserNoteLogPayload {
   response_time: number | null;
   error_type: string | null;
   level: number;
+  interval_from_prev: number | null;
 }
 
 export interface UserNoteLogRecord extends UserNoteLogPayload {
@@ -139,7 +140,7 @@ export async function fetchUserNoteLogs(limit = 200): Promise<{ data: UserNoteLo
   try {
     const { data, error } = await supabase
       .from("user_note_logs")
-      .select("id,user_id,note_key,octave,clef,is_correct,response_time,error_type,level,created_at")
+      .select("id,user_id,note_key,octave,clef,is_correct,response_time,error_type,level,interval_from_prev,created_at")
       .eq("user_id", userId)
       .order("created_at", { ascending: false })
       .limit(limit);

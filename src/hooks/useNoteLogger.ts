@@ -1,12 +1,18 @@
-import { useCallback } from "react";
+import { useCallback, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
 import { insertUserNoteLog, type UserNoteLogInput } from "@/lib/userNoteLogs";
+import { noteKeyToSemitone } from "@/lib/noteUtils";
 
 type LogEntry = UserNoteLogInput;
 
 export function useNoteLogger() {
   const { user } = useAuth();
+  const prevNoteRef = useRef<{ note_key: string; octave: number } | null>(null);
+
+  const resetPrevNote = useCallback(() => {
+    prevNoteRef.current = null;
+  }, []);
 
   const logNote = useCallback(
     async (entry: LogEntry) => {
@@ -14,6 +20,17 @@ export function useNoteLogger() {
         console.warn("[NoteLogger] No user, skipping log");
         return;
       }
+
+      const prev = prevNoteRef.current;
+      let interval_from_prev: number | null = null;
+      if (prev !== null) {
+        const fromSt = noteKeyToSemitone(prev.note_key, prev.octave);
+        const toSt = noteKeyToSemitone(entry.note_key, entry.octave);
+        if (fromSt !== null && toSt !== null) {
+          interval_from_prev = toSt - fromSt;
+        }
+      }
+      prevNoteRef.current = { note_key: entry.note_key, octave: entry.octave };
 
       const row: UserNoteLogInput = {
         note_key: entry.note_key,
@@ -23,6 +40,7 @@ export function useNoteLogger() {
         response_time: entry.response_time,
         error_type: entry.error_type,
         level: entry.level,
+        interval_from_prev,
       };
 
       const { data, error } = await insertUserNoteLog(row);
@@ -54,5 +72,5 @@ export function useNoteLogger() {
     [user]
   );
 
-  return { logNote };
+  return { logNote, resetPrevNote };
 }

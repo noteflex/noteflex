@@ -343,7 +343,7 @@ export default function NoteGame({
   const MAX_LIVES      = sublevelConfig.lives;
   const TIMER_SECONDS  = sublevelConfig.timeLimit;
 
-  const { logNote }   = useNoteLogger();
+  const { logNote, resetPrevNote } = useNoteLogger();
   const recorder      = useSessionRecorder();
   const retryQueue    = useRetryQueue();
   const { masteryMap } = useUserMastery();
@@ -521,6 +521,7 @@ export default function NoteGame({
   useEffect(() => {
     const sessionType: "regular" | "custom_score" = isCustom ? "custom_score" : "regular";
     recorder.startSession(level, sessionType);
+    resetPrevNote();
     turnCounterRef.current = 0;
     lastShownNoteRef.current = null;
     retryQueue.reset();
@@ -1247,6 +1248,7 @@ export default function NoteGame({
 
     const sessionType: "regular" | "custom_score" = isCustom ? "custom_score" : "regular";
     recorder.startSession(level, sessionType);
+    resetPrevNote();
 
     const firstStage = stages[0];
     // 리플레이는 새 게임 시작 — 큐 reset된 상태이므로 retry 0개. composeBatch=새 batch.

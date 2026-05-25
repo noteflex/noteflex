@@ -43,7 +43,7 @@ vi.mock("@/components/practice/GrandStaffPractice", () => ({
 vi.mock("@/components/UserMenu", () => ({ default: () => null }));
 
 vi.mock("@/hooks/useNoteLogger", () => ({
-  useNoteLogger: () => ({ logNote: vi.fn() }),
+  useNoteLogger: () => ({ logNote: vi.fn(), resetPrevNote: vi.fn() }),
 }));
 
 vi.mock("@/hooks/useSessionRecorder", () => ({
