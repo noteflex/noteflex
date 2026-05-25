@@ -34,6 +34,7 @@ import ResetPasswordPage from "./pages/ResetPasswordPage.tsx";
 import AuthCallback from "./pages/AuthCallback.tsx";
 import ReviewerLogin from "./pages/ReviewerLogin.tsx";
 import { ErrorBoundary } from "./components/ErrorBoundary.tsx";
+import { HelmetProvider } from "react-helmet-async";
 
 const queryClient = new QueryClient();
 
@@ -71,6 +72,7 @@ function AuthBroadcastListener() {
 }
 
 const App = () => (
+  <HelmetProvider>
   <ErrorBoundary>
     <QueryClientProvider client={queryClient}>
       <LanguageProvider>
@@ -158,6 +160,7 @@ const App = () => (
     </LanguageProvider>
   </QueryClientProvider>
   </ErrorBoundary>
+  </HelmetProvider>
 );
 
 export default App;
