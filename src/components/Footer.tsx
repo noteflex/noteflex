@@ -5,7 +5,7 @@ export default function Footer() {
   const t = useT();
 
   return (
-    <footer className="border-t border-border bg-background/50 mt-auto" style={{ paddingBottom: "env(safe-area-inset-bottom)" }}>
+    <footer className="border-t border-border bg-background mt-auto" style={{ paddingBottom: "env(safe-area-inset-bottom)" }}>
       <div className="max-w-5xl mx-auto px-4 py-6">
 
         {/* 4섹션 그리드 — Company → Product → Support → Legal */}
