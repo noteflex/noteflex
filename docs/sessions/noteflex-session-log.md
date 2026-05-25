@@ -4,6 +4,45 @@
 
 ---
 
+## 2026-05-25 (3차)
+
+### 1. UpgradeModal 빨간 테스트 수정 (커밋 `06e6c61`)
+
+- 원인: 이전 세션에서 `benefitWeakNotes` EN 문구를 "Focused weak-note training mode" → "Detailed weakness analysis"로 바꿨으나 테스트 기대값은 미갱신.
+- 현재 EN benefits 3번째 = "✨ Distraction-free, ad-free experience"
+- 수정: `getByText(/Personalized practice/)` → `getByText(/Distraction-free/)`
+- 결과: 789/789 통과
+
+### 2. PWA 설치 가능화 (커밋 `8e5a578`)
+
+**vite-plugin-pwa v1.3.0 설치**
+- `vite.config.ts`에 VitePWA 추가
+  - `registerType: "autoUpdate"`, `injectRegister: "auto"`
+  - manifest 인라인: name=Noteflex, display=standalone, theme_color=#D3224E, background_color=#faf8f0(light mode hsl 48 50% 96% → hex)
+  - workbox: globPatterns 정적 자산, navigateFallback=/index.html, maximumFileSizeToCacheInBytes=4MB(메인 번들 2.8MB > 기본 2MB)
+  - navigateFallbackDenylist: /rest/, /auth/, /realtime/ (Supabase API 미가로채기)
+
+**아이콘 생성** (`scripts/gen-pwa-icons.mjs` 신규, sharp 재사용)
+- `public/pwa-192x192.png` (3.7KB), `public/pwa-512x512.png` (14KB) — favicon.svg 리사이즈
+- `public/pwa-maskable-512x512.png` (14KB) — #D3224E 512×512 배경 + 로고 410px 중앙(안드로이드 safe zone ~80%)
+
+**index.html**
+- `theme-color` 메타: #faf8f0 → #D3224E (manifest theme_color 일치)
+- iOS 메타(apple-mobile-web-app-capable/status-bar-style/title/apple-touch-icon) 이미 존재 → 유지
+
+**빌드 결과**
+- `dist/manifest.webmanifest` (0.44KB) ✓
+- `dist/sw.js` (2.3KB) ✓ — precache: pwa-192/512/maskable, favicon류, index.html, assets/index.js(2.8MB), assets/index.css
+- Supabase API 미가로채기: navigateFallbackDenylist 적용 확인
+
+**설치 프롬프트 컴포넌트**: 미존재 (FAQ 텍스트에만 "홈 화면에 추가" 언급). beforeinstallprompt 훅 없음 → 신규 생성 없이 브라우저 기본 배너 사용.
+
+**검증**
+- `npm run build` ✓ (tsc 0 errors)
+- 789/789 통과
+
+---
+
 ## 2026-05-25 (2차)
 
 ### 1. 출시 전 분석 — 로깅 입자도 + PWA manifest

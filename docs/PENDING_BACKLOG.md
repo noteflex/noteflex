@@ -32,7 +32,7 @@
 ### 출시 전/후 잔여
 
 - [ ] **og-image.png(1200×630) 미생성** — og:image/twitter:image가 `noteflex.app/og-image.png` 참조하나 파일 없음 → 소셜 공유 미리보기 깨짐 (출시 전 필수)
-- [ ] **PWA manifest 미구성** — public/manifest.json 없음, vite-plugin-pwa 없음. Noteflex 아이콘(favicon.svg/ico/apple-touch-icon) 존재하나 PWA로 연결 안 됨. 출시 후 트랙.
+- [x] **PWA manifest 미구성** — vite-plugin-pwa + manifest + sw.js + 아이콘(192/512/maskable) 완료 (커밋 `8e5a578`, 2026-05-25)
 - [x] **interval_from_prev 로깅** — `user_note_logs` 컬럼 추가 + noteUtils + useNoteLogger 수정 완료 (커밋 `0fb41f1`, 2026-05-25)
 - [ ] **prerender/SSG 도입** — 소셜·비JS 크롤러(카톡/트위터)용 per-post 메타. react-helmet은 구글봇만 커버. 출시후 트랙
 - [ ] **내부 박다 sweep** — logger·코드주석·docs·SQL 주석(오탐[압박을·협박을·도박 등]·docs 규칙언급 제외). 화면 무관 cruft
