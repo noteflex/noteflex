@@ -66,7 +66,7 @@ export default function Index() {
 
   return (
     <div
-      className="min-h-screen flex flex-col"
+      className="min-h-[100svh] flex flex-col"
       style={{ background: "radial-gradient(circle at top, #ffffff 0%, #f8f5e4 100%)" }}
     >
       <Header right={pageHeaderRight} />
