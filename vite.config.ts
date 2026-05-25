@@ -3,6 +3,7 @@ import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import fs from "node:fs";
 import sitemap from "vite-plugin-sitemap";
+import { VitePWA } from "vite-plugin-pwa";
 
 // 블로그 slug 추출: src/content/blog/en/*.md 파일명에서 추출
 // 파일명 패턴: YYYY-MM-DD-slug-name.md → slug-name
@@ -37,6 +38,35 @@ export default defineConfig(() => {
     },
     plugins: [
       react(),
+      VitePWA({
+        registerType: "autoUpdate",
+        injectRegister: "auto",
+        includeAssets: ["favicon.svg", "favicon.ico", "favicon-32x32.png", "apple-touch-icon.png"],
+        manifest: {
+          name: "Noteflex",
+          short_name: "Noteflex",
+          description: "음악 초견 훈련 앱 — 음표 인식 속도를 빠르게",
+          lang: "ko",
+          start_url: "/",
+          scope: "/",
+          display: "standalone",
+          theme_color: "#D3224E",
+          background_color: "#faf8f0",
+          icons: [
+            { src: "/pwa-192x192.png", sizes: "192x192", type: "image/png" },
+            { src: "/pwa-512x512.png", sizes: "512x512", type: "image/png" },
+            { src: "/pwa-maskable-512x512.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
+          ],
+        },
+        workbox: {
+          globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
+          navigateFallback: "/index.html",
+          // Supabase API·외부 요청은 SW가 가로채지 않음
+          navigateFallbackDenylist: [/^\/rest\//, /^\/auth\//, /^\/realtime\//],
+          // 메인 번들 ~2.8MB → 기본 2MB 초과, 4MB로 상향
+          maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
+        },
+      }),
       sitemap({
         hostname: "https://noteflex.app",
         dynamicRoutes: [
