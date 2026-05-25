@@ -66,8 +66,7 @@ describe("UpgradeModal", () => {
     renderModal(true);
     expect(screen.getByText(/Access all 21 levels/)).toBeInTheDocument();
     expect(screen.getByText(/Per-note weakness/)).toBeInTheDocument();
-    expect(screen.getByText(/Personalized practice/)).toBeInTheDocument();
-    // "ad-free"는 subtitle + benefit 둘 다에 박혀있어 getAllByText 박음
+    expect(screen.getByText(/Distraction-free/)).toBeInTheDocument();
     expect(screen.getAllByText(/ad-free/i).length).toBeGreaterThanOrEqual(1);
   });
 });
