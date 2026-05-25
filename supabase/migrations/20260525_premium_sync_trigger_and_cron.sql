@@ -32,7 +32,7 @@ CREATE TRIGGER on_subscription_change
 -- ════════════════════════════════════════════════════════════════
 -- 일배치 스케줄: premium 만료 안전망(expire_premium_users) + 약점/숙련 분석.
 -- run_daily_batch_analysis 내부에 "오늘 이미 실행" 가드 있어 중복 무해.
--- KST 03:00 (= UTC 18:00) 1회. (pg_cron 은 이 프로젝트에 이미 설치됨.)
+-- KST 00:00 (= UTC 15:00), 한국 자정 1회. (pg_cron 은 이 프로젝트에 이미 설치됨.)
 -- ════════════════════════════════════════════════════════════════
 
 CREATE EXTENSION IF NOT EXISTS pg_cron;
@@ -42,7 +42,7 @@ BEGIN
   PERFORM cron.unschedule(jobid) FROM cron.job WHERE jobname = 'noteflex-daily-batch';
   PERFORM cron.schedule(
     'noteflex-daily-batch',
-    '0 18 * * *',
+    '0 15 * * *',
     $$SELECT public.run_daily_batch_analysis();$$
   );
 END
