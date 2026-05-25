@@ -4,6 +4,71 @@
 
 ---
 
+## 2026-05-25
+
+### 1. 게임 UI / 그랜드 staff / i18n
+- 아바타(UserMenu) 게임 화면에서 완전 제거(집중 모드). NoteGame 헤더 = 나가기 버튼만(justify-start). PlayPage fixed overlay 제거 유지. 아바타는 레벨선택(PlayPage:146) 등 다른 곳엔 유지. NoteGame 테스트에 vi.mock("@/components/UserMenu") 추가, 97/97 통과.
+- 그랜드 staff C4 앵커: GRAND_BASS_YOFF unify(144) 시도 후 반려, 220 복귀 확정. 음표 명칭 게임은 명확한 staff 분리 > tight grand staff 표준. 코드에 "unify 금지" 주석. 항목 종결.
+- AccidentalSwipeTutorial i18n: 하드코딩 한국어 → useT() + strings.ts accidentalTutorial 섹션(interface/ko/en) 신설.
+
+### 2. Paddle 기간만료 해지 검증 + 트리거/cron 캡처
+- paddle-webhook/index.ts는 is_premium 직접 변경 안 함 — subscriptions 테이블만 upsert. is_premium 프로비전/해지는 DB 트리거 on_subscription_change → sync_premium_status()(status in active/trialing → is_premium=true, premium_until=current_period_end). 접근 게이트 = is_premium boolean only(subscriptionTier.ts, 날짜 체크 없음).
+- 검증: 기간만료 해지 정상(scheduled-cancel은 status='active' 유지 → 기간끝까지 premium → 'canceled' 이벤트로 false). past_due/paused는 즉시 false(dunning grace 없음, 출시후 고려).
+- 트리거+함수가 어떤 마이그레이션에도 없었음(라이브 DB에만 존재) → 20260525_premium_sync_trigger_and_cron.sql로 캡처(CREATE OR REPLACE 함수 + 트리거 + pg_cron). 데일리 배치(run_daily_batch_analysis→expire_premium_users)는 cron 스케줄 없었음 → cron.schedule('noteflex-daily-batch','0 15...') 추가. (최초 0 18 → 관리자 페이지 표기 "UTC 15:00 한국 자정"에 맞춰 0 15로 정렬.) 라이브 적용 완료(cron.job: noteflex-daily-batch | 0 15 | true). 수동 SELECT run_daily_batch_analysis() 검증 성공.
+- AdminBatchRuns.tsx + /admin/batch-runs + RLS(daily_batch_runs_admin_select) 이미 완성 상태였음(신규 작성 불필요). premium_expired 컬럼 포함 풀 렌더 확인.
+
+### 3. AdSense 심사 신청 (검토 중)
+- 준비 확인: index.html에 실 publisher ID ca-pub-4314740126698954(meta + 무조건 로드 script), public/ads.txt 라이브 200, 블로그 126편(ko 63+en 63), 정책 페이지(/terms /privacy /about /contact), privacy.md·cookies.md에 AdSense·쿠키·광고 고지 존재.
+- 정정/결정: 신청 시 VITE_ADS_ENABLED=true 안 함. 슬롯 ID가 placeholder(0000...)고 실 슬롯 ID는 승인 후 발급(ad unit 생성 잠김). 켜면 깨진 ins 단위 렌더 → 심사 마이너스. 검증은 index.html 무조건 로드 script가 담당. → ads OFF로 신청.
+- 콘솔: noteflex.app "검토 필요" → "검토 요청" 클릭 → "준비 중/In progress". ads.txt 상태 "찾을 수 없음"은 스테일(마지막 체크 5/7), 재크롤로 해소 예정, 승인 안 막음.
+- EU CMP: Google CMP 3가지 선택지(동의/동의하지않음/옵션관리) 선택 + /privacy URL로 설정 제출.
+
+### 4. 박다 sweep (블로그 본문)
+- grep 599건 = 과잉매칭. 대부분 오탐(박=beat: 강박/약박/한 박/N박/박을=beat를) + docs의 "박다 금지" 규칙 언급.
+- 진짜 위반 = ko 블로그 4편(ban 이전 Code가 정상 동사를 박다로 잘못 치환). 문맥 복구(기계적 치환 금지): adult-sight-reading 15곳, hobbyist-musician 6곳, fast-note-recognition 7곳, reading-ledger-lines 2곳. beat 용어 보존. (d28a951)
+- 나머지 595 = 오탐/내부 logger·주석·docs cruft → 화면 무관, 출시후 별도 sweep.
+
+### 5. SEO 메타 (react-helmet)
+- 발견: head 관리자 전무(react-helmet 0, document.title 0). 모든 페이지가 정적 index.html 제너릭 메타만 사용 → 블로그 frontmatter title/description이 head에 반영 안 됨.
+- react-helmet-async 도입 + Seo 컴포넌트(src/components/Seo.tsx). HelmetProvider는 App.tsx ErrorBoundary 안쪽. BlogPost: title({meta.title} | Noteflex)·description·canonical(/blog/{lang}/{slug})·og·hreflang(ko/en/x-default). Blog/About/FAQ/Contact/Pricing: title+canonical. tsc/build 클린. (SEO 커밋 2건)
+- 라이브 검증: 시크릿 Elements DOM에 canonical/hreflang/title 반영 = helmet 정상(구글봇 렌더 OK). "소스 보기"엔 없음 = SPA 정상(서버 정적 index.html).
+- 한계: 소셜·비JS 크롤러(카톡/트위터)는 정적 메타만 봄 → prerender(출시후) 과제. hreflang은 모든 slug가 ko+en 쌍 존재 전제 — 데일리 ko+en 동시 발행 규칙 유지 필수(한쪽만 있으면 hreflang 404 위험).
+
+### 6. 러버블 완전 청산
+- favicon: 러버블 기본 favicon.ico(4/7) → favicon.svg(Noteflex #D3224E 음표 로고)에서 .ico+apple-touch-icon.png+favicon-32x32.png 재생성, index.html 링크 4개. (e1fa774). 일반 브라우저에서 러버블로 보였던 건 캐시(시크릿=Noteflex 정상). favicon.svg 실물=Noteflex 음표 확인. 코드 정상.
+- lovable auth: src/integrations/lovable/index.ts = 죽은 코드(import 0건, 로그인 전부 supabase.auth) → 주석 stub 처리 + @lovable.dev/cloud-auth-js dep 제거. (8db7d5a)
+- lovable-tagger: vite.config.ts dev 플러그인 제거(import+호출, ({mode})→()), package.json devDep 제거. (376ef68) → lovable grep 0건, 완전 청산.
+
+### 7. Pricing 컴플라이언스 (Paddle/AdSense)
+- 가격 $4.99/$39.99 전체 일치 확인(옛 $2.99/$24.99/$35.99 흔적 없음). /refund는 Footer(83) + Pricing(470) 링크 = 결제 지점 근접 노출.
+- benefitWeakNotes 미구현("약점 음표 집중 훈련 모드"/"Focused weak-note training mode") → 구현된 "상세 약점 분석"/"Detailed weakness analysis"로 교체(strings.ts ko 484·en 939). (1df27a8)
+
+### 8. Paddle LIVE 계정 가입 + KYB 제출 (검토 중)
+- 기존 sandbox만 보유 → paddle.com에서 LIVE 계정 신규 가입(별개 계정).
+- 가입 메일: billing@noteflex.app (admin@noteflex.app의 Google Workspace 별칭으로 신설, 수신 확인).
+- 입력 내역: What do you sell=Digital products or SaaS · Account=YongJun Kim · Business name=Donofear, type=Individual, annual revenue="Not yet", website=noteflex.app · 사업장 주소=서울 서초구 사임당로8길 13, 4층 402-L976호(06640) · 개인 거주지=경기 수원 팔달구 화산로 57, 144동 701호(별도 입력, Same as personal 해제) · 상품설명(음악 초견 교육 SaaS 구독 $4.99/$39.99, 디지털 only) · AUP 동의 · 웹사이트 검증 URL(도메인 noteflex.app / pricing /pricing / terms /terms / privacy /privacy / refund /refund) · 사업자 상세(개업일, trading name=Noteflex, sales tax number=367-45-01000, National ID 생략) · 리스크 질문 전부 No + 정보 정확 confirm.
+- 제출 → "We are reviewing your details" / Verification status: In progress.
+- 라이브 카탈로그: 비어 있어서 Premium 상품 신규 생성 + 가격 2개(둘 다 recurring USD, Min/Max quantity 1, trial 없음):
+  - $4.99 Monthly → Price ID: pri_01ksez99vvpyfv1f7ff43e05kp
+  - $39.99 Yearly → Price ID: pri_01ksezab72vjnxdg03x1bmk836
+
+### 이번 세션 커밋
+- 20260525 premium sync 트리거+cron 마이그레이션 (+ cron 0 18→0 15)
+- e1fa774 favicon de-lovable
+- 8db7d5a lovable auth cleanup
+- d28a951 박다 블로그 4편 복구
+- 1df27a8 pricing benefitWeakNotes 교체
+- SEO 메타 2건 (react-helmet-async+Seo / BlogPost·페이지 적용)
+- 376ef68 lovable-tagger 제거
+- 세션 전반부 게임UI·그랜드staff·AccidentalSwipeTutorial 커밋
+- push: 여러 차례 수행. 최신(376ef68·SEO 메타) push 반영 확인 권장.
+
+### 다음 세션 핵심 상태
+- AdSense: 검토 중(In progress) — 승인/반려 메일 대기.
+- Paddle: KYB 검토 중(In progress) — billing@noteflex.app 메일 주시(신원 인증 여권+셀피·도메인 인증 코드·추가서류 요청 가능).
+
+---
+
 ## 2026-05-21 (수) — 게임 데이터 적재 fix · calibration 재설계 · UI 카피·타임존 fix
 
 ### 게임 데이터 적재 진단·fix

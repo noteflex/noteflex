@@ -7,6 +7,39 @@
 
 ---
 
+## 2026-05-25 신규 현황 (Paddle KYB·AdSense 검토 중)
+
+### Paddle 승인 후 (env production 전환 — 승인 메일 오면 즉시)
+
+- [ ] `VITE_PADDLE_ENVIRONMENT`: `sandbox` → `production`
+- [ ] `VITE_PADDLE_CLIENT_TOKEN`: `test_` → `live_` (Paddle Dashboard → Developer Tools → Authentication에서 production client-side token 생성)
+- [ ] `VITE_PADDLE_PRICE_MONTHLY` = `pri_01ksez99vvpyfv1f7ff43e05kp`
+- [ ] `VITE_PADDLE_PRICE_YEARLY`  = `pri_01ksezab72vjnxdg03x1bmk836`
+- [ ] Paddle.js 초기화(production token) 확인 + default payment link(checkout 페이지) 설정 + webhook notification destination(live URL) 설정
+- [ ] 1회 실결제 테스트로 통합 확인
+
+### Paddle 검토 중 대응 (메일 대기)
+
+- [ ] billing@noteflex.app(=admin@ 받은편지함) 주시: 신원 인증(여권+셀피영상), 도메인 인증 코드(오면 사이트 작업 → Claude에 전달), 추가서류
+- [ ] 사업자 통장 개설(내일/모레 은행) → Paddle 정산(banking) 계좌 등록
+
+### AdSense 승인 후
+
+- [ ] ad unit 생성 → 실 슬롯 ID 발급 → `VITE_ADSENSE_SLOT_*`(12개) 채움
+- [ ] `VITE_ADS_ENABLED=true` + `VITE_INFEED_ADS_ENABLED=true` + `VITE_ADSENSE_PUBLISHER_ID` 확인 → 배포
+- [ ] EU CMP는 Google CMP(3선택지)로 설정 완료 — 배포 시 재확인
+
+### 출시 전/후 잔여
+
+- [ ] **og-image.png(1200×630) 미생성** — og:image/twitter:image가 `noteflex.app/og-image.png` 참조하나 파일 없음 → 소셜 공유 미리보기 깨짐 (출시 전 필수)
+- [ ] **prerender/SSG 도입** — 소셜·비JS 크롤러(카톡/트위터)용 per-post 메타. react-helmet은 구글봇만 커버. 출시후 트랙
+- [ ] **내부 박다 sweep** — logger·코드주석·docs·SQL 주석(오탐[압박을·협박을·도박 등]·docs 규칙언급 제외). 화면 무관 cruft
+- [ ] **'약점 음표 집중 훈련 모드' 구현** — 구현 시 `benefitWeakNotes`를 '상세 약점 분석'에서 원래 문구로 복원
+- [ ] **favicon 캐시** — 코드 정상, 로컬 브라우저 캐시만 잔존 → 하드리프레시/캐시클리어로 해소(코드 수정 불필요)
+- [ ] `VITE_SUPABASE_ANON_KEY` 회전 / `VITE_GAME_ENABLED=true` (출시일)
+
+---
+
 ## 2026-05-17 DB 전수 조사 + Phase 3 완료 박은 영역
 
 ### 출시 박을 영역 — Phase 3 영역 ✅ 모두 완료
@@ -101,7 +134,7 @@
   - 오선지 폭 고정 (Lv1~4 / Lv5~7 그룹별)
   - 음표 크기 고정, 음표 간격만 batchSize에 따라 변동
   - 음표 위치: N등분 (N = 현재 batch 음표 개수), 좌측 정렬, 첫 음표는 음자리표·조표와 적절히 떨어짐
-- [ ] **react-helmet-async 추가 + 페이지별 메타 태그** (블로그 SEO 핵심)
+- [x] **react-helmet-async 추가 + 페이지별 메타 태그** ✅ (2026-05-25 — Seo 컴포넌트 + BlogPost/Blog/About/FAQ/Contact/Pricing hreflang 적용)
 - [ ] **Article schema (JSON-LD) 추가**
 - [ ] **sitemap.xml 갱신** (블로그 61+61=122편 모두 포함 확인)
 
