@@ -46,6 +46,8 @@ export default function Index() {
     profile?.role === "admin" || profile?.role === "reviewer";
   const showGameUI = GAME_ENABLED || isPrivilegedRole;
 
+  const handleAuthClose = () => setShowAuth(false);
+
   const handleStart = async () => {
     initSound().catch(() => {});
     navigate("/play", { state: { fromNav: true } });
