@@ -8,6 +8,7 @@ import { useT } from "@/contexts/LanguageContext";
 import { loadBlogPost, type BlogPost as BlogPostType } from "@/lib/markdownLoader";
 import { AdBanner } from "@/components/AdBanner";
 import { getSlot } from "@/lib/adsense";
+import Seo from "@/components/Seo";
 
 export default function BlogPost() {
   // URL :lang 유지 — 콘텐츠 lang은 URL 박힌 값 사용 (SEO·linkability 영역)
@@ -45,6 +46,20 @@ export default function BlogPost() {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
+      {post && (
+        <Seo
+          title={`${post.meta.title} | Noteflex`}
+          description={post.meta.description || ""}
+          canonical={`https://noteflex.app/blog/${lang}/${slug}`}
+          ogImage={post.meta.coverImage || undefined}
+          ogType="article"
+          lang={lang || "en"}
+          alternates={{
+            ko: `https://noteflex.app/blog/ko/${slug}`,
+            en: `https://noteflex.app/blog/en/${slug}`,
+          }}
+        />
+      )}
       <Header
         right={
           <Link

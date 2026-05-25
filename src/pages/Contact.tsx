@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { useLang } from "@/contexts/LanguageContext";
+import Seo from "@/components/Seo";
 
 type Section =
   | { title: string; description: string; channelType: "email"; channel: string }
@@ -72,6 +73,16 @@ export default function Contact() {
       className="min-h-screen flex flex-col"
       style={{ background: "radial-gradient(circle at top, #ffffff 0%, #f8f5e4 100%)" }}
     >
+      <Seo
+        title={isKo ? "문의 | Noteflex" : "Contact | Noteflex"}
+        description={
+          isKo
+            ? "Noteflex 비즈니스 제휴, 기술 지원, 사용자 피드백 문의 채널 안내."
+            : "Get in touch with Noteflex — business inquiries, technical support, and user feedback."
+        }
+        canonical="https://noteflex.app/contact"
+        lang={isKo ? "ko" : "en"}
+      />
       <Header
         right={
           <Link

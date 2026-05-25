@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { useLang } from "@/contexts/LanguageContext";
+import Seo from "@/components/Seo";
 
 const CONTENT = {
   ko: {
@@ -126,11 +127,23 @@ export default function FAQ() {
   const { lang } = useLang();
   const c = CONTENT[lang === "ko" ? "ko" : "en"];
 
+  const isKo = lang === "ko";
+
   return (
     <div
       className="min-h-screen flex flex-col"
       style={{ background: "radial-gradient(circle at top, #ffffff 0%, #f8f5e4 100%)" }}
     >
+      <Seo
+        title={isKo ? "자주 묻는 질문 | Noteflex" : "FAQ | Noteflex"}
+        description={
+          isKo
+            ? "Noteflex 구독, 결제, 취소 방법 및 자주 묻는 질문을 확인하세요."
+            : "Answers to frequently asked questions about Noteflex — subscriptions, billing, and cancellation."
+        }
+        canonical="https://noteflex.app/faq"
+        lang={isKo ? "ko" : "en"}
+      />
       <Header
         right={
           <Link

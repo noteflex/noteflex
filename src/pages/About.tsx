@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { useLang } from "@/contexts/LanguageContext";
+import Seo from "@/components/Seo";
 
 const content = {
   ko: {
@@ -34,6 +35,16 @@ export default function About() {
       className="min-h-screen flex flex-col"
       style={{ background: "radial-gradient(circle at top, #ffffff 0%, #f8f5e4 100%)" }}
     >
+      <Seo
+        title={isKo ? "Noteflex 소개 | Noteflex" : "About Noteflex | Noteflex"}
+        description={
+          isKo
+            ? "악보 앞에서 머뭇거리는 사람들을 위해 만든 초견 훈련 앱, Noteflex의 이야기."
+            : "The story behind Noteflex — a sight-reading training app built for people who pause at every note."
+        }
+        canonical="https://noteflex.app/about"
+        lang={isKo ? "ko" : "en"}
+      />
       <Header
         right={
           <Link

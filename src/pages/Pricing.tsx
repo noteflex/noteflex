@@ -7,6 +7,7 @@ import { getUserTier } from "@/lib/subscriptionTier";
 import { PaymentErrorBoundary } from "@/components/PaymentErrorBoundary";
 import { openCheckout, PADDLE_PRICES, getPaddleLocale } from "@/lib/paddle";
 import { logger } from "@/lib/sentry";
+import Seo from "@/components/Seo";
 
 // ── 다국어 콘텐츠 (ja·zh = en fallback, Phase 3에서 정식 번역 예정) ──────
 const CONTENT = {
@@ -220,12 +221,24 @@ export default function Pricing() {
   const yrCtaLabel =
     tier === "pro" ? c.alreadyPremium : tier === "guest" ? c.signupFirst : c.upgradeYr;
 
+  const isKo = lang === "ko";
+
   return (
     <PaymentErrorBoundary>
     <div
       className="min-h-screen flex flex-col"
       style={{ background: "radial-gradient(circle at top, #ffffff 0%, #f8f5e4 100%)" }}
     >
+      <Seo
+        title={isKo ? "요금제 | Noteflex" : "Pricing | Noteflex"}
+        description={
+          isKo
+            ? "Noteflex 무료·Premium 요금제 비교. 모든 레벨 잠금 해제, 상세 약점 분석, 광고 없는 학습 환경."
+            : "Compare Noteflex Free and Premium plans — unlock all levels, detailed weakness analysis, and ad-free learning."
+        }
+        canonical="https://noteflex.app/pricing"
+        lang={isKo ? "ko" : "en"}
+      />
       <Header
         right={
           <Link

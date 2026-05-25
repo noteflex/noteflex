@@ -8,6 +8,7 @@ import { AdBanner } from "@/components/AdBanner";
 import { InFeedAd } from "@/components/InFeedAd";
 import { getSlot } from "@/lib/adsense";
 import { CategoryCover } from "@/components/blog/CategoryCover";
+import Seo from "@/components/Seo";
 
 const INFEED_AD_INTERVAL = 6;
 
@@ -41,8 +42,27 @@ export default function Blog() {
     </Link>
   );
 
+  const blogSeo =
+    docLang === "ko"
+      ? {
+          title: "블로그 | Noteflex",
+          description:
+            "악보 읽기와 음악 초견을 위한 가이드. 단계별 전략, 음악 이론, 학습 과학을 Noteflex 블로그에서 확인하세요.",
+        }
+      : {
+          title: "Blog | Noteflex",
+          description:
+            "Guides for music sight-reading and score reading. Step-by-step strategies, music theory, and learning science on the Noteflex blog.",
+        };
+
   return (
     <div className="min-h-screen flex flex-col bg-background">
+      <Seo
+        title={blogSeo.title}
+        description={blogSeo.description}
+        canonical="https://noteflex.app/blog"
+        lang={docLang}
+      />
       <Header right={blogRight} />
 
       {/* 데스크톱: 좌/우 사이드바 광고 | 모바일: 없음 (하단 배너로 대체) */}
