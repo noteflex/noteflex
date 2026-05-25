@@ -4,6 +4,49 @@
 
 ---
 
+## 2026-05-25 (2차)
+
+### 1. 출시 전 분석 — 로깅 입자도 + PWA manifest
+
+**로깅 입자도 (A 결론)**
+- `user_note_logs` 테이블: 음표마다 1행 INSERT (note_key, octave, clef, is_correct, response_time[초단위], error_type, level). per-note 분석 정본.
+- `user_sessions.note_attempts` JSONB: 세션 종료 시 배열 일괄 저장 ({note, correct, reaction_ms, clef, accidental}).
+- **누락**: interval_from_prev (직전 음과의 반음 거리) — 두 경로 모두 미저장. 소급 불가 → 즉시 수집 필요.
+
+**PWA manifest (B 결론)**
+- public/manifest.json 없음, vite-plugin-pwa 없음, `<link rel="manifest">` 없음.
+- PWA 자체 미구성 상태. 192/512 아이콘 항목 없음.
+
+### 2. interval_from_prev 로깅 추가 (커밋 `0fb41f1`)
+
+**마이그레이션**: `supabase/migrations/20260525_note_interval_from_prev.sql`
+- `ALTER TABLE user_note_logs ADD COLUMN IF NOT EXISTS interval_from_prev INTEGER;` (nullable, 소급 없음)
+
+**`src/lib/noteUtils.ts`** (신규)
+- `noteKeyToSemitone(noteKey, octave)`: note_key("C", "C#", "Db"...) + octave → 절대 반음 수 (octave×12 + 음계인덱스)
+
+**`src/lib/userNoteLogs.ts`**
+- `UserNoteLogPayload` / `UserNoteLogInput`에 `interval_from_prev: number | null` 추가
+- `fetchUserNoteLogs` select에 `interval_from_prev` 포함
+
+**`src/hooks/useNoteLogger.ts`**
+- `prevNoteRef`: 직전 음(note_key, octave) 추적
+- `logNote`: prevNote 있으면 signed semitone 계산 → `interval_from_prev`, 세션 첫 음 → NULL
+- `resetPrevNote()` 공개
+
+**`src/components/NoteGame.tsx`**
+- `const { logNote, resetPrevNote } = useNoteLogger();`
+- `recorder.startSession(...)` 두 지점(초기 useEffect, handleReplay) 직후 `resetPrevNote()` 호출
+
+**테스트 목 갱신**: NoteGame 7개 테스트 파일의 `useNoteLogger` 목에 `resetPrevNote: vi.fn()` 추가
+
+**검증**
+- `npm run build` ✓ (0 errors)
+- 테스트 788/789 통과 (UpgradeModal 1건 = 이전 세션 `benefitWeakNotes` 변경 선행 실패, 우리 변경과 무관 — stash 전후 동일)
+- 반음 수학 검증: G4→C5 = (5×12)−(4×12+7) = 60−55 = **+5** ✓, C4→G4 = 55−48 = **+7** ✓, G4→C4 = 48−55 = **-7** ✓
+
+---
+
 ## 2026-05-25
 
 ### 1. 게임 UI / 그랜드 staff / i18n
