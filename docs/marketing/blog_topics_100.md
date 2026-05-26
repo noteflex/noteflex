@@ -878,6 +878,8 @@ AI·정밀 데이터·Noteflex 기능·음악 교육의 미래.
 | 2026-05-25 | — | §3-R1 | Rhythm Sight-Reading: Why You Keep Getting Rhythms Wrong (en) ✅ 작성 완료 | rhythm-sight-reading-strategies | Practice Hub | ~980 words | rhythm sight-reading, reading rhythm in music, rhythm mistakes, inner pulse, beat training | Palmer + Krumhansl 전통 |
 | 2026-05-26 | — | §1-4 | 초견과 청음 — 악보를 읽는 눈과 소리를 듣는 귀 (ko) ✅ 작성 완료 | sight-reading-vs-ear-training | 초견의 정석 | ~2846자 | 초견과 청음, 청음 훈련, audiation, 악보 읽기, 음정 인식, 내면 청음 | Hayward & Gromko 전통 |
 | 2026-05-26 | — | §1-4 | Sight-Reading and Ear Training: Different Skills, One Musical Foundation (en) ✅ 작성 완료 | sight-reading-vs-ear-training | Sight-Reading Lab | ~951 words | sight-reading vs ear training, audiation, aural training, music reading, ear training | Hayward & Gromko 전통 |
+| 2026-05-27 | 27 | §1-5 | 초견 실력의 4단계 — 입문부터 전문가까지 어떻게 달라지는가 (ko) ✅ 작성 완료 | sight-reading-four-stages | 초견의 정석 | ~1950자 | 초견 실력 4단계, 초견 단계, 음표 인식, eye-hand span, 초견 전문가 | Waters et al. 전통 |
+| 2026-05-27 | 27 | §1-5 | The Four Stages of Sight-Reading Skill (en) ✅ 작성 완료 | sight-reading-four-stages | Sight-Reading Lab | ~1020 words | sight-reading stages, four stages sight-reading, eye-hand span, note recognition speed, music reading expertise | Waters et al. 전통 |
 
 ---
 
