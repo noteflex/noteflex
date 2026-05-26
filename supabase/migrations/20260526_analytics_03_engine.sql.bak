@@ -1,0 +1,577 @@
+-- Migration: 20260526_analytics_rollup_engine.sql
+-- Purpose: 분석 보고서 배치 엔진 — 기간 롤업 + 음표 상태 + 일일 cron 함수.
+-- 권한: 모두 SECURITY DEFINER (배치만 호출, 사용자 직접 호출 X).
+-- 격리: 기존 run_daily_batch_analysis·handle_session_complete·note_mastery 트리거 건드리지 않음.
+
+-- =====================================================================
+-- helper: refresh_user_note_status
+--   user_note_logs 최근 20회 윈도우 기반으로 user_note_status UPSERT.
+--   상태 전이: learning → weakness → (학습) → graduated → regressed → ...
+--   졸업 v1: 정확도만 (속도 ratio는 sublevel 컬럼 추가 후 v2).
+-- =====================================================================
+CREATE OR REPLACE FUNCTION public.refresh_user_note_status(p_user_id uuid)
+RETURNS integer
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $func$
+DECLARE
+  v_changed integer := 0;
+BEGIN
+  WITH ranked AS (
+    SELECT
+      l.note_key, l.octave, l.clef,
+      l.is_correct,
+      (l.response_time * 1000)::numeric AS ms,
+      l.created_at,
+      (
+        SELECT s.id FROM public.user_sessions s
+        WHERE s.user_id = p_user_id
+          AND s.session_type <> 'tutorial'
+          AND l.created_at >= s.started_at
+          AND l.created_at <= s.ended_at
+        LIMIT 1
+      ) AS sess_id,
+      ROW_NUMBER() OVER (
+        PARTITION BY l.note_key, l.octave, l.clef
+        ORDER BY l.created_at DESC
+      ) AS rn
+    FROM public.user_note_logs l
+    WHERE l.user_id = p_user_id
+  ),
+  recent20 AS (
+    SELECT
+      note_key, octave, clef,
+      COUNT(*)                                                  AS attempts,
+      COUNT(*) FILTER (WHERE is_correct)                        AS correct,
+      COUNT(DISTINCT sess_id) FILTER (WHERE sess_id IS NOT NULL) AS sessions,
+      AVG(ms) FILTER (WHERE ms IS NOT NULL)::int                AS avg_ms,
+      percentile_cont(0.5) WITHIN GROUP (ORDER BY ms)
+        FILTER (WHERE ms IS NOT NULL)::int                       AS median_ms,
+      MAX(created_at)                                            AS last_attempt_at
+    FROM ranked
+    WHERE rn <= 20
+    GROUP BY note_key, octave, clef
+  ),
+  -- 이전 상태 조인 — UPSERT 시 status 전이·ever_weakness 결정에 사용
+  prev AS (
+    SELECT note_key, octave, clef, status, ever_weakness, graduated_at, regressed_at, weakness_flagged_at
+    FROM public.user_note_status
+    WHERE user_id = p_user_id
+  ),
+  computed AS (
+    SELECT
+      r.note_key, r.octave, r.clef,
+      r.attempts, r.correct, r.sessions, r.avg_ms, r.median_ms, r.last_attempt_at,
+      r.correct::numeric / NULLIF(r.attempts, 0) AS accuracy,
+      COALESCE(p.status, 'learning')             AS prev_status,
+      COALESCE(p.ever_weakness, false)           AS prev_ever_weakness,
+      p.graduated_at                             AS prev_graduated_at,
+      p.regressed_at                             AS prev_regressed_at,
+      p.weakness_flagged_at                      AS prev_weakness_flagged_at,
+      -- 새 상태 판정
+      CASE
+        -- 표본 부족: 이전 status 보존
+        WHEN r.attempts < 20 THEN COALESCE(p.status, 'learning')
+        -- 졸업: 약점 이력 + 정확도 ≥95% + 세션 ≥2
+        WHEN COALESCE(p.ever_weakness, false)
+             AND r.correct >= 19
+             AND r.sessions >= 2
+          THEN 'graduated'
+        -- 약점: 오답률 ≥40%
+        WHEN (r.attempts - r.correct)::numeric / r.attempts >= 0.40
+          THEN 'weakness'
+        -- 퇴보: 졸업 상태였는데 95% 미달
+        WHEN p.status = 'graduated' AND r.correct < 19
+          THEN 'regressed'
+        ELSE 'learning'
+      END AS new_status
+    FROM recent20 r
+    LEFT JOIN prev p USING (note_key, octave, clef)
+  )
+  INSERT INTO public.user_note_status (
+    user_id, note_key, octave, clef,
+    recent_20_attempts, recent_20_correct, recent_20_accuracy,
+    recent_20_sessions, recent_20_avg_ms, recent_20_median_ms,
+    status, ever_weakness,
+    graduated_at, regressed_at, weakness_flagged_at,
+    last_attempt_at, updated_at
+  )
+  SELECT
+    p_user_id, note_key, octave, clef,
+    attempts, correct, accuracy,
+    sessions, avg_ms, median_ms,
+    new_status,
+    prev_ever_weakness OR (new_status = 'weakness'),
+    CASE WHEN new_status = 'graduated' AND prev_status <> 'graduated' THEN now()
+         ELSE prev_graduated_at END,
+    CASE WHEN new_status = 'regressed' AND prev_status <> 'regressed' THEN now()
+         ELSE prev_regressed_at END,
+    CASE WHEN new_status = 'weakness' AND COALESCE(prev_status,'') <> 'weakness' THEN now()
+         ELSE prev_weakness_flagged_at END,
+    last_attempt_at,
+    now()
+  FROM computed
+  ON CONFLICT (user_id, note_key, octave, clef) DO UPDATE SET
+    recent_20_attempts      = EXCLUDED.recent_20_attempts,
+    recent_20_correct       = EXCLUDED.recent_20_correct,
+    recent_20_accuracy      = EXCLUDED.recent_20_accuracy,
+    recent_20_sessions      = EXCLUDED.recent_20_sessions,
+    recent_20_avg_ms        = EXCLUDED.recent_20_avg_ms,
+    recent_20_median_ms     = EXCLUDED.recent_20_median_ms,
+    status                  = EXCLUDED.status,
+    ever_weakness           = EXCLUDED.ever_weakness,
+    graduated_at            = EXCLUDED.graduated_at,
+    regressed_at            = EXCLUDED.regressed_at,
+    weakness_flagged_at     = EXCLUDED.weakness_flagged_at,
+    last_attempt_at         = EXCLUDED.last_attempt_at,
+    updated_at              = now();
+
+  GET DIAGNOSTICS v_changed = ROW_COUNT;
+  RETURN v_changed;
+END;
+$func$;
+
+GRANT EXECUTE ON FUNCTION public.refresh_user_note_status(uuid) TO postgres;
+
+-- =====================================================================
+-- helper: build_period_rollup
+--   기간(day/week/month)에 대해 user_analytics_rollup UPSERT.
+--   tutorial 제외. 단위 ms 통일.
+-- =====================================================================
+CREATE OR REPLACE FUNCTION public.build_period_rollup(
+  p_user_id     uuid,
+  p_period_type text,
+  p_period_start date,
+  p_period_end   date
+)
+RETURNS void
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $func$
+DECLARE
+  v_start_ts timestamptz := (p_period_start::timestamp) AT TIME ZONE 'Asia/Seoul';
+  v_end_ts   timestamptz := ((p_period_end + 1)::timestamp) AT TIME ZONE 'Asia/Seoul';
+
+  -- 활동량
+  v_sessions_count       int := 0;
+  v_total_duration       int := 0;
+  v_active_days          int := 0;
+
+  -- 전체 집계
+  v_total_attempts       int := 0;
+  v_correct_attempts     int := 0;
+  v_overall_accuracy     numeric(5,4);
+  v_avg_ms               int;
+  v_median_ms            int;
+
+  -- JSONB 섹션
+  v_by_clef              jsonb := '{}'::jsonb;
+  v_by_accidental        jsonb := '{}'::jsonb;
+  v_by_level             jsonb := '{}'::jsonb;
+  v_per_note             jsonb := '[]'::jsonb;
+  v_interval_rates       jsonb := '{}'::jsonb;
+  v_weak_top             jsonb := '[]'::jsonb;
+
+  -- 스트릭·베이스라인·졸업
+  v_streak_days          int := 0;
+  v_baseline_acc         numeric(5,4);
+  v_baseline_ms          int;
+  v_graduated_count      int := 0;
+  v_regressed_count      int := 0;
+  v_graduated_notes      jsonb := '[]'::jsonb;
+  v_regressed_notes      jsonb := '[]'::jsonb;
+BEGIN
+  -- ── 1. 세션 메타(tutorial 제외): 세션 수·총 시간·활동 일수 ──
+  SELECT
+    COUNT(*),
+    COALESCE(SUM(duration_seconds), 0),
+    COUNT(DISTINCT (started_at AT TIME ZONE 'Asia/Seoul')::date)
+  INTO v_sessions_count, v_total_duration, v_active_days
+  FROM public.user_sessions
+  WHERE user_id = p_user_id
+    AND session_type <> 'tutorial'
+    AND started_at >= v_start_ts
+    AND started_at <  v_end_ts;
+
+  -- ── 2. 전체 집계 + 분류별 JSONB (한 쿼리에 CTE로) ──
+  WITH valid_logs AS (
+    SELECT
+      l.note_key, l.octave, l.clef, l.is_correct,
+      (l.response_time * 1000)::numeric AS ms,
+      l.level, l.interval_from_prev, l.created_at
+    FROM public.user_note_logs l
+    WHERE l.user_id = p_user_id
+      AND l.created_at >= v_start_ts
+      AND l.created_at <  v_end_ts
+      AND NOT EXISTS (
+        SELECT 1 FROM public.user_sessions s
+        WHERE s.user_id = p_user_id
+          AND s.session_type = 'tutorial'
+          AND l.created_at >= s.started_at
+          AND l.created_at <= s.ended_at
+      )
+  ),
+  overall AS (
+    SELECT
+      COUNT(*) AS attempts,
+      COUNT(*) FILTER (WHERE is_correct) AS correct,
+      AVG(ms) FILTER (WHERE ms IS NOT NULL)::int AS avg_ms,
+      (percentile_cont(0.5) WITHIN GROUP (ORDER BY ms)
+        FILTER (WHERE ms IS NOT NULL))::int AS median_ms
+    FROM valid_logs
+  ),
+  clef_agg AS (
+    SELECT clef,
+           COUNT(*) AS n,
+           (COUNT(*) FILTER (WHERE is_correct))::numeric / NULLIF(COUNT(*),0) AS acc,
+           AVG(ms) FILTER (WHERE ms IS NOT NULL)::int AS avg_ms,
+           (percentile_cont(0.5) WITHIN GROUP (ORDER BY ms)
+             FILTER (WHERE ms IS NOT NULL))::int AS median_ms
+    FROM valid_logs GROUP BY clef
+  ),
+  acc_class AS (
+    SELECT
+      CASE WHEN note_key ~ '[#b]' THEN 'accidental' ELSE 'natural' END AS bucket,
+      is_correct, ms
+    FROM valid_logs
+  ),
+  accidental_agg AS (
+    SELECT bucket,
+           COUNT(*) AS n,
+           (COUNT(*) FILTER (WHERE is_correct))::numeric / NULLIF(COUNT(*),0) AS acc,
+           AVG(ms) FILTER (WHERE ms IS NOT NULL)::int AS avg_ms,
+           (percentile_cont(0.5) WITHIN GROUP (ORDER BY ms)
+             FILTER (WHERE ms IS NOT NULL))::int AS median_ms
+    FROM acc_class GROUP BY bucket
+  ),
+  level_agg AS (
+    SELECT level,
+           COUNT(*) AS n,
+           (COUNT(*) FILTER (WHERE is_correct))::numeric / NULLIF(COUNT(*),0) AS acc,
+           AVG(ms) FILTER (WHERE ms IS NOT NULL)::int AS avg_ms,
+           (percentile_cont(0.5) WITHIN GROUP (ORDER BY ms)
+             FILTER (WHERE ms IS NOT NULL))::int AS median_ms
+    FROM valid_logs GROUP BY level
+  ),
+  per_note_agg AS (
+    SELECT note_key, octave, clef,
+           COUNT(*) AS n,
+           (COUNT(*) FILTER (WHERE is_correct))::numeric / NULLIF(COUNT(*),0) AS acc,
+           AVG(ms) FILTER (WHERE ms IS NOT NULL)::int AS avg_ms,
+           (percentile_cont(0.5) WITHIN GROUP (ORDER BY ms)
+             FILTER (WHERE ms IS NOT NULL))::int AS median_ms
+    FROM valid_logs GROUP BY note_key, octave, clef
+  ),
+  interval_buckets AS (
+    SELECT
+      CASE
+        WHEN interval_from_prev IS NULL THEN NULL
+        WHEN ABS(interval_from_prev) = 0 THEN '0'
+        WHEN ABS(interval_from_prev) BETWEEN 1 AND 2 THEN '1-2'
+        WHEN ABS(interval_from_prev) BETWEEN 3 AND 5 THEN '3-5'
+        WHEN ABS(interval_from_prev) BETWEEN 6 AND 9 THEN '6-9'
+        ELSE '10+'
+      END AS bucket,
+      is_correct
+    FROM valid_logs
+    WHERE interval_from_prev IS NOT NULL
+  ),
+  interval_agg AS (
+    SELECT bucket,
+           COUNT(*) AS n,
+           (COUNT(*) FILTER (WHERE NOT is_correct))::numeric / NULLIF(COUNT(*),0) AS error_rate
+    FROM interval_buckets GROUP BY bucket
+  ),
+  weak_calc AS (
+    SELECT note_key, octave, clef, n,
+           (1 - acc)::numeric AS error_rate,
+           avg_ms,
+           median_ms,
+           (1 - acc) * SQRT(n) + LEAST(COALESCE(avg_ms,0)::numeric / 3000.0, 1.0) * 0.3 AS weak_score
+    FROM per_note_agg
+    WHERE n >= 3   -- 표본 너무 작은 음표 노이즈 제거
+  )
+  SELECT
+    o.attempts, o.correct, o.avg_ms, o.median_ms,
+    o.correct::numeric / NULLIF(o.attempts,0),
+    COALESCE((SELECT jsonb_object_agg(clef, jsonb_build_object(
+       'attempts', n, 'accuracy', acc, 'avg_ms', avg_ms, 'median_ms', median_ms))
+       FROM clef_agg), '{}'::jsonb),
+    COALESCE((SELECT jsonb_object_agg(bucket, jsonb_build_object(
+       'attempts', n, 'accuracy', acc, 'avg_ms', avg_ms, 'median_ms', median_ms))
+       FROM accidental_agg), '{}'::jsonb),
+    COALESCE((SELECT jsonb_object_agg(level::text, jsonb_build_object(
+       'attempts', n, 'accuracy', acc, 'avg_ms', avg_ms, 'median_ms', median_ms))
+       FROM level_agg), '{}'::jsonb),
+    COALESCE((SELECT jsonb_agg(jsonb_build_object(
+       'note_key', note_key, 'octave', octave, 'clef', clef,
+       'attempts', n, 'accuracy', acc, 'avg_ms', avg_ms, 'median_ms', median_ms))
+       FROM per_note_agg), '[]'::jsonb),
+    COALESCE((SELECT jsonb_object_agg(bucket, jsonb_build_object(
+       'attempts', n, 'error_rate', error_rate))
+       FROM interval_agg WHERE bucket IS NOT NULL), '{}'::jsonb),
+    COALESCE((SELECT jsonb_agg(jsonb_build_object(
+       'note_key', note_key, 'octave', octave, 'clef', clef,
+       'attempts', n, 'error_rate', error_rate, 'avg_ms', avg_ms,
+       'median_ms', median_ms, 'weak_score', ROUND(weak_score::numeric, 4))
+       ORDER BY weak_score DESC)
+       FROM (SELECT * FROM weak_calc ORDER BY weak_score DESC LIMIT 10) t),
+       '[]'::jsonb)
+  INTO
+    v_total_attempts, v_correct_attempts, v_avg_ms, v_median_ms,
+    v_overall_accuracy,
+    v_by_clef, v_by_accidental, v_by_level,
+    v_per_note, v_interval_rates, v_weak_top
+  FROM overall o;
+
+  -- ── 3. 스트릭 (period_end 기준 역방향 연속 활동 일수) ──
+  WITH active_days AS (
+    SELECT DISTINCT (created_at AT TIME ZONE 'Asia/Seoul')::date AS d
+    FROM public.user_note_logs
+    WHERE user_id = p_user_id
+      AND created_at >= ((p_period_end - 60)::timestamp) AT TIME ZONE 'Asia/Seoul'
+      AND created_at <  ((p_period_end + 1)::timestamp) AT TIME ZONE 'Asia/Seoul'
+  ),
+  -- p_period_end 부터 역순으로 연속 일자 카운트
+  walked AS (
+    SELECT d,
+           ROW_NUMBER() OVER (ORDER BY d DESC) AS rn,
+           (p_period_end - (ROW_NUMBER() OVER (ORDER BY d DESC) - 1)) AS expected
+    FROM active_days
+    WHERE d <= p_period_end
+  )
+  SELECT COUNT(*) INTO v_streak_days
+  FROM walked
+  WHERE d = expected;
+
+  -- ── 4. 베이스라인: 같은 user의 'day' 롤업, period_end -14d ~ -1d ──
+  SELECT
+    AVG(overall_accuracy)::numeric(5,4),
+    AVG(avg_reaction_ms)::int
+  INTO v_baseline_acc, v_baseline_ms
+  FROM public.user_analytics_rollup
+  WHERE user_id = p_user_id
+    AND period_type = 'day'
+    AND period_start >= p_period_end - 14
+    AND period_start <  p_period_end;
+
+  -- ── 5. 졸업·퇴보: user_note_status의 graduated_at/regressed_at가 본 기간 내 ──
+  SELECT
+    COUNT(*) FILTER (WHERE graduated_at IS NOT NULL
+                       AND graduated_at >= v_start_ts AND graduated_at < v_end_ts),
+    COUNT(*) FILTER (WHERE regressed_at IS NOT NULL
+                       AND regressed_at >= v_start_ts AND regressed_at < v_end_ts),
+    COALESCE((SELECT jsonb_agg(jsonb_build_object(
+       'note_key', note_key, 'octave', octave, 'clef', clef, 'at', graduated_at))
+       FROM public.user_note_status
+       WHERE user_id = p_user_id
+         AND graduated_at >= v_start_ts AND graduated_at < v_end_ts), '[]'::jsonb),
+    COALESCE((SELECT jsonb_agg(jsonb_build_object(
+       'note_key', note_key, 'octave', octave, 'clef', clef, 'at', regressed_at))
+       FROM public.user_note_status
+       WHERE user_id = p_user_id
+         AND regressed_at >= v_start_ts AND regressed_at < v_end_ts), '[]'::jsonb)
+  INTO v_graduated_count, v_regressed_count, v_graduated_notes, v_regressed_notes
+  FROM public.user_note_status
+  WHERE user_id = p_user_id;
+
+  -- ── 6. UPSERT ──
+  INSERT INTO public.user_analytics_rollup (
+    user_id, period_type, period_start, period_end,
+    sessions_count, total_attempts, correct_attempts,
+    total_duration_seconds, active_days,
+    overall_accuracy, avg_reaction_ms, median_reaction_ms,
+    by_clef, by_accidental, by_level, per_note,
+    interval_error_rates, weak_notes_top,
+    streak_days, baseline_accuracy, baseline_avg_reaction_ms,
+    graduated_count, regressed_count, graduated_notes, regressed_notes,
+    computed_at
+  ) VALUES (
+    p_user_id, p_period_type, p_period_start, p_period_end,
+    v_sessions_count, v_total_attempts, v_correct_attempts,
+    v_total_duration, v_active_days,
+    v_overall_accuracy, v_avg_ms, v_median_ms,
+    v_by_clef, v_by_accidental, v_by_level, v_per_note,
+    v_interval_rates, v_weak_top,
+    v_streak_days, v_baseline_acc, v_baseline_ms,
+    v_graduated_count, v_regressed_count, v_graduated_notes, v_regressed_notes,
+    now()
+  )
+  ON CONFLICT (user_id, period_type, period_start) DO UPDATE SET
+    period_end               = EXCLUDED.period_end,
+    sessions_count           = EXCLUDED.sessions_count,
+    total_attempts           = EXCLUDED.total_attempts,
+    correct_attempts         = EXCLUDED.correct_attempts,
+    total_duration_seconds   = EXCLUDED.total_duration_seconds,
+    active_days              = EXCLUDED.active_days,
+    overall_accuracy         = EXCLUDED.overall_accuracy,
+    avg_reaction_ms          = EXCLUDED.avg_reaction_ms,
+    median_reaction_ms       = EXCLUDED.median_reaction_ms,
+    by_clef                  = EXCLUDED.by_clef,
+    by_accidental            = EXCLUDED.by_accidental,
+    by_level                 = EXCLUDED.by_level,
+    per_note                 = EXCLUDED.per_note,
+    interval_error_rates     = EXCLUDED.interval_error_rates,
+    weak_notes_top           = EXCLUDED.weak_notes_top,
+    streak_days              = EXCLUDED.streak_days,
+    baseline_accuracy        = EXCLUDED.baseline_accuracy,
+    baseline_avg_reaction_ms = EXCLUDED.baseline_avg_reaction_ms,
+    graduated_count          = EXCLUDED.graduated_count,
+    regressed_count          = EXCLUDED.regressed_count,
+    graduated_notes          = EXCLUDED.graduated_notes,
+    regressed_notes          = EXCLUDED.regressed_notes,
+    computed_at              = now();
+END;
+$func$;
+
+GRANT EXECUTE ON FUNCTION public.build_period_rollup(uuid, text, date, date) TO postgres;
+
+-- =====================================================================
+-- top-level: run_daily_analytics_rollup
+--   KST 00:00 cron (기존 noteflex-daily-batch와 같이 실행).
+--   1. 활성 유저(30일 내 attempt 있음) 조회
+--   2. 유저별: refresh_user_note_status → daily rollup(어제) → [월요일이면 주간] → [1일이면 월간]
+--   3. 통계를 daily_batch_runs에 기록 (rollup_*** 컬럼)
+-- =====================================================================
+CREATE OR REPLACE FUNCTION public.run_daily_analytics_rollup()
+RETURNS uuid
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $func$
+DECLARE
+  v_started_at      timestamptz := now();
+  v_today_kst       date := (now() AT TIME ZONE 'Asia/Seoul')::date;
+  v_yesterday_kst   date := v_today_kst - 1;
+  v_is_monday       boolean := EXTRACT(ISODOW FROM v_today_kst) = 1;
+  v_is_first        boolean := EXTRACT(DAY FROM v_today_kst) = 1;
+
+  -- 주간 윈도우 (어제까지의 한 주)
+  v_week_start      date := v_today_kst - 7;
+  v_week_end        date := v_today_kst - 1;
+  -- 월간 윈도우 (전월 1일 ~ 전월 말일)
+  v_month_start     date := (date_trunc('month', (v_today_kst - INTERVAL '1 day'))::date);
+  v_month_end       date := (date_trunc('month', v_today_kst)::date - 1);
+
+  v_uid             uuid;
+  v_users_processed int := 0;
+  v_users_failed    int := 0;
+  v_daily_count     int := 0;
+  v_weekly_count    int := 0;
+  v_monthly_count   int := 0;
+  v_grad_total      int := 0;
+  v_reg_total       int := 0;
+  v_duration_ms     int;
+
+  v_grad_for_user   int;
+  v_reg_for_user    int;
+
+  v_run_id          uuid;
+BEGIN
+  -- 30일 내 활동 유저 순회
+  FOR v_uid IN
+    SELECT DISTINCT user_id
+    FROM public.user_note_logs
+    WHERE created_at >= ((v_today_kst - 30)::timestamp) AT TIME ZONE 'Asia/Seoul'
+  LOOP
+    BEGIN
+      -- 1. 음표 상태 먼저 갱신 (오늘 자정 직전까지 데이터 반영)
+      PERFORM public.refresh_user_note_status(v_uid);
+
+      -- 2. 어제(KST) daily 롤업
+      PERFORM public.build_period_rollup(v_uid, 'day', v_yesterday_kst, v_yesterday_kst);
+      v_daily_count := v_daily_count + 1;
+
+      -- 3. 월요일이면 지난주 (월~일) 주간 롤업
+      IF v_is_monday THEN
+        PERFORM public.build_period_rollup(v_uid, 'week', v_week_start, v_week_end);
+        v_weekly_count := v_weekly_count + 1;
+      END IF;
+
+      -- 4. 1일이면 전월 월간 롤업
+      IF v_is_first THEN
+        PERFORM public.build_period_rollup(v_uid, 'month', v_month_start, v_month_end);
+        v_monthly_count := v_monthly_count + 1;
+      END IF;
+
+      -- 5. 어제 기간의 졸업/퇴보 합산
+      SELECT graduated_count, regressed_count
+      INTO v_grad_for_user, v_reg_for_user
+      FROM public.user_analytics_rollup
+      WHERE user_id = v_uid AND period_type = 'day' AND period_start = v_yesterday_kst;
+      v_grad_total := v_grad_total + COALESCE(v_grad_for_user, 0);
+      v_reg_total  := v_reg_total  + COALESCE(v_reg_for_user,  0);
+
+      v_users_processed := v_users_processed + 1;
+    EXCEPTION WHEN OTHERS THEN
+      v_users_failed := v_users_failed + 1;
+      RAISE NOTICE 'analytics rollup failed for user %: %', v_uid, SQLERRM;
+    END;
+  END LOOP;
+
+  v_duration_ms := EXTRACT(EPOCH FROM (now() - v_started_at)) * 1000;
+
+  -- daily_batch_runs UPSERT (오늘 KST row에 rollup_*** 컬럼 기록)
+  -- 기존 run_daily_batch_analysis가 같은 row를 INSERT한 뒤 본 함수가 UPDATE 하는 흐름.
+  UPDATE public.daily_batch_runs
+  SET rollup_users_processed = v_users_processed,
+      rollup_users_failed    = v_users_failed,
+      rollup_daily_count     = v_daily_count,
+      rollup_weekly_count    = v_weekly_count,
+      rollup_monthly_count   = v_monthly_count,
+      rollup_graduated_total = v_grad_total,
+      rollup_regressed_total = v_reg_total,
+      rollup_duration_ms     = v_duration_ms
+  WHERE run_date = v_today_kst
+  RETURNING id INTO v_run_id;
+
+  -- run_daily_batch_analysis가 오늘 안 돌았다면(에러로 row 없으면) 새로 INSERT
+  IF v_run_id IS NULL THEN
+    INSERT INTO public.daily_batch_runs (
+      run_date, users_analyzed, status,
+      rollup_users_processed, rollup_users_failed,
+      rollup_daily_count, rollup_weekly_count, rollup_monthly_count,
+      rollup_graduated_total, rollup_regressed_total, rollup_duration_ms
+    ) VALUES (
+      v_today_kst, v_users_processed, 'success',
+      v_users_processed, v_users_failed,
+      v_daily_count, v_weekly_count, v_monthly_count,
+      v_grad_total, v_reg_total, v_duration_ms
+    )
+    ON CONFLICT (run_date) DO UPDATE SET
+      rollup_users_processed = EXCLUDED.rollup_users_processed,
+      rollup_users_failed    = EXCLUDED.rollup_users_failed,
+      rollup_daily_count     = EXCLUDED.rollup_daily_count,
+      rollup_weekly_count    = EXCLUDED.rollup_weekly_count,
+      rollup_monthly_count   = EXCLUDED.rollup_monthly_count,
+      rollup_graduated_total = EXCLUDED.rollup_graduated_total,
+      rollup_regressed_total = EXCLUDED.rollup_regressed_total,
+      rollup_duration_ms     = EXCLUDED.rollup_duration_ms
+    RETURNING id INTO v_run_id;
+  END IF;
+
+  RETURN v_run_id;
+END;
+$func$;
+
+GRANT EXECUTE ON FUNCTION public.run_daily_analytics_rollup() TO postgres;
+
+COMMENT ON FUNCTION public.run_daily_analytics_rollup() IS
+  '일/주/월 분석 롤업 배치. 같은 cron(noteflex-daily-batch)에서 run_daily_batch_analysis 다음에 호출.';
+
+-- =====================================================================
+-- cron 갱신 — 기존 noteflex-daily-batch에 새 함수 추가 호출
+-- run_daily_batch_analysis (기존) → run_daily_analytics_rollup (신규)
+-- =====================================================================
+DO $cron$
+BEGIN
+  PERFORM cron.unschedule(jobid) FROM cron.job WHERE jobname = 'noteflex-daily-batch';
+  PERFORM cron.schedule(
+    'noteflex-daily-batch',
+    '0 15 * * *',
+    $$SELECT public.run_daily_batch_analysis(); SELECT public.run_daily_analytics_rollup();$$
+  );
+END
+$cron$;

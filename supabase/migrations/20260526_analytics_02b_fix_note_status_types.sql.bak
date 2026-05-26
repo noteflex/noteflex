@@ -1,0 +1,115 @@
+-- Migration: 20260526_analytics_02b_fix_note_status_types.sql
+-- Purpose: user_note_status 컬럼 타입을 user_note_logs와 정렬 (PK 포함 재생성).
+--
+-- 배경:
+--   refresh_user_note_status() 직접 호출 시 ERROR 42883 "operator does not exist: text = integer"
+--   USING (note_key, octave, clef) 조인 위치(03a 라인 92)에서 양쪽 컬럼 타입 불일치 추정.
+--
+--   ⚠️ 마이그레이션 파일(02_tables.sql L94-122) 기준으로는 양쪽 타입 일치:
+--     user_note_logs   (20260405142021_*.sql L4-6):  note_key TEXT, octave INTEGER, clef TEXT
+--     user_note_status (20260526_analytics_02_tables.sql L96-98): note_key text, octave integer, clef text
+--   → 라이브 DB의 user_note_status 컬럼 타입이 마이그레이션과 다른 상태로 적재되었을 가능성.
+--     (예: 초기 prod 적용 시 어떤 경로로 octave가 text로 들어갔거나, 별도 수동 ALTER 흔적)
+--
+-- 안전성:
+--   user_note_status는 한 번도 적재되지 않은 빈 테이블 (refresh_user_note_status가 매 유저 에러로
+--   삼켜져 단 1행도 INSERT 안 됨, daily_batch_runs.rollup_users_failed=3 + users_processed=0이 증거).
+--   따라서 CASCADE DROP + 재생성으로 데이터 손실 없이 PK·인덱스·RLS 재정렬 가능.
+--
+-- 영향 범위:
+--   - DROP TABLE CASCADE → PK·idx_note_status_user_status·RLS 정책 2개 함께 제거됨
+--   - 03a refresh_user_note_status·build_period_rollup, 04 get_user_note_status 모두 함수 본문에서
+--     테이블을 참조만 하므로 (CREATE OR REPLACE FUNCTION이라) 재생성 후 자동 정상 동작.
+--   - 99_rollback.sql §D는 그대로 유효 (같은 DROP CASCADE 패턴).
+--
+-- 적용 순서: 본 파일 적용 → (선택) 03a 재실행은 불필요 (함수가 테이블 참조만 함, OID는 이름 매칭) → 동작 확인.
+
+-- =====================================================================
+-- 1. DROP (빈 테이블, CASCADE로 PK·인덱스·정책 동시 제거)
+-- =====================================================================
+DROP TABLE IF EXISTS public.user_note_status CASCADE;
+
+-- =====================================================================
+-- 2. RECREATE — user_note_logs의 컬럼 타입과 명시적으로 정렬
+--    - note_key: TEXT (user_note_logs와 동일)
+--    - octave:   INTEGER (user_note_logs와 동일)
+--    - clef:     TEXT (user_note_logs와 동일)
+-- =====================================================================
+CREATE TABLE public.user_note_status (
+  user_id              uuid          NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+  note_key             text          NOT NULL,                                       -- = user_note_logs.note_key (TEXT)
+  octave               integer       NOT NULL,                                       -- = user_note_logs.octave (INTEGER)
+  clef                 text          NOT NULL CHECK (clef IN ('treble','bass')),     -- = user_note_logs.clef (TEXT)
+
+  recent_20_attempts   integer       NOT NULL DEFAULT 0,
+  recent_20_correct    integer       NOT NULL DEFAULT 0,
+  recent_20_accuracy   numeric(5,4),
+  recent_20_sessions   integer       NOT NULL DEFAULT 0,
+  recent_20_avg_ms     integer,
+  recent_20_median_ms  integer,
+
+  status               text          NOT NULL DEFAULT 'learning'
+                                     CHECK (status IN ('learning','weakness','graduated','regressed')),
+
+  graduated_at         timestamptz,
+  regressed_at         timestamptz,
+  weakness_flagged_at  timestamptz,
+  ever_weakness        boolean       NOT NULL DEFAULT false,
+
+  last_attempt_at      timestamptz,
+  updated_at           timestamptz   NOT NULL DEFAULT now(),
+
+  PRIMARY KEY (user_id, note_key, octave, clef)
+);
+
+-- =====================================================================
+-- 3. 인덱스·RLS·정책·코멘트 재적용 (02_tables.sql 내용 동일)
+-- =====================================================================
+CREATE INDEX idx_note_status_user_status
+  ON public.user_note_status (user_id, status);
+
+ALTER TABLE public.user_note_status ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY note_status_select_own
+  ON public.user_note_status
+  FOR SELECT TO authenticated
+  USING (auth.uid() = user_id);
+
+CREATE POLICY note_status_admin_select
+  ON public.user_note_status
+  FOR SELECT
+  USING (public.is_admin());
+
+COMMENT ON TABLE public.user_note_status IS
+  '음표 단위(note_key+octave+clef) 졸업/약점 상태. 배치가 갱신, 약점 훈련 출제 입력.';
+COMMENT ON COLUMN public.user_note_status.note_key IS
+  '음정 이름 (예: C, C#, Db). user_note_logs.note_key (TEXT)와 동일 타입.';
+COMMENT ON COLUMN public.user_note_status.octave IS
+  '옥타브 번호 (정수). user_note_logs.octave (INTEGER)와 동일 타입.';
+COMMENT ON COLUMN public.user_note_status.clef IS
+  'treble | bass. user_note_logs.clef (TEXT)와 동일 타입.';
+COMMENT ON COLUMN public.user_note_status.status IS
+  'learning=학습중(표본부족·중립) / weakness=약점 / graduated=졸업 / regressed=졸업 후 퇴보';
+COMMENT ON COLUMN public.user_note_status.ever_weakness IS
+  '한 번이라도 weakness였는지 — 졸업의 전제 조건 (약점→정상 전환만 졸업으로 인정)';
+
+-- =====================================================================
+-- 4. 검증 쿼리 (수동 — 적용 후 실행)
+-- =====================================================================
+-- SELECT column_name, data_type
+--   FROM information_schema.columns
+--  WHERE table_schema='public' AND table_name='user_note_status'
+--    AND column_name IN ('note_key','octave','clef')
+--  ORDER BY ordinal_position;
+--
+-- 기대값:
+--   note_key | text
+--   octave   | integer
+--   clef     | text
+--
+-- 비교:
+-- SELECT column_name, data_type
+--   FROM information_schema.columns
+--  WHERE table_schema='public' AND table_name='user_note_logs'
+--    AND column_name IN ('note_key','octave','clef')
+--  ORDER BY ordinal_position;

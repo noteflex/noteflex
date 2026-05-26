@@ -4,6 +4,62 @@
 
 ---
 
+## 2026-05-26 (분석 엔진 v1)
+
+### 1. 블로그 §1-4 "초견과 청음" 작성 (커밋 `b7a3b4e` 포함)
+
+- `src/content/blog/ko/2026-05-26-sight-reading-vs-ear-training.md` + EN 버전 생성
+- 이미지 2종: Guidonian Hand (Wikimedia) + BnF Gallica solfège (HTTP 200 검증)
+- 학술 인용: Hayward & Gromko (2009) DOI 10.1177/0022429409332677
+- `docs/marketing/blog_topics_100.md` §6 작성 이력 + §7.8-D/E 갱신
+
+### 2. DB 사전 RECON (2회)
+
+**1차**: `user_note_logs`, `user_sessions`, `user_analytics_rollup`, `user_note_status` 스키마 확인.  
+**2차 GAP-FILL**: `user_stats_daily.weak_notes` 항상 NULL, `note_mastery.recent_accuracy` 항상 NULL, `note_mastery` 테이블 자체 미활용 → 분석 기준을 `user_note_logs` 단독으로 확정.  
+- `user_note_logs.response_time` 단위 = **초(seconds)** (ms 변환 필요: `×1000`)
+- `note_key` 형식: `"C"`, `"C#"`, `"Db"` 등 (코드 확인)
+
+### 3. 분석 엔진 v1 구현
+
+마이그레이션 파일 7종 (적용 순서):
+
+| 파일 | 내용 |
+|---|---|
+| `20260526_analytics_01_indexes.sql` | 복합 인덱스 3개 (`user_note_logs`, `user_sessions`) |
+| `20260526_analytics_02_tables.sql` | `user_analytics_rollup`, `user_note_status`, `daily_batch_runs` 확장 |
+| `20260526_analytics_02b_…sql.bak` | ⚠️ 오진단 파일 (.bak, 적용 불필요) |
+| `20260526_analytics_03a_functions.sql` | `refresh_user_note_status`, `build_period_rollup`, `run_daily_analytics_rollup` |
+| `20260526_analytics_03b_cron.sql` | pg_cron 업데이트만 (03a 수동 검증 후 적용) |
+| `20260526_analytics_04_rpcs.sql` | `get_daily_report`, `get_weekly_report`, `get_monthly_report`, `get_user_note_status` |
+| `20260526_analytics_05_fix_octave_type.sql` | `user_note_logs.octave` TEXT→INTEGER 멱등 ALTER |
+
+### 4. 프로덕션 버그 3종 수정
+
+**Bug 1 — date−bigint (42883)**: `ROW_NUMBER()` 반환이 bigint → `date - bigint` 연산자 없음.  
+수정: `(p_period_end - (ROW_NUMBER() OVER (...) - 1)::int)` — 03a L339, 04 L170.
+
+**Bug 2 — users_processed=0**: date−bigint 에러가 유저별 EXCEPTION에 잡혀 모든 유저 실패.  
+수정: date−bigint 패치 후 재실행 → processed=3, failed=0 확인.
+
+**Bug 3 — text=integer (42883) in refresh_user_note_status**: `user_note_logs.octave`가 라이브 DB에서 TEXT로 드리프트 (소스 마이그레이션은 INTEGER).  
+수정: `05_fix_octave_type.sql` 멱등 ALTER (정규식 가드 + information_schema 체크).
+
+### 5. 아키텍처 결정 사항
+
+- **Tutorial 제외**: `user_sessions.session_type='tutorial'` 시간범위 EXISTS (session_id 없어서 time-range 매칭)
+- **졸업 v1**: 정확도 기준만 (sublevel 없어서 속도 기준 v2로 이연)
+- **약점 점수**: `(1 - accuracy) × √attempts + LEAST(avg_ms/3000, 1.0) × 0.3`
+- **cron 안전**: `run_daily_analytics_rollup` 최외층 EXCEPTION = NOTICE only (premium 만료 cron 보호)
+- **99_rollback.sql**: footgun이므로 `docs/20260526_analytics_99_rollback.sql.txt`로 이동
+
+### 6. 파일 위생
+
+- `supabase/migrations/20260526_analytics_02b_…sql` → `.bak` (오진단)
+- `supabase/migrations/20260526_analytics_99_rollback.sql` → `docs/…sql.txt` (footgun 방지)
+
+---
+
 ## 2026-05-25 (3차)
 
 ### 1. UpgradeModal 빨간 테스트 수정 (커밋 `06e6c61`)

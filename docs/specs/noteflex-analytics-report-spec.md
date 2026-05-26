@@ -260,4 +260,94 @@
 
 ---
 
+---
+
+## 13. 엔진 구현 결정/발견 (2026-05-26 v1 구축)
+
+### 13.1 확정 결정 (엔진 v1 — 구현 미적용, 파일만 작성)
+
+- **데이터 권위**: `user_note_logs`(원시 per-note). `user_sessions`는 세션 메타(`duration_seconds`, `session_type`)만.
+- **신뢰 금지 컬럼**:
+  - `user_stats_daily.avg_reaction_ms` — `(old+new)/2` 누적 평균 버그
+  - `note_mastery.recent_accuracy` — 어떤 트리거/함수도 기록하지 않음 (항상 NULL)
+  - `user_stats_daily.weak_notes` — 트리거가 한 번도 기록하지 않음 (항상 NULL)
+  → 분석 엔진은 위 3개를 사용하지 않고 `user_note_logs`에서 직접 산출.
+- **session_type 필터**: `tutorial` 제외. `regular`·`focus_mode`·`custom_score` 포함.
+- **단위 통일**: `response_time` (초, NUMERIC(5,2)) → 엔진 내부는 모두 `× 1000` 변환해 ms로 처리.
+- **약점 단위**: `(user_id, note_key, octave, clef)` — octave 구분(같은 음이라도 옥타브 다르면 별개 약점).
+- **세션 매칭**: `user_note_logs`에 `session_id` 컬럼 없음 → `user_sessions(started_at, ended_at)` 시간 범위 EXISTS로 매핑.
+- **기존 자산 보존**: `note_mastery` 트리거·`mastery_level` 재계산·`run_daily_batch_analysis`(약점/마스터리 플래그) 모두 건드리지 않음. 분석 엔진은 평행 시스템으로 별도 운영. 출시 후 정정 시점에 통합 결정.
+
+### 13.2 졸업 속도 기준 확인 결과 (§6 보완)
+
+**`user_note_logs`에 `sublevel` 컬럼이 없음.** 검증 위치:
+- `supabase/migrations/20260405142021_*.sql` (스키마 원본)
+- `supabase/migrations/20260525_note_interval_from_prev.sql` (마지막 ALTER)
+- `src/hooks/useNoteLogger.ts:35-44`·`src/lib/userNoteLogs.ts:11` (insert payload)
+
+→ per-attempt에 sublevel 식별 불가 → **ratio ≤ 0.35 기준은 v1에서 적용 불가**.
+
+**v1 졸업 = 정확도만**:
+1. 최근 20회 시도 정확도 ≥ 95% (오답 ≤ 1)
+2. 20회가 ≥ 2개 세션에 걸침 (시간 범위 매칭으로 distinct session 카운트)
+3. 이전에 약점이었던 음(`ever_weakness = true`)
+4. 20회 미만 → 보류
+
+**v2 졸업** (속도 게이트 추가): `user_note_logs`에 `sublevel`(또는 `session_id`) 컬럼 추가 후, sublevel별 `timeLimit × 0.35` 적용.
+
+### 13.3 롤업 테이블 구조
+
+#### `user_analytics_rollup`
+- `(user_id, period_type, period_start)` UNIQUE, `period_type ∈ {day, week, month}`
+- 활동량: `sessions_count`, `total_attempts`, `correct_attempts`, `total_duration_seconds`, `active_days`
+- 정확도·반응속도: `overall_accuracy`, `avg_reaction_ms`, `median_reaction_ms`
+- JSONB 섹션: `by_clef`, `by_accidental`, `by_level`, `per_note`, `interval_error_rates`, `weak_notes_top` (상위 10)
+- 스트릭·베이스라인·졸업: `streak_days`, `baseline_accuracy`, `baseline_avg_reaction_ms` (period_end -14d ~ -1d), `graduated_count`, `regressed_count`, `graduated_notes`, `regressed_notes`
+- RLS: own + admin SELECT. INSERT/UPDATE는 SECURITY DEFINER 배치만.
+
+#### `user_note_status`
+- PK: `(user_id, note_key, octave, clef)`
+- 최근 20회 윈도우: `recent_20_attempts`, `recent_20_correct`, `recent_20_accuracy`, `recent_20_sessions`, `recent_20_avg_ms`, `recent_20_median_ms`
+- 상태: `status ∈ {learning, weakness, graduated, regressed}`, `ever_weakness`
+- 시각: `graduated_at`, `regressed_at`, `weakness_flagged_at`, `last_attempt_at`
+- RLS: own + admin SELECT.
+
+### 13.4 핵심 공식
+
+- **약점 점수**: `weak_score = (1 - accuracy) × √attempts + LEAST(avg_ms/3000, 1.0) × 0.3`
+- **임시표 분류**: `note_key ~ '[#b]'` → `accidental`, else `natural`
+- **도약 버킷**: `ABS(interval_from_prev)` → `0 / 1-2 / 3-5 / 6-9 / 10+` (NULL 제외)
+- **스트릭**: KST 기준 `created_at::date` distinct + 역방향 연속 일수
+- **2주 베이스라인**: 같은 user의 `period_type='day'` rollup에서 `period_start ∈ [period_end-14, period_end-1]` 평균
+- **세션 매칭 (EXISTS)**:
+  ```sql
+  AND NOT EXISTS (SELECT 1 FROM user_sessions s
+                  WHERE s.user_id = log.user_id
+                    AND s.session_type = 'tutorial'
+                    AND log.created_at BETWEEN s.started_at AND s.ended_at)
+  ```
+
+### 13.5 작성된 마이그레이션 파일 (적용 X)
+
+| 파일 (의존성 순서) | 내용 |
+|---|---|
+| `20260526_analytics_01_indexes.sql` | `user_note_logs(user_id, created_at DESC)`, `user_note_logs(user_id, note_key, octave, clef, created_at DESC)`, `user_sessions(user_id, session_type, started_at, ended_at)` |
+| `20260526_analytics_02_tables.sql` | `user_analytics_rollup`, `user_note_status` 테이블 + RLS + `daily_batch_runs` 확장 |
+| `20260526_analytics_03a_functions.sql` | `refresh_user_note_status(uuid)`, `build_period_rollup(uuid,text,date,date)`, `run_daily_analytics_rollup()` — outer EXCEPTION으로 에러 흡수(RAISE 안 함). cron 변경 없음. |
+| `20260526_analytics_03b_cron.sql` | cron `noteflex-daily-batch` 갱신 — 기존 호출 보존 + `run_daily_analytics_rollup()` 추가. 03a 적용·수동 검증 후 분리 적용. |
+| `20260526_analytics_04_rpcs.sql` | `get_daily_report(date)`, `get_weekly_report(date)`, `get_monthly_report(int,int)`, `get_user_note_status(text)` — 모두 SECURITY INVOKER, own-only RLS |
+| `20260526_analytics_99_rollback.sql` | ⚠️ 자동 적용 X. 전체 원복 수동 실행 템플릿 (§A cron → §B RPC → §C 함수 → §D 테이블 → §E 컬럼 → §F 인덱스). |
+| `20260526_analytics_03_engine.sql.bak` | 분할 전 원본 (보존만, `.bak` 확장자로 마이그레이션 자동 적용 대상 제외). |
+
+### 13.6 검토 포인트 (DB 적용 전)
+
+1. **인덱스 비용**: `user_note_logs` 4컬럼 복합 인덱스(`user_id, note_key, octave, clef, created_at`)는 쓰기 성능에 약간 부담. INSERT 처리량 측정 후 결정.
+2. **세션 매칭 EXISTS 성능**: 활동량 큰 유저(>10K logs)에서 EXISTS 시간 범위 매칭 비용 측정 필요. 임계 시 materialized link 테이블 고려.
+3. **temp data·중복 row**: `build_period_rollup`은 idempotent (UPSERT). 같은 날짜 재실행 안전.
+4. **cron 갱신은 trigger·기존 함수 영향 X**: `run_daily_batch_analysis`는 그대로 유지, 본 마이그레이션이 cron 명령 문자열만 갱신.
+5. **권한**: 모든 새 함수에 `GRANT EXECUTE TO authenticated` 또는 `postgres`만 부여 (anon 차단).
+6. **v1 한계**: 졸업 속도 게이트(ratio≤0.35)는 v2로 보류 (sublevel 컬럼 추가 후).
+
+---
+
 *확정본. 변경 시 이 문서를 갱신하고 세션 로그에 기록.*

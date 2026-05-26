@@ -2,8 +2,18 @@
 
 > **출시 마감**: 🎯 ~~**2026-05-31**~~ → **2026-06-07** (1주 연기 — 사업자 등록 일정 영향)
 > **목적**: 머릿속 + 채팅 + 첨부 기획서 + 코드 분석 + 설계-코드 갭에 흩어진 모든 미구현·미결정 항목을 한 곳에 모아 영구 보존.
-> **작성일**: 2026-04-27 (초안) → 2026-04-28 (자동 갱신 시스템 도입) → 2026-05-17 (Phase 3 완료 박음 갱신) → 2026-05-18 (Phase 4 Sentry 완료 + Paddle 결제 통합 완료 갱신)
+> **작성일**: 2026-04-27 (초안) → 2026-04-28 (자동 갱신 시스템 도입) → 2026-05-17 (Phase 3 완료 박음 갱신) → 2026-05-18 (Phase 4 Sentry 완료 + Paddle 결제 통합 완료 갱신) → 2026-05-26 (분석 엔진 v1 완료 갱신)
 > **출처**: 사용자 24항목 + 첨부 기획서 5개 + 설계 PDF + Claude Code 코드 분석 + 사용자 검증 버그 + Green Billion 명세서
+
+---
+
+## 2026-05-26 분석 엔진 v1 후속 (출시 후 트랙)
+
+- [ ] **octave 드리프트 원인 불명 / 다른 컬럼 점검** — `user_note_logs.octave`가 소스 마이그레이션(INTEGER) 대비 라이브 DB에서 TEXT로 드리프트된 경로 미확인. 수동 ALTER 또는 초기 환경 차이 추정. 다른 컬럼(note_key·clef·response_time 등) 타입도 소스 대비 라이브 일치 여부 전수 점검 권장.
+- [ ] **졸업 속도 기준 v2** — `user_note_logs`에 sublevel 없어 졸업 조건에서 속도 기준(avg_ms ≤ threshold) 이연. sublevel 컬럼 추가 후 `refresh_user_note_status` graduated 조건에 `recent_20_avg_ms` 상한 추가.
+- [ ] **session_id 정식 도입** — 현재 tutorial 제외가 `user_sessions.session_type='tutorial'` 시간범위 EXISTS로 처리 (취약). `user_note_logs`에 `session_id` FK 추가 → 직접 JOIN으로 교체하면 정확도·성능 개선.
+- [ ] **스트릭 로직 중복 제거** — `build_period_rollup`(03a)과 `get_daily_report`(04) 양쪽에 동일한 스트릭 CTE 존재. 공용 helper 함수(`compute_streak(uuid)`)로 추출해 단일 관리.
+- [ ] **02b/99 정리 반영 확인** — `20260526_analytics_02b_…sql.bak`(오진단)·`docs/20260526_analytics_99_rollback.sql.txt`(footgun) 이동 상태 유지. 향후 `supabase db push`/`supabase migration list` 실행 시 .bak·.txt 확장자가 마이그레이션으로 인식되지 않는지 확인.
 
 ---
 
