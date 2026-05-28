@@ -4,6 +4,76 @@
 
 ---
 
+## 2026-05-27 ~ 2026-05-29 (대시보드 정비 스프린트)
+
+### 1. 대시보드 delta 기준 수정 — 직전 1세션 → 7일 평균 baseline
+
+- 기존: `lastSessionNotToday` 단일 세션과 비교 → 표본 1로 변동 폭이 커 의미 부족
+- 수정: `myStats.dailyStats30d`에서 **오늘 제외 최근 7일** 윈도우로 baseline 계산
+  - 정확도: note-count weighted (`SUM(correct)/SUM(total)`)
+  - 속도: 일별 `avg_reaction_ms` 단순 평균
+  - XP: 일별 평균 (오늘 단일 비교용)
+- 표본 < 3일이면 delta 숨김 (`hasEnoughBaseline = baseline7d.length >= 3`)
+- 라벨: ko "vs 최근" → "vs 7일 평균", en "vs Last session" → "vs 7-day avg"
+- 파일: `src/pages/Dashboard.tsx`, `src/i18n/strings.ts`
+
+### 2. XP/세션/노트 2배 중복집계 버그 fix
+
+- 증상: 오늘 실제 세션 2개(xp 14+128=142, 노트 N개)인데 `user_stats_daily.xp_earned=284`, `sessions_count=4`로 정확히 2배. 과거 데이터도 5/17 이후 ratio=2.0
+- 원인: `record_game_session` RPC가 `user_sessions INSERT` 직후 `user_stats_daily UPSERT`를 직접 수행 + `on_session_complete` 트리거(`handle_session_complete`)가 동일 UPSERT를 또 수행 = 매 세션 2회 합산
+- 수정: `record_game_session`에서 `user_stats_daily UPSERT` 블록만 제거 (트리거가 단독 처리)
+- 마이그레이션: `20260527_fix_record_game_session_dedup.sql` (DB 적용 완료, 과거 데이터 복구 완료)
+- 백업 테이블: `user_stats_daily_backup_20260527` (안정 확인 후 삭제 — PENDING)
+
+### 3. React Hooks 크래시 fix (2회)
+
+- "Rendered more hooks than during the previous render" 크래시 (ErrorBoundary 발동)
+- 원인: `lastActivityData = useMemo(...)`가 `if (authLoading) return ...` / `if (!user) return ...` early return **뒤**에 호출 → 첫 렌더와 두번째 렌더의 hook 개수 차이
+- 수정: `useMemo`를 모든 early return 위로 이동 + 내부에서 hook 결과(`myStats.sessions`, `myStats.dailyStats30d`, `stats.lastPracticeDate`, `levelProgress`) 직접 사용
+- 파일: `src/pages/Dashboard.tsx`
+
+### 4. weak_score v2 — 정확도 주신호화
+
+- 기존 공식: `(1-acc) × √n + LEAST(avg_ms/3000, 1) × 0.3` — sqrt(n) 가중치 과해 73%·n=33이 0%·n=5보다 위로 옴
+- 신규 v2: `(1-acc) + LEAST(n/100, 0.15) + LEAST(avg_ms/3000, 1) × 0.05`
+  - (1-acc) 주항 (0~1)
+  - 표본 보너스 ≤0.15 캡 (같은 정확도면 큰 n이 약간 위)
+  - 속도 보너스 ≤0.05 캡 (미미한 보조)
+- 검증 5케이스: Gb3 0%/n5 > Eb4 23%/n13 > B1 29%/n7 > G1 60%/n10 > B4 73%/n33 (기대 정렬 정확 일치)
+- **대시보드 클라이언트** (`WeakSlowNotesCards.tsx`)는 적용 완료
+- **엔진 마이그레이션** (`20260528_weak_score_v2.sql`, `build_period_rollup`의 `weak_calc` CTE 교체)은 작성됨, **DB 미적용** (출시 후 적용 + 기존 rollup 재생성 PENDING)
+
+### 5. 약점/느린 음표 카드 정비 (WeakSlowNotesCards)
+
+- 데이터 출처 변경 없음 (`fetchUserNoteLogs(500)` 클라 집계 유지 — 실시간 스냅샷 원칙)
+- 약점 정렬: 단순 `accuracy ASC` → weak_score v2 내림차순
+- 표시: 각 항목에 `n=N` 표본 수 칩 추가 (`attemptsCountFormat: "n={n}"`)
+- 느린 음표: avgTime ≥ 6.5s (sub1 timeLimit 7s 근접)면 "⏱ 시간초과" / "⏱ Timed out" 라벨로 timeout 다발 표기
+- 툴팁 수정: "최근 200개" → "최근 500개"로 실제 fetch 개수와 일치 (ko/en)
+- Top3 → Top5 라벨 (코드 `TOP_N=5`였으나 문구만 Top 3)
+
+### 6. NextStepCard 신규 — 대시보드 음표 현황 카드
+
+- 두 박스 구조: 좌 "이 음에 집중" / 우 컬럼 "연습이 필요한 음" + "마스터한 음"
+- 좌 zone amber `#FAEEDA` + 우상 sage `#DCE5D5` + 우하 blue-gray `#C9D3DD` 3색 조화
+- 음표 표시: ko는 계이름+음이름 ("시 B4"), en은 음이름 단독 (`useLang` 분기 + `SOLFEGE_KO` 매핑)
+- 좌 박스 톤 분기: recent_20_correct 16+ = primary(레드) "마스터 직전", 10–15 = amber "거의 다 왔어요", <10 = 중립 "마스터하는 중"
+- 데이터 출처:
+  - 좌(집중) + 우상(연습 필요) = **실시간**. `user_note_logs(500)` fetch → 음표별 최근 20개 윈도우 → `(correct, attempts)` 계산. ever_weakness=true + status≠graduated 후보에서 live_correct 정렬, 좌=1위, 우상=2~5위 (최대 4)
+  - 우하(마스터) = **배치**. `user_note_status.status='graduated'` + `graduated_at DESC` FIFO (최대 3 slot)
+  - 배치 갱신 시각: `max(updated_at)` → "방금 전 / N시간 전 / N일 전 갱신"
+- 졸업 기준 재현: 엔진 `refresh_user_note_status`와 동일하게 `recent 20 + ever_weakness + correct >= 19 + sessions >= 2`
+- 상단 Lv 게이지 한 차례 추가했다가 제거 (정확도 누적 기준이 의미 부족 — clear 조건 재정의 작업으로 분리)
+
+### 7. 오선지 시도 → 폐기
+
+- 시도 1: vexflow `Renderer/Stave/StaveNote` 사용 `MiniStaff` → "Too many ticks" 크래시 + 번들 2,594KB → 3,744KB로 1.1MB 증가
+- 조사: `StaffDisplay.tsx`(vexflow)는 src 전체에서 import 0 → dead code. 게임은 `GrandStaffPractice.tsx`가 자체 SVG(`<ellipse>`, `<line>`, Bravura SMuFL `<text>`) + 좌표 계산(`noteToStep`, `stepToY`, 자체 `SHARP_KEY_POS`/`FLAT_KEY_POS` 매핑)로 렌더 — vexflow 사용 X
+- 시도 2: GrandStaffPractice 좌표 로직 복사한 SVG `MiniStaff` → 작은 박스(150×88, 78×56) 음높이 잘림 + aspect ratio 불일치
+- 최종 결정: 오선지 폐기, **계이름+음이름 텍스트**로 대체. `MiniStaff.tsx`는 dead code로 보존 (rm 금지)
+
+---
+
 ## 2026-05-26 (분석 엔진 v1)
 
 ### 1. 블로그 §1-4 "초견과 청음" 작성 (커밋 `b7a3b4e` 포함)

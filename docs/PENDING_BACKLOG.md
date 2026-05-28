@@ -7,6 +7,18 @@
 
 ---
 
+## 2026-05-29 대시보드 정비 후속 (출시 후 트랙)
+
+- [ ] **weak_score v2 엔진 마이그레이션 적용** — `supabase/migrations/20260528_weak_score_v2.sql` 작성됨, DB 미적용. 적용 후 `build_period_rollup` 재호출(또는 일배치 다음 사이클)로 기존 `user_analytics_rollup.weak_notes_top` 재생성 필요. 현재 대시보드 클라(`WeakSlowNotesCards.tsx`)만 v2 공식, 엔진은 옛 sqrt(n) 공식.
+- [ ] **MiniStaff.tsx · StaffDisplay.tsx dead code 정리** — 둘 다 import 0 (NextStepCard에서 텍스트 표시로 전환). `vexflow` 의존성 제거 가능(StaffDisplay 정리 후 `npm uninstall vexflow`).
+- [ ] **대시보드 음표 오선지 시각화** — 작은 박스(150×88, 78×56) 음높이 정확 표시는 게임 `GrandStaffPractice`가 grand staff·여백 가정이라 소형 부적합. 별도 좌표 컴포넌트 신규 제작이 필요.
+- [ ] **user_stats_daily_backup_20260527 백업 테이블** — 2배 중복집계 복구 시 생성한 백업. 안정 확인 후(약 2주~1개월) 삭제.
+- [ ] **약점 카드 툴팁/fetch 일관성 점검** — 과거 "최근 200개" 툴팁 vs 실제 `fetchUserNoteLogs(500)` 불일치 이력. 출시 후 모든 dashboard 카드의 데이터 윈도우·툴팁 정합 전수 점검.
+- [ ] **/play clear 조건 정확도·반응 누적→최근 7판 변경** (진행 중 — 다음 작업) — 누적값은 초반 부진이 영구히 남아 85% 도달 사실상 불가능. 옵션 B(user_sublevel_progress에 recent_plays jsonb 추가) 권장. 마이그레이션 + `record_sublevel_attempt` + `get_mastery_score` + `MasteryScoreCard` UI 정비.
+- [ ] **음표 마스터 기준 용어 정합** — 대시보드(NextStepCard)는 음표별 "recent 20" 윈도우 기준, /play clear는 sublevel 누적(또는 최근 7판) 기준 — 둘 다 "마스터/숙련도"라는 표현 사용. 출시 후 용어/단위 정리 검토 (예: 음표 단위는 "졸업", sublevel 단위는 "통과/숙련도").
+
+---
+
 ## 2026-05-26 분석 엔진 v1 후속 (출시 후 트랙)
 
 - [ ] **octave 드리프트 원인 불명 / 다른 컬럼 점검** — `user_note_logs.octave`가 소스 마이그레이션(INTEGER) 대비 라이브 DB에서 TEXT로 드리프트된 경로 미확인. 수동 ALTER 또는 초기 환경 차이 추정. 다른 컬럼(note_key·clef·response_time 등) 타입도 소스 대비 라이브 일치 여부 전수 점검 권장.
