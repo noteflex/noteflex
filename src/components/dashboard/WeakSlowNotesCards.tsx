@@ -1,20 +1,29 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useT } from "@/contexts/LanguageContext";
+import { format as formatI18n } from "@/i18n/strings";
 import { fetchUserNoteLogs, type UserNoteLogRecord } from "@/lib/userNoteLogs";
 import InfoTooltip from "@/components/ui/info-tooltip";
 
 interface NoteStat {
-  /** "C4", "F#3" 영역 박힘 — note_key + octave 통합 */
+  /** "C4", "F#3" — note_key + octave 통합 */
   noteKey: string;
   total: number;
   correct: number;
+  /** 0..100 (UI 표시·진행 바용) */
   accuracy: number;
+  /** 평균 반응(초). 데이터 없으면 0 */
   avgTime: number;
+  /** 분석 엔진(build_period_rollup)과 동일 공식: (1-acc)·√n + LEAST(avg_ms/3000,1)·0.3 */
+  weakScore: number;
+  /** 평균이 timeLimit 한계에 거의 닿아 timeout 다발로 보이는지 */
+  isTimeout: boolean;
 }
 
 const MIN_SAMPLES = 5;
 const TOP_N = 5;
+/** sublevel 1의 timeLimit = 7s. 평균이 6.5s 이상이면 timeout 다발로 간주 (가장 큰 timeLimit 케이스) */
+const TIMEOUT_THRESHOLD_SEC = 6.5;
 
 function aggregate(logs: UserNoteLogRecord[]): NoteStat[] {
   const map = new Map<string, { total: number; correct: number; times: number[] }>();
@@ -26,15 +35,27 @@ function aggregate(logs: UserNoteLogRecord[]): NoteStat[] {
     if (log.response_time != null) entry.times.push(log.response_time);
     map.set(k, entry);
   }
-  return Array.from(map.entries()).map(([noteKey, v]) => ({
-    noteKey,
-    total: v.total,
-    correct: v.correct,
-    accuracy: v.total > 0 ? Math.round((v.correct / v.total) * 100) : 0,
-    avgTime: v.times.length > 0
-      ? +(v.times.reduce((a, b) => a + b, 0) / v.times.length).toFixed(1)
-      : 0,
-  }));
+  return Array.from(map.entries()).map(([noteKey, v]) => {
+    const acc = v.total > 0 ? v.correct / v.total : 0;
+    const avgTimeSec = v.times.length > 0
+      ? v.times.reduce((a, b) => a + b, 0) / v.times.length
+      : 0;
+    const avgMs = avgTimeSec * 1000;
+    // 엔진 공식 v2 (정확도 주신호화):
+    //   weak_score = (1 - acc) + min(n/100, 0.15) + min(avg_ms/3000, 1) * 0.05
+    // 정확도가 주, 표본 보너스는 ≤0.15로 캡, 속도 보너스는 ≤0.05로 약화.
+    const weakScore =
+      (1 - acc) + Math.min(v.total / 100, 0.15) + Math.min(avgMs / 3000, 1) * 0.05;
+    return {
+      noteKey,
+      total: v.total,
+      correct: v.correct,
+      accuracy: Math.round(acc * 100),
+      avgTime: +avgTimeSec.toFixed(1),
+      weakScore,
+      isTimeout: avgTimeSec >= TIMEOUT_THRESHOLD_SEC,
+    };
+  });
 }
 
 interface WeakSlowNotesCardsProps {
@@ -72,11 +93,12 @@ export function WeakSlowNotesCards({ enabled = true }: WeakSlowNotesCardsProps) 
   if (loading) return null;
 
   const stats = aggregate(logs);
-  // 5+ 시도 영역만 박음 (정책)
+  // 5+ 시도 (정책)
   const eligible = stats.filter((s) => s.total >= MIN_SAMPLES);
 
+  // 약점: 엔진 weak_score 내림차순 (표본 가중치로 소표본 극단값 보정)
   const weakest = [...eligible]
-    .sort((a, b) => a.accuracy - b.accuracy)
+    .sort((a, b) => b.weakScore - a.weakScore)
     .slice(0, TOP_N);
   const slowest = [...eligible]
     .filter((s) => s.avgTime > 0)
@@ -138,8 +160,11 @@ function WeakestList({
                   style={{ width: `${w.accuracy}%` }}
                 />
               </div>
-              <span className="text-xs text-muted-foreground w-12 text-right tabular-nums">
-                {w.accuracy}%
+              <span className="text-xs text-muted-foreground w-20 text-right tabular-nums flex items-center justify-end gap-1.5">
+                <span>{w.accuracy}%</span>
+                <span className="text-[10px] opacity-70">
+                  {formatI18n(t.diagnosis.attemptsCountFormat, { n: String(w.total) })}
+                </span>
               </span>
             </div>
           );
@@ -177,8 +202,15 @@ function SlowestList({
                   style={{ width: `${Math.min((s.avgTime / 7) * 100, 100)}%` }}
                 />
               </div>
-              <span className="text-xs text-muted-foreground w-14 text-right tabular-nums">
-                {s.avgTime}{t.diagnosis.secondsSuffix}
+              <span className="text-xs text-muted-foreground w-20 text-right tabular-nums flex items-center justify-end gap-1.5">
+                <span>
+                  {s.isTimeout
+                    ? t.diagnosis.timeoutLabel
+                    : `${s.avgTime}${t.diagnosis.secondsSuffix}`}
+                </span>
+                <span className="text-[10px] opacity-70">
+                  {formatI18n(t.diagnosis.attemptsCountFormat, { n: String(s.total) })}
+                </span>
               </span>
             </div>
           );
