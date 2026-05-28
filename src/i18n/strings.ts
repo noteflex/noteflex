@@ -213,6 +213,10 @@ export interface Strings {
     weakestNotesTooltip: string;
     slowestNotesTitle: string;
     slowestNotesTooltip: string;
+    /** "n={n}" — 표본 수 표시 */
+    attemptsCountFormat: string;
+    /** "⏱ 시간초과" — 평균이 timeLimit 근처일 때 */
+    timeoutLabel: string;
     dailyAccuracyTitle: string;
     reactionTrendTitle: string;
     chartNoData: string;
@@ -402,6 +406,112 @@ export interface Strings {
     aiFeedbackSubtitleActive: string;   // "연주를 검토하고 다음 목표를 제안해드려요"
     aiFeedbackSubtitleNew: string;      // "연습을 시작하면 AI가 분석해드려요"
     aiFeedbackPremiumOnly: string;      // "🔒 프리미엄 전용"
+
+    /** "다음 한 걸음" 카드 (B 맥락 → A 후킹 → C 성취 세로 위계) */
+    nextStepEyebrow: string;             // "다음 한 걸음"
+    /** B — 레벨/서브레벨 진행 */
+    nextStepCurrentLabel: string;        // "Lv {level}-{sublevel}" placeholder
+    nextStepPlayProgress: string;        // "플레이 {current}/{target}" placeholder
+    nextStepStreakChip: string;          // "연속 {n}/5" placeholder
+    nextStepAccuracyChip: string;        // "정확도 {pct}%" placeholder
+    nextStepAllPassed: string;           // "모든 단계 통과 — 마스터!"
+    /** B — 통과 상태 표시 */
+    nextStepStatusInProgress: string;    // "진행 중"
+    nextStepStatusReady: string;         // "통과 준비 완료"
+    nextStepGapPrefix: string;           // "통과까지: "
+    nextStepGapPlay: string;             // "플레이 {n}회" / "{n} more plays"
+    nextStepGapStreak: string;           // "연속 +{n}" / "Streak +{n}"
+    nextStepGapAccuracy: string;         // "정확도 +{n}%p" / "Accuracy +{n}%p"
+    /** A — 후킹 핵심 (졸업 임박 / 가장 진전된 약점 / 약점 없음) */
+    nextStepGradHook: string;            // "{clef} {note} — 졸업 임박 🎓" placeholder (legacy)
+    nextStepGradProgress: string;        // "({current}/{target})" placeholder (legacy)
+    nextStepWeakHook: string;            // "{clef} {note} 연습 중" placeholder (legacy)
+    nextStepWeakSubtitle: string;        // "가장 진전된 약점" (legacy)
+    /** A — 큰 음표명 라벨 + 진행 분기별 부제 */
+    nextStepAClefNote: string;           // "{clef} {note}" placeholder (예: "높은음 B4")
+    nextStepASubHigh: string;            // "졸업 임박 🎓" (16+/19)
+    nextStepASubMid: string;             // "거의 다 왔어요" (10–15/19)
+    nextStepASubLow: string;             // "마스터하는 중" (<10/19)
+    nextStepAProgressLabel: string;      // "{current}/{target}" — 큰 음표 옆 진행 분수
+    nextStepNoneTitle: string;           // "약점 없음 — 새 레벨에 도전 🚀"
+    nextStepNoneSubtitle: string;        // "지금까지 약점으로 분류된 음표가 없어요"
+    nextStepLearningTitle: string;       // "데이터 누적 중"
+    nextStepLearningSubtitle: string;    // "몇 번 더 연습하면 다음 목표가 보여요"
+    /** C — 성취 (이번 주 졸업·약점 남음) */
+    nextStepFootGraduated: string;       // "이번 주 졸업 {n}" placeholder
+    nextStepFootWeakness: string;        // "약점 {n} 남음" placeholder
+    nextStepFootGradZero: string;        // "이번 주 첫 졸업을 노려봐요 🎯"
+    nextStepFootEmpty: string;           // "분석 데이터 누적 중"
+    /** 두 박스 구조 (v3) */
+    nextStepFocusBoxTitle: string;       // "이 음에 집중"
+    nextStepNeedsBoxTitle: string;       // "연습이 필요한 음"
+    nextStepMasteredBoxTitle: string;    // "마스터한 음"
+    nextStepTooltipBody: string;         // "최근 20번 중 {current}번 정답..." placeholder
+    nextStepGoalMarker: string;          // "목표"
+    nextStepBatchUpdatedHoursAgo: string;// "{n}시간 전 갱신" placeholder
+    nextStepBatchUpdatedJustNow: string; // "방금 전 갱신"
+    nextStepBatchUpdatedDaysAgo: string; // "{n}일 전 갱신" placeholder
+    nextStepNoNeedsPractice: string;     // "약점 없음 ✓"
+    nextStepNoMastered: string;          // "아직 마스터한 음 없음"
+    nextStepGradCorrectSuffix: string;   // "번 정답" / "correct"
+  };
+  analytics: {
+    // 페이지 제목·부제
+    dailyTitle: string;
+    dailySubtitle: string;
+    weeklyTitle: string;
+    weeklySubtitle: string;
+    monthlyTitle: string;
+    monthlySubtitle: string;
+    // 네비게이션 카드
+    nextReport: string;
+    backToDaily: string;
+    backToWeekly: string;
+    toWeeklyLabel: string;
+    toWeeklyDesc: string;
+    /** {clef} {note} placeholders */
+    toWeeklyHook: string;
+    toMonthlyLabel: string;
+    toMonthlyDesc: string;
+    // Placeholder (Pro, 준비 중)
+    weeklyPlaceholderTitle: string;
+    weeklyPlaceholderDesc: string;
+    monthlyPlaceholderTitle: string;
+    monthlyPlaceholderDesc: string;
+    // Pro 잠금 화면
+    proLockSuffix: string;
+    proLockBody: string;
+    proLockCta: string;
+    // DailyReport 상태
+    graceTitle: string;
+    graceBody: string;
+    graceCta: string;
+    errorTitle: string;
+    errorRetry: string;
+    // DailyReport 콘텐츠
+    headlineEyebrow: string;
+    /** {note} placeholder */
+    headlineWeak: string;
+    headlineClean: string;
+    /** {n} placeholder */
+    streakBadge: string;
+    metricAccuracy: string;
+    metricAvgReaction: string;
+    metricTotalAttempts: string;
+    /** {n} placeholder */
+    metricSessions: string;
+    deltaVsBaseline: string;
+    weakNotesTitle: string;
+    sessionsTitle: string;
+    sessionAccLabel: string;
+    sessionSpeedLabel: string;
+    sessionAttemptsLabel: string;
+    // 클레프 짧은 라벨 (WeakNoteChip · DailyReport)
+    clefTreble: string;
+    clefBass: string;
+    // WeakNoteChip tooltip
+    chipErrorRateLabel: string;
+    chipAttemptsUnit: string;
   };
   checkout: {
     backHome: string;
@@ -667,10 +777,12 @@ const ko: Strings = {
     kpiAvgReaction: "평균 반응",
     vulnerabilityTitle: "취약점 분석",
     vulnerabilityLowest: "가장 낮은 정답률:",
-    weakestNotesTitle: "😰 가장 약한 음표 Top 3",
-    weakestNotesTooltip: "최근 200개 답변 기준 · 지금 세션의 경향을 반영합니다",
-    slowestNotesTitle: "🐢 가장 느린 음표 Top 3",
-    slowestNotesTooltip: "최근 200개 답변의 평균 반응 시간 기준",
+    weakestNotesTitle: "😰 가장 약한 음표 Top 5",
+    weakestNotesTooltip: "최근 500개 답변 기준 · 표본 가중치 적용 (소표본 극단값 보정)",
+    slowestNotesTitle: "🐢 가장 느린 음표 Top 5",
+    slowestNotesTooltip: "최근 500개 답변의 평균 반응 시간 · ⏱는 시간초과 다발",
+    attemptsCountFormat: "n={n}",
+    timeoutLabel: "⏱ 시간초과",
     dailyAccuracyTitle: "📈 일별 정답률",
     reactionTrendTitle: "⏱ 평균 반응 시간 추이",
     chartNoData: "아직 데이터가 없어요",
@@ -826,7 +938,7 @@ const ko: Strings = {
     newUserSubtitle: "연습이 누적되면 약한 음표·진행 영역이 표시됩니다",
     newUserCta: "지금 시작하기 →",
 
-    vsLast: "vs 최근",
+    vsLast: "vs 7일 평균",
     noLastSessionYet: "첫 세션 이후 표시",
     lastActivityTitle: "마지막 활동",
     lastActivityFormat: "{when} · 정답률 {acc} · 속도 {speed} · XP {xp}",
@@ -840,6 +952,93 @@ const ko: Strings = {
     aiFeedbackSubtitleActive: "연주를 검토하고 다음 목표를 제안해드려요",
     aiFeedbackSubtitleNew: "연습을 시작하면 AI가 분석해드려요",
     aiFeedbackPremiumOnly: "🔒 프리미엄 전용",
+
+    nextStepEyebrow: "다음 한 걸음",
+    nextStepCurrentLabel: "Lv {level}-{sublevel}",
+    nextStepPlayProgress: "{current}/{target}",
+    nextStepStreakChip: "연속 {n}/5",
+    nextStepAccuracyChip: "정확도 {pct}%",
+    nextStepAllPassed: "모든 단계 통과 — 마스터 🏆",
+    nextStepStatusInProgress: "진행 중",
+    nextStepStatusReady: "통과 준비 완료 ✓",
+    nextStepGapPrefix: "통과까지 ",
+    nextStepGapPlay: "플레이 {n}회",
+    nextStepGapStreak: "연속 +{n}",
+    nextStepGapAccuracy: "정확도 +{n}%p",
+    nextStepGradHook: "{clef} {note} — 졸업 임박 🎓",
+    nextStepGradProgress: "{current}/{target}",
+    nextStepWeakHook: "{clef} {note} 연습 중",
+    nextStepWeakSubtitle: "가장 진전된 약점",
+    nextStepAClefNote: "{clef} {note}",
+    nextStepASubHigh: "졸업 임박 🎓",
+    nextStepASubMid: "거의 다 왔어요",
+    nextStepASubLow: "마스터하는 중",
+    nextStepAProgressLabel: "{current}/{target}",
+    nextStepNoneTitle: "약점 없음 — 새 레벨에 도전 🚀",
+    nextStepNoneSubtitle: "지금까지 약점으로 분류된 음표가 없어요",
+    nextStepLearningTitle: "데이터 누적 중",
+    nextStepLearningSubtitle: "몇 번 더 연습하면 다음 목표가 보여요",
+    nextStepFootGraduated: "이번 주 졸업 {n}",
+    nextStepFootWeakness: "약점 {n} 남음",
+    nextStepFootGradZero: "이번 주 첫 졸업을 노려봐요 🎯",
+    nextStepFootEmpty: "분석 데이터 누적 중",
+    nextStepFocusBoxTitle: "이 음에 집중",
+    nextStepNeedsBoxTitle: "연습이 필요한 음",
+    nextStepMasteredBoxTitle: "마스터한 음",
+    nextStepTooltipBody: "최근 20번 중 {current}번 정답. 19번 이상이면 이 음을 마스터해요.",
+    nextStepGoalMarker: "목표",
+    nextStepBatchUpdatedHoursAgo: "{n}시간 전 갱신",
+    nextStepBatchUpdatedJustNow: "방금 전 갱신",
+    nextStepBatchUpdatedDaysAgo: "{n}일 전 갱신",
+    nextStepNoNeedsPractice: "약점 없음 ✓",
+    nextStepNoMastered: "아직 마스터한 음 없음",
+    nextStepGradCorrectSuffix: "번 정답",
+  },
+  analytics: {
+    dailyTitle: "일간 보고서",
+    dailySubtitle: "오늘 연습의 핵심 지표를 확인하세요.",
+    weeklyTitle: "주간 보고서",
+    weeklySubtitle: "이번 주 연습 패턴과 추세를 확인하세요.",
+    monthlyTitle: "월간 보고서",
+    monthlySubtitle: "이번 달 성장과 마스터리를 확인하세요.",
+    nextReport: "다음 보고서",
+    backToDaily: "← 오늘 일간 보고서",
+    backToWeekly: "← 이번 주 주간 보고서",
+    toWeeklyLabel: "이번 주 패턴 보기 →",
+    toWeeklyDesc: "주간 추세와 반복되는 약점을 파악합니다.",
+    toWeeklyHook: "오늘 틀린 {clef} {note} — 이번 주 내내 그랬을까요?",
+    toMonthlyLabel: "이번 달 성장 보기 →",
+    toMonthlyDesc: "월간 성장 그래프와 마스터리를 확인합니다.",
+    weeklyPlaceholderTitle: "주간 보고서 — 준비 중입니다",
+    weeklyPlaceholderDesc: "이번 주 패턴이 쌓이면 자동으로 채워집니다.",
+    monthlyPlaceholderTitle: "월간 보고서 — 준비 중입니다",
+    monthlyPlaceholderDesc: "한 달 치 데이터가 쌓이면 자동으로 채워집니다.",
+    proLockSuffix: "— Pro 전용",
+    proLockBody: "주간·월간 보고서는 Pro 구독자에게 제공됩니다.",
+    proLockCta: "Pro 플랜 보기 →",
+    graceTitle: "아직 오늘의 기록이 없어요",
+    graceBody: "게임을 시작해 보세요! 한 세션이면 충분합니다.",
+    graceCta: "게임 시작",
+    errorTitle: "데이터를 불러오지 못했어요",
+    errorRetry: "다시 시도",
+    headlineEyebrow: "오늘의 한 줄",
+    headlineWeak: "오늘 가장 어려운 음: {note}",
+    headlineClean: "오늘 깔끔하게 잘 쳤어요",
+    streakBadge: "🔥 연속 {n}일째",
+    metricAccuracy: "정확도",
+    metricAvgReaction: "평균 반응속도",
+    metricTotalAttempts: "총 시도",
+    metricSessions: "세션 {n}회",
+    deltaVsBaseline: "vs 평소",
+    weakNotesTitle: "오늘의 약점 음표",
+    sessionsTitle: "오늘 세션",
+    sessionAccLabel: "정확",
+    sessionSpeedLabel: "속도",
+    sessionAttemptsLabel: "시도",
+    clefTreble: "높은음",
+    clefBass: "낮은음",
+    chipErrorRateLabel: "오답률",
+    chipAttemptsUnit: "회",
   },
   checkout: {
     backHome: "← 홈으로",
@@ -1122,10 +1321,12 @@ const en: Strings = {
     kpiAvgReaction: "Avg reaction",
     vulnerabilityTitle: "Vulnerability analysis",
     vulnerabilityLowest: "Lowest accuracy:",
-    weakestNotesTitle: "😰 Weakest Notes — Top 3",
-    weakestNotesTooltip: "Based on last 200 answers · reflects current session trends",
-    slowestNotesTitle: "🐢 Slowest Notes — Top 3",
-    slowestNotesTooltip: "Based on average reaction time of last 200 answers",
+    weakestNotesTitle: "😰 Weakest Notes — Top 5",
+    weakestNotesTooltip: "Based on last 500 answers · sample-weighted (small-sample extremes adjusted)",
+    slowestNotesTitle: "🐢 Slowest Notes — Top 5",
+    slowestNotesTooltip: "Avg reaction time over last 500 answers · ⏱ means frequent time-outs",
+    attemptsCountFormat: "n={n}",
+    timeoutLabel: "⏱ Timed out",
     dailyAccuracyTitle: "📈 Daily accuracy",
     reactionTrendTitle: "⏱ Avg reaction time trend",
     chartNoData: "No data yet",
@@ -1281,7 +1482,7 @@ const en: Strings = {
     newUserSubtitle: "Stats appear here as you practice",
     newUserCta: "Start now →",
 
-    vsLast: "vs Last session",
+    vsLast: "vs 7-day avg",
     noLastSessionYet: "Shown after first session",
     lastActivityTitle: "Last activity",
     lastActivityFormat: "{when} · Acc {acc} · Speed {speed} · XP {xp}",
@@ -1295,6 +1496,93 @@ const en: Strings = {
     aiFeedbackSubtitleActive: "AI reviews your playing and suggests next goals",
     aiFeedbackSubtitleNew: "Practice and AI will analyze your patterns",
     aiFeedbackPremiumOnly: "🔒 Premium only",
+
+    nextStepEyebrow: "Next Step",
+    nextStepCurrentLabel: "Lv {level}-{sublevel}",
+    nextStepPlayProgress: "{current}/{target}",
+    nextStepStreakChip: "Streak {n}/5",
+    nextStepAccuracyChip: "Acc {pct}%",
+    nextStepAllPassed: "All levels cleared — Master 🏆",
+    nextStepStatusInProgress: "In progress",
+    nextStepStatusReady: "Ready to pass ✓",
+    nextStepGapPrefix: "to pass: ",
+    nextStepGapPlay: "{n} more plays",
+    nextStepGapStreak: "streak +{n}",
+    nextStepGapAccuracy: "acc +{n}%p",
+    nextStepGradHook: "{clef} {note} — close to graduating 🎓",
+    nextStepGradProgress: "{current}/{target}",
+    nextStepWeakHook: "{clef} {note} in progress",
+    nextStepWeakSubtitle: "Most advanced weak note",
+    nextStepAClefNote: "{clef} {note}",
+    nextStepASubHigh: "Close to graduating 🎓",
+    nextStepASubMid: "Almost there",
+    nextStepASubLow: "Mastering in progress",
+    nextStepAProgressLabel: "{current}/{target}",
+    nextStepNoneTitle: "No weak notes — try a new level 🚀",
+    nextStepNoneSubtitle: "Nothing flagged as a weakness yet",
+    nextStepLearningTitle: "Gathering data",
+    nextStepLearningSubtitle: "A few more sessions and the next goal appears",
+    nextStepFootGraduated: "{n} graduated this week",
+    nextStepFootWeakness: "{n} weak notes left",
+    nextStepFootGradZero: "Aim for your first graduation this week 🎯",
+    nextStepFootEmpty: "Building analytics",
+    nextStepFocusBoxTitle: "Focus on this note",
+    nextStepNeedsBoxTitle: "Needs practice",
+    nextStepMasteredBoxTitle: "Mastered",
+    nextStepTooltipBody: "{current} of your last 20 attempts correct. Reach 19+ to master this note.",
+    nextStepGoalMarker: "Goal",
+    nextStepBatchUpdatedHoursAgo: "updated {n}h ago",
+    nextStepBatchUpdatedJustNow: "updated just now",
+    nextStepBatchUpdatedDaysAgo: "updated {n}d ago",
+    nextStepNoNeedsPractice: "No weak notes ✓",
+    nextStepNoMastered: "No mastered notes yet",
+    nextStepGradCorrectSuffix: "correct",
+  },
+  analytics: {
+    dailyTitle: "Daily Report",
+    dailySubtitle: "Your key metrics from today's practice.",
+    weeklyTitle: "Weekly Report",
+    weeklySubtitle: "Track your practice patterns this week.",
+    monthlyTitle: "Monthly Report",
+    monthlySubtitle: "See your growth and mastery this month.",
+    nextReport: "Next Report",
+    backToDaily: "← Today's daily report",
+    backToWeekly: "← This week's weekly report",
+    toWeeklyLabel: "See this week's patterns →",
+    toWeeklyDesc: "Identify weekly trends and recurring weak spots.",
+    toWeeklyHook: "You missed {clef} {note} today — was it all week?",
+    toMonthlyLabel: "See this month's growth →",
+    toMonthlyDesc: "Review monthly growth and mastery progress.",
+    weeklyPlaceholderTitle: "Weekly Report — Coming Soon",
+    weeklyPlaceholderDesc: "Fills in automatically as your weekly data builds up.",
+    monthlyPlaceholderTitle: "Monthly Report — Coming Soon",
+    monthlyPlaceholderDesc: "Fills in automatically after a month of practice.",
+    proLockSuffix: "— Pro Only",
+    proLockBody: "Weekly and monthly reports are available on the Pro plan.",
+    proLockCta: "View Pro Plan →",
+    graceTitle: "No records yet today",
+    graceBody: "Start a game — one session is all it takes.",
+    graceCta: "Start Playing",
+    errorTitle: "Failed to load data",
+    errorRetry: "Try again",
+    headlineEyebrow: "Today's takeaway",
+    headlineWeak: "Hardest note today: {note}",
+    headlineClean: "Clean playing today",
+    streakBadge: "🔥 {n}-day streak",
+    metricAccuracy: "Accuracy",
+    metricAvgReaction: "Avg Reaction",
+    metricTotalAttempts: "Total Attempts",
+    metricSessions: "{n} sessions",
+    deltaVsBaseline: "vs avg",
+    weakNotesTitle: "Today's weak notes",
+    sessionsTitle: "Today's sessions",
+    sessionAccLabel: "Acc",
+    sessionSpeedLabel: "Speed",
+    sessionAttemptsLabel: "Att",
+    clefTreble: "Treble",
+    clefBass: "Bass",
+    chipErrorRateLabel: "error rate",
+    chipAttemptsUnit: " tries",
   },
   checkout: {
     backHome: "← Home",
