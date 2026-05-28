@@ -5,7 +5,6 @@ import UserMenu from "@/components/UserMenu";
 import Header from "@/components/Header";
 import { AdBanner } from "@/components/AdBanner";
 import UpgradeModal from "@/components/UpgradeModal";
-import PremiumBlurCard from "@/components/PremiumBlurCard";
 import { getSlot } from "@/lib/adsense";
 import { formatDistanceToNow } from "date-fns";
 import { ko, enUS } from "date-fns/locale";
@@ -19,6 +18,7 @@ import { useMyStats } from "@/hooks/useMyStats";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { WeakSlowNotesCards } from "@/components/dashboard/WeakSlowNotesCards";
+import { NextStepCard } from "@/components/dashboard/NextStepCard";
 import { useLevelProgress } from "@/hooks/useLevelProgress";
 import { getUserTier } from "@/lib/subscriptionTier";
 
@@ -183,25 +183,34 @@ function AiFeedbackCard({
         <CardDescription>{subtitle}</CardDescription>
       </CardHeader>
       <CardContent>
-        <PremiumBlurCard tier={aiReportTier} onUpgrade={onUpgrade}>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <ReportTile
-              icon="💬"
-              label={t.dashboard.reportDailyLabel}
-              period={t.dashboard.reportDailyPeriod}
-            />
-            <ReportTile
-              icon="📊"
-              label={t.dashboard.reportWeeklyLabel}
-              period={t.dashboard.reportWeeklyPeriod}
-            />
-            <ReportTile
-              icon="🏆"
-              label={t.dashboard.reportMonthlyLabel}
-              period={t.dashboard.reportMonthlyPeriod}
-            />
-          </div>
-        </PremiumBlurCard>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {/* 일간: Free·Guest 포함 전체 허용 — 후킹 진입로 */}
+          <ReportTile
+            icon="💬"
+            label={t.dashboard.reportDailyLabel}
+            period={t.dashboard.reportDailyPeriod}
+            to="/analytics/daily"
+          />
+          {/* 주·월: Free·Guest는 클릭 시 업그레이드 모달, admin·premium은 정상 진입 */}
+          <ReportTile
+            icon="📊"
+            label={t.dashboard.reportWeeklyLabel}
+            period={t.dashboard.reportWeeklyPeriod}
+            to={aiReportTier === "premium" || aiReportTier === "admin" ? "/analytics/weekly" : undefined}
+            badge="Pro"
+            locked={aiReportTier === "free" || aiReportTier === "guest"}
+            onUpgrade={aiReportTier === "free" || aiReportTier === "guest" ? onUpgrade : undefined}
+          />
+          <ReportTile
+            icon="🏆"
+            label={t.dashboard.reportMonthlyLabel}
+            period={t.dashboard.reportMonthlyPeriod}
+            to={aiReportTier === "premium" || aiReportTier === "admin" ? "/analytics/monthly" : undefined}
+            badge="Pro"
+            locked={aiReportTier === "free" || aiReportTier === "guest"}
+            onUpgrade={aiReportTier === "free" || aiReportTier === "guest" ? onUpgrade : undefined}
+          />
+        </div>
       </CardContent>
     </Card>
   );
@@ -211,13 +220,27 @@ function ReportTile({
   label,
   period,
   icon,
+  to,
+  badge,
+  locked,
+  onUpgrade,
 }: {
   label: string;
   period: string;
   icon: string;
+  to?: string;
+  badge?: string;
+  locked?: boolean;
+  onUpgrade?: () => void;
 }) {
-  return (
-    <div className="group rounded-lg border border-dashed border-border bg-card px-4 py-4 text-left">
+  const inner = (
+    <div
+      className={`group rounded-lg border border-dashed bg-card px-4 py-4 text-left transition-colors ${
+        locked
+          ? "border-border/50 opacity-60 hover:opacity-80 cursor-pointer"
+          : "border-border hover:border-primary/50 hover:bg-accent/30"
+      }`}
+    >
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <span className="text-lg" aria-hidden>
@@ -225,13 +248,27 @@ function ReportTile({
           </span>
           <p className="text-sm font-semibold">{label}</p>
         </div>
-        <span className="text-[10px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
-          SOON
-        </span>
+        {badge && (
+          <span className="text-[10px] font-medium text-primary bg-primary/10 px-1.5 py-0.5 rounded">
+            {badge}
+          </span>
+        )}
       </div>
       <p className="mt-2 text-xs text-muted-foreground">{period}</p>
     </div>
   );
+
+  if (locked && onUpgrade) {
+    return (
+      <button onClick={onUpgrade} className="block w-full text-left">
+        {inner}
+      </button>
+    );
+  }
+  if (to) {
+    return <Link to={to} className="block">{inner}</Link>;
+  }
+  return inner;
 }
 
 /* ---------- Notice 영역 (상태 2: 오늘 활동 X) ---------- */
@@ -428,6 +465,55 @@ export default function Dashboard() {
     return null;
   }, [myStats.sessions, stats.lastPracticeDate]);
 
+  // Rules of Hooks: early return 이전에 선언 (lastSessionNotToday는 내부에서 재계산)
+  const lastActivityData = useMemo(() => {
+    const sessions = myStats.sessions as SessionRow[];
+    const hasProgress = levelProgress.length > 0;
+    const lastSession = sessions.find(
+      (s) => isoFromIsoOrTimestamp(s.started_at) !== todayIso(),
+    );
+
+    if (lastSession) {
+      return {
+        startedAt: lastSession.started_at,
+        accuracy: lastSession.accuracy,
+        avgReactionMs: lastSession.avg_reaction_ms,
+        xpEarned: lastSession.xp_earned,
+      };
+    }
+
+    const recentDaily = myStats.dailyStats30d
+      .filter((d) => d.stat_date !== todayIso())
+      .sort((a, b) => b.stat_date.localeCompare(a.stat_date))[0];
+    if (recentDaily) {
+      const acc =
+        recentDaily.avg_accuracy ??
+        (recentDaily.total_notes > 0
+          ? recentDaily.correct_notes / recentDaily.total_notes
+          : null);
+      return {
+        startedAt: `${recentDaily.stat_date}T12:00:00`,
+        accuracy: acc,
+        avgReactionMs: recentDaily.avg_reaction_ms,
+        xpEarned: recentDaily.xp_earned,
+      };
+    }
+
+    if (hasProgress) {
+      const fallbackDate =
+        stats.lastPracticeDate ??
+        new Date(Date.now() - 86_400_000).toISOString().slice(0, 10);
+      return {
+        startedAt: `${fallbackDate}T12:00:00`,
+        accuracy: null,
+        avgReactionMs: null,
+        xpEarned: 0,
+      };
+    }
+
+    return null;
+  }, [myStats.sessions, myStats.dailyStats30d, stats.lastPracticeDate, levelProgress]);
+
   const isRefreshing = stats.loading || myStats.loading;
 
   const handleRefreshAll = async () => {
@@ -471,26 +557,43 @@ export default function Dashboard() {
     (s) => isoFromIsoOrTimestamp(s.started_at) !== todayIso(),
   );
 
-  // 비교 기준 — 오늘 활동 있으면 마지막 세션 (오늘 X), 없으면 가장 최근 세션
+  // 오늘 집계
   const todayAgg = aggregateSessions(todaySessions);
-  const lastAgg = lastSessionNotToday ? aggregateSessions([lastSessionNotToday]) : null;
 
   const todayAcc = todayAgg.totalNotes > 0
     ? Math.round((todayAgg.totalCorrect / todayAgg.totalNotes) * 100)
     : null;
-  const lastAcc = lastAgg && lastAgg.totalNotes > 0
-    ? Math.round((lastAgg.totalCorrect / lastAgg.totalNotes) * 100)
-    : null;
-
   const todaySpeed = todayAgg.reactionCount > 0
     ? +(todayAgg.reactionSum / todayAgg.reactionCount / 1000).toFixed(2)
     : null;
-  const lastSpeed = lastAgg && lastAgg.reactionCount > 0
-    ? +(lastAgg.reactionSum / lastAgg.reactionCount / 1000).toFixed(2)
-    : null;
-
   const todayXp = todayAgg.xpSum;
-  const lastXp = lastAgg ? lastAgg.xpSum : null;
+
+  // 7일 평균 baseline — user_stats_daily (오늘 제외 최근 7일, 표본 ≥ 3일 필요)
+  const baseline7d = myStats.dailyStats30d
+    .filter((d) => d.stat_date !== todayIso())
+    .slice(-7);
+  const hasEnoughBaseline = baseline7d.length >= 3;
+
+  const baselineAcc = (() => {
+    if (!hasEnoughBaseline) return null;
+    const totalNotes = baseline7d.reduce((s, d) => s + (d.total_notes ?? 0), 0);
+    const totalCorrect = baseline7d.reduce((s, d) => s + (d.correct_notes ?? 0), 0);
+    return totalNotes > 0 ? Math.round((totalCorrect / totalNotes) * 100) : null;
+  })();
+
+  const baselineSpeed = (() => {
+    if (!hasEnoughBaseline) return null;
+    const days = baseline7d.filter((d) => (d.avg_reaction_ms ?? 0) > 0);
+    if (days.length < 3) return null;
+    const avg = days.reduce((s, d) => s + (d.avg_reaction_ms ?? 0), 0) / days.length;
+    return +(avg / 1000).toFixed(2);
+  })();
+
+  const baselineDailyAvgXp = (() => {
+    if (!hasEnoughBaseline) return null;
+    const total = baseline7d.reduce((s, d) => s + (d.xp_earned ?? 0), 0);
+    return Math.round(total / baseline7d.length);
+  })();
 
   function formatDelta(delta: number | null, suffix = "", invert = false): string {
     if (delta == null) return t.dashboard.noLastSessionYet;
@@ -498,86 +601,24 @@ export default function Dashboard() {
     const positive = invert ? delta < 0 : delta > 0;
     const sign = delta > 0 ? "+" : "−";
     const arrow = positive ? "↑" : "↓";
-    const abs = invert ? Math.abs(delta) : Math.abs(delta);
-    return `${t.dashboard.vsLast} ${sign}${abs}${suffix} ${arrow}`;
+    return `${t.dashboard.vsLast} ${sign}${Math.abs(delta)}${suffix} ${arrow}`;
   }
 
-  const accSubtext = todayAcc != null && lastAcc != null
-    ? formatDelta(todayAcc - lastAcc, "%p")
-    : todayAcc != null
-      ? t.dashboard.noLastSessionYet   // 오늘 연습 있음, 비교 기준 없음
-      : t.dashboard.kpiNoDataToday;    // 상태 2: 오늘 연습 없음
-  const speedSubtext = todaySpeed != null && lastSpeed != null
-    ? formatDelta(+(todaySpeed - lastSpeed).toFixed(2), "s", /* invert */ true)
-    : todaySpeed != null
-      ? t.dashboard.noLastSessionYet
-      : t.dashboard.kpiNoDataToday;
-  const xpSubtext = lastXp != null && todayXp > 0
-    ? formatDelta(todayXp - lastXp, " XP")
-    : !practicedToday
-      ? t.dashboard.kpiNotYet          // 상태 2: 아직 시작 전
+  const accSubtext = !practicedToday
+    ? t.dashboard.kpiNoDataToday
+    : todayAcc != null && baselineAcc != null
+      ? formatDelta(todayAcc - baselineAcc, "%p")
       : t.dashboard.noLastSessionYet;
-
-  // 마지막 활동 데이터 — 3단계 fallback (reviewer RLS·트리거 미적용 대비)
-  const lastActivityData = useMemo(() => {
-    // [진단 로그] 각 데이터 소스 현황 — 콘솔에서 어느 영역 비었는지 확인
-    console.log("[Dashboard][lastActivity] sessions:", sessionsTyped.length,
-      "| dailyStats30d:", myStats.dailyStats30d.length,
-      "| lastPracticeDate:", stats.lastPracticeDate,
-      "| practicedToday:", practicedToday,
-      "| hasAnyProgress:", hasAnyProgress,
-    );
-
-    // 1순위: user_sessions의 가장 최근 비오늘 세션
-    if (lastSessionNotToday) {
-      console.log("[Dashboard][lastActivity] source=user_sessions", lastSessionNotToday.started_at);
-      return {
-        startedAt: lastSessionNotToday.started_at,
-        accuracy: lastSessionNotToday.accuracy,
-        avgReactionMs: lastSessionNotToday.avg_reaction_ms,
-        xpEarned: lastSessionNotToday.xp_earned,
-      };
-    }
-
-    // 2순위: user_stats_daily 최신 항목 (오늘 제외, lastPracticeDate 요구 X)
-    const recentDaily = myStats.dailyStats30d
-      .filter((d) => d.stat_date !== todayIso())
-      .sort((a, b) => b.stat_date.localeCompare(a.stat_date))[0];
-    if (recentDaily) {
-      console.log("[Dashboard][lastActivity] source=dailyStats30d", recentDaily.stat_date);
-      const acc =
-        recentDaily.avg_accuracy ??
-        (recentDaily.total_notes > 0
-          ? recentDaily.correct_notes / recentDaily.total_notes
-          : null);
-      return {
-        startedAt: `${recentDaily.stat_date}T12:00:00`,
-        accuracy: acc,
-        avgReactionMs: recentDaily.avg_reaction_ms,
-        xpEarned: recentDaily.xp_earned,
-      };
-    }
-
-    // 3순위: hasAnyProgress = true면 "활동 기록 있음" 카드 표시 (정확한 stats 없음)
-    // profiles.last_practice_date로 날짜 추정, 없으면 어제로 fallback
-    if (hasAnyProgress) {
-      const fallbackDate = stats.lastPracticeDate
-        ?? new Date(Date.now() - 86_400_000).toISOString().slice(0, 10);
-      console.log("[Dashboard][lastActivity] source=progress_fallback date:", fallbackDate);
-      return {
-        startedAt: `${fallbackDate}T12:00:00`,
-        accuracy: null,
-        avgReactionMs: null,
-        xpEarned: 0,
-      };
-    }
-
-    console.log("[Dashboard][lastActivity] source=null (no data found)");
-    return null;
-  }, [
-    lastSessionNotToday, practicedToday, stats.lastPracticeDate,
-    myStats.dailyStats30d, sessionsTyped.length, hasAnyProgress,
-  ]);
+  const speedSubtext = !practicedToday
+    ? t.dashboard.kpiNoDataToday
+    : todaySpeed != null && baselineSpeed != null
+      ? formatDelta(+(todaySpeed - baselineSpeed).toFixed(2), "s", /* invert */ true)
+      : t.dashboard.noLastSessionYet;
+  const xpSubtext = !practicedToday
+    ? t.dashboard.kpiNotYet
+    : baselineDailyAvgXp != null && todayXp > 0
+      ? formatDelta(todayXp - baselineDailyAvgXp, " XP")
+      : t.dashboard.noLastSessionYet;
 
   const handleStart = () => {
     window.location.href = "/play";
@@ -676,6 +717,9 @@ export default function Dashboard() {
 
             {/* 약점·느린 음표 Top 5 — 누적 데이터 (옥타브 + 색상) */}
             <WeakSlowNotesCards />
+
+            {/* 다음 한 걸음 — 레벨 진행 + 졸업 임박 + 주간 성취 */}
+            <NextStepCard />
 
             {/* AI Feedback (프리미엄 전용) */}
             <AiFeedbackCard
