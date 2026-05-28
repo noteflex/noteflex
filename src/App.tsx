@@ -11,6 +11,9 @@ import Index from "./pages/Index.tsx";
 import PlayPage from "./pages/PlayPage.tsx";
 import NavOnlyRoute from "./components/NavOnlyRoute.tsx";
 import Dashboard from "./pages/Dashboard.tsx";
+import DailyAnalyticsPage from "./components/analytics/DailyAnalyticsPage.tsx";
+import WeeklyAnalyticsPage from "./components/analytics/WeeklyAnalyticsPage.tsx";
+import MonthlyAnalyticsPage from "./components/analytics/MonthlyAnalyticsPage.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import CheckoutSuccess from "./pages/CheckoutSuccess.tsx";
 import CheckoutFailed from "./pages/CheckoutFailed.tsx";
@@ -128,6 +131,34 @@ const App = () => (
                 element={
                   <ComingSoonGate>
                     <Dashboard />
+                  </ComingSoonGate>
+                }
+              />
+              <Route
+                path="/analytics"
+                element={<Navigate to="/analytics/daily" replace />}
+              />
+              <Route
+                path="/analytics/daily"
+                element={
+                  <ComingSoonGate>
+                    <DailyAnalyticsPage />
+                  </ComingSoonGate>
+                }
+              />
+              <Route
+                path="/analytics/weekly"
+                element={
+                  <ComingSoonGate>
+                    <WeeklyAnalyticsPage />
+                  </ComingSoonGate>
+                }
+              />
+              <Route
+                path="/analytics/monthly"
+                element={
+                  <ComingSoonGate>
+                    <MonthlyAnalyticsPage />
                   </ComingSoonGate>
                 }
               />
