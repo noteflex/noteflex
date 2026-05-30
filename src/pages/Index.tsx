@@ -5,9 +5,10 @@ import { initSound } from "@/lib/sound";
 import AuthModal from "@/components/AuthModal";
 import Footer from "@/components/Footer";
 import { useAuth } from "@/contexts/AuthContext";
-import { useT } from "@/contexts/LanguageContext";
+import { useT, useLang } from "@/contexts/LanguageContext";
 import { GAME_ENABLED } from "@/lib/featureFlags";
 import UserMenu from "@/components/UserMenu";
+import Seo from "@/components/Seo";
 
 function ComingSoonNotice() {
   const t = useT();
@@ -38,8 +39,10 @@ function ComingSoonNotice() {
 export default function Index() {
   const { user, profile, loading: authLoading } = useAuth();
   const t = useT();
+  const { lang } = useLang();
   const navigate = useNavigate();
   const [showAuth, setShowAuth] = useState(false);
+  const isKo = lang === "ko";
 
   // admin·reviewer는 GAME_ENABLED 무관하게 게임 UI 노출.
   const isPrivilegedRole =
@@ -69,6 +72,20 @@ export default function Index() {
       className="min-h-[100svh] flex flex-col"
       style={{ background: "radial-gradient(circle at top, #ffffff 0%, #f8f5e4 100%)" }}
     >
+      <Seo
+        title={
+          isKo
+            ? "Noteflex — See it, Play it. 음악 학습 게임"
+            : "Noteflex — See it, Play it. Sight-reading game"
+        }
+        description={
+          isKo
+            ? "게임처럼 익히는 악보 읽기. Lv1~7 단계별 학습, AI 분석 보고서, 일일 진척 추적. 무료로 시작하세요."
+            : "Learn to read sheet music like a game. Lv1–7 progressive levels, AI analysis reports, daily progress tracking. Free to start."
+        }
+        canonical="https://noteflex.app/"
+        lang={isKo ? "ko" : "en"}
+      />
       <Header right={pageHeaderRight} />
       {showAuth && showGameUI && (
         <AuthModal onClose={handleAuthClose} />
