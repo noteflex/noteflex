@@ -10,6 +10,7 @@ import AccidentalSwipeTutorial, {
   hasSeenSwipeTutorial,
   markSwipeTutorialSeen,
 } from "./AccidentalSwipeTutorial";
+import EdgeGlowFeedback from "./EdgeGlowFeedback";
 import { useUserEnvOffset } from "@/hooks/useUserEnvOffset";
 import { useDailyLimit } from "@/hooks/useDailyLimit";
 import { useAuth } from "@/contexts/AuthContext";
@@ -738,6 +739,14 @@ export default function NoteGame({
   const [currentSet, setCurrentSet] = useState(1);
   const [setProgress,setSetProgress]= useState(0);
 
+  // Edge Glow 정답·오답 피드백 — key 갱신으로 동일 trigger 연속 발동 시도 애니메이션 재시작.
+  const [edgeGlow, setEdgeGlow] = useState<{ kind: "correct" | "incorrect" | null; key: number }>(
+    { kind: null, key: 0 },
+  );
+  const fireEdgeGlow = useCallback((kind: "correct" | "incorrect") => {
+    setEdgeGlow((prev) => ({ kind, key: prev.key + 1 }));
+  }, []);
+
   // §4 (2026-05-01): retryOverride state 제거 — retry 음표가 batch 안에 통합됨.
   // wasRetry 판단은 currentIndex < batchAndKey.retryCount.
 
@@ -1445,6 +1454,7 @@ export default function NoteGame({
       });
 
       setScore(prev => prev + 1);
+      fireEdgeGlow("correct");
 
       totalAttemptsRef.current += 1;
       totalCorrectRef.current  += 1;
@@ -1517,6 +1527,7 @@ export default function NoteGame({
       }
 
       playWrong();
+      fireEdgeGlow("incorrect");
       setIndividualStreak(0);
 
       totalAttemptsRef.current += 1;
@@ -1544,7 +1555,7 @@ export default function NoteGame({
       setTimerKey(prev => prev + 1);
       updateNoteStartTime("오답 후 재시도");
     }
-  }, [phase, currentTarget, currentIndex, batchAndKey.retryCount, currentStageConfig.batchSize, lives, individualStreak, logNote, recorder, level, isCustom, customClef, retryQueue, advanceToNextTurn, addMissedNote, removeMissedNote, missedNoteIdOf, advanceFinalRetry, sessionStreak, adaptive, pushPrevNote]);
+  }, [phase, currentTarget, currentIndex, batchAndKey.retryCount, currentStageConfig.batchSize, lives, individualStreak, logNote, recorder, level, isCustom, customClef, retryQueue, advanceToNextTurn, addMissedNote, removeMissedNote, missedNoteIdOf, advanceFinalRetry, sessionStreak, adaptive, pushPrevNote, fireEdgeGlow]);
 
   const handleTimerExpire = useCallback(() => {
     if ((phase !== "playing" && phase !== "final-retry") || !currentTarget) return;
@@ -1592,6 +1603,7 @@ export default function NoteGame({
     }
 
     playWrong();
+    fireEdgeGlow("incorrect");
     setIndividualStreak(0);
 
     totalAttemptsRef.current += 1;
@@ -1616,7 +1628,7 @@ export default function NoteGame({
     // 타이머만 리셋해서 사용자가 같은 음표를 다시 풀 시간 확보.
     setTimerKey(prev => prev + 1);
     updateNoteStartTime("타임아웃 후 재시도");
-  }, [phase, lives, currentTarget, currentIndex, batchAndKey.retryCount, logNote, recorder, level, isCustom, customClef, retryQueue, addMissedNote, missedNoteIdOf, advanceFinalRetry, sessionStreak, adaptive, pushPrevNote, TIMER_SECONDS]);
+  }, [phase, lives, currentTarget, currentIndex, batchAndKey.retryCount, logNote, recorder, level, isCustom, customClef, retryQueue, addMissedNote, missedNoteIdOf, advanceFinalRetry, sessionStreak, adaptive, pushPrevNote, TIMER_SECONDS, fireEdgeGlow]);
 
   const handleReplay = () => {
     setLives(MAX_LIVES);
@@ -1698,6 +1710,12 @@ export default function NoteGame({
 
   return (
     <div className="flex flex-col items-center gap-3 w-full animate-fade-up">
+
+      <EdgeGlowFeedback
+        key={edgeGlow.key}
+        trigger={edgeGlow.kind}
+        onComplete={() => setEdgeGlow((prev) => ({ ...prev, kind: null }))}
+      />
 
       {showCountdown && (
         <CountdownOverlay seconds={3} onComplete={handleCountdownComplete} />

@@ -172,6 +172,35 @@
 }
 .animate-note-appear { animation: note-appear 0.2s ease-out both; transform-origin: center; }
 
+/* Edge Glow — 정답/오답 시각 피드백.
+ * inset box-shadow + 단일 opacity fade. blur·filter 사용 X (GPU layer 누적 함정 회피).
+ * 색: 정답 #22C55E 25% · 오답 #EF4444 35%. duration: 200ms (correct) / 350ms (incorrect).
+ */
+@keyframes edge-glow-fade {
+  0% { opacity: 1; }
+  100% { opacity: 0; }
+}
+.edge-glow-overlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 40;
+  animation-name: edge-glow-fade;
+  animation-timing-function: ease-out;
+  animation-fill-mode: forwards;
+}
+.edge-glow-correct {
+  box-shadow: inset 0 0 6px rgba(34, 197, 94, 0.25);
+  animation-duration: 200ms;
+}
+.edge-glow-incorrect {
+  box-shadow: inset 0 0 8px rgba(239, 68, 68, 0.35);
+  animation-duration: 350ms;
+}
+@media (prefers-reduced-motion: reduce) {
+  .edge-glow-overlay { animation: none; opacity: 0.15; }
+}
+
 
 @font-face {
   font-family: 'Bravura';

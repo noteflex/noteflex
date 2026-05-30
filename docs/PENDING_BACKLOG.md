@@ -14,6 +14,8 @@
 - [출시후] **user_sublevel_progress_backup_20260530, user_sublevel_progress_backup_20260530_2 안정 확인 후 삭제** — 7판 윈도우 마이그레이션 적용 시 사용자가 백업한 테이블들. 약 2주~1개월 안정 운용 확인 후 정리.
 - [출시전 권장] **7판 윈도우 시스템 후속 테스트 재작성** — vitest 26건 실패 (`src/lib/levelSystem.test.ts`, `src/components/MasteryScoreCard.test.tsx`, `src/components/LevelSelect.test.tsx`, `src/pages/Dashboard.test.tsx`). 윈도우 도입(20260529/20260530)으로 인한 사전 회귀. `MasteryScoreCard`의 `expanded` 기본값 `true→false` 변경, `computeMasteryScore` 윈도우 기반 변경, `getCompletion` null 반환 가능 등. 누적 가정 테스트를 윈도우 가정으로 재작성 필요.
 - [출시후] **vitest 풀 스위트 OOM 해소 — NoteGame 컴포넌트 테스트 메모리 최적화** — `npx vitest run` 풀스위트 17분+ 무응답 정체의 원인이 OOM으로 확인 (Node heap 4 GB 초과, FATAL `Reached heap limit Allocation failed`, 4-F-1 작업 중 발견). hook + lib 테스트 6개(116건)는 정상 통과하지만 `NoteGame.test.tsx`·`NoteGame.policy.test.tsx`·`NoteGame.invariants.test.tsx` 진입 후 Mark-Compact GC가 4 GB 한계에 도달. 영향: 풀 회귀 검증 자산을 못 씀 — 단일 변경의 전사 영향 확인 불가, CI 도입도 막힘. 후보 조치: `NODE_OPTIONS=--max-old-space-size=8192` + `--pool=forks --poolOptions.forks.singleFork` 조합 우선, 안 되면 컴포넌트 테스트 1개씩 분리 실행으로 어느 파일이 누수원인지 좁히기. 출시 후 우선.
+- [출시후] **Edge Glow 콤보 효과 (노랑/황금, 한 바퀴 휘감기 또는 파동)** — 콤보 시스템 도입 후. 현재 정답/오답 기본 글로우만 출시판에 반영. 콤보 도달 시 별도 색·길이·강도 또는 회전 파동 추가 검토. blur·filter 사용 X 원칙 유지 (GPU layer 누적 함정).
+- [출시후] **Hybrid 음표 변화 (음표 입자 분해 + 비상) — particle effect** — 정답 시 음표가 입자로 분해되어 비상하는 시각 효과. canvas 또는 CSS particle 후보, mobile 성능 검증 필수. 1·3·7판 동시 사용 시 GC 부담 우려 — 출시 후 실측 데이터 기반 도입 결정.
 
 ---
 
