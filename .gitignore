@@ -13,6 +13,9 @@ dist-ssr/
 build/
 .vite/
 
+# ── TypeScript incremental build cache ──────────────
+*.tsbuildinfo
+
 # ── Environment files (민감 정보!) ──────────────────
 .env
 .env.local
