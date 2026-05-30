@@ -172,6 +172,62 @@ export function getKeySignatureMultiplierNormalized(
 }
 
 /**
+ * 적응형 난이도 모드.
+ *
+ *   - 'free'         : Free 사용자. 약점 슬롯 자체 X (ratio=0).
+ *   - 'warmup'       : 처음 N턴 워밍업 (기본 normalRatio).
+ *   - 'boost_weak'   : 정답률 매우 높음 → 약점 비중 ↑.
+ *   - 'reduce_weak'  : 정답률 매우 낮음 → 약점 비중 ↓.
+ *   - 'normal'       : 그 외 (기본 ratio 유지).
+ */
+export type AdaptiveMode = "free" | "warmup" | "boost_weak" | "reduce_weak" | "normal";
+
+export interface AdaptiveWeakRatioResult {
+  ratio: number;
+  mode: AdaptiveMode;
+}
+
+/**
+ * 세션 내 누적 정답률 기반 약점 슬롯 비율 동적 조정.
+ *
+ * 결정 트리:
+ *   - isPremium=false → 'free', ratio=0 (Free는 약점 슬롯 미적용)
+ *   - total <= warmupTurns → 'warmup', ratio=normalRatio (처음 N턴 + 데이터 부족)
+ *   - accuracy > boostThreshold → 'boost_weak', ratio=boostRatio
+ *   - accuracy < reduceThreshold → 'reduce_weak', ratio=reduceRatio
+ *   - 그 외 → 'normal', ratio=normalRatio
+ *
+ * 경계는 normal 영역에 포함 (strict 비교).
+ *
+ * 기본값:
+ *   - warmupTurns      = 5
+ *   - boostThreshold   = 0.92
+ *   - reduceThreshold  = 0.55
+ *   - boostRatio       = 0.8
+ *   - normalRatio      = 0.6
+ *   - reduceRatio      = 0.3
+ *
+ * Hook(useAdaptiveDifficulty)과 시뮬레이터에서 공통 사용 — parity 보장.
+ */
+export function computeAdaptiveWeakRatio(
+  accuracy: number,
+  total: number,
+  isPremium: boolean,
+  warmupTurns: number = 5,
+  boostThreshold: number = 0.92,
+  reduceThreshold: number = 0.55,
+  boostRatio: number = 0.8,
+  normalRatio: number = 0.6,
+  reduceRatio: number = 0.3,
+): AdaptiveWeakRatioResult {
+  if (!isPremium) return { ratio: 0, mode: "free" };
+  if (total <= warmupTurns) return { ratio: normalRatio, mode: "warmup" };
+  if (accuracy > boostThreshold) return { ratio: boostRatio, mode: "boost_weak" };
+  if (accuracy < reduceThreshold) return { ratio: reduceRatio, mode: "reduce_weak" };
+  return { ratio: normalRatio, mode: "normal" };
+}
+
+/**
  * 세션 내 streak 자동 마스터 multiplier.
  *
  * 조건: streak >= minStreak AND avgResponseTime < maxAvgTime
