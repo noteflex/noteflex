@@ -5,14 +5,17 @@ import fs from "node:fs";
 import sitemap from "vite-plugin-sitemap";
 import { VitePWA } from "vite-plugin-pwa";
 
-// 블로그 slug 추출: src/content/blog/en/*.md 파일명에서 추출
-// 파일명 패턴: YYYY-MM-DD-slug-name.md → slug-name
+// 블로그 slug 추출: frontmatter `slug:` 우선, 없으면 파일명에서 YYYY-MM-DD- prefix 제거.
+// scripts/generate-sitemap.ts와 동일 로직 — 라우팅·sitemap 일치 보장.
 function getBlogRoutes(): string[] {
   const blogDir = path.resolve(__dirname, "src/content/blog/en");
   if (!fs.existsSync(blogDir)) return [];
   const slugs = fs.readdirSync(blogDir)
     .filter(f => f.endsWith(".md"))
     .map(f => {
+      const content = fs.readFileSync(path.join(blogDir, f), "utf-8");
+      const slugMatch = content.match(/^slug:\s*["']?([^"'\n]+)["']?/m);
+      if (slugMatch) return slugMatch[1];
       const m = f.match(/^\d{4}-\d{2}-\d{2}-(.+)\.md$/);
       return m ? m[1] : null;
     })

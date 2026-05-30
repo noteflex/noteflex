@@ -6,6 +6,7 @@ export interface MarkdownDoc {
 }
 
 export interface BlogPostMeta {
+  /** "ko/chunking-music-reading" — URL용 깨끗한 슬러그 (frontmatter slug 우선, 없으면 파일명에서 날짜 제거) */
   slug: string;
   lang: string;
   title: string;
@@ -59,7 +60,6 @@ export function loadLegalContent(
       : `/src/content/legal/${slug}.md`;
   const raw = legalModules[path];
   if (!raw) {
-    // EN 파일 미박일 때 KO로 fallback (Phase 3 영역)
     if (lang === "en") {
       const koPath = `/src/content/legal/${slug}.md`;
       const koRaw = legalModules[koPath];
@@ -83,46 +83,103 @@ const blogModulesEager = import.meta.glob("/src/content/blog/**/*.md", {
   eager: true,
 }) as Record<string, string>;
 
-const blogModulesLazy = import.meta.glob("/src/content/blog/**/*.md", {
-  query: "?raw",
-  import: "default",
-}) as Record<string, () => Promise<string>>;
-
-function pathToSlug(path: string): string {
-  // "/src/content/blog/ko/2026-05-01-clef-guide.md" → "ko/2026-05-01-clef-guide"
-  const match = path.match(/\/blog\/(.+)\.md$/);
-  return match ? match[1] : path;
+/**
+ * 블로그 인덱스 — 빌드 시 1회 계산.
+ * cleanSlug: URL용 깨끗한 슬러그 (frontmatter `slug:` 우선, 없으면 파일명에서 `YYYY-MM-DD-` prefix 제거)
+ * fileSlug:  파일명에서 `.md`만 떼어낸 raw 형식 (옛 URL 호환용)
+ * combinedSlug: "lang/cleanSlug" — Blog 목록·BlogPost·AdPlaceholder가 사용하는 URL 슬러그 형식
+ */
+interface BlogIndexEntry {
+  path: string;
+  raw: string;
+  lang: "ko" | "en";
+  cleanSlug: string;
+  fileSlug: string;
+  combinedSlug: string;
+  meta: Record<string, string>;
 }
 
+const blogIndex: BlogIndexEntry[] = Object.entries(blogModulesEager)
+  .map(([path, raw]): BlogIndexEntry | null => {
+    const m = path.match(/\/blog\/(ko|en)\/(.+)\.md$/);
+    if (!m) return null;
+    const lang = m[1] as "ko" | "en";
+    const fileSlug = m[2];
+    const parsed = parseFrontmatter(raw);
+    const cleanSlug =
+      parsed.meta.slug ||
+      fileSlug.replace(/^\d{4}-\d{2}-\d{2}-/, "");
+    return {
+      path,
+      raw,
+      lang,
+      cleanSlug,
+      fileSlug,
+      combinedSlug: `${lang}/${cleanSlug}`,
+      meta: parsed.meta,
+    };
+  })
+  .filter((e): e is BlogIndexEntry => e !== null);
+
 export function listBlogPosts(lang?: "ko" | "en"): BlogPostMeta[] {
-  return Object.entries(blogModulesEager)
-    .map(([path, raw]) => {
-      const slug = pathToSlug(path);
-      const { meta } = parseFrontmatter(raw);
-      const [postLang] = slug.split("/");
-      return {
-        slug,
-        lang: postLang,
-        title: meta.title || slug,
-        date: meta.date || "",
-        description: meta.description || "",
-        category: meta.category || "",
-        coverImage: meta.coverImage || undefined,
-        coverImageAlt: meta.coverImageAlt || undefined,
-        coverImageSource: meta.coverImageSource || undefined,
-        coverImageLicense: meta.coverImageLicense || undefined,
-        coverImageCredit: meta.coverImageCredit || undefined,
-      };
-    })
-    .filter((post) => !lang || post.lang === lang)
+  return blogIndex
+    .filter((e) => !lang || e.lang === lang)
+    .map((e) => ({
+      slug: e.combinedSlug,
+      lang: e.lang,
+      title: e.meta.title || e.combinedSlug,
+      date: e.meta.date || "",
+      description: e.meta.description || "",
+      category: e.meta.category || "",
+      coverImage: e.meta.coverImage || undefined,
+      coverImageAlt: e.meta.coverImageAlt || undefined,
+      coverImageSource: e.meta.coverImageSource || undefined,
+      coverImageLicense: e.meta.coverImageLicense || undefined,
+      coverImageCredit: e.meta.coverImageCredit || undefined,
+    }))
     .sort((a, b) => b.date.localeCompare(a.date));
 }
 
+/**
+ * 글 로드 — slug는 `"lang/cleanSlug"` 형식.
+ * 1) combinedSlug(깨끗한 슬러그) 매칭 우선
+ * 2) 옛 URL 호환: fileSlug(날짜 prefix 포함) 매칭 fallback
+ */
 export async function loadBlogPost(slug: string): Promise<BlogPost | null> {
-  const path = `/src/content/blog/${slug}.md`;
-  const loader = blogModulesLazy[path];
-  if (!loader) return null;
-  const raw = await loader();
-  const parsed = parseFrontmatter(raw);
-  return { slug, ...parsed };
+  let entry = blogIndex.find((e) => e.combinedSlug === slug);
+
+  if (!entry) {
+    const m = slug.match(/^(ko|en)\/(.+)$/);
+    if (m) {
+      const [, lang, rest] = m;
+      entry = blogIndex.find((e) => e.lang === lang && e.fileSlug === rest);
+    }
+  }
+
+  if (!entry) return null;
+  // 본문은 eager에 이미 있으니 동기 파싱
+  const parsed = parseFrontmatter(entry.raw);
+  return { slug: entry.combinedSlug, meta: parsed.meta, content: parsed.content };
+}
+
+/**
+ * URL slug가 옛 형식(YYYY-MM-DD-foo)이면 새 형식(foo)으로 변환.
+ * 새 형식이면 그대로 반환. 찾지 못하면 null.
+ * BlogPost가 옛 URL → 새 URL redirect 판단에 사용.
+ */
+export function resolveCleanSlug(
+  lang: "ko" | "en",
+  slug: string,
+): string | null {
+  // 이미 cleanSlug 형식이면 그대로
+  const direct = blogIndex.find(
+    (e) => e.lang === lang && e.cleanSlug === slug,
+  );
+  if (direct) return direct.cleanSlug;
+  // 옛 fileSlug 형식이면 cleanSlug로 변환
+  const legacy = blogIndex.find(
+    (e) => e.lang === lang && e.fileSlug === slug,
+  );
+  if (legacy) return legacy.cleanSlug;
+  return null;
 }

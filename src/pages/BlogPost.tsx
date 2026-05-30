@@ -1,29 +1,42 @@
 // src/pages/BlogPost.tsx
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
 import MarkdownContent from "@/components/MarkdownContent";
 import { useT } from "@/contexts/LanguageContext";
-import { loadBlogPost, type BlogPost as BlogPostType } from "@/lib/markdownLoader";
+import {
+  loadBlogPost,
+  resolveCleanSlug,
+  type BlogPost as BlogPostType,
+} from "@/lib/markdownLoader";
 import { AdBanner } from "@/components/AdBanner";
 import { getSlot } from "@/lib/adsense";
 import Seo from "@/components/Seo";
 
 export default function BlogPost() {
-  // URL :lang 유지 — 콘텐츠 lang은 URL 박힌 값 사용 (SEO·linkability 영역)
+  // URL :lang 유지 — 콘텐츠 lang은 URL 명시 값 사용 (SEO·linkability)
   const { lang, slug } = useParams<{ lang: string; slug: string }>();
+  const navigate = useNavigate();
   const t = useT();
   const [post, setPost] = useState<BlogPostType | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
 
   useEffect(() => {
-    if (!lang || !slug) {
+    if (!lang || !slug || (lang !== "ko" && lang !== "en")) {
       setNotFound(true);
       setLoading(false);
       return;
     }
+
+    // 옛 URL(YYYY-MM-DD-slug)이 들어오면 깨끗한 슬러그로 301 의미 redirect
+    const canonical = resolveCleanSlug(lang as "ko" | "en", slug);
+    if (canonical && canonical !== slug) {
+      navigate(`/blog/${lang}/${canonical}`, { replace: true });
+      return;
+    }
+
     let cancelled = false;
     loadBlogPost(`${lang}/${slug}`).then((p) => {
       if (cancelled) return;
@@ -37,7 +50,7 @@ export default function BlogPost() {
     return () => {
       cancelled = true;
     };
-  }, [lang, slug]);
+  }, [lang, slug, navigate]);
 
   const postCategory = post?.meta.category || "";
   const backUrl = postCategory
