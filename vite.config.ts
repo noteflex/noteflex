@@ -64,8 +64,12 @@ export default defineConfig(() => {
         workbox: {
           globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
           navigateFallback: "/index.html",
-          // Supabase API·외부 요청은 SW가 가로채지 않음
-          navigateFallbackDenylist: [/^\/rest\//, /^\/auth\//, /^\/realtime\//],
+          // SW가 가로채지 않음: Supabase API·정적 파일(크롤러용)·GSC 인증
+          navigateFallbackDenylist: [
+            /^\/rest\//, /^\/auth\//, /^\/realtime\//,
+            /^\/sitemap\.xml$/, /^\/ads\.txt$/, /^\/robots\.txt$/,
+            /^\/google[0-9a-f]+\.html$/,
+          ],
           // 메인 번들 ~2.8MB → 기본 2MB 초과, 4MB로 상향
           maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
         },
