@@ -23,3 +23,22 @@ export {
   ALL_SCENARIOS,
 } from "./scenarios";
 export type { Scenario, ScenarioExpectedMetric, ScenarioPredicate } from "./scenarios";
+
+// 5-C: 메트릭 + pass/fail + 의심 케이스.
+export {
+  metricSoftAvoidViolationRate,
+  metricN2RecoveryCount,
+  metricN2RecoveryHitRate,
+  metricWeakWeightedCount,
+  metricQueueMaxViolations,
+  metricStreakMasteredNoteCount,
+  metricAccidentalRatio,
+  metricWeakSlotPickRateOnIds,
+  metricNoteDistribution,
+  detectSuspiciousCases,
+  applyPredicate,
+  evaluateScenario,
+} from "./metrics";
+export type {
+  MetricResult, EvaluatedMetric, SuspiciousCase, ScenarioEvaluation,
+} from "./metrics";
