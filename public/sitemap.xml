@@ -469,6 +469,12 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://noteflex.app/blog/ko/absolute-pitch-and-sight-reading</loc>
+    <lastmod>2026-05-30</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://noteflex.app/blog/en/musical-staff-principle</loc>
     <lastmod>2026-04-30</lastmod>
     <changefreq>monthly</changefreq>
@@ -873,6 +879,12 @@
   <url>
     <loc>https://noteflex.app/blog/en/slur-and-tie-difference</loc>
     <lastmod>2026-05-29</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://noteflex.app/blog/en/absolute-pitch-and-sight-reading</loc>
+    <lastmod>2026-05-30</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
