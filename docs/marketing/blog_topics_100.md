@@ -775,7 +775,7 @@ AI·정밀 데이터·Noteflex 기능·음악 교육의 미래.
 78. 망각 곡선과 N+2 복습 — 잊기 전에 다시 만나기
 79. 가중치 학습 — 약점에 집중하기
 80. 일간·주간·월간 진단의 의미
-81. 학습 동기 유지의 심리학 — 스트릭의 효과
+81. 학습 동기 유지의 심리학 — 스트릭의 효과 ✅ 작성 완료 (2026-05-31, streak-psychology-music-learning)
 82. 게이미피케이션과 음악 학습
 83. 정확도 vs 반응속도 — 우선순위와 균형
 84. 음표별 마스터리 측정 — 진도의 객관화
@@ -886,6 +886,8 @@ AI·정밀 데이터·Noteflex 기능·음악 교육의 미래.
 | 2026-05-29 | 29 | §2-26 | Slurs and Ties — How Two Curves That Look the Same Mean Different Things (en) ✅ 작성 완료 | slur-and-tie-difference | Theory & Harmony | ~850 words | slur vs tie, slur and tie difference, tie notation music, legato slur, phrase marks | Palmer 전통 |
 | 2026-05-30 | 30 | §1-11 | 초견과 절대음감 — 절대음감 없어도 초견은 잘할 수 있는 이유 (ko) ✅ 작성 완료 | absolute-pitch-and-sight-reading | 초견의 정석 | ~2250자 | 절대음감 초견, 절대음감 없이 초견, 상대음감 초견, 절대음감 신화 | Levitin & Rogers + Takeuchi & Hulse 전통 |
 | 2026-05-30 | 30 | §1-11 | Absolute Pitch and Sight-Reading — Why You Don't Need Perfect Pitch to Read Music Well (en) ✅ 작성 완료 | absolute-pitch-and-sight-reading | Sight-Reading Lab | ~805 words | absolute pitch sight-reading, perfect pitch sight-reading, sight-reading without perfect pitch, relative pitch reading, absolute pitch myth | Levitin & Rogers + Takeuchi & Hulse 전통 |
+| 2026-05-31 | 31 | §7-81 | 음악 학습의 스트릭 심리학 — 매일의 5분이 한 주의 한 시간보다 강한 이유 (ko) ✅ 작성 완료 | streak-psychology-music-learning | 뮤직 테크 & 미래 | ~2360자 | 음악 학습 스트릭, 매일 연습 습관, 음악 연습 동기, 스트릭 심리학, 습관 형성 66일, 초견 스트릭 | Lally + Locke & Latham 전통 |
+| 2026-05-31 | 31 | §7-81 | The Psychology of Streaks in Music Learning — Why Five Daily Minutes Beat One Weekly Hour (en) ✅ 작성 완료 | streak-psychology-music-learning | Music Tech | ~960 words | music practice streak, daily music practice habit, music learning motivation, streak psychology, habit formation 66 days, duolingo streak music | Lally + Locke & Latham 전통 |
 
 ---
 
