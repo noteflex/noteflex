@@ -65,19 +65,34 @@ export interface SublevelConfig {
 }
 
 /**
+ * 최근 N판 윈도우 항목 (DB user_sublevel_progress.recent_plays).
+ * `record_sublevel_attempt`가 매 호출 시 prepend, 8번째부터 가장 오래된 항목 제거.
+ */
+export interface RecentPlay {
+  /** ISO timestamp (UTC) */
+  at: string;
+  attempts: number;
+  correct: number;
+  /** 반응속도 비율 (avgReactionMs / timerMs). 기록 없으면 null. */
+  reaction_ratio: number | null;
+}
+
+/**
  * 사용자 진도 데이터 (DB user_sublevel_progress 와 1:1 동기화).
- * accuracy 는 derived 이므로 컬럼이 아닌 함수로 계산.
+ * accuracy·reaction은 윈도우(recent_plays) 기반 — `calculateAccuracy`·`calculateReactionRatio`.
  */
 export interface SublevelProgress {
   level: number; // 1~7
   sublevel: Sublevel;
   play_count: number;
   best_streak: number;
-  total_attempts: number;
-  total_correct: number;
+  total_attempts: number;   // 누적 (legacy, 표시용 보조)
+  total_correct: number;    // 누적 (legacy)
   passed: boolean;
-  /** sublevel 누적 평균 반응속도 비율 (avgReactionMs / timerMs). 기록 없으면 undefined → 통과 처리 */
+  /** 누적 평균 반응속도 비율 (legacy). 점수 계산은 윈도우 기반. */
   avg_reaction_ratio?: number;
+  /** 최근 7판 윈도우 — 마이그레이션 시점부터 누적. 표본 부족(<3) 시 acc·reaction 평가 보류. */
+  recent_plays?: RecentPlay[];
   /** 패스트트랙으로 통과한 경우 true — mastery_score 100 강제 적용 */
   fast_track?: boolean;
 }
@@ -89,6 +104,10 @@ export interface SublevelCompletion {
   accuracy: { current: number; required: number; satisfied: boolean };
   avgReactionRatio: { current: number | null; required: number; satisfied: boolean };
   allSatisfied: boolean;
+  /** 최근 N판 윈도우의 현재 표본 수 (0~7) */
+  sampleCount: number;
+  /** 표본 < MIN_RECENT_SAMPLE — accuracy·reaction 평가 보류 */
+  sampleInsufficient: boolean;
 }
 
 // ─────────────────────────────────────────────
@@ -166,6 +185,11 @@ export const PASS_CRITERIA = {
   MIN_AVG_REACTION_RATIO: 0.35,
 } as const;
 
+/** 최근 N판 윈도우 크기 (DB·클라 일관) */
+export const RECENT_WINDOW_SIZE = 7;
+/** 표본 부족 임계 — N < 이 값이면 accuracy·reaction 평가 보류 (점수 0) */
+export const MIN_RECENT_SAMPLE = 3;
+
 export const TOTAL_SUBLEVELS = 21; // 7 × 3
 export const MAX_LEVEL = 7;
 export const MAX_SUBLEVEL = 3;
@@ -202,28 +226,57 @@ export function totalNotesInStages(
 // 계산 함수
 // ─────────────────────────────────────────────
 
-/** 누적 정답률 계산 (모든 시도 포함, game over 포함) */
+/**
+ * 최근 7판 윈도우 기반 정확도 — SUM(correct) / SUM(attempts).
+ * 표본 < MIN_RECENT_SAMPLE이면 0 반환 (UI는 sampleInsufficient로 별도 분기).
+ */
 export function calculateAccuracy(progress: SublevelProgress): number {
-  if (progress.total_attempts === 0) return 0;
-  return progress.total_correct / progress.total_attempts;
+  const window = progress.recent_plays ?? [];
+  if (window.length < MIN_RECENT_SAMPLE) return 0;
+  const totalAttempts = window.reduce((s, p) => s + p.attempts, 0);
+  const totalCorrect = window.reduce((s, p) => s + p.correct, 0);
+  return totalAttempts > 0 ? totalCorrect / totalAttempts : 0;
 }
 
-/** 단계 통과 조건 충족 여부 (4개 모두) */
+/**
+ * 최근 7판 윈도우 기반 반응속도 비율 — 유효 항목 평균.
+ * 표본 < MIN_RECENT_SAMPLE 또는 유효 reaction_ratio 없으면 null.
+ */
+export function calculateReactionRatio(progress: SublevelProgress): number | null {
+  const window = progress.recent_plays ?? [];
+  if (window.length < MIN_RECENT_SAMPLE) return null;
+  const valid = window.filter(
+    (p) => p.reaction_ratio != null && p.reaction_ratio > 0,
+  );
+  if (valid.length === 0) return null;
+  return valid.reduce((s, p) => s + (p.reaction_ratio ?? 0), 0) / valid.length;
+}
+
+/** 단계 통과 조건 충족 여부 (윈도우 기반 acc·reaction + 누적 play·streak). 표본 부족 시 false. */
 export function checkPassed(progress: SublevelProgress): boolean {
+  const sampleCount = (progress.recent_plays ?? []).length;
+  if (sampleCount < MIN_RECENT_SAMPLE) return false;
+
+  const accuracy = calculateAccuracy(progress);
+  const reaction = calculateReactionRatio(progress);
   const reactionOk =
-    progress.avg_reaction_ratio === undefined ||
-    progress.avg_reaction_ratio <= PASS_CRITERIA.MIN_AVG_REACTION_RATIO;
+    reaction == null || reaction <= PASS_CRITERIA.MIN_AVG_REACTION_RATIO;
+
   return (
     progress.play_count >= PASS_CRITERIA.MIN_PLAY_COUNT &&
     progress.best_streak >= PASS_CRITERIA.MIN_BEST_STREAK &&
-    calculateAccuracy(progress) >= PASS_CRITERIA.MIN_ACCURACY &&
+    accuracy >= PASS_CRITERIA.MIN_ACCURACY &&
     reactionOk
   );
 }
 
-/** UI 진행률 정보 생성 */
+/** UI 진행률 정보 생성 (윈도우 기반 acc·reaction + 표본 안내) */
 export function getCompletion(progress: SublevelProgress): SublevelCompletion {
-  const accuracy = calculateAccuracy(progress);
+  const sampleCount = (progress.recent_plays ?? []).length;
+  const sampleInsufficient = sampleCount < MIN_RECENT_SAMPLE;
+
+  const accuracy = sampleInsufficient ? 0 : calculateAccuracy(progress);
+  const reaction = sampleInsufficient ? null : calculateReactionRatio(progress);
 
   const playCount = {
     current: progress.play_count,
@@ -240,15 +293,15 @@ export function getCompletion(progress: SublevelProgress): SublevelCompletion {
   const accuracyResult = {
     current: accuracy,
     required: PASS_CRITERIA.MIN_ACCURACY,
-    satisfied: accuracy >= PASS_CRITERIA.MIN_ACCURACY,
+    satisfied: !sampleInsufficient && accuracy >= PASS_CRITERIA.MIN_ACCURACY,
   };
 
   const avgReactionRatio = {
-    current: progress.avg_reaction_ratio ?? null,
+    current: reaction,
     required: PASS_CRITERIA.MIN_AVG_REACTION_RATIO,
     satisfied:
-      progress.avg_reaction_ratio === undefined ||
-      progress.avg_reaction_ratio <= PASS_CRITERIA.MIN_AVG_REACTION_RATIO,
+      !sampleInsufficient &&
+      (reaction == null || reaction <= PASS_CRITERIA.MIN_AVG_REACTION_RATIO),
   };
 
   return {
@@ -256,7 +309,10 @@ export function getCompletion(progress: SublevelProgress): SublevelCompletion {
     bestStreak,
     accuracy: accuracyResult,
     avgReactionRatio,
+    sampleCount,
+    sampleInsufficient,
     allSatisfied:
+      !sampleInsufficient &&
       playCount.satisfied &&
       bestStreak.satisfied &&
       accuracyResult.satisfied &&

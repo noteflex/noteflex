@@ -43,7 +43,7 @@ export function useLevelProgress() {
     const { data, error: fetchError } = await supabase
       .from("user_sublevel_progress")
       .select(
-        "level, sublevel, play_count, best_streak, total_attempts, total_correct, passed, avg_reaction_ratio, fast_track"
+        "level, sublevel, play_count, best_streak, total_attempts, total_correct, passed, avg_reaction_ratio, recent_plays, fast_track"
       )
       .eq("user_id", user.id);
 
