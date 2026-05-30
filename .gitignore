@@ -74,5 +74,8 @@ coverage/
 # ── Simulator logs (§4 Step B) ──────────────────────
 tmp/sim-logs/
 
+# ── notegen-sim 결과 (5단계, 시나리오당 ~5MB) ────────
+test-results/
+
 # ── Claude Code local settings ──────────────────────
 .claude/settings.local.json

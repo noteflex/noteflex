@@ -42,3 +42,11 @@ export {
 export type {
   MetricResult, EvaluatedMetric, SuspiciousCase, ScenarioEvaluation,
 } from "./metrics";
+
+// 5-D: 리포터 (콘솔 ASCII + JSON 저장).
+export {
+  formatScenarioReport,
+  printScenarioReport,
+  writeScenarioJson,
+} from "./reporter";
+export type { ReporterOptions } from "./reporter";
