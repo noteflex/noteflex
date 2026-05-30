@@ -13,6 +13,7 @@
 - [출시전 권장] **PWA SW가 sitemap.xml·ads.txt·robots.txt 등 정적 파일 캐시 안 하게(또는 network-first)** — 현재 workbox `globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"]`라 xml/txt는 캐시 안 됨이 맞지만, navigateFallback이 index.html이라 SW가 fallback해 가로챌 수도. 일반 유저 SW 캐시 함정 방지 + AdSense ads.txt 검증 영향 가능. workbox runtimeCaching 또는 navigateFallbackDenylist에 `/sitemap.xml`, `/ads.txt`, `/robots.txt` 추가 권장.
 - [출시후] **user_sublevel_progress_backup_20260530, user_sublevel_progress_backup_20260530_2 안정 확인 후 삭제** — 7판 윈도우 마이그레이션 적용 시 사용자가 백업한 테이블들. 약 2주~1개월 안정 운용 확인 후 정리.
 - [출시전 권장] **7판 윈도우 시스템 후속 테스트 재작성** — vitest 26건 실패 (`src/lib/levelSystem.test.ts`, `src/components/MasteryScoreCard.test.tsx`, `src/components/LevelSelect.test.tsx`, `src/pages/Dashboard.test.tsx`). 윈도우 도입(20260529/20260530)으로 인한 사전 회귀. `MasteryScoreCard`의 `expanded` 기본값 `true→false` 변경, `computeMasteryScore` 윈도우 기반 변경, `getCompletion` null 반환 가능 등. 누적 가정 테스트를 윈도우 가정으로 재작성 필요.
+- [출시후] **vitest 풀 스위트 OOM 해소 — NoteGame 컴포넌트 테스트 메모리 최적화** — `npx vitest run` 풀스위트 17분+ 무응답 정체의 원인이 OOM으로 확인 (Node heap 4 GB 초과, FATAL `Reached heap limit Allocation failed`, 4-F-1 작업 중 발견). hook + lib 테스트 6개(116건)는 정상 통과하지만 `NoteGame.test.tsx`·`NoteGame.policy.test.tsx`·`NoteGame.invariants.test.tsx` 진입 후 Mark-Compact GC가 4 GB 한계에 도달. 영향: 풀 회귀 검증 자산을 못 씀 — 단일 변경의 전사 영향 확인 불가, CI 도입도 막힘. 후보 조치: `NODE_OPTIONS=--max-old-space-size=8192` + `--pool=forks --poolOptions.forks.singleFork` 조합 우선, 안 되면 컴포넌트 테스트 1개씩 분리 실행으로 어느 파일이 누수원인지 좁히기. 출시 후 우선.
 
 ---
 

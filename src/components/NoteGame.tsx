@@ -19,7 +19,12 @@ import { useNoteLogger } from "@/hooks/useNoteLogger";
 import { useSessionRecorder } from "@/hooks/useSessionRecorder";
 import { useRetryQueue } from "@/hooks/useRetryQueue";
 import { useUserMastery, type MasteryMap } from "@/hooks/useUserMastery";
+import { useUserWeakScores } from "@/hooks/useUserWeakScores";
+import { useSessionStreakMastery } from "@/hooks/useSessionStreakMastery";
+import { useAdaptiveDifficulty } from "@/hooks/useAdaptiveDifficulty";
 import { getNoteWeight, weightedPickIndex } from "@/lib/noteWeighting";
+import { getUserTier } from "@/lib/subscriptionTier";
+import { clearPickDecisions } from "@/lib/pickDecision";
 import {
   SUBLEVEL_CONFIGS,
   getStagesFor,
@@ -348,13 +353,21 @@ export default function NoteGame({
   const retryQueue    = useRetryQueue();
   const { masteryMap } = useUserMastery();
   const { recordAttempt } = useLevelProgress();
-  const { profile } = useAuth();
+  const { user, profile } = useAuth();
   const t = useT();
   const dailyLimit = useDailyLimit();
   const {
     isLoading: calibrationLoading,
   } = useUserEnvOffset();
   const isAdminOrDev  = profile?.role === "admin" || import.meta.env.DEV;
+
+  // 4-F: 약점·streak·adaptive hook (출제 가중치 + 정답률 적응 + 세션 마스터)
+  const sublevelKey = `${level}-${sublevel}`;
+  const isPremium = getUserTier(user, profile ?? null) === "pro";
+  const { weakScoreMap } = useUserWeakScores(level, sublevel);
+  const sessionStreak = useSessionStreakMastery(sublevelKey);
+  const adaptive = useAdaptiveDifficulty(sublevelKey, isPremium);
+
   const noteStartTime = useRef<number>(performance.now());
   const updateNoteStartTime = (label: string) => {
     const now = performance.now();
@@ -364,6 +377,8 @@ export default function NoteGame({
   // §0.1 전역 dedup — 직전에 화면에 떠 있던 음표 (정답·오답 모두 갱신).
   // popDueOrNull에 전달해 같은 ID retry pop을 1턴 지연시킨다.
   const lastShownNoteRef = useRef<NoteType | null>(null);
+  // 4-F: 직전 3개 noteId (최근이 [0]). softAvoid multiplier 계산용. FIFO cap 3.
+  const prevNotesRef = useRef<string[]>([]);
 
   const totalAttemptsRef  = useRef(0);
   const totalCorrectRef   = useRef(0);
@@ -470,6 +485,13 @@ export default function NoteGame({
     const acc = note.accidental ?? "";
     const c = note.clef ?? clefForLog;
     return `${c}:${note.key}${acc}${note.octave}`;
+  }, []);
+
+  // 4-F: 직전 3개 noteId 갱신 (정답·오답·timeout 공통). FIFO cap 3, 최근이 [0].
+  const pushPrevNote = useCallback((noteId: string): void => {
+    const arr = prevNotesRef.current;
+    arr.unshift(noteId);
+    while (arr.length > 3) arr.pop();
   }, []);
 
   const addMissedNote = useCallback((note: NoteType, clefForLog: "treble" | "bass") => {
@@ -1014,6 +1036,13 @@ export default function NoteGame({
       clef: clefForLog,
     };
 
+    // 4-F: 세션 hook용 noteId (clef:key+accidental+octave).
+    const targetNoteId = missedNoteIdOf(currentTarget, clefForLog);
+    const isCorrect = answer === correctAnswer;
+    sessionStreak.recordAttempt(targetNoteId, isCorrect, responseTime);
+    adaptive.recordAttempt(isCorrect);
+    pushPrevNote(targetNoteId);
+
     if (answer === correctAnswer) {
       const stageBatchSize = currentStageConfig.batchSize;
       const newEntry = {
@@ -1154,7 +1183,7 @@ export default function NoteGame({
       setTimerKey(prev => prev + 1);
       updateNoteStartTime("오답 후 재시도");
     }
-  }, [phase, currentTarget, currentIndex, batchAndKey.retryCount, currentStageConfig.batchSize, lives, individualStreak, logNote, recorder, level, isCustom, customClef, retryQueue, advanceToNextTurn, addMissedNote, removeMissedNote, missedNoteIdOf, advanceFinalRetry]);
+  }, [phase, currentTarget, currentIndex, batchAndKey.retryCount, currentStageConfig.batchSize, lives, individualStreak, logNote, recorder, level, isCustom, customClef, retryQueue, advanceToNextTurn, addMissedNote, removeMissedNote, missedNoteIdOf, advanceFinalRetry, sessionStreak, adaptive, pushPrevNote]);
 
   const handleTimerExpire = useCallback(() => {
     if ((phase !== "playing" && phase !== "final-retry") || !currentTarget) return;
@@ -1162,6 +1191,12 @@ export default function NoteGame({
     // §0.1 전역 dedup: 타이머 만료도 직전 표시 음표 갱신 (오답과 동일 처리).
     lastShownNoteRef.current = currentTarget;
     const clefForLog = currentTarget.clef ?? (isCustom ? customClef : getClefForLevel(level));
+
+    // 4-F: timeout = 오답으로 처리. responseTime=TIMER_SECONDS (sec).
+    const timeoutNoteId = missedNoteIdOf(currentTarget, clefForLog);
+    sessionStreak.recordAttempt(timeoutNoteId, false, TIMER_SECONDS);
+    adaptive.recordAttempt(false);
+    pushPrevNote(timeoutNoteId);
 
     logNote({
       note_key: getNoteAnswer(currentTarget),
@@ -1220,7 +1255,7 @@ export default function NoteGame({
     // 타이머만 리셋해서 사용자가 같은 음표를 다시 풀 시간 확보.
     setTimerKey(prev => prev + 1);
     updateNoteStartTime("타임아웃 후 재시도");
-  }, [phase, lives, currentTarget, currentIndex, batchAndKey.retryCount, logNote, recorder, level, isCustom, customClef, retryQueue, addMissedNote, missedNoteIdOf, advanceFinalRetry]);
+  }, [phase, lives, currentTarget, currentIndex, batchAndKey.retryCount, logNote, recorder, level, isCustom, customClef, retryQueue, addMissedNote, missedNoteIdOf, advanceFinalRetry, sessionStreak, adaptive, pushPrevNote, TIMER_SECONDS]);
 
   const handleReplay = () => {
     setLives(MAX_LIVES);
@@ -1245,6 +1280,12 @@ export default function NoteGame({
     totalCorrectRef.current  = 0;
     currentStreakRef.current = 0;
     bestStreakRef.current    = 0;
+
+    // 4-F: 세션 hook + 직전음 큐 + PickDecision trace 초기화.
+    sessionStreak.reset();
+    adaptive.reset();
+    prevNotesRef.current = [];
+    clearPickDecisions();
 
     const sessionType: "regular" | "custom_score" = isCustom ? "custom_score" : "regular";
     recorder.startSession(level, sessionType);
