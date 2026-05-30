@@ -130,11 +130,19 @@ export function metricStreakMasteredNoteCount(decisions: PickDecision[]): Metric
 }
 
 /**
- * 조표 영향 음 출제 비율.
+ * 조표 영향 음 출제 비율 — 슬롯 결정 단위.
+ *
+ * decisions 기반 (source !== "n_plus_2_recovery"). N+2 회복은 이전 슬롯 결정의 재출제이므로
+ * 새 슬롯 비율 측정에서 제외. events 기반으로 측정하면 weak_on 시나리오에서 재시도 bias로
+ * 비율이 부풀려짐 (예: 시나리오 B 0.798 vs 슬롯 기준 ~0.63).
+ *
  *   - keySig의 sharps/flats가 비었으면 0 (Lv1-4 무의미).
- *   - 영향 음 = shown.accidental 존재 AND shown.key가 키 영향 letter set에 포함.
+ *   - 영향 음 = pickedNote.accidental 존재 AND pickedNote.key가 키 영향 letter set에 포함.
  */
-export function metricAccidentalRatio(events: SimEvent[], keySig: KeySignatureType): MetricResult {
+export function metricAccidentalRatio(
+  decisions: PickDecision[],
+  keySig: KeySignatureType,
+): MetricResult {
   const accidentalLetters = new Set<string>([
     ...(keySig.sharps ?? []),
     ...(keySig.flats ?? []),
@@ -144,9 +152,10 @@ export function metricAccidentalRatio(events: SimEvent[], keySig: KeySignatureTy
   }
   let total = 0;
   let withAcc = 0;
-  for (const e of events) {
+  for (const d of decisions) {
+    if (d.source === "n_plus_2_recovery") continue;
     total++;
-    if (e.shown.accidental !== undefined && accidentalLetters.has(e.shown.key)) {
+    if (d.pickedNote.accidental !== undefined && accidentalLetters.has(d.pickedNote.key)) {
       withAcc++;
     }
   }
@@ -343,7 +352,7 @@ function computeMetricValue(
       return { value: r.value, detail: r.detail };
     }
     case "accidentalRatioMatchesTarget": {
-      const r = metricAccidentalRatio(result.events, result.keySig);
+      const r = metricAccidentalRatio(result.decisions, result.keySig);
       return { value: r.value, detail: r.detail };
     }
     case "weakSlotPickRateOnWeakIds": {

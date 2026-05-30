@@ -199,21 +199,54 @@ describe("metricStreakMasteredNoteCount", () => {
 
 describe("metricAccidentalRatio", () => {
   it("keySig 비어있으면 0", () => {
-    const events = [mockEvent()];
-    const r = metricAccidentalRatio(events, { key: "C", abcKey: "C" });
+    const ds = [mockDecision()];
+    const r = metricAccidentalRatio(ds, { key: "C", abcKey: "C" });
     expect(r.value).toBe(0);
     expect(r.detail?.reason).toBe("no accidentals");
   });
 
-  it("G major (sharps=[F]) — F# 음표 비율 계산", () => {
-    const events = [
-      mockEvent({ shown: { name: "파", key: "F", y: 0, octave: "4", accidental: "#" }, shownId: "treble:F#4" }),
-      mockEvent({ shown: { name: "도", key: "C", y: 0, octave: "4" }, shownId: "treble:C4" }),
-      mockEvent({ shown: { name: "파", key: "F", y: 0, octave: "5", accidental: "#" }, shownId: "treble:F#5" }),
+  it("G major (sharps=[F]) — 결정 단위 F# 비율 계산", () => {
+    const ds = [
+      mockDecision({
+        pickedNote: { key: "F", octave: 4, clef: "treble", accidental: "#", noteId: "treble:F#4" },
+      }),
+      mockDecision({
+        pickedNote: { key: "C", octave: 4, clef: "treble", noteId: "treble:C4" },
+      }),
+      mockDecision({
+        pickedNote: { key: "F", octave: 5, clef: "treble", accidental: "#", noteId: "treble:F#5" },
+      }),
     ];
-    const r = metricAccidentalRatio(events, { key: "G", abcKey: "G", sharps: ["F"] });
+    const r = metricAccidentalRatio(ds, { key: "G", abcKey: "G", sharps: ["F"] });
     expect(r.value).toBeCloseTo(2 / 3, 5);
     expect(r.detail).toEqual({ withAcc: 2, total: 3 });
+  });
+
+  it("n_plus_2_recovery 결정은 제외 (재시도 bias 회피)", () => {
+    const ds = [
+      // 새 슬롯 결정 — F#
+      mockDecision({
+        source: "weak_weighted",
+        pickedNote: { key: "F", octave: 4, clef: "treble", accidental: "#", noteId: "treble:F#4" },
+      }),
+      // 새 슬롯 결정 — C
+      mockDecision({
+        source: "general",
+        pickedNote: { key: "C", octave: 4, clef: "treble", noteId: "treble:C4" },
+      }),
+      // n+2 회복은 카운트 X (F#가 여러 번 재출제돼도 비율 부풀리지 X)
+      mockDecision({
+        source: "n_plus_2_recovery",
+        pickedNote: { key: "F", octave: 4, clef: "treble", accidental: "#", noteId: "treble:F#4" },
+      }),
+      mockDecision({
+        source: "n_plus_2_recovery",
+        pickedNote: { key: "F", octave: 4, clef: "treble", accidental: "#", noteId: "treble:F#4" },
+      }),
+    ];
+    const r = metricAccidentalRatio(ds, { key: "G", abcKey: "G", sharps: ["F"] });
+    expect(r.value).toBe(0.5); // 1 / 2, n+2 제외
+    expect(r.detail).toEqual({ withAcc: 1, total: 2 });
   });
 });
 
