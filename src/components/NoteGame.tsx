@@ -18,13 +18,30 @@ import { playNote, playWrong, isSamplerReady, initSound, ensureAudioReady } from
 import { useNoteLogger } from "@/hooks/useNoteLogger";
 import { useSessionRecorder } from "@/hooks/useSessionRecorder";
 import { useRetryQueue } from "@/hooks/useRetryQueue";
-import { useUserMastery, type MasteryMap } from "@/hooks/useUserMastery";
-import { useUserWeakScores } from "@/hooks/useUserWeakScores";
+import { useUserMastery, type MasteryMap, type MasteryFlag } from "@/hooks/useUserMastery";
+import { useUserWeakScores, type WeakScoreMap } from "@/hooks/useUserWeakScores";
 import { useSessionStreakMastery } from "@/hooks/useSessionStreakMastery";
 import { useAdaptiveDifficulty } from "@/hooks/useAdaptiveDifficulty";
-import { getNoteWeight, weightedPickIndex } from "@/lib/noteWeighting";
+import {
+  getNoteWeight,
+  weightedPickIndex,
+  scoreToWeakMultiplier,
+  getKeySignatureMultiplier,
+  getSoftAvoidMultiplier,
+  extractNoteName,
+  MASTERY_WEIGHTS,
+  type AdaptiveMode,
+} from "@/lib/noteWeighting";
 import { getUserTier } from "@/lib/subscriptionTier";
-import { clearPickDecisions } from "@/lib/pickDecision";
+import {
+  clearPickDecisions,
+  recordPickDecision,
+  buildReasonText,
+  PICK_DECISION_ENABLED,
+  type PickCandidate,
+  type PickDecision,
+  type PickSource,
+} from "@/lib/pickDecision";
 import {
   SUBLEVEL_CONFIGS,
   getStagesFor,
@@ -176,12 +193,193 @@ function getAccidentalRatio(batchSize: number): number {
   return 0.70;                     // 3:7 (batchSize=7)
 }
 
+// ═════════════════════════════════════════════════════════════════
+// 4-F: 가중 출제 컨텍스트 — generateBatch/generateKeyBatch가 슬롯 결정과
+// multiplier·trace를 수행할 때 필요한 입력을 한 묶음으로 전달.
+// 미지정 시 두 함수는 legacy 동작 (균등+mastery)을 유지 — 시뮬레이터·테스트 호환.
+// ═════════════════════════════════════════════════════════════════
+export type WeightingContext = {
+  weakScoreMap: WeakScoreMap;
+  getStreakMultiplier: (noteId: string) => number;
+  isStreakMastered: (noteId: string) => boolean;
+  prevNotes: string[];
+  keySignatureNotes: string[];
+  turn: number;
+  accuracyBeforePick: number;
+  weakSlotRatio: number;
+  adaptiveMode: AdaptiveMode;
+  keySignatureLabel: string;
+  queueState: string[];
+};
+
+function buildNoteId(
+  clef: "treble" | "bass",
+  key: string,
+  octave: string,
+  accidental?: "#" | "b",
+): string {
+  const acc = accidental ?? "";
+  return `${clef}:${key}${acc}${octave}`;
+}
+
+function masteryFlagOf(
+  masteryMap: MasteryMap,
+  clef: "treble" | "bass",
+  key: string,
+  octave: string,
+  accidental?: "#" | "b",
+): MasteryFlag {
+  if (masteryMap.size === 0) return "normal";
+  const acc = accidental ?? "";
+  return masteryMap.get(`${clef}:${key}${acc}${octave}`) ?? "normal";
+}
+
+function keySignatureNotesOf(keySig: KeySignatureType): string[] {
+  const out: string[] = [];
+  if (keySig.sharps) for (const l of keySig.sharps) out.push(`${l}#`);
+  if (keySig.flats)  for (const l of keySig.flats)  out.push(`${l}b`);
+  return out;
+}
+
+function keySignatureLabelOf(keySig: KeySignatureType): string {
+  const sharps = keySig.sharps ?? [];
+  const flats  = keySig.flats  ?? [];
+  const accNames = [
+    ...sharps.map((l) => `${l}#`),
+    ...flats.map((l) => `${l}b`),
+  ];
+  if (accNames.length === 0) return `${keySig.key} major (none)`;
+  return `${keySig.key} major (${accNames.join(", ")})`;
+}
+
+/**
+ * 4-F: 한 슬롯의 모든 후보 가중치 + (PICK_DECISION_ENABLED일 때) 분해 breakdown 계산.
+ *
+ *   finalWeight = baseWeight × masteryMult × keySigMult × streakMult × softAvoidMult
+ *
+ * - baseWeight: 슬롯 종류에 따라
+ *     · weak_weighted: scoreToWeakMultiplier(combinedWeakScore) — 행 없으면 1.0
+ *     · general      : 1.0
+ * - 그 외 multiplier는 양쪽 슬롯 공통.
+ *
+ * candidates는 이미 필터된 sub-pool (generateKeyBatch의 wantAcc 분기 결과 등).
+ * resolveAccidental: candidates의 NoteType에서 실제 accidental(#/b/undefined) 결정.
+ */
+function buildSlotWeightsAndCandidates(args: {
+  candidates: NoteType[];
+  clef: "treble" | "bass";
+  masteryMap: MasteryMap;
+  weightingContext: WeightingContext;
+  slotSource: "weak_weighted" | "general";
+  resolveAccidental: (note: NoteType) => "#" | "b" | undefined;
+}): { weights: number[]; candidateBreakdown: PickCandidate[] | null } {
+  const { candidates, clef, masteryMap, weightingContext, slotSource, resolveAccidental } = args;
+  const weights: number[] = [];
+  const candidateBreakdown: PickCandidate[] | null = PICK_DECISION_ENABLED ? [] : null;
+
+  for (const note of candidates) {
+    const acc = resolveAccidental(note);
+    const noteId = buildNoteId(clef, note.key, note.octave, acc);
+
+    const mFlag = masteryFlagOf(masteryMap, clef, note.key, note.octave, acc);
+    const masteryMult = MASTERY_WEIGHTS[mFlag];
+    const keySigMult = getKeySignatureMultiplier(noteId, weightingContext.keySignatureNotes);
+    const streakMult = weightingContext.getStreakMultiplier(noteId);
+    const softAvoidMult = getSoftAvoidMultiplier(weightingContext.prevNotes, noteId);
+
+    const weakEntry =
+      slotSource === "weak_weighted" ? weightingContext.weakScoreMap.get(noteId) : undefined;
+    const baseWeight =
+      slotSource === "weak_weighted"
+        ? scoreToWeakMultiplier(weakEntry?.combined_score ?? null)
+        : 1.0;
+
+    const finalWeight = baseWeight * masteryMult * keySigMult * streakMult * softAvoidMult;
+    weights.push(finalWeight);
+
+    if (candidateBreakdown) {
+      candidateBreakdown.push({
+        noteId,
+        baseWeight,
+        isKeySignatureNote: weightingContext.keySignatureNotes.includes(extractNoteName(noteId)),
+        keySignatureMultiplier: keySigMult,
+        accuracyScore: weakEntry?.accuracy_score ?? null,
+        responseTimeScore: weakEntry?.response_time_score ?? null,
+        combinedWeakScore: weakEntry?.combined_score ?? null,
+        weakMultiplier: scoreToWeakMultiplier(weakEntry?.combined_score ?? null),
+        masteryFlag: mFlag,
+        masteryMultiplier: masteryMult,
+        streakMastered: weightingContext.isStreakMastered(noteId),
+        streakMultiplier: streakMult,
+        softAvoidMultiplier: softAvoidMult,
+        finalWeight,
+        pickProbability: 0,
+      });
+    }
+  }
+
+  return { weights, candidateBreakdown };
+}
+
+/** 4-F: 슬롯(weak_weighted/general)에서 결정된 음표를 PickDecision으로 기록. */
+function recordSlotPickDecision(args: {
+  weightingContext: WeightingContext;
+  slotSource: PickSource;
+  pickedKey: string;
+  pickedOctave: string;
+  pickedAccidental: "#" | "b" | undefined;
+  clef: "treble" | "bass";
+  weights: number[];
+  candidateBreakdown: PickCandidate[];
+}): void {
+  const {
+    weightingContext, slotSource, pickedKey, pickedOctave, pickedAccidental,
+    clef, weights, candidateBreakdown,
+  } = args;
+  const total = weights.reduce((a, b) => a + b, 0);
+  if (total > 0) {
+    for (const c of candidateBreakdown) c.pickProbability = c.finalWeight / total;
+  }
+  const pickedNoteId = buildNoteId(clef, pickedKey, pickedOctave, pickedAccidental);
+  const keyNotesInPool = candidateBreakdown.filter((c) => c.isKeySignatureNote).length;
+  const decisionPartial: Omit<PickDecision, "reasonText"> = {
+    turn: weightingContext.turn,
+    pickedNote: {
+      key: pickedKey,
+      octave: parseInt(pickedOctave, 10),
+      clef,
+      accidental: pickedAccidental,
+      noteId: pickedNoteId,
+    },
+    source: slotSource,
+    context: {
+      accuracyBeforePick: weightingContext.accuracyBeforePick,
+      adaptiveMode: weightingContext.adaptiveMode,
+      weakSlotRatio: weightingContext.weakSlotRatio,
+      queueState: weightingContext.queueState,
+      previousNotes: weightingContext.prevNotes,
+      keySignature: weightingContext.keySignatureLabel,
+      sublevelPoolSize: candidateBreakdown.length,
+      keySignatureNotesInPool: keyNotesInPool,
+    },
+    candidates: candidateBreakdown,
+    randomValue: null,
+    cumulativeProbabilityHit: pickedNoteId,
+    timestamp: Date.now(),
+  };
+  recordPickDecision({
+    ...decisionPartial,
+    reasonText: buildReasonText(decisionPartial),
+  });
+}
+
 export function generateKeyBatch(
   _level: number,
   size: number,
   keySig: KeySignatureType,
   masteryMap: MasteryMap = new Map(),
   lastShownNote?: NoteType | null,
+  weightingContext?: WeightingContext,
 ): { notes: NoteType[] } {
   const accidentalLetters = new Set<string>([
     ...(keySig.sharps || []),
@@ -229,13 +427,32 @@ export function generateKeyBatch(
       : basePool.filter(n => !accidentalLetters.has(n.key));
     const candidates = filtered.length > 0 ? filtered : basePool;
 
-    let picked: NoteType;
-    let attempts = 0;
-    do {
-      const weights = candidates.map(n => {
+    // 4-F: weightingContext 있으면 슬롯 결정 + multiplier 합성; 없으면 legacy.
+    let weights: number[];
+    let candidateBreakdown: PickCandidate[] | null = null;
+    let slotSource: "weak_weighted" | "general" | null = null;
+    if (weightingContext) {
+      slotSource = Math.random() < weightingContext.weakSlotRatio ? "weak_weighted" : "general";
+      const r = buildSlotWeightsAndCandidates({
+        candidates,
+        clef,
+        masteryMap,
+        weightingContext,
+        slotSource,
+        resolveAccidental: (n) => getAccidental(n.key),
+      });
+      weights = r.weights;
+      candidateBreakdown = r.candidateBreakdown;
+    } else {
+      weights = candidates.map(n => {
         const acc = getAccidental(n.key);
         return getNoteWeight(masteryMap, clef, n.key, n.octave, acc);
       });
+    }
+
+    let picked: NoteType;
+    let attempts = 0;
+    do {
       const idx = weightedPickIndex(weights);
       picked = candidates[idx >= 0 ? idx : 0];
       attempts++;
@@ -260,6 +477,20 @@ export function generateKeyBatch(
       accidental: acc,
       clef,
     });
+
+    // 4-F: PickDecision trace (PICK_DECISION_ENABLED일 때만 candidateBreakdown 생성됨)
+    if (PICK_DECISION_ENABLED && weightingContext && slotSource && candidateBreakdown) {
+      recordSlotPickDecision({
+        weightingContext,
+        slotSource,
+        pickedKey: picked.key,
+        pickedOctave: picked.octave,
+        pickedAccidental: acc,
+        clef,
+        weights,
+        candidateBreakdown,
+      });
+    }
   }
 
   return { notes: batch };
@@ -272,15 +503,35 @@ export function generateBatch(
   clef: "treble" | "bass",
   masteryMap: MasteryMap = new Map(),
   lastShownNote?: NoteType | null,
+  weightingContext?: WeightingContext,
 ): NoteType[] {
   const batch: NoteType[] = [];
   for (let i = 0; i < size; i++) {
+    // 4-F: weightingContext 있으면 슬롯 결정 + multiplier 합성; 없으면 legacy.
+    let weights: number[];
+    let candidateBreakdown: PickCandidate[] | null = null;
+    let slotSource: "weak_weighted" | "general" | null = null;
+    if (weightingContext) {
+      slotSource = Math.random() < weightingContext.weakSlotRatio ? "weak_weighted" : "general";
+      const r = buildSlotWeightsAndCandidates({
+        candidates: pool,
+        clef,
+        masteryMap,
+        weightingContext,
+        slotSource,
+        resolveAccidental: (note) => note.accidental,
+      });
+      weights = r.weights;
+      candidateBreakdown = r.candidateBreakdown;
+    } else {
+      weights = pool.map(note =>
+        getNoteWeight(masteryMap, clef, note.key, note.octave, note.accidental)
+      );
+    }
+
     let n: NoteType;
     let attempts = 0;
     do {
-      const weights = pool.map(note =>
-        getNoteWeight(masteryMap, clef, note.key, note.octave, note.accidental)
-      );
       const idx = weightedPickIndex(weights);
       n = pool[idx >= 0 ? idx : Math.floor(Math.random() * pool.length)];
       attempts++;
@@ -298,6 +549,20 @@ export function generateBatch(
         lastShownNote.octave === n.octave)
     );
     batch.push({ ...n, clef });
+
+    // 4-F: PickDecision trace (PICK_DECISION_ENABLED일 때만 candidateBreakdown 생성됨)
+    if (PICK_DECISION_ENABLED && weightingContext && slotSource && candidateBreakdown) {
+      recordSlotPickDecision({
+        weightingContext,
+        slotSource,
+        pickedKey: n.key,
+        pickedOctave: n.octave,
+        pickedAccidental: n.accidental,
+        clef,
+        weights,
+        candidateBreakdown,
+      });
+    }
   }
   return batch;
 }
@@ -400,19 +665,43 @@ export default function NoteGame({
     const firstBatchSize = stages[0].batchSize;
 
     if (isCustom) {
+      // custom_score: 첫 batch는 randomized 안 함 (그대로 slice). trace 미적용.
       const slice = customNotes.slice(0, Math.min(customNotes.length, firstBatchSize))
         .map(n => ({ ...n, clef: customClef }));
       return { notes: slice, keySig: { key: "C", abcKey: "C" } as KeySignatureType };
     }
+    // 4-F (Q3): 첫 batch도 weightingContext 적용 + trace.
+    const baseInitCtx = {
+      weakScoreMap,
+      getStreakMultiplier: sessionStreak.getMasteryMultiplier,
+      isStreakMastered: sessionStreak.isMastered,
+      prevNotes: [] as string[],
+      turn: 0,
+      accuracyBeforePick: 0,
+      weakSlotRatio: adaptive.getWeakSlotRatio(),
+      adaptiveMode: adaptive.getAdaptiveMode(),
+      queueState: [] as string[],
+    };
     if (level >= 5) {
       const keySig = getRandomKeySignature(level);
-      const result = generateKeyBatch(level, firstBatchSize, keySig, masteryMap);
+      const ctx: WeightingContext = {
+        ...baseInitCtx,
+        keySignatureNotes: keySignatureNotesOf(keySig),
+        keySignatureLabel: keySignatureLabelOf(keySig),
+      };
+      const result = generateKeyBatch(level, firstBatchSize, keySig, masteryMap, undefined, ctx);
       return { notes: result.notes, keySig };
     }
     const lvClef = getClefForLevel(level);
+    const keySig: KeySignatureType = { key: "C", abcKey: "C" };
+    const ctx: WeightingContext = {
+      ...baseInitCtx,
+      keySignatureNotes: keySignatureNotesOf(keySig),
+      keySignatureLabel: keySignatureLabelOf(keySig),
+    };
     return {
-      notes: generateBatch(NOTES, firstBatchSize, lvClef, masteryMap),
-      keySig: { key: "C", abcKey: "C" } as KeySignatureType,
+      notes: generateBatch(NOTES, firstBatchSize, lvClef, masteryMap, undefined, ctx),
+      keySig,
     };
   });
 
@@ -621,31 +910,50 @@ export default function NoteGame({
   // forceNewKeySig=true이면 Lv5+에서 새 keySig 생성 (stage 전환·리플레이 시).
   // false(기본)면 currentKeySignature 재사용 → 같은 stage 안에서 키사인 고정 유지.
   // lastShownNote: 직전 화면에 떠 있던 음표 — 새 batch[0]이 이것과 같은 음표가 되지 않도록 회피 (옵션 D).
+  // baseCtx: 4-F weighting 베이스 (keySig 의존 필드는 여기서 enrich) — 미지정 시 legacy 동작.
   const generateNewBatch = useCallback((
     batchSize: number,
     forceNewKeySig: boolean = false,
     lastShownNote?: NoteType | null,
+    baseCtx?: Omit<WeightingContext, "keySignatureNotes" | "keySignatureLabel">,
   ): {
     batch: NoteType[];
     keySig: KeySignatureType;
   } => {
+    const enrich = (keySig: KeySignatureType): WeightingContext | undefined =>
+      baseCtx
+        ? {
+            ...baseCtx,
+            keySignatureNotes: keySignatureNotesOf(keySig),
+            keySignatureLabel: keySignatureLabelOf(keySig),
+          }
+        : undefined;
+
     if (isCustom) {
       return {
-        batch: generateBatch(customNotes, batchSize, customClef, masteryMap, lastShownNote),
+        batch: generateBatch(
+          customNotes,
+          batchSize,
+          customClef,
+          masteryMap,
+          lastShownNote,
+          enrich(currentKeySignature),
+        ),
         keySig: currentKeySignature,
       };
     }
     if (level >= 5) {
       const keySig = forceNewKeySig ? getRandomKeySignature(level) : currentKeySignature;
       return {
-        batch: generateKeyBatch(level, batchSize, keySig, masteryMap, lastShownNote).notes,
+        batch: generateKeyBatch(level, batchSize, keySig, masteryMap, lastShownNote, enrich(keySig)).notes,
         keySig,
       };
     }
     const lvClef = getClefForLevel(level);
+    const keySig: KeySignatureType = { key: "C", abcKey: "C" };
     return {
-      batch: generateBatch(NOTES, batchSize, lvClef, masteryMap, lastShownNote),
-      keySig: { key: "C", abcKey: "C" } as KeySignatureType,
+      batch: generateBatch(NOTES, batchSize, lvClef, masteryMap, lastShownNote, enrich(keySig)),
+      keySig,
     };
   }, [NOTES, isCustom, customNotes, level, customClef, masteryMap, currentKeySignature]);
 
@@ -679,6 +987,21 @@ export default function NoteGame({
     keySig: KeySignatureType;
     retryCount: number;
   } => {
+    // 4-F: 결정 시점 baseCtx (keySig 의존 필드는 generateNewBatch에서 enrich).
+    const totalA = totalAttemptsRef.current;
+    const accuracy = totalA > 0 ? totalCorrectRef.current / totalA : 0;
+    const baseCtx: Omit<WeightingContext, "keySignatureNotes" | "keySignatureLabel"> = {
+      weakScoreMap,
+      getStreakMultiplier: sessionStreak.getMasteryMultiplier,
+      isStreakMastered: sessionStreak.isMastered,
+      prevNotes: prevNotesRef.current.slice(),
+      turn: turnCounterRef.current,
+      accuracyBeforePick: accuracy,
+      weakSlotRatio: adaptive.getWeakSlotRatio(),
+      adaptiveMode: adaptive.getAdaptiveMode(),
+      queueState: retryQueue.snapshot.map((e) => e.id),
+    };
+
     const retryNotes: NoteType[] = [];
     let prev: NoteType | null = lastShownNote ?? null;
 
@@ -702,6 +1025,41 @@ export default function NoteGame({
         clef: due.clef,
       };
       retryNotes.push(retryNote);
+
+      // 4-F: N+2 회복 trace.
+      if (PICK_DECISION_ENABLED) {
+        const retryNoteId = buildNoteId(due.clef, due.key, due.octave, due.accidental);
+        const decisionPartial: Omit<PickDecision, "reasonText"> = {
+          turn: baseCtx.turn,
+          pickedNote: {
+            key: due.key,
+            octave: parseInt(due.octave, 10),
+            clef: due.clef,
+            accidental: due.accidental,
+            noteId: retryNoteId,
+          },
+          source: "n_plus_2_recovery",
+          context: {
+            accuracyBeforePick: baseCtx.accuracyBeforePick,
+            adaptiveMode: baseCtx.adaptiveMode,
+            weakSlotRatio: baseCtx.weakSlotRatio,
+            queueState: baseCtx.queueState,
+            previousNotes: baseCtx.prevNotes,
+            keySignature: keySignatureLabelOf(currentKeySignature),
+            sublevelPoolSize: 0,
+            keySignatureNotesInPool: 0,
+          },
+          candidates: [],
+          randomValue: null,
+          cumulativeProbabilityHit: null,
+          timestamp: Date.now(),
+        };
+        recordPickDecision({
+          ...decisionPartial,
+          reasonText: buildReasonText(decisionPartial),
+        });
+      }
+
       prev = retryNote;
     }
 
@@ -711,13 +1069,16 @@ export default function NoteGame({
       return { batch: retryNotes, keySig: currentKeySignature, retryCount: retryNotes.length };
     }
 
-    const newResult = generateNewBatch(newCount, forceNewKeySig, prev);
+    const newResult = generateNewBatch(newCount, forceNewKeySig, prev, baseCtx);
     return {
       batch: [...retryNotes, ...newResult.batch],
       keySig: newResult.keySig,
       retryCount: retryNotes.length,
     };
-  }, [generateNewBatch, retryQueue, isCustom, customClef, level, currentKeySignature]);
+  }, [
+    generateNewBatch, retryQueue, isCustom, customClef, level, currentKeySignature,
+    weakScoreMap, sessionStreak, adaptive,
+  ]);
 
   /**
    * §4 (2026-05-01) — final-retry phase batch 구성:
