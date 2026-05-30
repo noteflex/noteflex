@@ -172,6 +172,32 @@ export function getKeySignatureMultiplierNormalized(
 }
 
 /**
+ * 세션 내 streak 자동 마스터 multiplier.
+ *
+ * 조건: streak >= minStreak AND avgResponseTime < maxAvgTime
+ *   → 0.3 (마스터, 가끔만 출제)
+ *   그 외 → 1.0
+ *
+ * avgResponseTime이 null이면 아직 정답 기록 없음 → 1.0.
+ *
+ * 기본값:
+ *   - minStreak = 5  (연속 5회 정답)
+ *   - maxAvgTime = 1.5 (최근 평균 응답 1.5초 미만)
+ *
+ * Hook(useSessionStreakMastery)과 시뮬레이터에서 공통 사용 — parity 보장.
+ */
+export function computeStreakMultiplier(
+  streak: number,
+  avgResponseTime: number | null,
+  minStreak: number = 5,
+  maxAvgTime: number = 1.5,
+): number {
+  if (avgResponseTime === null) return 1.0;
+  if (streak >= minStreak && avgResponseTime < maxAvgTime) return 0.3;
+  return 1.0;
+}
+
+/**
  * combined_score → 약점 가중 multiplier 변환.
  *
  * 공식: 1.0 + (combinedScore × (max - 1.0))
