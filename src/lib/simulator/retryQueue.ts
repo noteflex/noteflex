@@ -213,4 +213,9 @@ export class SimRetryQueue {
   getMissCount(note: RetryNoteKey): number {
     return this.miss.get(composeId(note)) ?? 0;
   }
+
+  /** 5-A: PickDecision context의 queueState 빌드용. 현재 큐의 모든 noteId 스냅샷. */
+  getIds(): string[] {
+    return Array.from(this.q.keys());
+  }
 }

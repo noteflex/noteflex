@@ -57,7 +57,7 @@ import {
 } from "@/components/practice/GrandStaffPractice";
 
 
-type NoteType = {
+export type NoteType = {
   name: string;
   key: string;
   y: number;
@@ -87,14 +87,14 @@ const FLAT_KEYS = [
   { key: "Cb", abcKey: "Cb", flats: ["B","E","A","D","G","C","F"] },
 ];
 
-type KeySignatureType = {
+export type KeySignatureType = {
   key: string;
   abcKey: string;
   sharps?: string[];
   flats?: string[];
 };
 
-function getRandomKeySignature(level: number): KeySignatureType {
+export function getRandomKeySignature(level: number): KeySignatureType {
   if (level === 5) return SHARP_KEYS[Math.floor(Math.random() * SHARP_KEYS.length)];
   if (level === 6) return FLAT_KEYS[Math.floor(Math.random() * FLAT_KEYS.length)];
   const allKeys = [...SHARP_KEYS, ...FLAT_KEYS];
@@ -212,7 +212,7 @@ export type WeightingContext = {
   queueState: string[];
 };
 
-function buildNoteId(
+export function buildNoteId(
   clef: "treble" | "bass",
   key: string,
   octave: string,
@@ -234,14 +234,14 @@ function masteryFlagOf(
   return masteryMap.get(`${clef}:${key}${acc}${octave}`) ?? "normal";
 }
 
-function keySignatureNotesOf(keySig: KeySignatureType): string[] {
+export function keySignatureNotesOf(keySig: KeySignatureType): string[] {
   const out: string[] = [];
   if (keySig.sharps) for (const l of keySig.sharps) out.push(`${l}#`);
   if (keySig.flats)  for (const l of keySig.flats)  out.push(`${l}b`);
   return out;
 }
 
-function keySignatureLabelOf(keySig: KeySignatureType): string {
+export function keySignatureLabelOf(keySig: KeySignatureType): string {
   const sharps = keySig.sharps ?? [];
   const flats  = keySig.flats  ?? [];
   const accNames = [
