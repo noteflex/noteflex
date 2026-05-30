@@ -9,7 +9,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
-import { LayoutDashboard, LogOut, UserCog, Sparkles } from "lucide-react";
+import { LayoutDashboard, LogOut, UserCog, Sparkles, ShieldCheck } from "lucide-react";
 
 export default function UserMenu() {
   const { user, profile, loading, signOut } = useAuth();
@@ -23,6 +23,7 @@ export default function UserMenu() {
   const isAutoNickname = nickname.startsWith("user_");
   const displayName = (!nickname || isAutoNickname) ? (email.split("@")[0] || "user") : nickname;
   const isPremium = !!profile?.is_premium;
+  const isAdmin = profile?.role === "admin";
 
   const handleLogout = async () => {
     await signOut();
@@ -61,6 +62,13 @@ export default function UserMenu() {
             <LayoutDashboard className="w-4 h-4 mr-2" aria-hidden="true" /> {t.userMenu.dashboard}
           </Link>
         </DropdownMenuItem>
+        {isAdmin && (
+          <DropdownMenuItem asChild>
+            <Link to="/admin" className="cursor-pointer">
+              <ShieldCheck className="w-4 h-4 mr-2" aria-hidden="true" /> 관리자 페이지
+            </Link>
+          </DropdownMenuItem>
+        )}
         <DropdownMenuSeparator />
         <DropdownMenuItem
           onClick={handleLogout}
