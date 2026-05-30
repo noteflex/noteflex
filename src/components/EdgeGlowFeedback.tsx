@@ -27,9 +27,10 @@ interface EdgeGlowFeedbackProps {
   onComplete?: () => void;
 }
 
+// CSS의 animation-duration과 일치 필수 — 불일치 시 애니메이션 도중 unmount.
 const DURATION_MS: Record<"correct" | "incorrect", number> = {
-  correct: 200,
-  incorrect: 350,
+  correct: 400,
+  incorrect: 600,
 };
 
 export default function EdgeGlowFeedback({ trigger, onComplete }: EdgeGlowFeedbackProps) {

@@ -190,12 +190,12 @@
   animation-fill-mode: forwards;
 }
 .edge-glow-correct {
-  box-shadow: inset 0 0 20px rgba(34, 197, 94, 0.4);
-  animation-duration: 200ms;
+  box-shadow: inset 0 0 32px rgba(34, 197, 94, 0.6);
+  animation-duration: 400ms;
 }
 .edge-glow-incorrect {
-  box-shadow: inset 0 0 28px rgba(239, 68, 68, 0.55);
-  animation-duration: 350ms;
+  box-shadow: inset 0 0 40px rgba(239, 68, 68, 0.7);
+  animation-duration: 600ms;
 }
 @media (prefers-reduced-motion: reduce) {
   .edge-glow-overlay { animation: none; opacity: 0.15; }
