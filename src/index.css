@@ -189,13 +189,13 @@
   animation-timing-function: ease-out;
   animation-fill-mode: forwards;
 }
-/* blur는 max(Npx, Nvmin)로 viewport 비례 — 풀스크린(1920+)·DevTools·모바일 일관 인지. */
+/* blur는 max(Npx, Nvmin)로 viewport 비례. spread로 가장자리 명확한 띠 + 페이드. */
 .edge-glow-correct {
-  box-shadow: inset 0 0 max(40px, 4vmin) rgba(34, 197, 94, 0.7);
+  box-shadow: inset 0 0 max(50px, 5vmin) 8px rgba(22, 163, 74, 0.95);
   animation-duration: 400ms;
 }
 .edge-glow-incorrect {
-  box-shadow: inset 0 0 max(50px, 5vmin) rgba(239, 68, 68, 0.8);
+  box-shadow: inset 0 0 max(60px, 6vmin) 10px rgba(220, 38, 38, 1);
   animation-duration: 600ms;
 }
 @media (prefers-reduced-motion: reduce) {
