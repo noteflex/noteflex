@@ -5,6 +5,8 @@ let synth: Tone.PolySynth | null = null;
 let gainNode: Tone.Gain | null = null;
 let initialized = false;
 let _samplerReady = false;
+/** 첫 sampler 실패 시 1회만 warn (콘솔 노이즈 회피). page reload 시 모듈 재초기화 → 다시 sample 시도. */
+let _samplerWarnLogged = false;
 
 const SALAMANDER_BASE = "https://tonejs.github.io/audio/salamander/";
 
@@ -129,15 +131,39 @@ export async function initSound(): Promise<void> {
 // ── 재생 함수 ───────────────────────────────────────────
 
 /**
+ * Sampler 호출 안전 wrapper. Tone.js Sampler가 CDN 부분 실패로 특정 sample buffer를
+ * 못 가졌을 때 triggerAttackRelease가 "buffer is either not set or not loaded"를
+ * 동기적으로 throw하는 경우가 있음. 그러면 이번 세션은 synth로 다운그레이드 (page
+ * reload 시 모듈 재초기화 → 다시 sample 시도).
+ *
+ * 반환: 성공 true / 실패 false (호출자가 synth 폴백).
+ */
+function trySampler(fn: () => void): boolean {
+  if (!_samplerReady || !sampler) return false;
+  try {
+    fn();
+    return true;
+  } catch (err) {
+    if (!_samplerWarnLogged) {
+      // eslint-disable-next-line no-console
+      console.warn(
+        "[sound] sampler buffer 실패 → 이번 세션은 synth 폴백 (page reload 시 재시도):",
+        err,
+      );
+      _samplerWarnLogged = true;
+    }
+    _samplerReady = false;
+    return false;
+  }
+}
+
+/**
  * 메인 재생: 1.6초 지속 (자연스러운 감쇠)
  * 벨로시티 0.9 — 또렷한 타건
  */
 export function playNote(note: string) {
-  if (_samplerReady && sampler) {
-    sampler.triggerAttackRelease(note, 1.6, undefined, 0.9);
-  } else {
-    synth?.triggerAttackRelease(note, 1.2, undefined, 0.88);
-  }
+  if (trySampler(() => sampler!.triggerAttackRelease(note, 1.6, undefined, 0.9))) return;
+  synth?.triggerAttackRelease(note, 1.2, undefined, 0.88);
 }
 
 /**
@@ -145,11 +171,8 @@ export function playNote(note: string) {
  */
 export function playPracticePianoKey(letter: string) {
   const note = PRACTICE_KEY_TO_NOTE[letter.toUpperCase()] ?? "C4";
-  if (_samplerReady && sampler) {
-    sampler.triggerAttackRelease(note, 0.35, undefined, 0.92);
-  } else {
-    synth?.triggerAttackRelease(note, 0.28, undefined, 0.88);
-  }
+  if (trySampler(() => sampler!.triggerAttackRelease(note, 0.35, undefined, 0.92))) return;
+  synth?.triggerAttackRelease(note, 0.28, undefined, 0.88);
 }
 
 export function playCorrect() {
@@ -160,20 +183,14 @@ export function playCorrect() {
  * 오답: 저음 짧게
  */
 export function playWrong() {
-  if (_samplerReady && sampler) {
-    sampler.triggerAttackRelease("E2", 0.3, undefined, 0.55);
-  } else if (synth) {
-    synth.triggerAttackRelease("E3", "8n");
-  }
+  if (trySampler(() => sampler!.triggerAttackRelease("E2", 0.3, undefined, 0.55))) return;
+  synth?.triggerAttackRelease("E3", "8n");
 }
 
 /**
  * 정답 공개용 긴 울림
  */
 export function playReveal(note: string) {
-  if (_samplerReady && sampler) {
-    sampler.triggerAttackRelease(note, 2.5, undefined, 0.92);
-  } else {
-    synth?.triggerAttackRelease(note, 2.0, undefined, 0.88);
-  }
+  if (trySampler(() => sampler!.triggerAttackRelease(note, 2.5, undefined, 0.92))) return;
+  synth?.triggerAttackRelease(note, 2.0, undefined, 0.88);
 }
