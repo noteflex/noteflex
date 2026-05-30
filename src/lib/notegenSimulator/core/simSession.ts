@@ -87,6 +87,13 @@ export interface SimConfig {
   seed: number;
   /** Lv5+에서 keySig 강제 지정. 미지정 시 getRandomKeySignature(level). */
   forcedKeySig?: KeySignatureType;
+  /**
+   * true면 all-stages-complete 도달 시 stage 상태만 reset(stageIdx=0, currentSet=1, setProgress=0)
+   * 하고 maxTurns까지 계속 루프. adaptive/sessionStreak/queue/prevNotes는 누적 유지.
+   * (NoteGame의 replay와 다름 — replay는 모든 상태 reset)
+   * 시나리오 통계 수집용. default false.
+   */
+  cyclic?: boolean;
 }
 
 /** 한 턴(= 한 시도)의 이벤트. 오답으로 같은 자리 재시도하면 turn은 같아도 attemptIndex가 증가. */
@@ -405,12 +412,20 @@ function runSimSessionInner(cfg: SimConfig): SimResult {
         // Stage 완료.
         const nextStageIdx = stageIdx + 1;
         if (nextStageIdx >= stages.length) {
-          endReason = "all-stages-complete";
-          break;
+          if (cfg.cyclic) {
+            // 통계 수집용 cyclic 모드: stage 상태만 reset, adaptive/streak/queue/prevNotes 유지.
+            stageIdx = 0;
+            currentSet = 1;
+            setProgress = 0;
+          } else {
+            endReason = "all-stages-complete";
+            break;
+          }
+        } else {
+          stageIdx = nextStageIdx;
+          currentSet = 1;
+          setProgress = 0;
         }
-        stageIdx = nextStageIdx;
-        currentSet = 1;
-        setProgress = 0;
       } else {
         currentSet = nextSet;
         setProgress = 0;

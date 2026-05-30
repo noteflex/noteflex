@@ -16,3 +16,10 @@ export { SimAdaptive } from "./core/simAdaptive";
 
 export { seedWeakScores } from "./core/seedWeakScores";
 export type { WeakScoreSeed } from "./core/seedWeakScores";
+
+// 5-B: 시나리오 5종.
+export {
+  scenarioA, scenarioB, scenarioC, scenarioD, scenarioE,
+  ALL_SCENARIOS,
+} from "./scenarios";
+export type { Scenario, ScenarioExpectedMetric, ScenarioPredicate } from "./scenarios";
