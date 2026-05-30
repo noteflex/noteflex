@@ -98,9 +98,9 @@ describe("Dashboard — 미니멀 단일 페이지 (3 상태 분기)", () => {
 
     renderAt("/dashboard");
 
-    // 신규 사용자 영역 박힘 (EN default)
+    // 신규 사용자 영역 적용됨 (EN default)
     expect(screen.getByText(/Start your first session/)).toBeInTheDocument();
-    // AI Feedback 카드 박힘 (Pro 후킹)
+    // AI Feedback 카드 적용됨 (Pro 후킹)
     expect(screen.getByTestId("ai-feedback-card")).toBeInTheDocument();
     // KPI 카드는 노출 X (신규 사용자 영역)
     expect(screen.queryByText(/Current Streak/)).not.toBeInTheDocument();
@@ -130,14 +130,14 @@ describe("Dashboard — 미니멀 단일 페이지 (3 상태 분기)", () => {
 
     renderAt("/dashboard");
 
-    // notice 박힘 + 스트릭 hint
+    // notice 적용됨 + 스트릭 hint
     expect(screen.getByText(/haven't started today yet/)).toBeInTheDocument();
-    // KPI 4 카드 박힘
+    // KPI 4 카드 적용됨
     expect(screen.getByText(/Current Streak/)).toBeInTheDocument();
     expect(screen.getByText(/Today XP/)).toBeInTheDocument();
-    // 마지막 활동 카드 박힘
+    // 마지막 활동 카드 적용됨
     expect(screen.getByText(/Last activity/)).toBeInTheDocument();
-    // AI Feedback 박힘
+    // AI Feedback 적용됨
     expect(screen.getByTestId("ai-feedback-card")).toBeInTheDocument();
   });
 
@@ -174,20 +174,20 @@ describe("Dashboard — 미니멀 단일 페이지 (3 상태 분기)", () => {
 
     // notice 박지 말 것 (오늘 활동 영역)
     expect(screen.queryByText(/haven't started today yet/)).not.toBeInTheDocument();
-    // KPI 박힘
+    // KPI 적용됨
     expect(screen.getByText(/Current Streak/)).toBeInTheDocument();
     expect(screen.getByText(/Today's practice done/)).toBeInTheDocument();
-    // AI Feedback 박힘
+    // AI Feedback 적용됨
     expect(screen.getByTestId("ai-feedback-card")).toBeInTheDocument();
   });
 
-  it("AI Feedback 카드는 Free 사용자에서 blur 박힘 (PremiumBlurCard)", () => {
+  it("AI Feedback 카드는 Free 사용자에서 blur 적용됨 (PremiumBlurCard)", () => {
     mockUseUserStats.mockReturnValue({ ...defaultStats, lastPracticeDate: null });
     mockUseMyStats.mockReturnValue({ ...defaultMyStats });
 
     renderAt("/dashboard");
 
-    // PremiumBlurCard 박힘 (Free 사용자 = blur)
+    // PremiumBlurCard 적용됨 (Free 사용자 = blur)
     expect(screen.getByTestId("blur-layer")).toBeInTheDocument();
     expect(screen.getByTestId("upgrade-overlay")).toBeInTheDocument();
   });
@@ -207,7 +207,7 @@ describe("Dashboard — 미니멀 단일 페이지 (3 상태 분기)", () => {
     expect(screen.queryByTestId("blur-layer")).not.toBeInTheDocument();
   });
 
-  it("reviewer 사용자는 AI Feedback blur 박힘 (Paddle 심사관 결제 흐름 검증)", () => {
+  it("reviewer 사용자는 AI Feedback blur 적용됨 (Paddle 심사관 결제 흐름 검증)", () => {
     mockUseAuth.mockReturnValue({
       user: { id: "reviewer-1" },
       profile: { role: "reviewer" },
@@ -218,7 +218,7 @@ describe("Dashboard — 미니멀 단일 페이지 (3 상태 분기)", () => {
 
     renderAt("/dashboard");
 
-    // reviewer = Free 동등 → blur 박힘
+    // reviewer = Free 동등 → blur 적용됨
     expect(screen.getByTestId("blur-layer")).toBeInTheDocument();
   });
 });

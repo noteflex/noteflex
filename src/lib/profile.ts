@@ -72,9 +72,9 @@ export async function completeProfile(
 
   if (error) {
     logger.error("프로필 영역 UPDATE 실패", error, {
-      description: "profileCompletion 영역 박은 영역에서 profiles UPDATE 박지 X",
+      description: "profileCompletion 영역 기록한 부분에서 profiles UPDATE 미설정",
       cause: error.message,
-      impact: "사용자 영역 프로필 영역 박지 X — 온보딩 박지 X",
+      impact: "사용자 영역 프로필 영역 미설정 — 온보딩 미설정",
       action: "profile.ts:55 영역 확인 + RLS 정책 영역 확인",
       metadata: {
         user_id: userId,
@@ -174,11 +174,11 @@ export async function checkEmailExists(email: string): Promise<EmailCheckResult>
   });
 
   if (error) {
-    logger.error("이메일 영역 확인 박지 X", error, {
-      description: "회원가입·로그인 영역에서 이메일 영역 박힌지 확인 박지 X",
+    logger.error("이메일 영역 확인 미설정", error, {
+      description: "회원가입·로그인 영역에서 이메일 영역 있는지 확인 미설정",
       cause: error.message,
-      impact: "회원가입·로그인 영역 차단 가능 — 'new' 영역으로 폴백 박음 (보수적 영역)",
-      action: "check_email_exists RPC 박힌지 확인",
+      impact: "회원가입·로그인 영역 차단 가능 — 'new' 영역으로 폴백 완료 (보수적 영역)",
+      action: "check_email_exists RPC 있는지 확인",
       metadata: { email_domain: normalized.split("@")[1] },
     });
     return { accountStatus: "new", exists: false, confirmed: false };

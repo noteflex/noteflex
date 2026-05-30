@@ -369,7 +369,7 @@ export function useSessionRecorder() {
             logger.error("게임 기록 저장 실패", directError, {
               description: `Lv ${state.level} 게임 종료 후 user_sessions INSERT 실패 (RPC + 폴백 모두 실패)`,
               cause: directError.message,
-              impact: "사용자는 게임 박았는데 통계·XP 박지 X",
+              impact: "사용자는 게임 완료했는데 통계·XP 미설정",
               action: "useSessionRecorder.ts:344 영역 확인, RLS 정책 검증 (20260517_record_game_session_rpc.sql apply 필요)",
               metadata: {
                 level: state.level,
@@ -382,8 +382,8 @@ export function useSessionRecorder() {
             });
           } else {
             sessionId = directData?.id ?? null;
-            logger.info("게임 종료 박음 (폴백 INSERT)", {
-              description: "RPC 실패 영역에서 직접 INSERT 영역 박음 — RLS 영역 박은 영역 박힘",
+            logger.info("게임 종료 완료 (폴백 INSERT)", {
+              description: "RPC 실패 영역에서 직접 INSERT 영역 완료 — RLS 영역 기록한 부분 적용됨",
               user_id: user.id,
               level: state.level,
               accuracy,
@@ -401,16 +401,16 @@ export function useSessionRecorder() {
             .eq("id", user.id);
           if (profileErr) {
             logger.error("profiles.last_practice_date 갱신 실패", profileErr, {
-              description: "RPC 폴백 영역에서 profiles 영역 last_practice_date 영역 박지 X",
+              description: "RPC 폴백 영역에서 profiles 영역 last_practice_date 영역 미설정",
               cause: profileErr.message,
-              impact: "대시보드 영역 마지막 연습일 영역 박지 X — isNewUser 분기 영역 잘못",
+              impact: "대시보드 영역 마지막 연습일 영역 미설정 — isNewUser 분기 영역 잘못",
               action: "profiles UPDATE RLS 정책 확인",
             });
           }
         } else {
           sessionId = typeof rpcData === "string" ? rpcData : null;
-          logger.info("게임 종료 박음 (RPC)", {
-            description: "record_game_session RPC 박음 — user_sessions·user_stats_daily·profiles 박음",
+          logger.info("게임 종료 완료 (RPC)", {
+            description: "record_game_session RPC 완료 — user_sessions·user_stats_daily·profiles 완료",
             user_id: user.id,
             level: state.level,
             accuracy,
@@ -437,9 +437,9 @@ export function useSessionRecorder() {
           endReason,
         };
       } catch (err) {
-        logger.error("게임 기록 중 예외 박힘", err, {
+        logger.error("게임 기록 중 예외 적용됨", err, {
           description: "예상치 못한 에러 — RPC·폴백 외부 영역",
-          impact: "사용자 게임 결과 박지 X",
+          impact: "사용자 게임 결과 미설정",
           action: "stack trace 확인 필요",
         });
         return null;

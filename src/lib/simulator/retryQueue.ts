@@ -7,7 +7,15 @@
  * §0.1 정책 검증을 위해 popDueOrNull(turn, lastShown?)에 lastShown skip 포함.
  *
  * §4 Step B (2026-05-02): logger 옵셔널 통합. 큐 변경 시점만 snapshot (size + ID 리스트).
+ *
+ * 큐 상한 (5/31, useRetryQueue.ts와 parity):
+ *  - QUEUE_MAX = 3. 신규 ID이고 큐 가득이면 큐 추가 skip.
+ *  - missCount(this.miss)는 무조건 갱신.
+ *  - logger payload에 skippedQueueFull=true 기록.
  */
+
+/** 신규 ID 큐 추가 상한 — useRetryQueue.ts와 동일. */
+const QUEUE_MAX = 3;
 import type { SimLogger, QueueSnapshot } from "./simLogger";
 
 export interface RetryNoteKey {
@@ -60,6 +68,25 @@ export class SimRetryQueue {
     this.miss.set(id, newMiss);
     // §4 fix (2026-05-01): 큐에 reschedule된 due 보존 — useRetryQueue.ts와 parity.
     const existing = this.q.get(id);
+
+    // 큐 상한 (5/31, useRetryQueue.ts와 parity): 신규 ID이고 큐 가득이면 skip.
+    // miss는 위에서 이미 갱신 → 다음 batch가 약점 가중으로 자연 처리.
+    if (!existing && this.q.size >= QUEUE_MAX) {
+      this.logger?.log({
+        kind: "mark-missed",
+        turn: currentTurn,
+        session: this.session,
+        payload: {
+          noteId: id,
+          missCount: newMiss,
+          skippedQueueFull: true,
+          queueMax: QUEUE_MAX,
+          queue: this.snapshot(),
+        },
+      });
+      return;
+    }
+
     const scheduledAtTurn = existing?.scheduledAtTurn ?? Number.MAX_SAFE_INTEGER;
     this.q.set(id, { id, note, scheduledAtTurn, missCount: newMiss });
     this.logger?.log({

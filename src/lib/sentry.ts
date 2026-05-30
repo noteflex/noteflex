@@ -5,7 +5,7 @@ const ENVIRONMENT = import.meta.env.VITE_SENTRY_ENVIRONMENT || "development";
 
 export function initSentry() {
   if (!DSN) {
-    console.warn("[Sentry] DSN 박지 X 박혀있음 (VITE_SENTRY_DSN 박을 영역)");
+    console.warn("[Sentry] DSN 미설정 적용되어 있음 (VITE_SENTRY_DSN 기록할 영역)");
     return;
   }
 
@@ -13,19 +13,19 @@ export function initSentry() {
     dsn: DSN,
     environment: ENVIRONMENT,
 
-    // Error Monitoring — PII 박지 X (한국 GDPR 영역 안전)
+    // Error Monitoring — PII 미설정 (한국 GDPR 영역 안전)
     sendDefaultPii: false,
 
     // Logs
     enableLogs: true,
 
-    // Tracing 박지 X
+    // Tracing 미설정
     tracesSampleRate: 0,
 
-    // 환경별 박음 — development 영역 박지 X
+    // 환경별 완료 — development 영역 미설정
     enabled: ENVIRONMENT === "production",
 
-    // 박지 X 박을 영역 (noise)
+    // 미설정 기록할 영역 (noise)
     ignoreErrors: [
       "ResizeObserver loop limit exceeded",
       "Non-Error promise rejection captured",
@@ -35,7 +35,7 @@ export function initSentry() {
     ],
 
     beforeSend(event) {
-      // 개발 영역에서는 박지 X
+      // 개발 영역에서는 미설정
       if (ENVIRONMENT === "development") {
         console.log("[Sentry] Event captured (dev mode, not sent):", event);
         return null;
@@ -45,10 +45,10 @@ export function initSentry() {
   });
 }
 
-// Re-export Sentry 박음 (다른 영역에서 박을 영역)
+// Re-export Sentry 완료 (다른 영역에서 기록할 영역)
 export { Sentry };
 
-// 사용자 친화 logger 박음
+// 사용자 친화 logger 완료
 export const logger = {
   info: (title: string, data?: Record<string, unknown>) => {
     if (ENVIRONMENT === "production" && DSN) {
@@ -108,7 +108,7 @@ export const logger = {
     }
   },
 
-  // 사용자 식별 (로그인 시 박음)
+  // 사용자 식별 (로그인 시 완료)
   setUser: (user: { id: string; email?: string; nickname?: string } | null) => {
     if (DSN) {
       if (user) {

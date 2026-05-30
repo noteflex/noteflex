@@ -38,7 +38,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       (_event, session) => {
         setSession(session);
         setLoading(false);
-        // Sentry 영역 사용자 식별 박음
+        // Sentry 영역 사용자 식별 완료
         if (session?.user) {
           logger.setUser({
             id: session.user.id,

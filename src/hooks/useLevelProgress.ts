@@ -84,10 +84,10 @@ export function useLevelProgress() {
       );
 
       if (rpcError) {
-        logger.error("Sublevel 진행 박지 X", rpcError, {
+        logger.error("Sublevel 진행 미설정", rpcError, {
           description: `Lv ${level}-${sublevel} 게임 종료 후 record_sublevel_attempt RPC 실패`,
           cause: rpcError.message,
-          impact: "레벨 잠금 해제 박지 X — 사용자 다음 단계 진행 차단",
+          impact: "레벨 잠금 해제 미설정 — 사용자 다음 단계 진행 차단",
           action: "useLevelProgress.ts:72 영역 확인",
           metadata: {
             level,
@@ -107,10 +107,10 @@ export function useLevelProgress() {
       await fetchProgress();
 
       const result = data as RecordAttemptResult;
-      // 통과 박힌 영역 박은 영역 (just_passed=true → 다음 sublevel 자동 잠금 해제 박음)
+      // 통과 적용된 영역 기록한 부분 (just_passed=true → 다음 sublevel 자동 잠금 해제 완료)
       if (result?.just_passed) {
         logger.info("레벨 통과", {
-          description: `Lv ${level}-${sublevel} 통과 박음 — 다음 sublevel 자동 잠금 해제`,
+          description: `Lv ${level}-${sublevel} 통과 완료 — 다음 sublevel 자동 잠금 해제`,
           user_id: user.id,
           level,
           sublevel,

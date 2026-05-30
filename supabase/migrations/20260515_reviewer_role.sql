@@ -5,8 +5,8 @@
 --
 -- 권한 정합:
 --   - reviewer = Free tier (Lv1~5 Sub1 + 7회/일 한도)
---   - 게임 영역 박힘 (ComingSoonGate 우회)
---   - 광고 박힘 (일반 사용자 영역 정합)
+--   - 게임 영역 적용됨 (ComingSoonGate 우회)
+--   - 광고 적용됨 (일반 사용자 영역 정합)
 --   - Premium 영역 X (admin과 분리)
 --
 -- 인증 흐름: 매직링크 우회, /api/reviewer-login 통해 즉시 세션 발급.
@@ -15,9 +15,9 @@
 -- ═══════════════════════════════════════════════════════════════
 
 -- ─── 1. profiles.role CHECK 제약 추가 ─────────────────────────
--- 기존: 제약 없음 (NULL 또는 'admin' 박힘)
+-- 기존: 제약 없음 (NULL 또는 'admin' 적용됨)
 -- 신규: NULL OR 'user' OR 'admin' OR 'reviewer'
--- NULL 허용 = 기존 일반 사용자 데이터 그대로 박힘.
+-- NULL 허용 = 기존 일반 사용자 데이터 그대로 적용됨.
 
 ALTER TABLE public.profiles
   DROP CONSTRAINT IF EXISTS profiles_role_check;
@@ -137,4 +137,4 @@ END $$;
 -- ─── 5. 검증 쿼리 (수동 실행용 주석) ─────────────────────────
 -- SELECT id, email, email_confirmed_at FROM auth.users WHERE email = 'forpaddle@noteflex.app';
 -- SELECT id, role, nickname, profile_completed FROM public.profiles WHERE role = 'reviewer';
--- SELECT public.is_reviewer();  -- (reviewer 로그인 후 실행 시 true 박힘)
+-- SELECT public.is_reviewer();  -- (reviewer 로그인 후 실행 시 true 적용됨)

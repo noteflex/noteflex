@@ -21,7 +21,7 @@ vi.mock("@/hooks/useLevelProgress", () => ({
   useLevelProgress: mockUseLevelProgress,
 }));
 
-// 기본: 한도 미도달 (useDailyLimit 영향 X 영역). dailyLimit 테스트 파일은 따로 박음.
+// 기본: 한도 미도달 (useDailyLimit 영향 X 영역). dailyLimit 테스트 파일은 따로 완료.
 vi.mock("@/hooks/useDailyLimit", () => ({
   useDailyLimit: () => ({
     todayCount: 0,

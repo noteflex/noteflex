@@ -10,7 +10,7 @@ import {
 } from "@/lib/noteComparison";
 
 interface AICoachingDetailProps {
-  /** 게임 결과 다이얼로그 안에 박힌 영역 — 사인인 사용자 한정 박음. */
+  /** 게임 결과 다이얼로그 안에 적용된 영역 — 사인인 사용자 한정 완료. */
   enabled?: boolean;
 }
 
@@ -23,9 +23,9 @@ const NULL_RESULT: NoteComparisonResult = {
 };
 
 /**
- * 음표별 비교 분석 — 빠른/느린/정확도 ↑↓ Top 2씩 박음.
+ * 음표별 비교 분석 — 빠른/느린/정확도 ↑↓ Top 2씩 완료.
  * Guest = 박지 말 것 (useAuth 분기).
- * 데이터 부족 영역 = "이전 기록 충분하지 않음" 메시지 박음.
+ * 데이터 부족 영역 = "이전 기록 충분하지 않음" 메시지 완료.
  */
 export function AICoachingDetail({ enabled = true }: AICoachingDetailProps) {
   const { user } = useAuth();
@@ -54,7 +54,7 @@ export function AICoachingDetail({ enabled = true }: AICoachingDetailProps) {
   if (!enabled || !user || loading) return null;
 
   if (!result.hasEnough) {
-    // 신규 사용자 영역 — 비교 X 박음
+    // 신규 사용자 영역 — 비교 X 완료
     return null;
   }
 

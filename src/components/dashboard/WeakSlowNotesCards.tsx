@@ -67,7 +67,7 @@ interface WeakSlowNotesCardsProps {
  * 약점/느린 음표 Top 5 카드 (대시보드 미니멀 영역).
  * - 옥타브 정확 표시: C4, F#3 등
  * - Top 1 = 빨강, Top 2~5 = 노랑
- * - 5+ 시도 영역만 박음
+ * - 5+ 시도 영역만 완료
  */
 export function WeakSlowNotesCards({ enabled = true }: WeakSlowNotesCardsProps) {
   const { user } = useAuth();

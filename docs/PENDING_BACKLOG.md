@@ -2,7 +2,7 @@
 
 > **출시 마감**: 🎯 ~~**2026-05-31**~~ → **2026-06-07** (1주 연기 — 사업자 등록 일정 영향)
 > **목적**: 머릿속 + 채팅 + 첨부 기획서 + 코드 분석 + 설계-코드 갭에 흩어진 모든 미구현·미결정 항목을 한 곳에 모아 영구 보존.
-> **작성일**: 2026-04-27 (초안) → 2026-04-28 (자동 갱신 시스템 도입) → 2026-05-17 (Phase 3 완료 박음 갱신) → 2026-05-18 (Phase 4 Sentry 완료 + Paddle 결제 통합 완료 갱신) → 2026-05-26 (분석 엔진 v1 완료 갱신)
+> **작성일**: 2026-04-27 (초안) → 2026-04-28 (자동 갱신 시스템 도입) → 2026-05-17 (Phase 3 완료 완료 갱신) → 2026-05-18 (Phase 4 Sentry 완료 + Paddle 결제 통합 완료 갱신) → 2026-05-26 (분석 엔진 v1 완료 갱신)
 > **출처**: 사용자 24항목 + 첨부 기획서 5개 + 설계 PDF + Claude Code 코드 분석 + 사용자 검증 버그 + Green Billion 명세서
 
 ---
@@ -12,6 +12,7 @@
 - [출시후] **vercel.json `redirects`로 옛 블로그 URL → 새 URL HTTP 301 명시** — 현재는 SPA 클라 navigate replace라 Google에 redirect 신호 약함. backlink·GSC 옛 인덱스 처리에 HTTP 301이 더 명확. 글마다 `{ source: "/blog/:lang/YYYY-MM-DD-:slug", destination: "/blog/:lang/:slug", permanent: true }` 식으로 일괄 등록 또는 generate-sitemap.ts에서 redirects 함께 자동 생성.
 - [출시전 권장] **PWA SW가 sitemap.xml·ads.txt·robots.txt 등 정적 파일 캐시 안 하게(또는 network-first)** — 현재 workbox `globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"]`라 xml/txt는 캐시 안 됨이 맞지만, navigateFallback이 index.html이라 SW가 fallback해 가로챌 수도. 일반 유저 SW 캐시 함정 방지 + AdSense ads.txt 검증 영향 가능. workbox runtimeCaching 또는 navigateFallbackDenylist에 `/sitemap.xml`, `/ads.txt`, `/robots.txt` 추가 권장.
 - [출시후] **user_sublevel_progress_backup_20260530, user_sublevel_progress_backup_20260530_2 안정 확인 후 삭제** — 7판 윈도우 마이그레이션 적용 시 사용자가 백업한 테이블들. 약 2주~1개월 안정 운용 확인 후 정리.
+- [출시전 권장] **7판 윈도우 시스템 후속 테스트 재작성** — vitest 26건 실패 (`src/lib/levelSystem.test.ts`, `src/components/MasteryScoreCard.test.tsx`, `src/components/LevelSelect.test.tsx`, `src/pages/Dashboard.test.tsx`). 윈도우 도입(20260529/20260530)으로 인한 사전 회귀. `MasteryScoreCard`의 `expanded` 기본값 `true→false` 변경, `computeMasteryScore` 윈도우 기반 변경, `getCompletion` null 반환 가능 등. 누적 가정 테스트를 윈도우 가정으로 재작성 필요.
 
 ---
 
@@ -65,26 +66,26 @@
 - [x] **PWA manifest 미구성** — vite-plugin-pwa + manifest + sw.js + 아이콘(192/512/maskable) 완료 (커밋 `8e5a578`, 2026-05-25)
 - [x] **interval_from_prev 로깅** — `user_note_logs` 컬럼 추가 + noteUtils + useNoteLogger 수정 완료 (커밋 `0fb41f1`, 2026-05-25)
 - [ ] **prerender/SSG 도입** — 소셜·비JS 크롤러(카톡/트위터)용 per-post 메타. react-helmet은 구글봇만 커버. 출시후 트랙
-- [ ] **내부 박다 sweep** — logger·코드주석·docs·SQL 주석(오탐[압박을·협박을·도박 등]·docs 규칙언급 제외). 화면 무관 cruft
+- [ ] **내부 기록한다 sweep** — logger·코드주석·docs·SQL 주석(오탐[압기록할·협기록할·도박 등]·docs 규칙언급 제외). 화면 무관 cruft
 - [ ] **'약점 음표 집중 훈련 모드' 구현** — 구현 시 `benefitWeakNotes`를 '상세 약점 분석'에서 원래 문구로 복원
 - [ ] **favicon 캐시** — 코드 정상, 로컬 브라우저 캐시만 잔존 → 하드리프레시/캐시클리어로 해소(코드 수정 불필요)
 - [ ] `VITE_SUPABASE_ANON_KEY` 회전 / `VITE_GAME_ENABLED=true` (출시일)
 
 ---
 
-## 2026-05-17 DB 전수 조사 + Phase 3 완료 박은 영역
+## 2026-05-17 DB 전수 조사 + Phase 3 완료 기록한 부분
 
-### 출시 박을 영역 — Phase 3 영역 ✅ 모두 완료
+### 출시 기록할 영역 — Phase 3 영역 ✅ 모두 완료
 
-- [x] **Phase 3 Step 1** 마이그 박음 (커밋 `30ef37d`, `7db343c`, `e2e596a`)
+- [x] **Phase 3 Step 1** 마이그 완료 (커밋 `30ef37d`, `7db343c`, `e2e596a`)
 - [x] **Phase 3 Step 2-A** `device_change_events` UPDATE 정책 (silent fail 해소)
 - [x] **Phase 3 Step 2-B** `record_sublevel_attempt` 6개 인자 DROP
-- [x] **Phase 3 Step 3** 중복 정의 함수 검증 (모두 안전 박힘)
+- [x] **Phase 3 Step 3** 중복 정의 함수 검증 (모두 안전 적용됨)
 - [x] **Phase 3 Step 4** 문서 19건 정정 (커밋 `acc8349`)
-- [x] **Production 박지 X 박힌 영역 박음** (`payment_events`·`user_scores`·`practice_logs`·`consume_scan_quota`·`topup_scan_quota`·`apply_payment_topup`)
-- [x] **`forpaddle@noteflex.app` reset** (대시보드 분기 로직 검증 박을 영역)
+- [x] **Production 미설정 적용된 영역 완료** (`payment_events`·`user_scores`·`practice_logs`·`consume_scan_quota`·`topup_scan_quota`·`apply_payment_topup`)
+- [x] **`forpaddle@noteflex.app` reset** (대시보드 분기 로직 검증 기록할 영역)
 
-### 출시 박을 영역 — 박지 X 박힌 영역
+### 출시 기록할 영역 — 미설정 적용된 영역
 
 - [x] **결제 시스템** — Paddle Checkout 통합 완료 (2026-05-18, 🔴→✅)
   - `Pricing.tsx`에 `openCheckout` 직접 호출 추가
@@ -187,19 +188,19 @@
 - [ ] GRANT 마이그 통합 (10/30 유예)
 - [ ] `hard_delete_account` 함수 검증
 
-### Cursor 검증 박지 X 박힌 영역 (사용량 영역으로 중단)
+### Cursor 검증 미설정 적용된 영역 (사용량 영역으로 중단)
 
-- [ ] Cursor 검증 Section C5 박은 영역에서 끊김 (GRANT anon 3 vs 2 확인 박은 영역)
-- [ ] Cursor 검증 Section C6~C11·D·E·F·교차 검증 박지 X 박힘
-- [ ] 추가 발견 영역 확인 박지 X
-→ 박을 영역: 다음 세션에서 Cursor 검증 완료 박음
+- [ ] Cursor 검증 Section C5 기록한 부분에서 끊김 (GRANT anon 3 vs 2 확인 기록한 부분)
+- [ ] Cursor 검증 Section C6~C11·D·E·F·교차 검증 미설정 적용됨
+- [ ] 추가 발견 영역 확인 미설정
+→ 기록할 영역: 다음 세션에서 Cursor 검증 완료 완료
 
-### 대시보드 분기 로직 검증 박을 영역 (forpaddle reset 박은 후)
+### 대시보드 분기 로직 검증 기록할 영역 (forpaddle reset 기록한 후)
 
-- [ ] reviewer 계정 영역 신규 상태 영역에서 대시보드 박은 영역 확인
-- [ ] 상태 3 (신규 사용자) 영역 박는 영역 정확한지
-- [ ] 게임 1회 박은 후 상태 1 (오늘 활동) 박힌 영역 박는지
-- [ ] 다음 날 박은 후 상태 2 (오늘 X) 박힌 영역 박는지
+- [ ] reviewer 계정 영역 신규 상태 영역에서 대시보드 기록한 부분 확인
+- [ ] 상태 3 (신규 사용자) 영역 기록하는 영역 정확한지
+- [ ] 게임 1회 기록한 후 상태 1 (오늘 활동) 적용된 영역 기록하는지
+- [ ] 다음 날 기록한 후 상태 2 (오늘 X) 적용된 영역 기록하는지
 
 ### 출시 후 영역 (🟢)
 
@@ -232,8 +233,8 @@
 
 ### 출시 일정 영역 갱신
 
-- 박힌 영역 = 5/17 → 출시 박을 영역 ~~5/31~~ → **6/14 영역** (안전 박은 영역)
-- 박을 영역 영역: 결제 ~2~3일 + Phase 4 ~1~2일 + Phase 5 ~1일 + 추가 ~2~3일 + 심사 ~1일 + 검증 ~1일 = **~10일**
+- 적용된 영역 = 5/17 → 출시 기록할 영역 ~~5/31~~ → **6/14 영역** (안전 기록한 부분)
+- 기록할 영역 영역: 결제 ~2~3일 + Phase 4 ~1~2일 + Phase 5 ~1일 + 추가 ~2~3일 + 심사 ~1일 + 검증 ~1일 = **~10일**
 
 ---
 
@@ -244,11 +245,11 @@
 - [ ] **Supabase migration 수동 apply**: `20260516_reviewer_sessions_rls.sql` → SQL Editor 실행
 - [ ] **reviewer 로그인 후 /dashboard**: NewUserView 박지 말 것 (7 게임 이후)
 - [ ] **상태 2 KPI 서브텍스트**: 정답률 = "No data today", XP = "Not yet started"
-- [ ] **상태 2 마지막 활동 카드**: "Last activity: N days ago · Acc X% · Speed Xs · XP X" 박힘
+- [ ] **상태 2 마지막 활동 카드**: "Last activity: N days ago · Acc X% · Speed Xs · XP X" 적용됨
 - [ ] **MasteryHeroCard 미노출**: 대시보드에 Lv 1-1 카드 박지 않는 것 확인
-- [ ] **페이지 제목**: "Dashboard" / "대시보드" 박힘 (Playground 아님)
-- [ ] **AI Feedback blur**: reviewer → blur 박힘, admin → 풀 노출
-- [ ] **신규 사용자 시뮬**: 세션 없는 계정 → NewUserView ("Start your first session") 박힘
+- [ ] **페이지 제목**: "Dashboard" / "대시보드" 적용됨 (Playground 아님)
+- [ ] **AI Feedback blur**: reviewer → blur 적용됨, admin → 풀 노출
+- [ ] **신규 사용자 시뮬**: 세션 없는 계정 → NewUserView ("Start your first session") 적용됨
 
 ---
 
@@ -268,29 +269,29 @@
 
 ### 출시 후 1~2개월 — Archive 컴포넌트 재활용 영역
 - [ ] **DiagnosisTab → 별도 페이지 (/diagnosis 또는 /reports)**
-  - 현재 _archive로 이동 박힘
-  - AI 보고서에 통합되거나 별도 페이지로 박음
+  - 현재 _archive로 이동 적용됨
+  - AI 보고서에 통합되거나 별도 페이지로 완료
 - [ ] **BatchAnalysisSection → /reports/weakness**
   - 공식 학습 분석 영역 (매일 자정 KST 계산)
-  - 출시 후 사용자 데이터 박힘 → 신뢰성 검증 후 노출
+  - 출시 후 사용자 데이터 적용됨 → 신뢰성 검증 후 노출
 - [ ] **그래프 영역 재도입 검토** — XpBarChart·AccuracyReactionChart
-  - AI 보고서에 통합 또는 옵션 영역으로 박음
+  - AI 보고서에 통합 또는 옵션 영역으로 완료
 
 ---
 
 ## 2026-05-16 reviewer·차트·LEAGUE 추가 PENDING
 
 ### Paddle 심사 영역
-- [ ] **reviewer 박음 시나리오 검증** — Paddle 심사관 결제 흐름
-  - 시나리오: reviewer 로그인 → Lv1-1 게임 OK → Lv6 잠금 박힘 → AI Feedback blur+CTA → UpgradeModal → /pricing
+- [ ] **reviewer 완료 시나리오 검증** — Paddle 심사관 결제 흐름
+  - 시나리오: reviewer 로그인 → Lv1-1 게임 OK → Lv6 잠금 적용됨 → AI Feedback blur+CTA → UpgradeModal → /pricing
   - 모든 잠금 영역이 결제 시나리오로 자연스럽게 연결되는지 확인
 
 ### 출시 후 즉시 (6월~)
-- [ ] **LEAGUE 시스템 재도입** — 현재 카드 제거 박혔지만 strings·DB 영역 유지
-  - 출시 후 사용자 데이터 박힘 → 리그 그룹 영역 활성화 박음
-- [ ] **30일/전체 영역 데이터 가중 평균 재검증** — 사용자 표본 박힌 후
-  - 현재 = overallAccuracy 박음 (전체 정답/전체 시도)
-  - 출시 후 = 충분한 데이터 박힘 → 일별 평균 vs 가중 평균 차이 영역 검증
+- [ ] **LEAGUE 시스템 재도입** — 현재 카드 제거 적용됐지만 strings·DB 영역 유지
+  - 출시 후 사용자 데이터 적용됨 → 리그 그룹 영역 활성화 완료
+- [ ] **30일/전체 영역 데이터 가중 평균 재검증** — 사용자 표본 적용된 후
+  - 현재 = overallAccuracy 완료 (전체 정답/전체 시도)
+  - 출시 후 = 충분한 데이터 적용됨 → 일별 평균 vs 가중 평균 차이 영역 검증
 
 ---
 
@@ -302,7 +303,7 @@
   - 사용자 피드백 따라 조정 영역 (게임당 평균 음표 수에 따라)
   - 의존성: 실 사용자 데이터 (출시 후 1주)
 - [ ] **음표별 비교 시각화** — 현재 텍스트만 (예: "G (-1.2s)")
-  - 출시 후: 미니 차트·바 그래프 박음 (옵션)
+  - 출시 후: 미니 차트·바 그래프 완료 (옵션)
 - [ ] **DiagnosisTab.tsx cleanup** — 사용 안 하는 `responseLinePoints` 영역 제거
 
 ---
@@ -312,13 +313,13 @@
 ### 출시 후 즉시 (6월~)
 
 - [ ] **Dashboard DB 쿼리 최적화** — Mastery 카드 첫 로드 속도 개선
-  - 현재: Skeleton UI로 로딩 인지만 박음 (체감 속도 ↑)
+  - 현재: Skeleton UI로 로딩 인지만 완료 (체감 속도 ↑)
   - 출시 후: 실제 fetch 시간 분석 (Supabase RLS·N+1·인덱스 영역)
   - 의존성: 실 사용자 데이터 + Sentry/Vercel Analytics 측정
 
 - [ ] **Note-level AI Coaching 비교 분석** — 음정별 기록 있음 vs 새 음정 분기
   - 현재: 사인인 사용자 = sublevel 누적 정답률 비교 (간단 비교)
-  - 출시 후: 노트별 history 박힘 → 음정 단위 정밀 분석 (Goolsby fixation time 등)
+  - 출시 후: 노트별 history 적용됨 → 음정 단위 정밀 분석 (Goolsby fixation time 등)
   - 의존성: useUserNoteLogs 데이터 활용
 
 - [ ] **AI 분석 보고서 실제 구현** — 현재 SOON 라벨 + toast 예고만
@@ -335,7 +336,7 @@
 
 ### 출시 전 필수 (5/31까지)
 
-- [ ] **Vercel env vars 설정** — Paddle 심사 전 반드시 박음
+- [ ] **Vercel env vars 설정** — Paddle 심사 전 반드시 완료
   - `SUPABASE_SERVICE_ROLE_KEY` (Supabase 대시보드 → Project Settings → API)
   - `REVIEWER_ACCESS_CODE` (임의 문자열, Paddle 심사관 공유용)
 - [ ] **Supabase 마이그레이션 적용** — `supabase/migrations/20260515_reviewer_role.sql`
@@ -345,7 +346,7 @@
   - Google Search Console에서 기본 도메인 non-www로 설정
 - [ ] **/about 페이지 콘텐츠** — Paddle 심사 신뢰도 영역
 - [ ] **/contact 페이지 양식** — Resend 통한 발송, Florida·Nebraska·Texas 컴플라이언스
-- [ ] **Paddle 심사 신청** — 5/17(일) 예정 (약관 4종 + about + contact 박은 후)
+- [ ] **Paddle 심사 신청** — 5/17(일) 예정 (약관 4종 + about + contact 기록한 후)
 - [ ] **Footer strings.ts 통신판매업 번호 갱신** — `제 2026-서울서초-1624호` (EN에서는 `Seoul Seocho-gu 2026-1624`)
 - [ ] **OG 이미지 생성** — `public/og-image.png` (1200×630), 소셜 공유 미리보기
 
@@ -359,8 +360,8 @@
 - [ ] **reviewer-login 비활성화** — Paddle 심사 통과 후
   - `REVIEWER_ACCESS_CODE` Vercel env 제거 또는 `api/reviewer-login.ts` 삭제
 - [ ] **블로그 Pexels 음악 사진 보강** — 현재 그라데이션 아이콘 유지 여부 결정 (출시 후)
-- [ ] **DOI 검증 자동화** — CrossRef API 박음, 신규 글 작성 시 자동 검증
-- [ ] **본문 학술 인용 굵게 박는 패턴** — 신규 글 작성 시 default 스타일 정합
+- [ ] **DOI 검증 자동화** — CrossRef API 완료, 신규 글 작성 시 자동 검증
+- [ ] **본문 학술 인용 굵게 기록하는 패턴** — 신규 글 작성 시 default 스타일 정합
 
 ---
 
@@ -373,34 +374,34 @@
   - 영문판도 한글 번호 유지 (정부 발급 영역)
 
 - [ ] **시스템 ↔ 약관 14세 정합 확인**
-  - 가입 흐름 만 14세 동의 체크박스 박힘 확인
-  - 약관·Privacy 14세 박힘 (5/14 완료)
-  - 두 영역 일치 박혀있는지 검증 박음
+  - 가입 흐름 만 14세 동의 체크박스 적용됨 확인
+  - 약관·Privacy 14세 적용됨 (5/14 완료)
+  - 두 영역 일치 적용되어 있는지 검증 완료
 
 - [ ] **AdSense 신청** (5/14~16, 사업자 등록 직후)
-  - 환경변수 박음: VITE_ADS_ENABLED=true, VITE_ADSENSE_PUBLISHER_ID=..., VITE_INFEED_ADS_ENABLED=true
-  - 신청 전 GAME_ENABLED 상태 + 핵심 페이지(/about, /contact) 박힘 확인
+  - 환경변수 완료: VITE_ADS_ENABLED=true, VITE_ADSENSE_PUBLISHER_ID=..., VITE_INFEED_ADS_ENABLED=true
+  - 신청 전 GAME_ENABLED 상태 + 핵심 페이지(/about, /contact) 적용됨 확인
 
 - [ ] **Termly Privacy 영역 갱신** (AdSense 활성화 후)
-  - "Targeted advertising" 영역 AdSense 정합 박음
+  - "Targeted advertising" 영역 AdSense 정합 완료
   - 갱신 후 Termly Pro 해지 여부 결정
 
 - [ ] **Termly 영문판 Terms §17 Arbitration 갱신**
-  - "European Arbitration Chamber (Belgium)" → "KCAB Seoul"로 박음
-  - 현재 .md 파일만 수정 박힘, Termly 대시보드 영역 다음 갱신 때 박음
+  - "European Arbitration Chamber (Belgium)" → "KCAB Seoul"로 완료
+  - 현재 .md 파일만 수정 적용됨, Termly 대시보드 영역 다음 갱신 때 완료
 
 - [ ] **/about 페이지 콘텐츠** — Paddle 심사 신뢰도 영역
 - [ ] **/contact 페이지 양식** — Florida·Nebraska·Texas 컴플라이언스 의무, Resend 통한 발송
-- [ ] **Paddle 심사 신청** — 약관 4종 게시·about·contact 박은 후
+- [ ] **Paddle 심사 신청** — 약관 4종 게시·about·contact 기록한 후
 
 ### 출시 후 즉시 (6월~)
 
 - [ ] **EU GDPR 16세 정합 영역**
-  - 현재 약관 14세 박힘 → EU 일부 회원국 16세 미만 부모 동의 의무
-  - Family Plan과 함께 박을지 결정
+  - 현재 약관 14세 적용됨 → EU 일부 회원국 16세 미만 부모 동의 의무
+  - Family Plan과 함께 기록할지 결정
 
-- [ ] **Termly Pro 해지** — 4종 갱신 박은 후
-- [ ] **자체 GPC 감지 코드** — Termly 해지 시 박음 (~30분)
+- [ ] **Termly Pro 해지** — 4종 갱신 기록한 후
+- [ ] **자체 GPC 감지 코드** — Termly 해지 시 완료 (~30분)
 - [ ] **EU/UK Representative 임명 검토** — 월 €50~200
 
 - [ ] **react-helmet-async 동적 SEO 메타 도입** (옵션 A)
@@ -417,8 +418,8 @@
 
 - [ ] **Family Plan / 부모 계정 + 자녀 프로필**
   - 미취학~13세 시장 진입
-  - COPPA·GDPR-K·PIPA 부모 동의 검증 시스템 박음
-  - EU 16세 정합 영역 함께 박음
+  - COPPA·GDPR-K·PIPA 부모 동의 검증 시스템 완료
+  - EU 16세 정합 영역 함께 완료
 
 ---
 
@@ -448,7 +449,7 @@
 - [ ] **OG 이미지 디자인** (1200×630, public/og-image.png)
   - 소셜 공유 시 표시 (Twitter Card·Facebook·KakaoTalk)
   - 로고 + 슬로건 + 시각 요소
-  - 현재 og:image 태그는 박혀있음 — 파일만 없음
+  - 현재 og:image 태그는 적용되어 있음 — 파일만 없음
 
 ---
 
@@ -477,7 +478,7 @@
 - [ ] **hard_delete_account 보안 강화**
   - 현재 = 익명 호출 허용 (탈퇴된 데이터 영구 삭제 정합)
   - 추가: rate limit (IP당 분당 1회), CAPTCHA
-  - 30일 내 탈퇴 안전장치는 박혀있음
+  - 30일 내 탈퇴 안전장치는 적용되어 있음
 
 ### 검증 영역 (출시 후 사용자 데이터로)
 - [ ] **모바일 매직링크 in-app browser**
@@ -487,7 +488,7 @@
   - 브라우저 보안 제약으로 JS 해결 불가
   - 메시지로 안내만 ("원래 탭에서 로그인되었습니다" 추가 검토)
 
-> 중복 제외: Apple OAuth = 기존 §0-2 "출시 후 OK" 항목에 이미 박혀있음.
+> 중복 제외: Apple OAuth = 기존 §0-2 "출시 후 OK" 항목에 이미 적용되어 있음.
 
 ---
 
@@ -520,7 +521,7 @@
 1. **작업 완료 항목**: 항목 옆에 ✅ 추가 또는 §15 "완료 이력" 섹션으로 이동 (중요 항목은 이력 보존)
 2. **새 발견 항목**: 버그·펜딩·결정 사항을 즉시 해당 섹션에 추가
 3. **설계 변경·정책 결정**: `docs/DESIGN_VS_CODE_GAP.md`의 ❌/⚠️ → ✅ 동기화
-4. **commit 분리**: 위 변경은 별도 commit으로 박아둠
+4. **commit 분리**: 위 변경은 별도 commit으로 적용해둠
    - 예: `docs: backlog update — §0.1 N+2 fix completed`
    - 예: `docs: backlog new finding — Lv5+ key signature race in stage 4`
 
@@ -763,7 +764,7 @@ Claude Code 코드 분석 발견.
 
 ### 0-2.2 Supabase 키 하드코딩 🔴⭐
 **위치**: `vite.config.ts:17-18`
-- URL + anon key가 코드에 박혀 `.env` 무시됨
+- URL + anon key가 코드에 적용된 `.env` 무시됨
 - **해결**: vite.config.ts 하드코딩 제거 → `.env`만 사용 + ANON_KEY 회전
 
 ### 0-2.3 Edge Function 미완성 🔴
@@ -780,34 +781,34 @@ Claude Code 코드 분석 발견.
 
 ## 0-3. 모달 성능 sprint ✅ 완료 (AuthModal·AdInterstitial·AuthBar 일괄, 2026-05-05)
 
-**사용자 결정 박음 (2026-05-05)**: 우리 서비스에서 나오는 모든 모달은 즉시 열리고 버벅임 0건 박음. 하나라도 느리면 절대 안 됨.
+**사용자 결정 완료 (2026-05-05)**: 우리 서비스에서 나오는 모든 모달은 즉시 열리고 버벅임 0건 완료. 하나라도 느리면 절대 안 됨.
 
-발견 경위: i18n Sprint A 검증 시 사용자가 AuthModal 박을 때 "엄청 버벅임" 보고. 글로벌 출시(메모리 #11) + 사용자 편의성 최우선 영역 박힘.
+발견 경위: i18n Sprint A 검증 시 사용자가 AuthModal 기록할 때 "엄청 버벅임" 보고. 글로벌 출시(메모리 #11) + 사용자 편의성 최우선 영역 적용됨.
 
-### 0-3.1 대상 모달 (✅ 박힌 영역)
-- **AuthModal** (로그인/회원가입) — ✅ 박힘
-- **AdInterstitialModal** (전면 광고) — ✅ 박힘 (backdrop-blur 제거)
-- **Index AuthBar** (/play 상단 bar) — ✅ 박힘 (backdrop-blur 제거)
+### 0-3.1 대상 모달 (✅ 적용된 영역)
+- **AuthModal** (로그인/회원가입) — ✅ 적용됨
+- **AdInterstitialModal** (전면 광고) — ✅ 적용됨 (backdrop-blur 제거)
+- **Index AuthBar** (/play 상단 bar) — ✅ 적용됨 (backdrop-blur 제거)
 - **게임 결과 모달** — SublevelPassedDialog·GameOverDialog (Sprint B 영역에서 i18n 박힐 예정)
 
 ### 0-3.2 성능 기준
 - 첫 로드 100ms 이내
 - 인터랙션 응답 16ms 이내 (60fps)
-- 무거운 작업은 모달 열린 후 비동기 박고 로딩 인디케이터 박음
+- 무거운 작업은 모달 열린 후 비동기 박고 로딩 인디케이터 완료
 - 모달 컴포넌트 lazy loading X (즉시 노출 보장)
 
-### 0-3.3 박힌 패턴 (메모리 #25 + #26 일관)
+### 0-3.3 적용된 패턴 (메모리 #25 + #26 일관)
 - **모달 = `animate-pop-in`** (scale 0.8→1, opacity, filter blur X) — frame drop 0
 - **페이지·화면 = `animate-fade-up`** (translateY + opacity + filter blur 4→0) — 자연스러운 등장
 - 모든 모달 backdrop-blur 제거 (paint 비용 ↓)
 
-### 0-3.4 진단 박음
+### 0-3.4 진단 완료
 
-- 진짜 원인: `@keyframes fade-up` `filter: blur(4 → 0)` + 모달 `backdrop-blur-sm` 동시 박힘
-- frame 200~383ms drop (사용자 Performance 탭 측정 박음, 60fps 16ms 한참 위반)
+- 진짜 원인: `@keyframes fade-up` `filter: blur(4 → 0)` + 모달 `backdrop-blur-sm` 동시 적용됨
+- frame 200~383ms drop (사용자 Performance 탭 측정 완료, 60fps 16ms 한참 위반)
 - INP 68ms / Scripting 12ms 가벼움 → animation/painting 영역이 진짜 병목 (Tone.js 무관)
 
-### 0-3.5 박은 영역
+### 0-3.5 기록한 부분
 
 - `src/index.css` @keyframes fade-up — filter blur 복원 (페이지·게임 화면 자연스러움 보존)
 - `src/components/AuthModal.tsx:189` — `animate-fade-up` → `animate-pop-in` 갈음, `backdrop-blur-sm` 제거
@@ -896,7 +897,7 @@ Claude Code 코드 분석 발견.
 
 ### 0-3.12 검증 73 회귀 fix ✅ 완료 (2026-05-05)
 
-- 사실: 메모리 #28 게이팅 박혀 있었으나 staff 영역은 게이팅 X (음표·조표만)
+- 사실: 메모리 #28 게이팅 적용된 있었으나 staff 영역은 게이팅 X (음표·조표만)
 - 사용자 인지: '오선지 확 떴다가 갑자기 카운트다운 뜨면서 blur 처리'
 - fix: GrandStaffPractice wrapper invisible 게이팅 추가 (`showCountdown || showSwipeTutorial || showCalibration || calibrationLoading`)
 - 효과: staff·음표·조표·사운드 카운트다운 끝 시점 동시 등장 (정책 P1)
@@ -961,19 +962,19 @@ Claude Code 코드 분석 발견.
 
 ## 0-4. 비로그인 시나리오 잠재 버그 fix ✅ 완료 (2026-05-05)
 
-박혀 있던 영역: 비로그인 사용자가 게임 끝 박을 때 결과 모달 박지 X.
+적용된 있던 영역: 비로그인 사용자가 게임 끝 기록할 때 결과 모달 미설정.
 
 **진단**:
 - `src/hooks/useLevelProgress.ts:67` — `recordAttempt`가 비로그인 시 `null` 반환
-- `src/components/NoteGame.tsx:536` — `if (result)` 영역에서 onAttemptRecorded 호출 X → 모달 박지 X
-- 결과 모달 (GameOverDialog·SublevelPassedDialog·AdInterstitial) 모두 박지 X
+- `src/components/NoteGame.tsx:536` — `if (result)` 영역에서 onAttemptRecorded 호출 X → 모달 미설정
+- 결과 모달 (GameOverDialog·SublevelPassedDialog·AdInterstitial) 모두 미설정
 
-**fix 박음**:
-- `src/components/NoteGame.tsx:528-561` — fake payload 박음 (DB unlock X, 모달 노출 영역 보장)
-- `just_passed=false` 고정 → 비로그인 AdInterstitial 박지 X (메모리 #1 일관)
+**fix 완료**:
+- `src/components/NoteGame.tsx:528-561` — fake payload 완료 (DB unlock X, 모달 노출 영역 보장)
+- `just_passed=false` 고정 → 비로그인 AdInterstitial 미설정 (메모리 #1 일관)
 - 자동 테스트 458 PASS ✓ + 사용자 검증 OK ✓
 
-**메모리 #27 정책 박음**: 자동 테스트는 로그인 기준 박혀 있어 비로그인 시나리오 미흡 — 시나리오 체크리스트 별도 박음.
+**메모리 #27 정책 완료**: 자동 테스트는 로그인 기준 적용된 있어 비로그인 시나리오 미흡 — 시나리오 체크리스트 별도 완료.
 
 ---
 
@@ -1045,7 +1046,7 @@ Claude Code 코드 분석 발견.
 - tsc pass + vitest 458/458 pass
 
 ### §0-7.2 출시 전 갱신 영역 (PENDING)
-- /about 콘텐츠 (회사 소개·미션·팀) — 출시 전 박음
+- /about 콘텐츠 (회사 소개·미션·팀) — 출시 전 완료
 - /contact 콘텐츠 (문의 양식 또는 정확 이메일) — 출시 전 갱신
 - Footer Company Info: 통신판매업 신고 완료 후 번호 갱신 (5/14~16 사업자 등록 후)
 
@@ -1117,7 +1118,7 @@ Claude Code 코드 분석 발견.
   - NoteGame = 안전망 (한도 도달 시 onLevelSelect 콜백, 게임 진입 X)
 - DailyLimitModal 컨텐츠 재작성 (commit fbe4d29):
   - Guest 가치 3개 + Free 가치 4개 + Free 가격 표시 영역 신규
-  - Quick Mastery 영역 제거 (사용자 정정), "모든 단계 열림" 표현 정확 박음
+  - Quick Mastery 영역 제거 (사용자 정정), "모든 단계 열림" 표현 정확 완료
 - 검증: 512/512 PASS, tsc 0 errors. 시나리오 (1)~(8) 회귀 X.
 
 ### B.5 패스트트랙 (Fast Track) ✅ Group D 완료 (2026-05-09 자정~)
@@ -1194,7 +1195,7 @@ Claude Code 코드 분석 발견.
 - **C3** 회원 탈퇴 ✅ — GDPR/PIPA soft delete (request_account_deletion RPC + 비밀번호 재확인 모달)
 - **Production Apply 필요**: `20260511_account_deletion.sql`
 - **B4** Refresh token 기간 검증 — 아직 PENDING
-- **C2(이메일 변경)** = 박지 X (이메일은 읽기 전용 식별자)
+- **C2(이메일 변경)** = 미설정 (이메일은 읽기 전용 식별자)
 
 ### §X-3 ✅ 검증 영역 5건 정정 (2026-05-11)
 - **1** 모달 form state 초기화 ✅ — AuthModal `open` prop + useEffect 초기화
@@ -1242,12 +1243,12 @@ Claude Code 코드 분석 발견.
 - **C4 탈퇴** = GDPR·PIPA 법적 의무 — 출시 전 필수
 - **A1 이메일 OTP** = 외부 이메일 가입자 abuse 차단 1차 영역
 - **B2 비밀번호 재설정** = 사용자 신뢰 기본 영역
-- **D2 RLS 검증** = 보안 기둥 (출시 직전 1주 sprint에 박는 것도 OK)
+- **D2 RLS 검증** = 보안 기둥 (출시 직전 1주 sprint에 기록하는 것도 OK)
 
 ### 의존성
 - §0-2.1 스키마 표류 정리 (6개 테이블) → D2 RLS 검증과 통합 처리
 - §10.1 약관 4종 (Termly) → C4 탈퇴 정책에 GDPR/PIPA 영역 명시
-- §3.5·§5.4·§1.1 결제·차등화 영역 → C 영역 UI에서 같이 박음
+- §3.5·§5.4·§1.1 결제·차등화 영역 → C 영역 UI에서 같이 완료
 
 ### 진행 시점
 - 5/10 일요일 11일차 블로그 후 또는 Group C 후 진입
@@ -1345,9 +1346,9 @@ CREATE TABLE tier_history (...)
 - Premium 사용자 자동 차단 (`getUserTier === "pro"` → null 반환)
 
 ### 3.3 광고 배치 코드 ✅ (2026-05-03 초기 + 2026-05-04 보완)
-- **배너**: Blog 목록 모바일 하단 + Blog 글 모바일 하단 + Home 하단 + ~~Index 랜딩 하단~~ (✅ 2026-05-05 i18n Sprint A에서 코드 제거 — Index.tsx 박힌 `<AdBanner />` 삭제, /play levelSelect 영역 광고는 그대로)
+- **배너**: Blog 목록 모바일 하단 + Blog 글 모바일 하단 + Home 하단 + ~~Index 랜딩 하단~~ (✅ 2026-05-05 i18n Sprint A에서 코드 제거 — Index.tsx 적용된 `<AdBanner />` 삭제, /play levelSelect 영역 광고는 그대로)
 - **사이드바 sticky (lg+)**: Blog 목록 좌/우 ✅ + Blog 글 좌/우 ✅ (2026-05-04)
-- **In-feed**: Home 대시보드 (통계 카드 ↔ 탭 사이) + Blog 목록 6개마다 1개 ✅ (2026-05-04, `VITE_INFEED_ADS_ENABLED` 비상 스위치 박힘)
+- **In-feed**: Home 대시보드 (통계 카드 ↔ 탭 사이) + Blog 목록 6개마다 1개 ✅ (2026-05-04, `VITE_INFEED_ADS_ENABLED` 비상 스위치 적용됨)
 - **전면 (AdInterstitialModal)**: 3게임마다 + 잠금 해제 시점, 중복 시 1번만
 - **보상형**: 출시 후 PENDING
 
@@ -1441,12 +1442,12 @@ Public domain 클래식 곡별 레벨
 ### 5.2 회원관리 페이지 🔴 (3주차) — §X Phase 3 통합
 - 비밀번호 변경 (C1), 이메일 변경 (C2), 탈퇴 (C4 = GDPR·PIPA 의무)
 - 학습 이력 다운로드 (C5) — 출시 후
-- → §X. Phase 3 (계정 관리 C 영역) 진입 박음
+- → §X. Phase 3 (계정 관리 C 영역) 진입 완료
 
 ### 5.3 닉네임 중복 체크 검증 🔴 (1주차) — §X Phase 1 A4 통합
 - 이메일 중복 ✅ 확인됨
 - 닉네임 중복: DB 레벨 unique 제약 + UI 즉시 피드백
-- → §X. Phase 1 A4 (가입 영역) 진입 박음
+- → §X. Phase 1 A4 (가입 영역) 진입 완료
 
 ### 5.4 가입자 대시보드 부분 잠금 🔴 (3주차)
 **설계 §5.나**: 간략 보고서 외 잠금
@@ -1576,7 +1577,7 @@ Public domain 클래식 곡별 레벨
 
 #### 7.3-B 사용자 결정 시트 (11 Q — 2026-05-03 결정 완료)
 
-> 사용자 결정 (2026-05-03): CTO 권장 그대로 일괄 OK. §7.3.1 작업 시 아래 결정값 그대로 명세에 박을 것.
+> 사용자 결정 (2026-05-03): CTO 권장 그대로 일괄 OK. §7.3.1 작업 시 아래 결정값 그대로 명세에 기록할 것.
 
 | # | 결정 항목 | 옵션 | **결정 (2026-05-03)** |
 |---|---|---|---|
@@ -1665,7 +1666,7 @@ Public domain 클래식 곡별 레벨
 
 #### 7.10-B 사용자 결정 시트 (6 Q — §7.10.1 결정 완료 2026-05-03)
 
-> 사용자 결정 (2026-05-03): CTO 권장 그대로 일괄 OK. §7.10.2~§7.10.3 작업 시 아래 결정값 그대로 구현에 박을 것.
+> 사용자 결정 (2026-05-03): CTO 권장 그대로 일괄 OK. §7.10.2~§7.10.3 작업 시 아래 결정값 그대로 구현에 기록할 것.
 
 | # | 결정 항목 | 옵션 | **결정 (2026-05-03)** |
 |---|---|---|---|
@@ -1687,7 +1688,7 @@ Public domain 클래식 곡별 레벨
 #### 7.10-C 코드 영향 범위 (Opus 2026-05-03)
 
 - `src/lib/sound.ts` — 5/1 §1 fix 적용 영역 (`ensureAudioReady`), audio context resume 시점이 sync 측정의 출발점
-- `src/components/NoteGame.tsx` — `handleCountdownComplete` 등 시각·사운드 동시 송출 시점 (Q-C 결정 후 정밀 위치 박을 것)
+- `src/components/NoteGame.tsx` — `handleCountdownComplete` 등 시각·사운드 동시 송출 시점 (Q-C 결정 후 정밀 위치 기록할 것)
 - 5/2 swipe 모달 fix 영역 (메모리 #18 동기화 정책) — 영향 범위 추가 검증 필요
 - 신규 후보: `src/lib/audioVisualSync.ts` (측정 + 보정 로직)
 
@@ -1762,7 +1763,7 @@ Calibration 사용 패턴 + 환경 분석을 위한 관리자 전용 뷰.
 
 **② AdSense 심사 신청** (1시간)
 - AdSense 계정 생성 (사업자 정보 사용)
-- Vercel 환경변수 박음 (메모리 #1 체크리스트 6·7·8번):
+- Vercel 환경변수 완료 (메모리 #1 체크리스트 6·7·8번):
   - `VITE_ADS_ENABLED=true`
   - `VITE_ADSENSE_PUBLISHER_ID=ca-pub-실제ID` (계정 생성 시 발급)
   - `VITE_INFEED_ADS_ENABLED=true`
@@ -1774,7 +1775,7 @@ Calibration 사용 패턴 + 환경 분석을 위한 관리자 전용 뷰.
 
 **③ Paddle Vendor 심사 신청** (가장 큰 작업)
 - Paddle Vendor 계정 생성 (사업자 정보)
-- Vercel 환경변수 박음 (메모리 #1 체크리스트 1·2·3·4·5번):
+- Vercel 환경변수 완료 (메모리 #1 체크리스트 1·2·3·4·5번):
   - `VITE_PADDLE_ENVIRONMENT=production`
   - `VITE_PADDLE_CLIENT_TOKEN=live_*`
   - `VITE_PADDLE_PRICE_MONTHLY/YEARLY=실제 Production 상품 ID`
@@ -1803,9 +1804,9 @@ Calibration 사용 패턴 + 환경 분석을 위한 관리자 전용 뷰.
 
 #### 10.1.1 임시 텍스트 작업 ✅ 완료 (2026-05-05, i18n Sprint A)
 - ✅ KO 4종 (`src/content/legal/{terms,privacy,refund,cookies}.md`) 임시 텍스트 교체
-- ✅ EN 4종 (`*.en.md`) 신규 — Coming Soon — Drafting 박음
-- ✅ `effective: ""` 박음 (사업자 등록 후 박을 영역)
-- ✅ markdownLoader.ts `loadLegalContent(slug, lang)` 박음 — `*.en.md` 미박일 때 KO fallback
+- ✅ EN 4종 (`*.en.md`) 신규 — Coming Soon — Drafting 완료
+- ✅ `effective: ""` 완료 (사업자 등록 후 기록할 영역)
+- ✅ markdownLoader.ts `loadLegalContent(slug, lang)` 완료 — `*.en.md` 미박일 때 KO fallback
 - ✅ LegalPage.tsx i18n 적용 — slug 자동 분기, ja·zh = en fallback
 - 사업자 등록 정정 완료 후 Termly/iubenda 자동 생성 + 진짜 약관 게시 (메모리 #22 트리거)
 
@@ -1865,19 +1866,19 @@ Claude가 출시 임박 시 자동 고지.
 
 ## 13. 결정 보류 항목
 
-### 13.1 글로벌 다국어 출시 전략 (사용자 결정 2026-04-30 → 2026-05-05 i18n 시스템 박음)
+### 13.1 글로벌 다국어 출시 전략 (사용자 결정 2026-04-30 → 2026-05-05 i18n 시스템 완료)
 
 - **5/31 출시**: 한국어 + 영어 2개 언어 동시 출시
 - **출시 후 1~4주**: 일본어 추가 (1~2주), 중국어 추가 (2~4주) 점진 확장
 - **블로그**: 5/1부터 한+영 동시 작성 (4/30 글은 5/1에 영어 버전 추가)
-- ~~**게임 UI i18n**: Week 3 도입 (react-i18next, Sonnet 1~2일)~~ — ✅ **2026-05-05 자체 구현 박음** (i18n Sprint A, react-i18next 미도입). 시스템 영역 = `src/contexts/LanguageContext.tsx` + `src/i18n/strings.ts` + `src/components/LangToggle.tsx`. **Sprint A 완료 = 메인·Header·Footer·블로그·약관 4종**. **Sprint B 박을 영역 = 인증·게임·결과·대시보드** (§13.5 참조).
+- ~~**게임 UI i18n**: Week 3 도입 (react-i18next, Sonnet 1~2일)~~ — ✅ **2026-05-05 자체 구현 완료** (i18n Sprint A, react-i18next 미도입). 시스템 영역 = `src/contexts/LanguageContext.tsx` + `src/i18n/strings.ts` + `src/components/LangToggle.tsx`. **Sprint A 완료 = 메인·Header·Footer·블로그·약관 4종**. **Sprint B 기록할 영역 = 인증·게임·결과·대시보드** (§13.5 참조).
 - **음표 라벨 토글**: Week 2 (한국식·영문식·솔페주, 1~2시간)
-- ~~**URL 구조**: `/ko/*`, `/en/*` 언어 코드 포함~~ — 박힘 X. 자체 구현 + Context lang 박음. 블로그만 URL `:lang` (SEO·linkability) 박음. 메인·약관 등은 단일 URL + Context lang 분기.
+- ~~**URL 구조**: `/ko/*`, `/en/*` 언어 코드 포함~~ — 적용됨 X. 자체 구현 + Context lang 완료. 블로그만 URL `:lang` (SEO·linkability) 완료. 메인·약관 등은 단일 URL + Context lang 분기.
 - **블로그 폴더**: `src/content/blog/ko/`, `src/content/blog/en/`
-- **약관 4종**: `src/content/legal/{slug}.md` (KO) + `src/content/legal/{slug}.en.md` (EN, ✅ 2026-05-05 박음)
-- **카테고리 영문 매핑**: 초견의 정석 = Sight-Reading Lab, 실전 연습 가이드 = Practice Hub, 음악 이론 & 화성학 = Theory & Harmony, 뮤직 테크 & 미래 = Music Tech (✅ strings.ts에 박음)
+- **약관 4종**: `src/content/legal/{slug}.md` (KO) + `src/content/legal/{slug}.en.md` (EN, ✅ 2026-05-05 완료)
+- **카테고리 영문 매핑**: 초견의 정석 = Sight-Reading Lab, 실전 연습 가이드 = Practice Hub, 음악 이론 & 화성학 = Theory & Harmony, 뮤직 테크 & 미래 = Music Tech (✅ strings.ts에 완료)
 - **Paddle 글로벌 결제** 자동 활성화
-- 상세 전략: `docs/i18n/STRATEGY.md` (구 react-i18next 전략 박힌 영역, 자체 구현 결정으로 일부 outdated)
+- 상세 전략: `docs/i18n/STRATEGY.md` (구 react-i18next 전략 적용된 영역, 자체 구현 결정으로 일부 outdated)
 
 ### 13.2 라우팅 보호 + Navigation 정리 + PWA 등록 (사용자 결정 2026-04-30, Week 3~4)
 
@@ -1910,12 +1911,12 @@ Claude가 출시 임박 시 자동 고지.
 **목적**: 출시 전 메인 페이지 카피·UI·광고·이메일 정리 + 약관 임시 텍스트 교체 + 글로벌 i18n 시스템 도입
 
 #### Sprint A ✅ 완료 (2026-05-05) — 외부 노출 영역
-사용자 결정 박음 (2026-05-05): "사용자가 사용하고 보는 모든 화면 = 한·영 둘 다 박음". 영역 분량이 커서 Sprint A·B로 분리.
+사용자 결정 완료 (2026-05-05): "사용자가 사용하고 보는 모든 화면 = 한·영 둘 다 완료". 영역 분량이 커서 Sprint A·B로 분리.
 
-**박힌 영역**: 메인(Index) + Header(LangToggle) + Footer + 블로그(Blog·BlogPost·InFeedAd) + 약관 4종(LegalPage)
+**적용된 영역**: 메인(Index) + Header(LangToggle) + Footer + 블로그(Blog·BlogPost·InFeedAd) + 약관 4종(LegalPage)
 
-- ✅ **i18n 시스템**: 자체 구현 박음 (react-i18next 미도입, 자체 LanguageContext + strings 객체) — 블로그 영역 기존 `UI[lang]` 패턴 일관 + 번들 크기 최소
-  - `src/contexts/LanguageContext.tsx` (Provider + useLang + useT, default fallback 박음)
+- ✅ **i18n 시스템**: 자체 구현 완료 (react-i18next 미도입, 자체 LanguageContext + strings 객체) — 블로그 영역 기존 `UI[lang]` 패턴 일관 + 번들 크기 최소
+  - `src/contexts/LanguageContext.tsx` (Provider + useLang + useT, default fallback 완료)
   - `src/i18n/strings.ts` (Strings 인터페이스 + ko·en 풀, ja·zh = en fallback)
   - `src/components/LangToggle.tsx` (Header 우상단, 한·영 button group)
   - localStorage `noteflex.lang` (legacy `noteflex.blog_lang` 자동 마이그레이션)
@@ -1925,39 +1926,39 @@ Claude가 출시 임박 시 자동 고지.
 - ✅ **이메일 교체**: `admin@` → `contact@noteflex.app` (ComingSoonNotice mailto + 본문)
 - ✅ **메인 페이지 이용약관 버튼 삭제**: 블로그 읽기 버튼만 유지
 - ✅ **푸터 블로그 링크 삭제** + 약관 4종 링크 i18n
-- ✅ **푸터 브랜드명**: "© 2026 Donofear" 박음 + 푸터 이메일 삭제
+- ✅ **푸터 브랜드명**: "© 2026 Donofear" 완료 + 푸터 이메일 삭제
 - ✅ **메인 페이지 광고 제거**: Index.tsx 랜딩 영역 `<AdBanner>` 삭제
 - ✅ **약관 4종 임시 텍스트**: §10.1.1 참조
-- ✅ **블로그 영역 통합**: Blog/BlogPost/InFeedAd 자체 lang state → useLang/useT, 자체 토글 제거 (Header LangToggle로 박힘)
+- ✅ **블로그 영역 통합**: Blog/BlogPost/InFeedAd 자체 lang state → useLang/useT, 자체 토글 제거 (Header LangToggle로 적용됨)
 
-**검증**: 458/458 테스트 PASS (각 commit 박은 후 회귀 X 확인). 사용자 화면 검증 = 별도 단계.
+**검증**: 458/458 테스트 PASS (각 commit 기록한 후 회귀 X 확인). 사용자 화면 검증 = 별도 단계.
 
 **commit 1~7**: i18n 시스템 → Index.tsx → 메인 변경 → Footer → 약관 4종 → Blog 통합 → 백로그 갱신.
 
 #### Sprint A 잔여 fix ✅ 완료 (2026-05-05, commit 8~13)
 
-사용자 화면 검증에서 발견된 5가지 항목 박음:
+사용자 화면 검증에서 발견된 5가지 항목 완료:
 
-- ✅ **검증 1 fix (commit 8 `1321633`)**: 게임시작 버튼 한국어 hardcoded → `t.game.start` 박음 (KO "🎵 게임 시작" / EN "🎵 Start Game")
+- ✅ **검증 1 fix (commit 8 `1321633`)**: 게임시작 버튼 한국어 hardcoded → `t.game.start` 완료 (KO "🎵 게임 시작" / EN "🎵 Start Game")
 - ✅ **검증 3 fix (commit 9 `15b40ca`)**: Hero 영역 emoji(🎼) span 삭제 + `hero.emoji` 키 제거 — 메인 화면 이미지 사라짐
 - ✅ **검증 4 fix (commit 10 `6412c20`)**: 블로그 읽기 버튼 게임시작 버튼 밑 복원 (GAME_ENABLED=true 영역) — outline 스타일 (CTO 권장 2차 CTA 패턴)
-- ✅ **검증 5 fix (commit 11 `23421a7`)**: 약관 4종 KO·EN 임시 텍스트에서 "Termly" 내부 도구명 제거 + frontmatter `title` 박음
-- ✅ **검증 11 fix (commit 13 `67c2a6e`)**: 블로그 본문 이미지 `maxHeight` 500px → 400px → 300px 최종 박음 (`MarkdownContent.tsx:74`). 사용자 화면 검증 2회 조정 (가독성 영역). `maxWidth: min(100%, 600px)` + `objectFit: contain` 그대로 박음.
+- ✅ **검증 5 fix (commit 11 `23421a7`)**: 약관 4종 KO·EN 임시 텍스트에서 "Termly" 내부 도구명 제거 + frontmatter `title` 완료
+- ✅ **검증 11 fix (commit 13 `67c2a6e`)**: 블로그 본문 이미지 `maxHeight` 500px → 400px → 300px 최종 완료 (`MarkdownContent.tsx:74`). 사용자 화면 검증 2회 조정 (가독성 영역). `maxWidth: min(100%, 600px)` + `objectFit: contain` 그대로 완료.
 
 ### 13.5 i18n + 메인 화면 리뉴얼 Sprint A ✅ 완료 (2026-05-05)
 
-**Sprint A 박음 = i18n 시스템 도입 + 외부 노출 영역 (메인·Header·Footer·블로그·약관 4종) + 잔여 fix 5건.**
-13개 commit 박음 (1~13). 458/458 테스트 PASS 일관 박음.
+**Sprint A 완료 = i18n 시스템 도입 + 외부 노출 영역 (메인·Header·Footer·블로그·약관 4종) + 잔여 fix 5건.**
+13개 commit 완료 (1~13). 458/458 테스트 PASS 일관 완료.
 
-**다음 sprint**: Sprint B (인증·게임·결과·대시보드 i18n). §0-3 모달 성능 영역 (메모리 #25 박힘) 별도 sprint.
+**다음 sprint**: Sprint B (인증·게임·결과·대시보드 i18n). §0-3 모달 성능 영역 (메모리 #25 적용됨) 별도 sprint.
 
 #### Sprint B 🔴 다음 (인증·게임·결과·대시보드)
 
-**박을 영역**: 인증(/login, /signup, AuthModal) + /play 단계 선택 + 게임 화면 + 결과 모달 + /dashboard
+**기록할 영역**: 인증(/login, /signup, AuthModal) + /play 단계 선택 + 게임 화면 + 결과 모달 + /dashboard
 
-**박힘 X (별도 sprint)**: /admin/* (메모리 #24 박힘) + /pricing, /profile, /settings (출시 후)
+**적용됨 X (별도 sprint)**: /admin/* (메모리 #24 적용됨) + /pricing, /profile, /settings (출시 후)
 
-**Phase 3 (출시 후)**: 일·중 번역 박음 — strings.ts ja·zh 키 + LangToggle UI 4언어 노출. 현재는 영어 fallback 박혀 있음.
+**Phase 3 (출시 후)**: 일·중 번역 완료 — strings.ts ja·zh 키 + LangToggle UI 4언어 노출. 현재는 영어 fallback 적용된 있음.
 
 #### ~~잠재 갭: /home → /dashboard 라우트 명~~ ✅ 완료 (2026-05-04)
 - ~~현재 코드: `<Route path="/home" element={<Home />} />`~~
@@ -2080,12 +2081,12 @@ Claude가 출시 임박 시 자동 고지.
 - [ ] **사용자 작업**: 블로그 글 추가 (한+영 동시)
 
 ### Week 3 (5/13 ~ 5/19): i18n + 라우팅 보호 + Navigation 정리 + 비즈니스 모델
-- [x] **i18n Sprint A** ✅ 완료 (2026-05-05, 자체 구현 박음 — react-i18next 미도입, LanguageContext + strings.ts) — 메인·Header·Footer·블로그·약관 4종
-- [ ] **i18n Sprint B**: 인증·게임·결과·대시보드 i18n 박음 (다음 sprint, §13.5 참조)
+- [x] **i18n Sprint A** ✅ 완료 (2026-05-05, 자체 구현 완료 — react-i18next 미도입, LanguageContext + strings.ts) — 메인·Header·Footer·블로그·약관 4종
+- [ ] **i18n Sprint B**: 인증·게임·결과·대시보드 i18n 완료 (다음 sprint, §13.5 참조)
 - [ ] 4/30·5/1~ 블로그 글 영어 번역 누적 (영어 폴더 분기)
 - [ ] §13.2 라우팅 보호 (NavOnlyRoute) 도입
 - [ ] §13.2 Navigation 정리 (header/sidebar 일관성, memory #14 NavOnlyRoute, memory #19 UX)
-- [x] §13.5 메인 화면 리뉴얼 (Sprint A) ✅ 완료 (2026-05-05) — Hero 카피·이메일·푸터·광고 제거·약관 임시 텍스트 박음
+- [x] §13.5 메인 화면 리뉴얼 (Sprint A) ✅ 완료 (2026-05-05) — Hero 카피·이메일·푸터·광고 제거·약관 임시 텍스트 완료
 - [x] §13.5 /home → /dashboard 라우트 명 갭 결정 ✅ 완료 (2026-05-04)
 - [ ] §1.1 회원 등급 차등화 적용
 - [ ] §1.3 결제 후킹 메시지
@@ -2177,7 +2178,7 @@ Claude가 출시 임박 시 자동 고지.
 - ✅ §4 retry 시스템 통합 재정의 — composeBatch (retry 큐 통합 + lastShownNote dedup), missedNotes Map, final-retry phase 동적 batchSize (3·5·7), composeFinalRetryBatch dedup (옵션 5 sort + 옵션 7 retry skip) — commits 5e37084·7338406·eb8b5e2·1215178·509eb37
 - ✅ §1 사운드 동기화 (ensureAudioReady → playNote 순서 보장) — commit 5f62244
 - ✅ §2 카운트다운 중 음표 숨김 (showCountdown guard) — commit 58c4aab
-- ✅ §0.1 dedup 정책 모든 batch 생성 경로 명세 박힘 — commit cf384ef
+- ✅ §0.1 dedup 정책 모든 batch 생성 경로 명세 적용됨 — commit cf384ef
 
 **2026-05-02**:
 - ✅ §3 GrandStaffPractice batchSize=3 균등 분포 + batchSize=7 잘림 X 보장 — commit 87f3aaf
@@ -2207,28 +2208,28 @@ Claude가 출시 임박 시 자동 고지.
 - 2026-04-27: 초안 — 사용자 24항목 + 첨부 4개 기획서
 - 2026-04-28 (오전): §0/§0-1/§0-2 신설, 모든 항목 출시 전 격상
 - 2026-04-28 (오후): Green Billion 명세 §7 통합
-- 2026-04-28 (저녁): **출시 일정 확정 (5/31)** + **Week 1~5 일정 박힘** + **자동 갱신 시스템 도입** + **AdSense·Paddle 병렬 심사 반영** + 우선순위 5/31 기준 재분류 (🔴 출시 전 / 🟢 출시 후 1개월 / 🟡 분기별 / ⏳ 심사 대기) + §15 완료 이력 신설
+- 2026-04-28 (저녁): **출시 일정 확정 (5/31)** + **Week 1~5 일정 적용됨** + **자동 갱신 시스템 도입** + **AdSense·Paddle 병렬 심사 반영** + 우선순위 5/31 기준 재분류 (🔴 출시 전 / 🟢 출시 후 1개월 / 🟡 분기별 / ⏳ 심사 대기) + §15 완료 이력 신설
 - 2026-04-29 (밤): §0-1 정책 결정 9개 모두 확정 + §0.1 ✅ 완료 (commit 4e2b6ef) + §0.4 신규 (UI 음표 history·크기·색깔·잘림 방지) + §7.3 Calibration 출시 전 필수로 격상 (사용자 명시 — 정체성 결정)
 - 2026-04-30 (밤): §0-1 코드 적용 완료 — §0-1.1~0-1.6 모두 구현 (commit 6c1a7e8) + §0.2 Lv5+ 조표 비율 수정 (commit bb062c3) + 블로그 1일차 2편 작성 완료 (sight-reading-basics, musical-staff-principle)
 - 2026-05-01: §0.3 카운트다운 grace buffer + Sub3 즉시 타임아웃 fix (eac606a) + §0.4 GrandStaffPractice 분석 (Opus 보고서, 3갭 4 step) + 문서 갱신 v7 (§10.1 Termly 결정, §13.1 글로벌 다국어, §13.2 라우팅·PWA, §14 Week 재편, docs/i18n/STRATEGY.md 신규)
 - 2026-05-01 (밤): §4 retry 시스템 통합 재정의 — composeBatch (retry 큐 통합), missedNotes Map, final-retry phase 동적 batchSize (3·5·7) — commits 5e37084, 7338406, eb8b5e2. §1 사운드 동기 (5f62244), §2 카운트다운 음표 숨김 (58c4aab). 시뮬레이터 §4 parity (1215178) + final-retry dedup fix (옵션 5+7) + 신규 invariant 테스트. **§0.1 dedup 정책 — 모든 batch 생성 경로 적용**: composeBatch (popDueOrNull lastShown skip + generateBatch prev), composeFinalRetryBatch (옵션 5 sort + 옵션 7 retry skip 예외), generateBatch (내부 prev). 향후 batch 생성 경로 신규 추가 시 위 dedup 정책 명시 적용 필수 — §0.1 회귀 방지.
-- 2026-05-02 (Opus 4.7 분석): **§7.3 Calibration 작업 분할 + 결정 시트 + 위험 분석 박힘** — §7.3-A (4 sub-step, 총 13~18시간), §7.3-B (11 Q 결정 시트), §7.3-C (§7.10·§7.1 결합), §7.3-D (코드 영향 boundary 1지점 전략), §7.3-E (위험 요소). Week 2 일정에 §7.3.1~§7.3.4 + §7.10 + §7.1 결합 진행 박음. 코드 변경 0건.
+- 2026-05-02 (Opus 4.7 분석): **§7.3 Calibration 작업 분할 + 결정 시트 + 위험 분석 적용됨** — §7.3-A (4 sub-step, 총 13~18시간), §7.3-B (11 Q 결정 시트), §7.3-C (§7.10·§7.1 결합), §7.3-D (코드 영향 boundary 1지점 전략), §7.3-E (위험 요소). Week 2 일정에 §7.3.1~§7.3.4 + §7.10 + §7.1 결합 진행 완료. 코드 변경 0건.
 - 2026-05-02: §3 batchSize=3 균등 분포 + batchSize=7 잘림 X 보장 (commit 87f3aaf) + 카운트다운 애니메이션 1s 동기화·fade-out (commit 6283ad9) + swipe 모달 controlled 상태 머신 modal→countdown→note (commit 941b04f) + swipe 모달 회귀 fix (commit 6f5290f) + 모달·카운트다운 중 음표·NoteButtons·정답 라벨·조표 가드 (commits c1b9d7c·717797e) + Lv 1~4 batchSize=1 stage 정책 갱신 Sub1=33음표·Sub2=42음표·Sub3=52음표 (commit 400dca2) + 블로그 3일차 6편 한+영 (commit 7a1ebdd) + 블로그 이미지 CSS 제한 (commit 8091e8e). 373/373 PASS.
 - 2026-05-03 (Opus 4.7): **§7.10 sub-step 3개 + §7.1 실측 17 사이트 + §7.3.1 결정 시트 완료** — §7.10-A (3 sub-step), §7.10-B (6 Q 결정 시트 완료), §7.3-B (11 Q 결정 시트 완료). 코드 변경 0건. (commit 6080e0a)
-- 2026-05-03 (Sonnet 4.6): **§7.1 코드 완료** (commit 42a4b68) + **§7.10.1 결정 완료** — §7.10-B 6 Q 결정값 박힘 (Q-A:a·Q-B:a·Q-C:c·Q-D:c·Q-E:a·Q-F:c). §7.3-C 결합 정책 확정: §7.10.2 측정 로직 §7.3.3 CalibrationModal 안 통합, §7.3.3 추정 7~10시간으로 상향. §7.3.3 의존성에 §7.10.1 추가. docs 갱신 (commits 4d73b69, 65d005f).
+- 2026-05-03 (Sonnet 4.6): **§7.1 코드 완료** (commit 42a4b68) + **§7.10.1 결정 완료** — §7.10-B 6 Q 결정값 적용됨 (Q-A:a·Q-B:a·Q-C:c·Q-D:c·Q-E:a·Q-F:c). §7.3-C 결합 정책 확정: §7.10.2 측정 로직 §7.3.3 CalibrationModal 안 통합, §7.3.3 추정 7~10시간으로 상향. §7.3.3 의존성에 §7.10.1 추가. docs 갱신 (commits 4d73b69, 65d005f).
 - 2026-05-03 (Sonnet 4.6): **§7.3.2 코어 lib 완료** — `src/lib/userEnvironmentOffset.ts` (localStorage r/w, DB sync, clamp, device change, skip), `src/hooks/useUserEnvOffset.ts` (needsCalibration·canSkip·deviceChanged), `supabase/migrations/20260503_add_user_env_offset.sql`. 단위 테스트 23건 신규. vitest 396/396 PASS.
 - 2026-05-03 (Opus 4.7): **§7.3.3 + §7.10.2 완료** — `src/components/CalibrationModal.tsx` (4단계 상태 머신: intro→sync-measure→env-measure→complete), `src/lib/audioVisualSync.ts` (rAF+perf.now() vs AudioContext.currentTime, measureSyncGapAverage), `src/lib/calibrationMeasurement.ts` (trimmedMean·clampOffset·isSyncOutlier). NoteGame.tsx 통합 (showCalibration gate, memory #18 순서 보장). 단위 테스트 23건 신규 (audioVisualSync 7 + calibrationMeasurement 16). vitest 419/419 PASS. sim:test 9984 games 0 violations.
 - 2026-05-03 (Sonnet 4.6): **§7.3.4 완료 — §7.3 코어 완료** — `useSessionRecorder.recordNote` boundary offset 차감 (DB 방식 C: JSONB `reaction_ms_raw` + `summary.avg_reaction_ms_raw` + `summary.offset_ms_applied`). NoteGame 3사이트 손대지 않음. speed bonus thresholds 값 유지 (corrected reactionMs 기준). 단위 테스트 6건 신규. vitest 425/425 PASS. sim:test 0 violations. PENDING: §7.3.5 Stats display (raw/corrected), speed bonus 재튜닝 (출시 후).
 - 2026-05-03 (Sonnet 4.6): **§7.3 UX fix + §7.3.5 완료** — CalibrationModal 측정 시간 30초→5초, 측정 시작 버튼 primary 색상. §7.3.5 Admin 동시 노출 완료. Q-J 정책 정정 (Home raw 토글 영구 제거, 메모리 #19).
 - 2026-05-09 밤~ (Sonnet 4.6): **Phase 2 GrandStaffPractice UI Sprint 완료** (commits 3faec95·bfa0d94·ee73501·8c56e46, 608/608 PASS, tsc 0, sim:test 0 violations) — F1: /admin/staff-preview (Lv·batchSize·keySig 토글 + meta 패널, 14 tests). F2: NoteRole + getNoteColor() — batch/history 색깔 통합 (5 tests). F3: visibleNoteCount = answeredNotes+batch.length; batch 모드 answerNotes 누적 안 함 (4 tests). F4: N-등분 배치 (resolveStyle에 visibleN 파라미터; effectiveWidth=STAFF_X2-noteStartX; segmentWidth=eff/N; noteX(i)=rawStart+seg*(i+0.5), 6 tests). §0.4 ✅ §6.4 ✅.
-- 2026-05-09 자정~ (Sonnet 4.6): **Group D 패스트트랙 완료** (commits 8a2f1bf·7ace91b·1148637, 579/579 PASS, tsc 0) — D1: `20260509_fast_track.sql` (fast_track 컬럼 + RPC 패스트트랙 분기 + get_mastery_score 100 강제 + tier 조회 정정). D2: 타입 전파 + computeMasteryScore 100 강제 + Index.tsx fastTrack 전달. D3: SublevelPassedDialog fastTrack 분기 + 5초 카운트다운 (autoAdvancedRef 1회) + aiCoaching fastTrack 우선 분기. 마이그레이션: Docker 오프라인 → 사용자 production apply 필요. §B.5 ❌→✅. 영역 B-0 7/7 완료. 신규 §X.UI 박음.
-- 2026-05-09 (Sonnet 4.6): **영역 B-0 티어 매트릭스 결정 + 코드 사실 추적 7개 영역** — Guest(Lv1 Sub1, 3회/일)·Free(Lv1~5 Sub1 순차, 7회/일)·Premium(전 21단계, 무제한) 확정. Quick Mastery Mode (오류≤1%·시간≤50% 조건) + Mastery Score 블러 + AI Coaching 기본 정책 결정. DB PASS_CRITERIA 불일치 발견 (play≥5/80% vs TS 10/85%) → `20260509_pass_criteria_v2.sql` 마이그레이션 결정. 광고 보상형 세션 정책 영구 폐기. §B-0·§B.1~B.6 + §13.L + §0-1.1 DB 정정 노트 박음.
+- 2026-05-09 자정~ (Sonnet 4.6): **Group D 패스트트랙 완료** (commits 8a2f1bf·7ace91b·1148637, 579/579 PASS, tsc 0) — D1: `20260509_fast_track.sql` (fast_track 컬럼 + RPC 패스트트랙 분기 + get_mastery_score 100 강제 + tier 조회 정정). D2: 타입 전파 + computeMasteryScore 100 강제 + Index.tsx fastTrack 전달. D3: SublevelPassedDialog fastTrack 분기 + 5초 카운트다운 (autoAdvancedRef 1회) + aiCoaching fastTrack 우선 분기. 마이그레이션: Docker 오프라인 → 사용자 production apply 필요. §B.5 ❌→✅. 영역 B-0 7/7 완료. 신규 §X.UI 완료.
+- 2026-05-09 (Sonnet 4.6): **영역 B-0 티어 매트릭스 결정 + 코드 사실 추적 7개 영역** — Guest(Lv1 Sub1, 3회/일)·Free(Lv1~5 Sub1 순차, 7회/일)·Premium(전 21단계, 무제한) 확정. Quick Mastery Mode (오류≤1%·시간≤50% 조건) + Mastery Score 블러 + AI Coaching 기본 정책 결정. DB PASS_CRITERIA 불일치 발견 (play≥5/80% vs TS 10/85%) → `20260509_pass_criteria_v2.sql` 마이그레이션 결정. 광고 보상형 세션 정책 영구 폐기. §B-0·§B.1~B.6 + §13.L + §0-1.1 DB 정정 노트 완료.
 - 2026-05-09 (Sonnet 4.6): **Group A 코드 완료** (commits e6ed7b2·b232dcd·1848391, 470/470 PASS) — A1: `canAccessSublevel` guest/free 재작성 + `getProgressGatePrev` 신규 (Sub1 순차 진도 게이트). A2: `20260509_pass_criteria_v2.sql` + `useLevelProgress` avgReactionRatio 파라미터 + NoteGame endSession→recordAttempt 순차 체인. A3: `Pricing.tsx` freeFeatures/compareRows 갱신. §B-0.2·§B.1·§B.2 ✅. 다음: Group B (daily_sessions 테이블·useDailyLimit·DailyLimitModal, ~4h).
 - 2026-05-09 오후 (Opus 4.7): **Group B 코드 완료** (commits 7167977·0cbd5ac·b81937e·f4265df, 497/497 PASS, tsc 0) — B1: `20260509_daily_sessions.sql` (테이블 + RLS + RPC 2개, tier_snapshot 컬럼 두지 않음). B2: `useDailyLimit` 훅 (guest=localStorage / free=RPC / pro=Infinity, UTC 자정 카운트다운, 11/11 PASS). B3: `DailyLimitModal` (ko/en, 메모리 #19 backdrop·ESC 닫기 X, animate-pop-in, 12/12 PASS). B4: NoteGame 마운트 게이트 + 통합 테스트 4 케이스. 사용자 결정 Q1=UTC / Q2=localStorage / Q3=tier_snapshot 두지 않음 / Q4=마운트 시점. §B.4 ✅. 다음: 5/10 11일차 블로그 → Group C (~5h).
 - 2026-05-09 오후~ (Opus 4.7): **Group B Fix Sprint** (commits b58d873·fbe4d29, 512/512 PASS, tsc 0) — 사용자 검증 발견 영역 정정. F1+F3: 게이트 위치 NoteGame 마운트 → LevelSelect 단계 클릭 시점 이동 (백그라운드 게임 진행 차단). NoteGame = 안전망 (한도 도달 시 onLevelSelect 콜백). 6개 NoteGame.*.test.tsx useDailyLimit 모킹 추가 (테스트 안정화). LevelSelect.dailyLimit 신규 7케이스. F2: DailyLimitModal 컨텐츠 재작성 — Guest 가치 3개·Free 가치 4개·Free 가격 표시 ($2.99/mo·$24.99/yr 30% 절약). Quick Mastery 영역 제거 (사용자 정정). "모든 단계 열림" 표현 정정 (Premium=21단계 전체, Free=Sub1만).
 - 2026-05-10 (일) (Sonnet 4.6): **11일차 블로그 3편 완료** (commits 7d40212·2896e78·3e3a9bb, 722/722 PASS, tsc 0) — §3-38 약점 음표 집중 학습법 (Ericsson et al. 1993 DOI), §5-56 피아노 초견 가이드 (Karpinski 2000 + Lehmann 2002), §7-79 가중치 학습 알고리즘 (Cepeda et al. 2006 DOI). 6 .md 파일 (ko+en), 이미지 6개 curl HTTP 200 검증 완료. 누적 52편 (한 26 + 영 26). ※이전 기록 "49편" 오기 정정.
 - 2026-05-11 (월) (Sonnet 4.6): **12일차 블로그 3편 완료** — §4-47 음정 인식의 신경과학 (Zatorre & Salimpoor 2013 DOI), §5-58 교회 반주자의 초견 (McPherson 1994 DOI), §3-43 게임처럼 만들기 (Ryan & Deci 2000 DOI, 13일차 advance write). 6 .md 파일 (ko+en), 이미지 6개 curl HTTP 200 PASS. 누적 58편 (한 29 + 영 29).
 - 2026-05-10 (일) (Sonnet 4.6): **블로그 이미지 전수 정정 완료 (12 .md, 24 이미지)** — 10일차+11일차 6편 × 한+영 = 12 .md 파일 Pexels/Unsplash 이미지 전량 Wikimedia Commons Public Domain 이미지로 교체. 이미지 정책 갱신: Pexels/Unsplash/Pixabay 완전 금지 → Wikimedia Commons, IMSLP, LoC, Met Museum, 공개학술지만 허용. frontmatter coverImage/coverImageAlt/coverImageSource/coverImageLicense/coverImageCredit 5개 필드 신규 추가. 이미지 12쌍(24개): Bach BWV1001 자필악보 + Danhauser «피아노 앞의 리스트», Beethoven Pathétique 악보 + Op.90 자필, Czerny Op.337 악보 + Czerny 초상, Bach BWV56 bass aria 자필 + Beethoven Op.101 스케치, Beethoven Op.109 자필 + Childe Hassam «At the Piano», 에빙하우스 망각곡선 + 에빙하우스 초상. curl HTTP 200 10개 직접 확인, 2개(에빙하우스 파일)는 CDN 429 (IP 연속 요청 rate-limit — MediaWiki API 파일 존재·정보 확인 완료).
-- 2026-05-09 (Opus 4.7): **§X 사용자 등록·관리 영역 신규 박음** — 4 Phase 분할 (~5일 sprint): A 가입(이메일 OTP·중복검증·비밀번호 강도·OAuth 사실추적) / B 로그인·세션(비밀번호 재설정·refresh token) / C 계정관리(비번변경·이메일변경·탈퇴 GDPR/PIPA) / D 보안(이메일 confirm·전 테이블 RLS). C4 탈퇴=법적 의무 출시 전 필수, D2 RLS=§0-2.1 스키마 표류 통합. 기존 §5.2 회원관리·§5.3 닉네임 중복 → §X로 통합 마킹. 진행 시점: 5/10 11일차 블로그 또는 Group C 후. 의존성: §0-2.1·§10.1·§3.5/§5.4/§1.1.
+- 2026-05-09 (Opus 4.7): **§X 사용자 등록·관리 영역 신규 완료** — 4 Phase 분할 (~5일 sprint): A 가입(이메일 OTP·중복검증·비밀번호 강도·OAuth 사실추적) / B 로그인·세션(비밀번호 재설정·refresh token) / C 계정관리(비번변경·이메일변경·탈퇴 GDPR/PIPA) / D 보안(이메일 confirm·전 테이블 RLS). C4 탈퇴=법적 의무 출시 전 필수, D2 RLS=§0-2.1 스키마 표류 통합. 기존 §5.2 회원관리·§5.3 닉네임 중복 → §X로 통합 마킹. 진행 시점: 5/10 11일차 블로그 또는 Group C 후. 의존성: §0-2.1·§10.1·§3.5/§5.4/§1.1.
 - 2026-05-03 (Sonnet 4.6): **§7.3 device 변경 자동 재측정 + A2 이벤트 로깅** — `onDeviceChange` 시그니처 갱신 (kinds 전달), `setIsCalibrated(false)` → 다음 게임 자동 모달 (메모리 #19 옵션 C). `device_change_events` 테이블 + migration SQL. `logDeviceChangeEvent`·`updateDeviceChangeEvent` 신규. 단위 테스트 8건 신규. vitest 433/433 PASS. PENDING: 출시 후 false positive 분석 → audio output 전용 감지 보강.
 - 2026-05-12 (Sonnet 4.6): **§X 인증 흐름 전면 정정 sprint 완료** (commits ba17423·df99a3a·1e9e0bf·58ecc0b·efb42c2·e92bc68, 56개 단위 테스트 PASS) — C1: AuthModal Step 3 완전 제거 + Step 1 TOS 체크박스 통합 + 로그인 매직링크 전용 전환. C2: AuthCallback profile_completed 분기 제거 + Google OAuth consent localStorage 반영. C3: profile_completed default=true + handle_new_user_profile 닉네임 자동 + raw_user_meta_data TOS 추출 마이그레이션. C4: ProfilePage 비밀번호 변경 카드 제거 + 생년월일·국적·마케팅 동의 토글 추가. C5: 탈퇴 = signInWithOtp+verifyOtp OTP 재인증. C6: /reset-password = 메인 redirect. **production apply 필요: `20260512_profile_completed_default.sql`**. Resend 연동 후 실제 메일 흐름 검증 권장.

@@ -158,7 +158,7 @@ async function handleSubscriptionEvent(
 
   if (profileError) {
     console.error("[Webhook] profile paddle_customer_id 업데이트 실패:", profileError);
-    // subscription 박은 영역 이미 완료. profile 동기화 실패는 비치명적이므로 throw 박지 X.
+    // subscription 기록한 부분 이미 완료. profile 동기화 실패는 비치명적이므로 throw 미설정.
   }
 
   console.log(`[Webhook] ${eventType} 처리 완료. user=${userId}, status=${data.status}`);

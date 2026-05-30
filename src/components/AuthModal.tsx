@@ -147,9 +147,9 @@ export default function AuthModal({ onClose }: AuthModalProps) {
     } catch (err: any) {
       localStorage.removeItem("noteflex_consent");
       logger.error("Google 로그인 실패", err, {
-        description: "Google OAuth 영역 박지 X",
+        description: "Google OAuth 영역 미설정",
         cause: err?.message ?? String(err),
-        impact: "사용자 영역 Google 영역으로 가입·로그인 박지 X",
+        impact: "사용자 영역 Google 영역으로 가입·로그인 미설정",
         action: "Supabase OAuth 설정 확인, Google Cloud Console redirect URI 확인",
       });
       toast({ title: "Google 로그인 실패", description: err.message, variant: "destructive" });
@@ -174,17 +174,17 @@ export default function AuthModal({ onClose }: AuthModalProps) {
         },
       });
       if (error) throw error;
-      logger.info("Magic Link 발송 박음 (로그인)", {
-        description: "로그인 영역 박음 signInWithOtp 성공 — 사용자 영역 이메일 박을 영역",
+      logger.info("Magic Link 발송 완료 (로그인)", {
+        description: "로그인 영역 완료 signInWithOtp 성공 — 사용자 영역 이메일 기록할 영역",
         email_domain: email.split("@")[1],
       });
       setStep(2);
       startCooldown();
     } catch (err: any) {
-      logger.error("Magic Link 영역 박지 X (로그인)", err, {
+      logger.error("Magic Link 영역 미설정 (로그인)", err, {
         description: "로그인 영역에서 signInWithOtp 실패",
         cause: err?.message ?? String(err),
-        impact: "사용자 영역 이메일 박지 X — 인증 영역 차단",
+        impact: "사용자 영역 이메일 미설정 — 인증 영역 차단",
         action: "Supabase Auth 설정 확인, 이메일 도메인 확인",
         metadata: {
           auth_action: "signin",
@@ -239,18 +239,18 @@ export default function AuthModal({ onClose }: AuthModalProps) {
         },
       });
       if (error) throw error;
-      logger.info("Magic Link 발송 박음 (가입)", {
-        description: "회원가입 영역 박음 signInWithOtp 성공 — 사용자 영역 이메일 박을 영역",
+      logger.info("Magic Link 발송 완료 (가입)", {
+        description: "회원가입 영역 완료 signInWithOtp 성공 — 사용자 영역 이메일 기록할 영역",
         email_domain: email.split("@")[1],
         signup_method: "magic_link",
       });
       setStep(2);
       startCooldown();
     } catch (err: any) {
-      logger.error("Magic Link 영역 박지 X (가입)", err, {
+      logger.error("Magic Link 영역 미설정 (가입)", err, {
         description: "가입 영역에서 signInWithOtp 실패",
         cause: err?.message ?? String(err),
-        impact: "사용자 영역 이메일 박지 X — 인증 영역 차단",
+        impact: "사용자 영역 이메일 미설정 — 인증 영역 차단",
         action: "Supabase Auth 설정 확인, 이메일 도메인 확인",
         metadata: {
           auth_action: "signup",
@@ -275,18 +275,18 @@ export default function AuthModal({ onClose }: AuthModalProps) {
         },
       });
       if (error) throw error;
-      logger.info("Magic Link 발송 박음 (복구)", {
-        description: "계정 복구 영역 박음 signInWithOtp 성공 — 사용자 영역 이메일 박을 영역",
+      logger.info("Magic Link 발송 완료 (복구)", {
+        description: "계정 복구 영역 완료 signInWithOtp 성공 — 사용자 영역 이메일 기록할 영역",
         email_domain: email.split("@")[1],
       });
       setIsRecovery(true);
       setStep(2);
       startCooldown();
     } catch (err: any) {
-      logger.error("Magic Link 영역 박지 X (복구)", err, {
+      logger.error("Magic Link 영역 미설정 (복구)", err, {
         description: "계정 복구 영역에서 signInWithOtp 실패",
         cause: err?.message ?? String(err),
-        impact: "사용자 영역 복구 영역 박지 X",
+        impact: "사용자 영역 복구 영역 미설정",
         action: "Supabase Auth 설정 확인",
         metadata: {
           auth_action: "recover",
@@ -305,18 +305,18 @@ export default function AuthModal({ onClose }: AuthModalProps) {
     try {
       const { error } = await supabase.rpc("hard_delete_account", { p_email: email });
       if (error) {
-        logger.error("계정 영역 삭제 박지 X", error, {
+        logger.error("계정 영역 삭제 미설정", error, {
           description: "hard_delete_account RPC 실패",
           cause: error.message,
-          impact: "사용자 영역 \"새로 시작\" 박지 X — 계정 영역 잔존",
-          action: "hard_delete_account RPC 박힌지 확인, auth.users 권한 확인",
+          impact: "사용자 영역 \"새로 시작\" 미설정 — 계정 영역 잔존",
+          action: "hard_delete_account RPC 있는지 확인, auth.users 권한 확인",
           metadata: { email_domain: email.split("@")[1] },
         });
         toast({ title: "오류가 발생했어요", description: error.message, variant: "destructive" });
         return;
       }
-      logger.info("계정 영구 삭제 박음", {
-        description: "hard_delete_account RPC 박음 → profiles + auth.users DELETE",
+      logger.info("계정 영구 삭제 완료", {
+        description: "hard_delete_account RPC 완료 → profiles + auth.users DELETE",
         email_domain: email.split("@")[1],
       });
       // auth.users 삭제됐으므로 shouldCreateUser: true로 신규 가입 처리
@@ -335,8 +335,8 @@ export default function AuthModal({ onClose }: AuthModalProps) {
         },
       });
       if (otpError) throw otpError;
-      logger.info("Magic Link 발송 박음 (새로 시작)", {
-        description: "새로 시작 영역 박음 signInWithOtp 성공 — 신규 가입 흐름 박음",
+      logger.info("Magic Link 발송 완료 (새로 시작)", {
+        description: "새로 시작 영역 완료 signInWithOtp 성공 — 신규 가입 흐름 완료",
         email_domain: email.split("@")[1],
       });
       setFreshStartConfirm(false);
@@ -344,10 +344,10 @@ export default function AuthModal({ onClose }: AuthModalProps) {
       setStep(2);
       startCooldown();
     } catch (err: any) {
-      logger.error("Magic Link 영역 박지 X (새로 시작)", err, {
-        description: "새로 시작 영역 박은 영역 박힌 후 영역 signInWithOtp 실패",
+      logger.error("Magic Link 영역 미설정 (새로 시작)", err, {
+        description: "새로 시작 영역 기록한 부분 적용된 후 영역 signInWithOtp 실패",
         cause: err?.message ?? String(err),
-        impact: "사용자 영역 재가입 영역 박지 X",
+        impact: "사용자 영역 재가입 영역 미설정",
         action: "Supabase Auth 설정 확인",
         metadata: {
           auth_action: "fresh_start",
@@ -809,7 +809,7 @@ export default function AuthModal({ onClose }: AuthModalProps) {
                 닫기
               </button>
 
-              {/* Paddle 심사관 액세스 (눈에 띄지 않게 박음) */}
+              {/* Paddle 심사관 액세스 (눈에 띄지 않게 완료) */}
               <button
                 type="button"
                 onClick={() => setStep(4)}

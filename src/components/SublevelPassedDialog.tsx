@@ -60,7 +60,7 @@ export function SublevelPassedDialog({
     ? Math.round((totalCorrect / totalAttempts) * 100)
     : 0;
 
-  // 이전 누적 정답률 — 사인인 사용자 + 이전 세션 충분(≥5 시도) 박힌 영역만 비교 박음
+  // 이전 누적 정답률 — 사인인 사용자 + 이전 세션 충분(≥5 시도) 적용된 영역만 비교 완료
   const historicalAccuracy: number | undefined = (() => {
     if (!user) return undefined;
     const cumulative = getProgressFor(level, sublevel);

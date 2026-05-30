@@ -1,7 +1,7 @@
 # §4 Retry System — 명세
 
 > **작성일**: 2026-05-02 (§4 Step D 명세 박기)
-> **목적**: retry 시스템(useRetryQueue + composeBatch + final-retry phase) 정확 동작을 향후 회귀 방지용으로 박는다.
+> **목적**: retry 시스템(useRetryQueue + composeBatch + final-retry phase) 정확 동작을 향후 회귀 방지용으로 기록한다.
 > **방법론**: `src/components/NoteGame.tsx` + `src/hooks/useRetryQueue.ts` + `src/lib/simulator/{game.ts,retryQueue.ts}` 코드 트레이스 결과. 추측 X.
 > **scope**: 게임 한 판(sublevel 한 판) 내 retry 동작만. 사용자 mastery·세션 간 carry-over는 본 문서 외부.
 
@@ -209,7 +209,7 @@ return {
 ```
 
 - **`retryQueue` 미사용** — final-retry는 N+2 알고리즘 외부. `missedMap`(`missedNotes`)을 인자로 받아 stale state 회피.
-- **§0.1 dedup 두 옵션** (2026-05-01 박힘):
+- **§0.1 dedup 두 옵션** (2026-05-01 적용됨):
   - **옵션 5 (sort)**: `lastShown`과 다른 ID 음표를 retry 자리 첫 번째로 — `batch[0]` dedup 보장.
   - **옵션 7 (좁은 예외)**: missedArray 모두 lastShown ID인 경우(예: missed 1개인데 그게 lastShown) — retry 통째 skip + 새 음표만. 다음 batch에서 lastShown 변경되면 retry 정상.
 - 새 음표 생성 시 dedup용 prev = retry 마지막 ?? lastShown.
@@ -378,7 +378,7 @@ if (result):
 | **`composeFinalRetryBatch` (final-retry phase)** | `NoteGame.tsx:658` | 옵션 5 sort (lastShown 다른 ID 우선) + 옵션 7 좁은 예외 (retry 통째 skip) |
 | **`generateBatch` (새 음표)** | `NoteGame.tsx` `generateBatch` | 내부 prev 추적 (cross-batch + intra-batch dedup) |
 
-### 8.2 회귀 방지 원칙 (메모리 박힘)
+### 8.2 회귀 방지 원칙 (메모리 적용됨)
 
 > 향후 batch 생성 경로 신규 추가 시 위 dedup 정책 명시 적용 필수 — §0.1 회귀 방지.
 
@@ -479,7 +479,7 @@ retry 시스템 변경 시 `npm run sim:test` 한 줄로 9 invariants 회귀 자
 
 ## §12. 변경 이력
 
-- **2026-04-29**: §0-1 박힘 (popDueOrNull `lastShown` skip, wasRetry 사각지대 fix, N+2 정확화, simulator 1만 게임 fuzz, commit `4e2b6ef`).
+- **2026-04-29**: §0-1 적용됨 (popDueOrNull `lastShown` skip, wasRetry 사각지대 fix, N+2 정확화, simulator 1만 게임 fuzz, commit `4e2b6ef`).
 - **2026-05-01**:
   - §1 sound sync (commit `5f62244`).
   - §2 카운트다운 음표 숨김 (commit `58c4aab`).
@@ -495,5 +495,5 @@ retry 시스템 변경 시 `npm run sim:test` 한 줄로 9 invariants 회귀 자
   - swipe 모달 controlled state machine (modal → countdown → note) (commits `941b04f`·`6f5290f`·`c1b9d7c`).
   - batchSize=1 stage 정책 (Lv 1~4) (commit `87f3aaf`).
   - **§4 Step C — debug trace cleanup** (commit `c77492f`): `retryQueueDebug.ts` 삭제, `[§0.1 DEBUG]`/`[§4 BUG TRACE]` 마커 제거, sr-only 테스트 인프라 span만 보존.
-  - **§4 Step D — 본 명세 박힘**.
+  - **§4 Step D — 본 명세 적용됨**.
   - **§4 Step B — 자동 검증 시스템 구축**: `simLogger.ts` + `scripts/run-simulation.ts` + `scripts/analyze-sim-logs.ts` + 9 invariants + `npm run sim:test` 파이프라인. 9984 game × 790,212 events 위반 0건 검증.

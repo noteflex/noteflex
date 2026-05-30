@@ -126,7 +126,7 @@ export default function ProfilePage() {
   };
 
   // ── 프로필 폼 (닉네임 + 생년월일 + 국적 + 마케팅) ──
-  // 표시 언어(locale)는 LanguageContext.setLang으로 즉시 반영 박음 — 폼 상태 X.
+  // 표시 언어(locale)는 LanguageContext.setLang으로 즉시 반영 완료 — 폼 상태 X.
   const [formData, setFormData] = useState({
     nickname:         profile?.nickname ?? "",
     birth_year:       profile?.birth_year?.toString() ?? "",
@@ -164,24 +164,24 @@ export default function ProfilePage() {
   );
 
   // 언어 변경 핸들러: LanguageContext 즉시 반영 + DB 동기화 (best-effort).
-  // setLang은 localStorage 박힘 → 새로고침·다른 페이지 이동 시 유지.
+  // setLang은 localStorage 적용됨 → 새로고침·다른 페이지 이동 시 유지.
   const handleLanguageChange = async (newLang: Lang) => {
     setLang(newLang);
     if (user) {
-      // best-effort: 실패해도 UI는 정상 (localStorage 폴백 박힘).
+      // best-effort: 실패해도 UI는 정상 (localStorage 폴백 적용됨).
       void supabase.from("profiles").update({ locale: newLang }).eq("id", user.id)
         .then(({ error }) => {
           if (error) {
-            logger.error("언어 영역 변경 박지 X", error, {
+            logger.error("언어 영역 변경 미설정", error, {
               description: "profiles.locale UPDATE 실패",
               cause: error.message,
-              impact: "사용자 영역 언어 영역 박지 X (localStorage 폴백 박음)",
+              impact: "사용자 영역 언어 영역 미설정 (localStorage 폴백 완료)",
               action: "ProfilePage.tsx:102 영역 확인",
               metadata: { new_lang: newLang, user_id: user.id },
             });
           } else {
-            logger.info("언어 변경 박음", {
-              description: "profiles.locale UPDATE 박음",
+            logger.info("언어 변경 완료", {
+              description: "profiles.locale UPDATE 완료",
               user_id: user.id,
               new_locale: newLang,
             });
@@ -252,10 +252,10 @@ export default function ProfilePage() {
           });
           return;
         }
-        logger.error("프로필 영역 변경 박지 X", error, {
+        logger.error("프로필 영역 변경 미설정", error, {
           description: "profiles UPDATE 실패 (ProfilePage)",
           cause: error.message,
-          impact: "사용자 영역 프로필 영역 박지 X",
+          impact: "사용자 영역 프로필 영역 미설정",
           action: "ProfilePage.tsx:156 영역 확인",
           metadata: {
             user_id: user.id,
@@ -269,8 +269,8 @@ export default function ProfilePage() {
 
       await refreshProfile();
       if (updates.nickname && updates.nickname !== profile?.nickname) {
-        logger.info("닉네임 변경 박음", {
-          description: "profiles.nickname UPDATE 박음",
+        logger.info("닉네임 변경 완료", {
+          description: "profiles.nickname UPDATE 완료",
           user_id: user.id,
         });
       }
@@ -455,7 +455,7 @@ export default function ProfilePage() {
               </Select>
             </div>
 
-            {/* 표시 언어 — LanguageContext 즉시 반영 박음 */}
+            {/* 표시 언어 — LanguageContext 즉시 반영 완료 */}
             <div className="space-y-1.5">
               <Label>{t.profile.languageLabel}</Label>
               <Select

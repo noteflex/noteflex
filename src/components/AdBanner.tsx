@@ -10,7 +10,7 @@ interface AdBannerProps {
   className?: string;
   /** Placeholder 사양 — VITE_ADS_ENABLED=false 영역에서 노출. 미박이면 단순 텍스트 placeholder. */
   placeholderVariant?: AdPlaceholderVariant;
-  /** 보고 있는 글 회피 영역 (BlogPost.tsx에서 현재 slug 박음) */
+  /** 보고 있는 글 회피 영역 (BlogPost.tsx에서 현재 slug 완료) */
   excludeSlug?: string;
 }
 

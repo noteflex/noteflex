@@ -55,9 +55,9 @@
 ## Commits
 
 ```
-bfc27ad docs(blog): IMAGE_POLICY.md D+A 정책 박음
+bfc27ad docs(blog): IMAGE_POLICY.md D+A 정책 완료
 f9f1f84 fix(blog): HISTORY_THEORY 후크 위치 본문 이미지 제거
 8feb072 refactor(blog): PRACTICAL_GUIDE 이미지 1개로 축소
-b06fff3 fix(blog): cover frontmatter 누락 영역 박음 (5/2 이전 글)
+b06fff3 fix(blog): cover frontmatter 누락 영역 완료 (5/2 이전 글)
 b12c0fb docs(blog): D+A 정책 정합 감사 보고서 2026-05-15
 ```

@@ -45,18 +45,18 @@ export function useNicknameAvailability(nickname: string, debounceMs = 500) {
           setStatus({ state: "available" });
         } else {
           logger.warn("닉네임 중복", {
-            description: "회원가입 영역에서 사용자 영역 박은 닉네임 영역 박혀있는 영역",
+            description: "회원가입 영역에서 사용자 영역 기록한 닉네임 영역 적용되어 있는 영역",
             nickname_length: nickname.length,
           });
           const suggestions = await generateSuggestions(nickname);
           setStatus({ state: "taken", suggestions });
         }
       } catch (err) {
-        logger.error("닉네임 영역 확인 박지 X", err, {
+        logger.error("닉네임 영역 확인 미설정", err, {
           description: "check_nickname_available RPC 실패",
           cause: err instanceof Error ? err.message : String(err),
-          impact: "회원가입 영역 영역 닉네임 입력 박지 X 박힘",
-          action: "check_nickname_available RPC 박힌지 확인 (Phase 3 박은 영역)",
+          impact: "회원가입 영역 영역 닉네임 입력 미설정 적용됨",
+          action: "check_nickname_available RPC 있는지 확인 (Phase 3 기록한 부분)",
         });
         setStatus({ state: "idle" });
       }

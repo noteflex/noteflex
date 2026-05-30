@@ -12,7 +12,7 @@ export interface CoachingInput {
   playCount: number;
   /** 패스트트랙 통과 (true → 전용 메시지 반환) */
   fastTrack?: boolean;
-  /** 이전 누적 정답률 (이번 세션 제외, 0~1). 박힌 영역 = 비교 분기 박음. */
+  /** 이전 누적 정답률 (이번 세션 제외, 0~1). 적용된 영역 = 비교 분기 완료. */
   historicalAccuracy?: number;
 }
 
@@ -20,7 +20,7 @@ interface CoachingStrings {
   passed: readonly [string, string, string];    // 3 branches
   game_over: readonly [string, string, string, string]; // 4 branches
   fast_track: string; // fastTrack 전용
-  /** "{delta}%p" placeholder 박힘. {direction} = "↑/→/↓" 박힘 */
+  /** "{delta}%p" placeholder 적용됨. {direction} = "↑/→/↓" 적용됨 */
   comparisonPrefix: {
     up: string;       // "이전 대비 정확도 +{delta}%p ↑"
     flat: string;     // "이전 대비 정확도 유지"
@@ -117,7 +117,7 @@ function comparisonPrefix(
   prefixes: CoachingStrings["comparisonPrefix"]
 ): string {
   const deltaPct = Math.round((current - historical) * 100);
-  // ±2%p 이내는 유지로 박음 (노이즈 회피)
+  // ±2%p 이내는 유지로 완료 (노이즈 회피)
   if (deltaPct >= -2 && deltaPct <= 2) return prefixes.flat;
   if (deltaPct > 2) {
     return prefixes.up.replace("{delta}", String(deltaPct));
@@ -137,7 +137,7 @@ export function generateCoachingComment(
 
   const base = baseComment(input, s);
 
-  // 비교 분기: historicalAccuracy 박힌 영역만 prefix 박음 (Guest = X)
+  // 비교 분기: historicalAccuracy 적용된 영역만 prefix 완료 (Guest = X)
   if (input.historicalAccuracy !== undefined) {
     return comparisonPrefix(input.accuracy, input.historicalAccuracy, s.comparisonPrefix) + base;
   }

@@ -83,7 +83,7 @@ export default function MasteryHeroCard({
   const handleUpgrade = onUpgrade ?? (() => navigate("/pricing"));
 
   // 4 metrics — 0 값 fallback when no data (Premium)
-  // `!= null` 박음 — null·undefined 모두 covers. DB에서 null 박힌 영역 (avg_reaction_ratio
+  // `!= null` 완료 — null·undefined 모두 covers. DB에서 null 적용된 영역 (avg_reaction_ratio
   // 미기록 신규 사용자) 통과해 toFixed 호출 시 런타임 crash 회피.
   const accDisplay = accuracy != null ? `${Math.round(accuracy * 100)}%` : "0%";
   const reactDisplay = avgReactionRatio != null ? avgReactionRatio.toFixed(2) : "—";
@@ -192,7 +192,7 @@ function MetricTile({ label, value }: { label: string; value: string }) {
 }
 
 /**
- * 로딩 중 Skeleton — 실제 카드 형태 그대로 회색 박스 박음.
+ * 로딩 중 Skeleton — 실제 카드 형태 그대로 회색 박스 완료.
  * 사용자 인지: "고장 X, 로딩 중" (사용자 편의성 영역 §18 정합).
  */
 export function MasteryHeroCardSkeleton() {

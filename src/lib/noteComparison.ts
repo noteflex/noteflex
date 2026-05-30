@@ -1,10 +1,10 @@
 /**
  * 음표별 비교 분석 — 최근 세션 vs 이전 누적.
  *
- * 입력: UserNoteLogRecord[] (최근 ~200 박힌 영역)
+ * 입력: UserNoteLogRecord[] (최근 ~200 적용된 영역)
  * 출력: 빠른/느린/정확도 ↑↓ Top 2씩
  *
- * 분리 방식: 최근 30개를 "이번 세션", 그 이전 30~150개를 "이전 누적"으로 박음.
+ * 분리 방식: 최근 30개를 "이번 세션", 그 이전 30~150개를 "이전 누적"으로 완료.
  * 30개 미만 영역 = 비교 불가 → hasEnough=false.
  */
 
@@ -69,7 +69,7 @@ function aggregate(logs: UserNoteLogRecord[]): Map<string, NoteStats> {
 }
 
 /**
- * `logs` = 최신 우선 정렬 (created_at desc). 신규 음표(이전 시도 X)는 제외 박음.
+ * `logs` = 최신 우선 정렬 (created_at desc). 신규 음표(이전 시도 X)는 제외 완료.
  */
 export function computeNoteComparison(
   logs: UserNoteLogRecord[],
@@ -95,7 +95,7 @@ export function computeNoteComparison(
     const prev = previousStats.get(noteKey);
     // 이전 기록 X 영역 = 신규 음표 → 비교 박지 말 것
     if (!prev || prev.total < minSamplesPerNote) continue;
-    // 현재도 최소 샘플 만족 영역만 박음
+    // 현재도 최소 샘플 만족 영역만 완료
     if (cur.total < 2) continue;
 
     const curAvgSec = cur.responseCount > 0 ? cur.responseSum / cur.responseCount : 0;

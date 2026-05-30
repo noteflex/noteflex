@@ -53,7 +53,7 @@ function readInitialLang(): Lang {
     const stored = window.localStorage.getItem(LANG_STORAGE_KEY);
     if (isSupportedLang(stored)) return stored;
 
-    // 2. Legacy 마이그레이션: 블로그 영역에서만 박혔던 noteflex.blog_lang
+    // 2. Legacy 마이그레이션: 블로그 영역에서만 적용됐던 noteflex.blog_lang
     const legacy = window.localStorage.getItem(LEGACY_BLOG_LANG_KEY);
     if (isSupportedLang(legacy)) {
       window.localStorage.setItem(LANG_STORAGE_KEY, legacy);

@@ -379,7 +379,7 @@ M등분 고정 슬롯·Uniform scale·PlayPage 영향 없음. 7 신규 테스트
 **원인**: `renderKeySignature`에서 `y={stepToY(...) + keySigFontSize * 0.28}` — 잘못된 수동 offset.
 - Bravura SMuFL 설계: glyph origin(y=0 = baseline) = stave position (accidental이 속한 line/space 중앙)
 - G-clef·F-clef 렌더링은 offset 없이 `y={stave_y}` 사용 — key sig만 불일치
-- 0.28 * 64 = 17.9px 아래 박힘 → F# line 5에서 약 0.75 stave space 내려 보임
+- 0.28 * 64 = 17.9px 아래 적용됨 → F# line 5에서 약 0.75 stave space 내려 보임
 
 **정정**: `y={stave_y}` (offset 제거).
 
@@ -501,11 +501,11 @@ if (tier === "free") { return level <= 5 && sublevel === 1 && /* 이전 Sub1 통
 
 설계 PDF 외 첨부된 "앱 성능 극한 최적화 가이드" 0.00000001초 단위 정밀도 요구. `performance.now()`, useRef, requestAnimationFrame, Web Worker 등 권장 — 모두 미적용.
 
-### 7.3 §7.3 Calibration ❌ → 분할 진행 박힘 (Opus 분석 2026-05-02)
+### 7.3 §7.3 Calibration ❌ → 분할 진행 적용됨 (Opus 분석 2026-05-02)
 
 | 항목 | 상태 |
 |---|---|
-| 사양 | `PENDING_BACKLOG.md §7.3-A~E` 박힘 (4 sub-step + 11 Q 결정 시트 + 결합 영역 + 코드 영향 + 위험) |
+| 사양 | `PENDING_BACKLOG.md §7.3-A~E` 적용됨 (4 sub-step + 11 Q 결정 시트 + 결합 영역 + 코드 영향 + 위험) |
 | 구현 | **§7.3.2~§7.3.5 ✅** + UX fix (5초, 버튼 primary) + device 자동 재측정 ✅ + A2 이벤트 로깅 ✅. PENDING: speed bonus 재튜닝 (출시 후), false positive 분석 (출시 후), §8.1 통합 분석 대시보드 (출시 후 Phase 7-A) |
 | 진행 흐름 | ~~§7.1~~ ✅ → ~~§7.3.1~~ ✅ → ~~§7.3.2~~ ✅ → ~~§7.3.3+§7.10.2~~ ✅ → ~~§7.3.4~~ ✅ → ~~§7.3.5~~ ✅ → ~~device 감지 fix~~ ✅ → §3.5 약점 음표 또는 §7.10.3 |
 | 결합 위험 | §7.3 완료. |
@@ -578,7 +578,7 @@ if (tier === "free") { return level <= 5 && sublevel === 1 && /* 이전 Sub1 통
 4. **UI 음표 잘림·색깔·history 누적 X** 🆕 — 분석 완료 (§3.11, 4 step 계획 수립), 구현 예정 (§0.4)
 5. **batchSize=3 균등 분포 + batchSize=7 잘림** ✅ 완료 (commit 87f3aaf, 2026-05-02)
 
-### 🔴 출시 후 펜딩 (이미 PENDING_BACKLOG.md에 박힘)
+### 🔴 출시 후 펜딩 (이미 PENDING_BACKLOG.md에 적용됨)
 
 1. 배치고사 시스템 전체
 2. 광고 시스템 (배너·전면·보상형)
@@ -763,9 +763,9 @@ if (tier === "free") { return level <= 5 && sublevel === 1 && /* 이전 Sub1 통
 
 - 2026-04-28: 초안 작성 (설계 PDF vs Claude Code 8개 분석 문서 비교)
 - 2026-04-29: 사용자 결정 9개 + §0.1 완료 (commit 4e2b6ef) + §7.3 Calibration 출시 전 필수 격상 + §10/§11 갱신 (결정 완료 반영) + §2.4/§2.6/§5 평가 마크 ✅ 업데이트
-- 2026-05-02 (Opus 4.7 분석): §7.3 Calibration 영역 분할 + 결합 위험 박힘 (§7.3 신규 표 + §11 Week 2 우선순위 §7.10·§7.1·§7.3 결합 순서). 코드 변경 0건.
+- 2026-05-02 (Opus 4.7 분석): §7.3 Calibration 영역 분할 + 결합 위험 적용됨 (§7.3 신규 표 + §11 Week 2 우선순위 §7.10·§7.1·§7.3 결합 순서). 코드 변경 0건.
 - 2026-05-03 (Sonnet 4.6): **§7.1 `Date.now()` → `performance.now()` 전면 전환 완료** — 15 사이트 (NoteGame 12 + CountdownTimer 3). 절대 시간 2 사이트 (DiagnosisTab·PremiumDialog) Date.now() 유지. vitest 373/373 PASS, sim:test 9984 게임 invariants 위반 0건.
-- 2026-05-09 (Sonnet 4.6): **§5 권한 매트릭스 5/9 결정 반영** (Guest Sub1 한정·Free Lv1~5 Sub1·Premium 전체) + **§B-0/§B.1~B.2 영역 B 결정 박음** (일일 세션 한도·Quick Mastery Mode 전체 미구현 확인 + 코드 영향 범위 매핑).
+- 2026-05-09 (Sonnet 4.6): **§5 권한 매트릭스 5/9 결정 반영** (Guest Sub1 한정·Free Lv1~5 Sub1·Premium 전체) + **§B-0/§B.1~B.2 영역 B 결정 완료** (일일 세션 한도·Quick Mastery Mode 전체 미구현 확인 + 코드 영향 범위 매핑).
 - 2026-05-09 (Sonnet 4.6): **Group A 완료** — §B-0.2 코드 영향 범위 표 상태 열 추가 (✅ commits e6ed7b2·b232dcd·1848391). Group B~D 미구현 상태 명시 유지.
 - 2026-05-09 오후 (Opus 4.7): **Group B 완료** — §B-0.2 daily_sessions 행 ✅ (7167977·0cbd5ac·b81937e·f4265df) + §B.1 ❌→✅ (구현 완료 영역 4 항목 명시). Group C (Mastery Score 블러 + AI Coaching 기본)·Group D (Quick Mastery Mode) 미구현 영역 일관 유지.
 - 2026-05-09 오후~ (Opus 4.7): **Group B Fix Sprint** — §B-0.2·§B.1 정합 영역 갱신 (LevelSelect 메인 게이트 + NoteGame 안전망 패턴). commits b58d873·fbe4d29. 사용자 검증 발견: 백그라운드 게임 진행 차단 + DailyLimitModal 컨텐츠 후킹 강화 + Quick Mastery 영역 제거. 512/512 PASS.

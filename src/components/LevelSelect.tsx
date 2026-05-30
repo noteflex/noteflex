@@ -175,13 +175,13 @@ export default function LevelSelect({
 
     if (state.lockReason === "progress") {
       // 클릭한 단계 바로 직전이 아니라, 티어 영역 내 첫 미통과 단계로 이동.
-      // 사용자가 한 번에 여러 단계 건너뛰어 잠금 클릭한 경우에도 시작 지점 박힘.
+      // 사용자가 한 번에 여러 단계 건너뛰어 잠금 클릭한 경우에도 시작 지점 적용됨.
       const target = findFirstUnpassedAccessibleSublevel(
         tierRef.current,
         (lv, sub) => getProgressForRef.current(lv, sub)?.passed ?? false,
       );
-      // 모든 영역 통과 시 target=null — 그땐 잠금 자체 안 박혀야 정상.
-      // 폴백: prevLevel·prevSublevel 박힌 영역 사용.
+      // 모든 영역 통과 시 target=null — 그땐 잠금 자체 안 적용된야 정상.
+      // 폴백: prevLevel·prevSublevel 적용된 영역 사용.
       if (target) {
         setLockedTarget(target);
       } else if (state.prevLevel !== null && state.prevSublevel !== null) {
@@ -348,7 +348,7 @@ const SublevelCell = memo(function SublevelCell({
   const shortLabel = `${level}-${sublevel}`;
   const configStr = `${config.timeLimit}s · ♥${config.lives}`;
 
-  // LockedByProgressDialog CTA로 이동 시 1.5s 동안 ring 강조 박음.
+  // LockedByProgressDialog CTA로 이동 시 1.5s 동안 ring 강조 완료.
   const highlightClass = highlighted
     ? "ring-4 ring-primary ring-offset-2 animate-pulse"
     : "";

@@ -1,10 +1,10 @@
 -- ════════════════════════════════════════════════════════════════
 -- Migration: 20260518_phase3_consolidation.sql
 -- ════════════════════════════════════════════════════════════════
--- 목적: Production Dashboard 영역 직접 박힌 영역 테이블·함수·트리거 영역
---      마이그레이션 영역 재현 영역 박음 SSoT (Single Source of Truth) 회복 영역.
+-- 목적: Production Dashboard 영역 직접 적용된 영역 테이블·함수·트리거 영역
+--      마이그레이션 영역 재현 영역 완료 SSoT (Single Source of Truth) 회복 영역.
 --
--- 박힌 영역 (Phase 1 + Phase 2 + Cursor 검증 + Dashboard 직접 확인 영역):
+-- 적용된 영역 (Phase 1 + Phase 2 + Cursor 검증 + Dashboard 직접 확인 영역):
 --   - 10개 테이블 영역: user_sessions·user_stats_daily·note_mastery·
 --                    leagues·league_groups (신규 발견)·league_members·
 --                    admin_actions·daily_batch_runs·user_streaks·subscriptions
@@ -12,26 +12,26 @@
 --                  get_my_league_group_id (신규 발견)
 --   - 1개 트리거 영역: on_session_complete
 --                    (trg_update_profile_after_session 영역
---                    20260516_reviewer_sessions_rls.sql 영역 박혀있음)
+--                    20260516_reviewer_sessions_rls.sql 영역 적용되어 있음)
 --   - 1개 DROP 영역: record_sublevel_attempt 6개 인자 dead 함수
 --
 -- 원칙:
---   - IF NOT EXISTS / OR REPLACE 박음 → Production 영역 박지 X 박힘 영역 깨짐 영역
+--   - IF NOT EXISTS / OR REPLACE 완료 → Production 영역 미설정 적용됨 영역 깨짐 영역
 --   - DROP POLICY IF EXISTS → CREATE POLICY 패턴 (idempotent)
---   - 다른 환경 (staging, 신규 dev) 영역 박힘 영역 박은 영역 영역 박음 영역 영역 동일 영역 상태
+--   - 다른 환경 (staging, 신규 dev) 영역 적용됨 영역 기록한 부분 영역 완료 영역 영역 동일 영역 상태
 --
--- ✅ Step 1-3 (2026-05-18) — 함수 3개 본문 영역 Production 영역 추출 영역 박음 영역 박음
---    정확 영역 본문 영역 박은 영역 박음. 임시 영역 본문 영역 없음 영역.
+-- ✅ Step 1-3 (2026-05-18) — 함수 3개 본문 영역 Production 영역 추출 영역 완료 영역 완료
+--    정확 영역 본문 영역 기록한 부분 완료. 임시 영역 본문 영역 없음 영역.
 --
--- ⚠️ production apply: Supabase Dashboard > SQL Editor 영역 박음.
+-- ⚠️ production apply: Supabase Dashboard > SQL Editor 영역 완료.
 -- ════════════════════════════════════════════════════════════════
 
 
 -- ════════════════════════════════════════════════════════════════
 -- 0. 헬퍼 함수 영역 — get_my_league_group_id (정책 영역 의존 영역)
 -- ════════════════════════════════════════════════════════════════
--- 박힌 영역: league_members 영역 RLS 정책 영역 박은 영역 사용 영역. 정책 영역 박기 전 영역 박혀야 함.
--- 본문 영역 출처: Production Dashboard 영역 추출 영역 (Step 1-1 영역 박은 영역).
+-- 적용된 영역: league_members 영역 RLS 정책 영역 기록한 부분 사용 영역. 정책 영역 박기 전 영역 적용된야 함.
+-- 본문 영역 출처: Production Dashboard 영역 추출 영역 (Step 1-1 영역 기록한 부분).
 -- ════════════════════════════════════════════════════════════════
 
 CREATE OR REPLACE FUNCTION public.get_my_league_group_id()
@@ -81,7 +81,7 @@ CREATE INDEX IF NOT EXISTS idx_sessions_date
 
 ALTER TABLE public.user_sessions ENABLE ROW LEVEL SECURITY;
 
--- 중복 정책 영역 정리 영역 박음 (Production 영역 박힌 영역 박힘 영역 박지 X 박힌 영역 박음):
+-- 중복 정책 영역 정리 영역 완료 (Production 영역 적용된 영역 적용됨 영역 미설정 적용된 영역 완료):
 DROP POLICY IF EXISTS "Users can view own sessions" ON public.user_sessions;
 DROP POLICY IF EXISTS "Users can insert own sessions" ON public.user_sessions;
 DROP POLICY IF EXISTS "Admins can view all sessions" ON public.user_sessions;
@@ -432,10 +432,10 @@ CREATE POLICY subscriptions_admin_select ON public.subscriptions
 -- ════════════════════════════════════════════════════════════════
 -- 11. handle_session_complete  (user_sessions INSERT trigger 영역 함수)
 -- ════════════════════════════════════════════════════════════════
--- 박힌 영역: user_stats_daily UPSERT + profiles UPDATE (total_xp·last_practice_date) +
---           note_mastery UPSERT (note_attempts JSONB 영역 음표별 영역 박은 영역 mastery_level 재계산 영역).
--- 본문 영역 출처: Production Dashboard 영역 추출 영역 (Step 1-1 영역 박은 영역).
--- ⚠️ search_path 영역 박지 X 박힘 영역 — Production 영역 본문 영역 박지 X 박은 영역 박은 영역 그대로 영역.
+-- 적용된 영역: user_stats_daily UPSERT + profiles UPDATE (total_xp·last_practice_date) +
+--           note_mastery UPSERT (note_attempts JSONB 영역 음표별 영역 기록한 부분 mastery_level 재계산 영역).
+-- 본문 영역 출처: Production Dashboard 영역 추출 영역 (Step 1-1 영역 기록한 부분).
+-- ⚠️ search_path 영역 미설정 적용됨 영역 — Production 영역 본문 영역 미설정 기록한 부분 기록한 부분 그대로 영역.
 -- ════════════════════════════════════════════════════════════════
 
 CREATE OR REPLACE FUNCTION public.handle_session_complete()
@@ -558,8 +558,8 @@ $function$;
 -- ════════════════════════════════════════════════════════════════
 -- 12. on_session_complete  (user_sessions AFTER INSERT 트리거 영역)
 -- ════════════════════════════════════════════════════════════════
--- 박힌 영역: user_sessions INSERT 영역 박힘 영역 박음 영역 handle_session_complete 영역 호출 영역.
--- trg_update_profile_after_session 영역 = 20260516_reviewer_sessions_rls.sql 영역 박힘 영역.
+-- 적용된 영역: user_sessions INSERT 영역 적용됨 영역 완료 영역 handle_session_complete 영역 호출 영역.
+-- trg_update_profile_after_session 영역 = 20260516_reviewer_sessions_rls.sql 영역 적용됨 영역.
 -- ════════════════════════════════════════════════════════════════
 
 DROP TRIGGER IF EXISTS on_session_complete ON public.user_sessions;
@@ -573,10 +573,10 @@ CREATE TRIGGER on_session_complete
 -- ════════════════════════════════════════════════════════════════
 -- 13. check_nickname_available  (닉네임 영역 중복 영역 확인)
 -- ════════════════════════════════════════════════════════════════
--- 박힌 영역: 형식 1차 검증 (3-20자 영역 + 정규식 영역 `^[a-z][a-z0-9_]{2,19}$`) +
+-- 적용된 영역: 형식 1차 검증 (3-20자 영역 + 정규식 영역 `^[a-z][a-z0-9_]{2,19}$`) +
 --           profiles.nickname 영역 중복 검사 (lower 영역 비교 영역).
--- 본문 영역 출처: Production Dashboard 영역 추출 영역 (Step 1-1 영역 박은 영역).
--- ⚠️ is_deleted 영역 박지 X 박힘 영역 — Production 영역 본문 영역 박지 X 박은 영역 박은 영역 그대로 영역.
+-- 본문 영역 출처: Production Dashboard 영역 추출 영역 (Step 1-1 영역 기록한 부분).
+-- ⚠️ is_deleted 영역 미설정 적용됨 영역 — Production 영역 본문 영역 미설정 기록한 부분 기록한 부분 그대로 영역.
 -- ════════════════════════════════════════════════════════════════
 
 CREATE OR REPLACE FUNCTION public.check_nickname_available(p_nickname text)
@@ -609,8 +609,8 @@ GRANT EXECUTE ON FUNCTION public.check_nickname_available(text) TO anon, authent
 -- ════════════════════════════════════════════════════════════════
 -- 14. record_sublevel_attempt 6개 인자 dead 함수 영역 DROP
 -- ════════════════════════════════════════════════════════════════
--- 박힌 영역: 7개 인자 영역 버전 영역 (p_avg_reaction_ratio NUMERIC) 영역만 영역 박음 영역.
--- 6개 인자 영역 = dead 영역 박힘 영역 → DROP 영역.
+-- 적용된 영역: 7개 인자 영역 버전 영역 (p_avg_reaction_ratio NUMERIC) 영역만 영역 완료 영역.
+-- 6개 인자 영역 = dead 영역 적용됨 영역 → DROP 영역.
 -- ════════════════════════════════════════════════════════════════
 
 DROP FUNCTION IF EXISTS public.record_sublevel_attempt(
@@ -624,32 +624,32 @@ DROP FUNCTION IF EXISTS public.record_sublevel_attempt(
 
 
 -- ════════════════════════════════════════════════════════════════
--- 검증 영역 영역 박음 영역 박힘 영역 박은 영역 박음
+-- 검증 영역 영역 완료 영역 적용됨 영역 기록한 부분 완료
 -- ════════════════════════════════════════════════════════════════
--- 1. 모든 테이블 영역 박혔는지 영역:
+-- 1. 모든 테이블 영역 적용됐는지 영역:
 --    SELECT table_name FROM information_schema.tables
 --      WHERE table_schema = 'public'
 --      ORDER BY table_name;
 --
--- 2. 모든 RLS 정책 영역 박혔는지 영역:
+-- 2. 모든 RLS 정책 영역 적용됐는지 영역:
 --    SELECT schemaname, tablename, policyname, cmd
 --      FROM pg_policies
 --      WHERE schemaname = 'public'
 --      ORDER BY tablename, cmd, policyname;
 --
--- 3. 함수 영역 박혔는지 영역:
+-- 3. 함수 영역 적용됐는지 영역:
 --    SELECT routine_name FROM information_schema.routines
 --      WHERE routine_schema = 'public'
 --        AND routine_name IN ('handle_session_complete', 'check_nickname_available', 'get_my_league_group_id');
 --
--- 4. 트리거 영역 박혔는지 영역:
+-- 4. 트리거 영역 적용됐는지 영역:
 --    SELECT trigger_name FROM information_schema.triggers
 --      WHERE event_object_schema = 'public'
 --        AND event_object_table = 'user_sessions';
 --
--- 5. record_sublevel_attempt 6개 인자 버전 영역 박지 X 박혔는지 영역:
+-- 5. record_sublevel_attempt 6개 인자 버전 영역 미설정 적용됐는지 영역:
 --    SELECT pg_get_function_identity_arguments(p.oid) AS args
 --      FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace
 --      WHERE n.nspname = 'public' AND p.proname = 'record_sublevel_attempt';
---    → 1행 영역만 박힌 영역 박음 영역 (7개 인자 영역).
+--    → 1행 영역만 적용된 영역 완료 영역 (7개 인자 영역).
 -- ════════════════════════════════════════════════════════════════

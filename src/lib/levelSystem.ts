@@ -399,7 +399,7 @@ export function formatSublevel(level: number, sublevel: Sublevel): string {
  *   - Pro:   Lv1-1 → Lv1-2 → Lv1-3 → Lv2-1 → ... → Lv7-3 순서.
  *
  * 모든 단계 통과 상태면 null 반환.
- * isPassed(level, sublevel) = 해당 단계가 통과 박혀있는지 확인하는 콜백.
+ * isPassed(level, sublevel) = 해당 단계가 통과 적용되어 있는지 확인하는 콜백.
  */
 export function findFirstUnpassedAccessibleSublevel(
   tier: SubscriptionTier,

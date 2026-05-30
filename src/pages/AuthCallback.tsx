@@ -26,18 +26,18 @@ export default function AuthCallback() {
         const reason = searchParams.get("reason") || null;
         const { error: rpcError } = await supabase.rpc("request_account_deletion", { reason });
         if (rpcError) {
-          logger.error("계정 영역 탈퇴 박지 X", rpcError, {
+          logger.error("계정 영역 탈퇴 미설정", rpcError, {
             description: "request_account_deletion RPC 실패",
             cause: rpcError.message,
-            impact: "사용자 영역 탈퇴 박지 X",
-            action: "request_account_deletion RPC 박힌지 확인",
+            impact: "사용자 영역 탈퇴 미설정",
+            action: "request_account_deletion RPC 있는지 확인",
             metadata: { reason },
           });
           navigate("/?auth_error=deletion_failed", { replace: true });
           return;
         }
-        logger.info("계정 탈퇴 박음", {
-          description: "request_account_deletion RPC 박음 → deleted_at·is_deleted 박힘",
+        logger.info("계정 탈퇴 완료", {
+          description: "request_account_deletion RPC 완료 → deleted_at·is_deleted 적용됨",
           user_id: session.user.id,
           reason: reason ?? "(none)",
         });
@@ -54,17 +54,17 @@ export default function AuthCallback() {
       if (action === "restore") {
         const { error: rpcError } = await supabase.rpc("restore_account");
         if (rpcError) {
-          logger.error("계정 영역 복구 박지 X", rpcError, {
+          logger.error("계정 영역 복구 미설정", rpcError, {
             description: "restore_account RPC 실패",
             cause: rpcError.message,
-            impact: "사용자 영역 탈퇴 박은 영역에서 복구 박지 X",
-            action: "restore_account RPC 박힌지 확인 (30일 영역 내 영역 박은 영역)",
+            impact: "사용자 영역 탈퇴 기록한 부분에서 복구 미설정",
+            action: "restore_account RPC 있는지 확인 (30일 영역 내 영역 기록한 부분)",
           });
           navigate("/?auth_error=restore_failed", { replace: true });
           return;
         }
-        logger.info("계정 복구 박음", {
-          description: "restore_account RPC 박음 → is_deleted=false·deleted_at=NULL 박힘",
+        logger.info("계정 복구 완료", {
+          description: "restore_account RPC 완료 → is_deleted=false·deleted_at=NULL 적용됨",
           user_id: session.user.id,
         });
         localStorage.setItem("noteflex_auth_complete", Date.now().toString());
@@ -81,9 +81,9 @@ export default function AuthCallback() {
         return;
       }
 
-      // 인증 영역 성공 박은 영역 — Magic Link/OAuth 콜백 박은 영역
-      logger.info("인증 콜백 박음", {
-        description: "Magic Link 영역 또는 OAuth 영역 인증 완료 영역 박음",
+      // 인증 영역 성공 기록한 부분 — Magic Link/OAuth 콜백 기록한 부분
+      logger.info("인증 콜백 완료", {
+        description: "Magic Link 영역 또는 OAuth 영역 인증 완료 영역 완료",
         user_id: session.user.id,
         email_domain: session.user.email?.split("@")[1],
         signup_method: localStorage.getItem("noteflex_consent") ? "magic_link_or_oauth_signup" : "signin",
@@ -96,11 +96,11 @@ export default function AuthCallback() {
           const consent = JSON.parse(stored);
           await supabase.from("profiles").update(consent).eq("id", session.user.id);
         } catch (err) {
-          // 의도된 silent — 인증 흐름 차단 박지 X
-          logger.warn("Consent UPDATE 박지 X", {
+          // 의도된 silent — 인증 흐름 차단 미설정
+          logger.warn("Consent UPDATE 미설정", {
             cause: err instanceof Error ? err.message : String(err),
-            description: "인증 콜백 영역에서 약관 동의 박지 X 박은 영역",
-            impact: "약관 동의 박지 X 박혀있을 가능성 (출시 후 사용자 영역 재동의 박을 영역)",
+            description: "인증 콜백 영역에서 약관 동의 미설정 기록한 부분",
+            impact: "약관 동의 미설정 적용되어 있을 가능성 (출시 후 사용자 영역 재동의 기록할 영역)",
             metadata: { user_id: session.user.id },
           });
         }

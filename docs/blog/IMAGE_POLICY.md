@@ -1,6 +1,6 @@
 # Blog Image Policy (D+A Unified)
 
-> 2026-05-15 정합 박힘 — 메모리 #13 갱신 박음.
+> 2026-05-15 정합 적용됨 — 메모리 #13 갱신 완료.
 
 ## Two Classes
 
@@ -42,7 +42,7 @@
 ## Forbidden Sources
 
 - Pexels · Unsplash · Pixabay
-- 자동 박지 말음 — 출시 후 사용자 직접 박음 (메모리 #13)
+- 자동 박지 말음 — 출시 후 사용자 직접 완료 (메모리 #13)
 - 2026-05-15 sprint 결과: 80개 글 전부 0건 확인
 
 ## Source Hosts (Allowed)
@@ -73,4 +73,4 @@ Must return HTTP/2 200. HTTP 429 = rate limit (retry); HTTP 404/403 = replace.
 
 ## Sprint Records
 
-- 2026-05-15: D+A 정합 sprint 박음 — 40 cover 박음, 46 PRACTICAL 본문 축소, 22 HISTORY 후크 정리. 자세한 내용은 `AUDIT_2026-05-15.md` 참조.
+- 2026-05-15: D+A 정합 sprint 완료 — 40 cover 완료, 46 PRACTICAL 본문 축소, 22 HISTORY 후크 정리. 자세한 내용은 `AUDIT_2026-05-15.md` 참조.

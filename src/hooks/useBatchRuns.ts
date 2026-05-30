@@ -97,8 +97,8 @@ export function useBatchRuns(): UseBatchRunsReturn {
       logger.error("일괄 분석 실패", rpcError, {
         description: "run_daily_batch_analysis RPC 실패 (admin trigger)",
         cause: rpcError.message,
-        impact: "일일 배치 분석 박지 X — 약점·숙련도 갱신 X",
-        action: "run_daily_batch_analysis RPC 박힌지 확인",
+        impact: "일일 배치 분석 미설정 — 약점·숙련도 갱신 X",
+        action: "run_daily_batch_analysis RPC 있는지 확인",
       });
       return { success: false, message: rpcError.message };
     }

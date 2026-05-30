@@ -110,11 +110,11 @@ export function useDailyLimit(): UseDailyLimitResult {
     setIsLoading(true);
     supabase.rpc("get_today_session_count").then(({ data, error }) => {
       if (error) {
-        logger.error("일일 한도 조회 박지 X", error, {
+        logger.error("일일 한도 조회 미설정", error, {
           description: "get_today_session_count RPC 실패",
           cause: error.message,
-          impact: "일일 한도 영역 박지 X — Free 사용자 영역 게임 시작 차단 가능",
-          action: "get_today_session_count RPC 박힌지 확인",
+          impact: "일일 한도 영역 미설정 — Free 사용자 영역 게임 시작 차단 가능",
+          action: "get_today_session_count RPC 있는지 확인",
           metadata: { user_id: user?.id, tier },
         });
         setTodayCount(0);
@@ -138,11 +138,11 @@ export function useDailyLimit(): UseDailyLimitResult {
     // free
     const { data, error } = await supabase.rpc("increment_daily_session");
     if (error) {
-      logger.error("일일 한도 카운트 박지 X", error, {
-        description: "게임 박은 영역에서 daily_sessions 영역 카운트 박지 X 박힘",
+      logger.error("일일 한도 카운트 미설정", error, {
+        description: "게임 기록한 부분에서 daily_sessions 영역 카운트 미설정 적용됨",
         cause: error.message,
         impact: "사용자 영역 일일 한도 영역 초과 가능 (Free 사용자 영역)",
-        action: "useDailyLimit.ts:132 영역 확인, increment_daily_session RPC 박힌지 확인",
+        action: "useDailyLimit.ts:132 영역 확인, increment_daily_session RPC 있는지 확인",
         metadata: { user_id: user?.id, tier },
       });
       return;
@@ -153,11 +153,11 @@ export function useDailyLimit(): UseDailyLimitResult {
     } else {
       setTodayCount((c) => c + 1);
     }
-    // 한도 도달 영역 박은 영역 박음 (Free tier 영역만)
+    // 한도 도달 영역 기록한 부분 완료 (Free tier 영역만)
     const limitForCheck = tier === "guest" ? GUEST_LIMIT : FREE_LIMIT;
     if (newCount >= limitForCheck) {
       logger.warn("일일 한도 도달", {
-        description: "사용자 영역 일일 게임 한도 영역 박음",
+        description: "사용자 영역 일일 게임 한도 영역 완료",
         user_id: user?.id,
         session_count: newCount,
         daily_limit: limitForCheck,

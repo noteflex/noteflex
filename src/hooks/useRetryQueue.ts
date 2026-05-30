@@ -14,7 +14,15 @@ import { useCallback, useRef, useState } from "react";
  *
  * 세트/스테이지 전환 시 큐는 유지된다 (같은 세션 = 같은 사용자 의도).
  * 게임오버/성공/리플레이 시에는 reset()을 호출해 초기화한다.
+ *
+ * 큐 상한 (5/31):
+ *  - QUEUE_MAX = 3. 신규 ID 추가 시 큐가 가득(=size>=3)이면 큐에 추가하지 않음.
+ *  - missCountRef는 무조건 갱신 (큐 추가 여부와 무관) → 다음 게임 batch가 약점 가중으로 자연 처리.
+ *  - 이미 큐에 있는 ID의 markMissed/scheduleRetry는 update만 (size 변화 없음).
  */
+
+/** 신규 ID 큐 추가 상한. 가득이면 큐 추가는 skip, missCount는 증가. */
+const QUEUE_MAX = 3;
 
 export interface RetryNoteKey {
   key: string; // "C", "D", "F#", ...
@@ -113,6 +121,18 @@ export function useRetryQueue(): UseRetryQueueReturn {
       const newMissCount = prevMissCount + 1;
       missCountRef.current.set(id, newMissCount);
 
+      // 큐 상한 (5/31): 신규 ID이고 큐 가득이면 큐 추가 skip.
+      // 이미 있는 ID는 update만 (size 변화 없음).
+      const isExisting = queueRef.current.has(id);
+      if (!isExisting && queueRef.current.size >= QUEUE_MAX) {
+        if (import.meta.env.DEV) {
+          console.warn(
+            `[useRetryQueue] queue full (${QUEUE_MAX}), skip scheduleRetry for ${id}`,
+          );
+        }
+        return;
+      }
+
       const interval = intervalFor(newMissCount);
       const entry: RetryEntry = {
         id,
@@ -136,6 +156,18 @@ export function useRetryQueue(): UseRetryQueueReturn {
       // §4 fix (2026-05-01): 큐에 이미 reschedule된 entry가 있으면 그 due 보존.
       // 기존 동작: 매 호출마다 due=MAX로 덮어쓰기 → retry pop 후 timeout 시 reschedule된 due가 사라짐.
       const existing = queueRef.current.get(id);
+
+      // 큐 상한 (5/31): 신규 ID이고 큐 가득이면 큐 추가 skip.
+      // missCountRef는 이미 위에서 갱신 → 다음 게임 batch가 약점 가중으로 자연 처리.
+      if (!existing && queueRef.current.size >= QUEUE_MAX) {
+        if (import.meta.env.DEV) {
+          console.warn(
+            `[useRetryQueue] queue full (${QUEUE_MAX}), skip markMissed for ${id}`,
+          );
+        }
+        return;
+      }
+
       const entry: RetryEntry = {
         id,
         note,

@@ -14,7 +14,7 @@ interface LockedByProgressDialogProps {
   /** 먼저 통과해야 할 선행 단계 */
   requiredLevel: number;
   requiredSublevel: number;
-  /** "Go to Lv X-Y" 클릭 시 호출 (스크롤·하이라이트는 부모에서 박음) */
+  /** "Go to Lv X-Y" 클릭 시 호출 (스크롤·하이라이트는 부모에서 완료) */
   onGoToRequired: () => void;
 }
 
@@ -35,7 +35,7 @@ export default function LockedByProgressDialog({
 }: LockedByProgressDialogProps) {
   const t = useT();
 
-  // 동적 치환 박음
+  // 동적 치환 완료
   const subtitle = t.lockedByProgress.subtitle
     .replace("{requiredLevel}", String(requiredLevel))
     .replace("{requiredSublevel}", String(requiredSublevel));
@@ -52,8 +52,8 @@ export default function LockedByProgressDialog({
     <Dialog
       open={open}
       onOpenChange={(v) => {
-        // X 버튼은 onOpenChange로 박힘 → onClose 실행 허용.
-        // backdrop·ESC는 onPointerDownOutside·onEscapeKeyDown으로 박혀서 onOpenChange 도달 X.
+        // X 버튼은 onOpenChange로 적용됨 → onClose 실행 허용.
+        // backdrop·ESC는 onPointerDownOutside·onEscapeKeyDown으로 적용된서 onOpenChange 도달 X.
         if (!v) onClose();
       }}
     >

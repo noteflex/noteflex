@@ -215,7 +215,7 @@ function composeBatch(
  * §4 final-retry batch 구성: missedNotes에서 retry + generateBatch 새 음표.
  * 큐(SimRetryQueue) 사용 X — final-retry는 N+2 알고리즘 외부.
  *
- * §0.1 dedup (2026-05-01 박힘):
+ * §0.1 dedup (2026-05-01 적용됨):
  *  - 옵션 5: lastShown과 다른 ID retry 우선 (batch[0] dedup)
  *  - 옵션 7: missedArray 모두 lastShown인 케이스 → retry skip + 새 음표만 batch
  */

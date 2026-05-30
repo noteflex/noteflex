@@ -77,10 +77,10 @@ export async function syncOffsetToProfile(
     .update({ user_env_offset_ms: offsetMs })
     .eq("id", userId);
   if (error) {
-    logger.error("Offset 영역 동기화 박지 X", error, {
-      description: "profiles.user_env_offset_ms UPDATE 박지 X 박힘",
+    logger.error("Offset 영역 동기화 미설정", error, {
+      description: "profiles.user_env_offset_ms UPDATE 미설정 적용됨",
       cause: error.message,
-      impact: "사용자 영역 환경 보정값 영역 박지 X — 반응시간 부정확",
+      impact: "사용자 영역 환경 보정값 영역 미설정 — 반응시간 부정확",
       action: "userEnvironmentOffset.ts:54 영역 확인",
       metadata: { offset_ms: offsetMs },
     });
@@ -150,9 +150,9 @@ export async function logDeviceChangeEvent(params: {
     .single();
   if (error) {
     logger.error("Device 영역 이벤트 INSERT 실패", error, {
-      description: "오디오 장치 변경 박은 영역 → device_change_events INSERT 박지 X",
+      description: "오디오 장치 변경 기록한 부분 → device_change_events INSERT 미설정",
       cause: error.message,
-      impact: "장치 변경 영역 박지 X — 재캘리브레이션 추적 X",
+      impact: "장치 변경 영역 미설정 — 재캘리브레이션 추적 X",
       action: "userEnvironmentOffset.ts:112 영역 확인",
       metadata: { device_kinds: params.deviceKinds },
     });
@@ -171,10 +171,10 @@ export async function updateDeviceChangeEvent(
     .eq("id", eventId);
   if (error) {
     logger.error("device_change_events UPDATE 실패", error, {
-      description: "환경 보정값 박은 영역 → DB UPDATE 실패",
+      description: "환경 보정값 기록한 부분 → DB UPDATE 실패",
       cause: error.message,
-      impact: "재캘리브레이션 박힌 영역 박지 X — 사용자 반응시간 보정값 영구 잠재 불일치",
-      action: "RLS UPDATE 정책 박힌지 확인 (Phase 3 Step 2-A에서 박은 영역)",
+      impact: "재캘리브레이션 적용된 영역 미설정 — 사용자 반응시간 보정값 영구 잠재 불일치",
+      action: "RLS UPDATE 정책 있는지 확인 (Phase 3 Step 2-A에서 기록한 부분)",
       metadata: {
         event_id: eventId,
         new_offset_ms: newOffsetMs,
