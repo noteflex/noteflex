@@ -4,6 +4,65 @@
 
 ---
 
+## 2026-05-30 (SEO 인프라 fix + /play 7판 윈도우 시스템)
+
+### 1. sitemap·ads.txt·robots.txt 404 fix (`e1e463a`)
+
+- 증상: `https://noteflex.app/sitemap.xml`, `/ads.txt`, `/robots.txt` 셋 다 브라우저에서 SPA 404 페이지 렌더 → Googlebot도 HTML 받아 sitemap 못 읽음 → GSC 색인 실패
+- 원인: `vercel.json`의 catch-all rewrite `/((?!api/).*)`가 정적 파일까지 SPA fallback으로 잡음
+- 수정: rewrite source에 정적 확장자·특수 경로 제외 추가
+  - 명시: sitemap.xml / robots.txt / ads.txt / favicon.ico / manifest.webmanifest
+  - 확장자: js / css / svg / png / jpg / jpeg / gif / ico / webp / webmanifest / woff(2) / ttf / otf / xml / txt / map / json
+- Python regex 시뮬 5케이스 검증 통과
+
+### 2. 블로그 URL 슬러그 통일 (`c4f7b9a`)
+
+- 증상: sitemap URL `/blog/ko/chunking-music-reading`(깨끗) vs 실제 라우팅 `/blog/ko/2026-05-28-chunking-music-reading`(파일명 그대로) → sitemap URL 404, GSC 색인 127개 모두 "해당사항 없음"
+- 원인: `src/lib/markdownLoader.ts`의 `pathToSlug`가 파일명 그대로 사용. frontmatter `slug:` 필드는 파싱만 되고 라우팅·매칭에 미사용. 반면 sitemap/vite getBlogRoutes는 깨끗한 슬러그 사용 → 3시스템 불일치
+- 수정:
+  - `markdownLoader.ts` 전면 정비: `blogIndex` 인덱스 신규(`cleanSlug` + `fileSlug` + `combinedSlug`). `loadBlogPost` cleanSlug 우선 + fileSlug fallback. `resolveCleanSlug` helper 신규
+  - `BlogPost.tsx`: useNavigate 추가. 옛 URL(YYYY-MM-DD-slug) 들어오면 깨끗한 슬러그로 SPA navigate replace
+  - `vite.config.ts` getBlogRoutes: frontmatter slug 우선 (sitemap·generate-sitemap과 동일 로직)
+- 옛 URL 외부 backlink는 SPA 내부 redirect로 보존
+
+### 3. /play clear 조건 — 누적 → 최근 7판 윈도우 시스템
+
+**1차 마이그레이션** (`20260529_recent_plays_window.sql`):
+- `ALTER TABLE user_sublevel_progress ADD COLUMN recent_plays JSONB DEFAULT '[]'`
+- 윈도우 항목 형식: `[{at, attempts, correct, reaction_ratio}, ...]` 최대 7, 최신이 앞 (FIFO)
+- `record_sublevel_attempt` 매 호출 시 윈도우 prepend + 8번째에서 가장 오래된 항목 제거
+- `get_mastery_score` 점수·표시를 윈도우 평균(SUM(correct)/SUM(attempts), AVG(reaction_ratio))으로 변경. 표본 < 3이면 acc·react 점수 0
+- 클라(`levelSystem.ts`): `RecentPlay` 타입, `calculateAccuracy`/`calculateReactionRatio` 윈도우 기반, `getCompletion`에 `sampleCount`/`sampleInsufficient` 추가. `MIN_RECENT_SAMPLE=3`, `RECENT_WINDOW_SIZE=7` 상수
+- `useLevelProgress.ts` supabase select에 `recent_plays` 컬럼 추가
+
+**잔여 버그 발견**: 1차 마이그레이션이 `get_mastery_score`만 윈도우로 바꾸고 `record_sublevel_attempt`의 통과 판정(`v_passed`)은 옛 누적 기준 그대로 유지:
+- `acc >= 0.80` (다른 곳은 0.85)
+- `play_count >= 5` (다른 곳은 10)
+- 반응속도 조건 자체 누락
+
+→ snape016 케이스: 누적 73판 73% acc로 못 깨던 단계가 윈도우 평균 ~94% + reaction 0.147로 클라 화면에선 통과 기준 충족인데 DB의 `passed=false` 잔존
+
+**2차 마이그레이션** (`20260530_pass_window_aligned.sql`):
+- `v_passed` 분기를 윈도우 기반 + 4지표 모두로 교체
+- 4지표 임계 클라 `PASS_CRITERIA`와 100% 일치: `0.85 / 0.35 / 10 / 5`, `c_min_sample=3`
+- 반환 jsonb의 `accuracy`·`reaction_ratio`도 윈도우 기반으로 변경 (UI 일관성)
+- 기존 데이터 다운그레이드 안 함(UX 보호). passed=false인 윈도우 충족 케이스는 다음 1판 칠 때 `v_just_passed=true`로 자동 통과 + 다음 sublevel INSERT
+
+### 4. 숙련도 카드 UI 정비
+
+- 제목 ko `"마스터리"` → `"숙련도"`, en `"Mastery"` 유지
+- `Trophy` lucide 아이콘 (amber-500) + 제목 진하게(`text-sm font-semibold`)
+- `expanded` 초기값 `true` → `false` (기본 접힘)
+- `computeMasteryScore` 표본 < 3이면 acc·react 점수 0 (play·streak만 부분 적용)
+- 측정 기준 안내 박스 4상태 분기:
+  - `N < 3`: amber-50 박스 + "정확도·반응속도 = 최근 7판 평균" + "3판 이상 쳐야 측정 시작 (현재 n/3)"
+  - `3 ≤ N < 7`: amber-50 박스 + 메인 + "지금은 최근 n판 데이터로 계산 중 (7판 누적 중)"
+  - `N = 7`: muted 한 줄 (메인만)
+  - fast_track: 표본 N에 따라 동일 분기
+- STRINGS 재구성: `masteryWindowMain` / `masteryWindowSubBefore3(n)` / `masteryWindowSubBuilding(n)` (기존 `sampleInsufficient`·`basedOnRecentPartial`·`basedOnRecentFull` 제거)
+
+---
+
 ## 2026-05-27 ~ 2026-05-29 (대시보드 정비 스프린트)
 
 ### 1. 대시보드 delta 기준 수정 — 직전 1세션 → 7일 평균 baseline

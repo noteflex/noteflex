@@ -7,6 +7,14 @@
 
 ---
 
+## 2026-05-30 SEO·통과 시스템 후속 (출시 후 트랙)
+
+- [출시후] **vercel.json `redirects`로 옛 블로그 URL → 새 URL HTTP 301 명시** — 현재는 SPA 클라 navigate replace라 Google에 redirect 신호 약함. backlink·GSC 옛 인덱스 처리에 HTTP 301이 더 명확. 글마다 `{ source: "/blog/:lang/YYYY-MM-DD-:slug", destination: "/blog/:lang/:slug", permanent: true }` 식으로 일괄 등록 또는 generate-sitemap.ts에서 redirects 함께 자동 생성.
+- [출시전 권장] **PWA SW가 sitemap.xml·ads.txt·robots.txt 등 정적 파일 캐시 안 하게(또는 network-first)** — 현재 workbox `globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"]`라 xml/txt는 캐시 안 됨이 맞지만, navigateFallback이 index.html이라 SW가 fallback해 가로챌 수도. 일반 유저 SW 캐시 함정 방지 + AdSense ads.txt 검증 영향 가능. workbox runtimeCaching 또는 navigateFallbackDenylist에 `/sitemap.xml`, `/ads.txt`, `/robots.txt` 추가 권장.
+- [출시후] **user_sublevel_progress_backup_20260530, user_sublevel_progress_backup_20260530_2 안정 확인 후 삭제** — 7판 윈도우 마이그레이션 적용 시 사용자가 백업한 테이블들. 약 2주~1개월 안정 운용 확인 후 정리.
+
+---
+
 ## 2026-05-29 대시보드 정비 후속 (출시 후 트랙)
 
 - [ ] **weak_score v2 엔진 마이그레이션 적용** — `supabase/migrations/20260528_weak_score_v2.sql` 작성됨, DB 미적용. 적용 후 `build_period_rollup` 재호출(또는 일배치 다음 사이클)로 기존 `user_analytics_rollup.weak_notes_top` 재생성 필요. 현재 대시보드 클라(`WeakSlowNotesCards.tsx`)만 v2 공식, 엔진은 옛 sqrt(n) 공식.
