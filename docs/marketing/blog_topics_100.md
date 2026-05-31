@@ -679,7 +679,7 @@ day: N
 7. 어른이 되어 초견을 배우는 것 — 늦지 않은 이유
 8. 초견 연습과 일반 곡 연습의 차이 — 시간 배분
 9. "악보를 읽는다"는 것의 진짜 의미 — 글 읽기와의 비교
-10. 초견 능력은 타고나는가 학습되는가
+10. 초견 능력은 타고나는가 학습되는가 ✅ 작성 완료 (2026-06-01, sight-reading-innate-or-learned)
 11. 초견과 절대음감 — 절대음감 없어도 초견 잘 할 수 있는 이유 ✅ 작성 완료 (2026-05-30, absolute-pitch-and-sight-reading)
 12. 초견의 3가지 핵심 요소 — 시각·인지·운동의 통합
 13. 초견 연습이 작곡·즉흥연주에 주는 효과
@@ -888,6 +888,8 @@ AI·정밀 데이터·Noteflex 기능·음악 교육의 미래.
 | 2026-05-30 | 30 | §1-11 | Absolute Pitch and Sight-Reading — Why You Don't Need Perfect Pitch to Read Music Well (en) ✅ 작성 완료 | absolute-pitch-and-sight-reading | Sight-Reading Lab | ~805 words | absolute pitch sight-reading, perfect pitch sight-reading, sight-reading without perfect pitch, relative pitch reading, absolute pitch myth | Levitin & Rogers + Takeuchi & Hulse 전통 |
 | 2026-05-31 | 31 | §7-81 | 음악 학습의 스트릭 심리학 — 매일의 5분이 한 주의 한 시간보다 강한 이유 (ko) ✅ 작성 완료 | streak-psychology-music-learning | 뮤직 테크 & 미래 | ~2360자 | 음악 학습 스트릭, 매일 연습 습관, 음악 연습 동기, 스트릭 심리학, 습관 형성 66일, 초견 스트릭 | Lally + Locke & Latham 전통 |
 | 2026-05-31 | 31 | §7-81 | The Psychology of Streaks in Music Learning — Why Five Daily Minutes Beat One Weekly Hour (en) ✅ 작성 완료 | streak-psychology-music-learning | Music Tech | ~960 words | music practice streak, daily music practice habit, music learning motivation, streak psychology, habit formation 66 days, duolingo streak music | Lally + Locke & Latham 전통 |
+| 2026-06-01 | 32 | §1-10 | 초견은 타고나는가 학습되는가 — 재능 신화와 누적 시간의 진짜 비중 (ko) ✅ 작성 완료 | sight-reading-innate-or-learned | 초견의 정석 | ~1894자 | 초견 재능, 초견 타고난다, 초견 학습, 음악 재능 유전, 초견 만 시간, 음악 천재 신화 | Mosing + Ericsson 전통 |
+| 2026-06-01 | 32 | §1-10 | Is Sight-Reading Innate or Learned? — Behind the Talent Myth, the Real Weight of Cumulative Practice (en) ✅ 작성 완료 | sight-reading-innate-or-learned | Sight-Reading Lab | ~981 words | sight-reading talent, is sight-reading innate, sight-reading learned skill, music ability genetics, deliberate practice music, music prodigy myth | Mosing + Ericsson 전통 |
 
 ---
 
