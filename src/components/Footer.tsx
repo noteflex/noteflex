@@ -11,17 +11,17 @@ export default function Footer() {
         {/* 4섹션 그리드 — Company → Product → Support → Legal */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 mb-5">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-2">
+            <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground mb-2">
               {t.footer.company}
             </p>
             <ul className="space-y-1.5">
               <li>
-                <Link to="/about" className="text-sm text-foreground/70 hover:text-foreground transition-colors">
+                <Link to="/about" className="text-sm text-foreground/75 hover:text-foreground transition-colors">
                   {t.footer.about}
                 </Link>
               </li>
               <li>
-                <Link to="/contact" className="text-sm text-foreground/70 hover:text-foreground transition-colors">
+                <Link to="/contact" className="text-sm text-foreground/75 hover:text-foreground transition-colors">
                   {t.footer.contact}
                 </Link>
               </li>
@@ -29,17 +29,17 @@ export default function Footer() {
           </div>
 
           <div>
-            <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-2">
+            <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground mb-2">
               {t.footer.product}
             </p>
             <ul className="space-y-1.5">
               <li>
-                <Link to="/pricing" className="text-sm text-foreground/70 hover:text-foreground transition-colors">
+                <Link to="/pricing" className="text-sm text-foreground/75 hover:text-foreground transition-colors">
                   {t.footer.pricing}
                 </Link>
               </li>
               <li>
-                <Link to="/blog" className="text-sm text-foreground/70 hover:text-foreground transition-colors">
+                <Link to="/blog" className="text-sm text-foreground/75 hover:text-foreground transition-colors">
                   {t.footer.blog}
                 </Link>
               </li>
@@ -47,12 +47,12 @@ export default function Footer() {
           </div>
 
           <div>
-            <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-2">
+            <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground mb-2">
               {t.footer.support}
             </p>
             <ul className="space-y-1.5">
               <li>
-                <Link to="/faq" className="text-sm text-foreground/70 hover:text-foreground transition-colors">
+                <Link to="/faq" className="text-sm text-foreground/75 hover:text-foreground transition-colors">
                   {t.footer.faq}
                 </Link>
               </li>
@@ -60,32 +60,32 @@ export default function Footer() {
           </div>
 
           <div>
-            <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-2">
+            <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground mb-2">
               {t.footer.legalSection}
             </p>
             <ul className="space-y-1.5">
               <li>
-                <Link to="/terms" className="text-sm text-foreground/70 hover:text-foreground transition-colors">
+                <Link to="/terms" className="text-sm text-foreground/75 hover:text-foreground transition-colors">
                   {t.legal.terms}
                 </Link>
               </li>
               <li>
-                <Link to="/privacy" className="text-sm text-foreground/70 hover:text-foreground transition-colors">
+                <Link to="/privacy" className="text-sm text-foreground/75 hover:text-foreground transition-colors">
                   {t.legal.privacy}
                 </Link>
               </li>
               <li>
-                <Link to="/cookies" className="text-sm text-foreground/70 hover:text-foreground transition-colors">
+                <Link to="/cookies" className="text-sm text-foreground/75 hover:text-foreground transition-colors">
                   {t.legal.cookies}
                 </Link>
               </li>
               <li>
-                <Link to="/refund" className="text-sm text-foreground/70 hover:text-foreground transition-colors">
+                <Link to="/refund" className="text-sm text-foreground/75 hover:text-foreground transition-colors">
                   {t.legal.refund}
                 </Link>
               </li>
               <li>
-                <Link to="/business-info" className="text-sm text-foreground/70 hover:text-foreground transition-colors">
+                <Link to="/business-info" className="text-sm text-foreground/75 hover:text-foreground transition-colors">
                   {t.legal.businessInfo}
                 </Link>
               </li>
