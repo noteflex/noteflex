@@ -4,6 +4,13 @@ import { toast } from "@/hooks/use-toast";
 import { checkEmailExists } from "@/lib/profile";
 import { logger } from "@/lib/sentry";
 
+/**
+ * Supabase SMTP 일시 장애 (2026-05-31) — 매직링크 발송 실패.
+ * Google OAuth만 노출. SMTP 정상화 후 true로 복원하면 이메일 폼·복구·재전송 자동 활성.
+ * 해소 후 작업 1줄: 이 상수를 true로 변경.
+ */
+const EMAIL_AUTH_ENABLED = false;
+
 // ─── Types ────────────────────────────────────────────────────────────────
 
 interface AuthModalProps {
@@ -658,132 +665,160 @@ export default function AuthModal({ onClose }: AuthModalProps) {
                     <GoogleIcon />
                     Google로 계속하기
                   </button>
-                  <Divider />
-                  <form onSubmit={handleLoginSubmit} className="flex flex-col gap-3">
-                    <input
-                      type="email"
-                      value={email}
-                      onChange={e => { setEmail(e.target.value); setEmailError(null); }}
-                      placeholder="이메일을 입력해주세요"
-                      required
-                      autoComplete="email"
-                      className="w-full px-4 py-2.5 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                    />
-                    {emailError && (
-                      <div className="p-3 rounded-xl bg-destructive/10 border border-destructive/30" data-testid="login-email-error">
-                        <p className="text-sm text-destructive">{emailError}</p>
+                  {EMAIL_AUTH_ENABLED ? (
+                    <>
+                      <Divider />
+                      <form onSubmit={handleLoginSubmit} className="flex flex-col gap-3">
+                        <input
+                          type="email"
+                          value={email}
+                          onChange={e => { setEmail(e.target.value); setEmailError(null); }}
+                          placeholder="이메일을 입력해주세요"
+                          required
+                          autoComplete="email"
+                          className="w-full px-4 py-2.5 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                        />
+                        {emailError && (
+                          <div className="p-3 rounded-xl bg-destructive/10 border border-destructive/30" data-testid="login-email-error">
+                            <p className="text-sm text-destructive">{emailError}</p>
+                            <button
+                              type="button"
+                              onClick={() => switchMode("signup")}
+                              className="text-xs font-bold text-primary mt-1"
+                              data-testid="goto-signup-button"
+                            >
+                              회원가입하기
+                            </button>
+                          </div>
+                        )}
                         <button
-                          type="button"
-                          onClick={() => switchMode("signup")}
-                          className="text-xs font-bold text-primary mt-1"
-                          data-testid="goto-signup-button"
+                          type="submit"
+                          disabled={loading}
+                          className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-semibold text-sm shadow hover:shadow-md transition-all active:scale-95 disabled:opacity-50"
                         >
-                          회원가입하기
+                          {loading ? "처리 중..." : "이메일로 로그인"}
                         </button>
-                      </div>
-                    )}
-                    <button
-                      type="submit"
-                      disabled={loading}
-                      className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-semibold text-sm shadow hover:shadow-md transition-all active:scale-95 disabled:opacity-50"
-                    >
-                      {loading ? "처리 중..." : "이메일로 로그인"}
-                    </button>
-                  </form>
+                      </form>
+                    </>
+                  ) : (
+                    <p className="text-xs text-muted-foreground text-center mt-1 leading-relaxed">
+                      📧 이메일 로그인은 잠시 점검 중이에요. Google로 계속해주세요.
+                    </p>
+                  )}
                 </>
               )}
 
               {/* ━━━━━━━━━━━━━━━━ 회원가입 Step 1: 이메일 + 약관 ━━━━━━━━━━━━━━━━ */}
-              {mode === "signup" && (
-                <>
-                  <div className="mb-4 p-3 rounded-xl bg-muted/50 border border-border">
-                    <p className="text-xs font-semibold text-foreground mb-2">🎁 가입하면 이런 게 가능해요</p>
-                    <ul className="space-y-1 text-xs text-muted-foreground">
-                      <li className="flex items-start gap-1.5"><span className="text-primary">✓</span><span>연주 기록 저장 및 성장 추적</span></li>
-                      <li className="flex items-start gap-1.5"><span className="text-primary">✓</span><span>모든 레벨 자유롭게 도전</span></li>
-                      <li className="flex items-start gap-1.5"><span className="text-primary">✓</span><span>학습 통계로 약점 분석</span></li>
-                    </ul>
+              {mode === "signup" && (() => {
+                // SMTP 점검 중·정상화 양쪽에서 재사용 — 폼 안/밖 어디든 동일 렌더.
+                const tosBlock = (
+                  <div className="flex flex-col gap-2.5 mt-1 p-3 rounded-xl bg-muted/40 border border-border">
+                    <label className="flex items-start gap-2.5 text-sm cursor-pointer hover:bg-background/50 rounded-lg px-2 py-1.5 -mx-2 transition-colors">
+                      <input
+                        type="checkbox"
+                        checked={tosAgreed}
+                        onChange={e => setTosAgreed(e.target.checked)}
+                        className="mt-0.5 w-4 h-4 accent-primary cursor-pointer"
+                        data-testid="tos-checkbox"
+                      />
+                      <span>
+                        <span className="font-bold text-destructive">[필수]</span>
+                        <span className="ml-1 text-foreground">만 14세 이상이며, </span>
+                        <a href="/terms" target="_blank" rel="noreferrer" className="text-primary underline underline-offset-2">이용약관</a>
+                        <span>·</span>
+                        <a href="/privacy" target="_blank" rel="noreferrer" className="text-primary underline underline-offset-2">개인정보처리방침</a>
+                        <span>에 동의합니다</span>
+                      </span>
+                    </label>
+                    <label className="flex items-start gap-2.5 text-sm cursor-pointer hover:bg-background/50 rounded-lg px-2 py-1.5 -mx-2 transition-colors">
+                      <input
+                        type="checkbox"
+                        checked={marketingAgreed}
+                        onChange={e => setMarketingAgreed(e.target.checked)}
+                        className="mt-0.5 w-4 h-4 accent-primary cursor-pointer"
+                        data-testid="marketing-checkbox"
+                      />
+                      <span className="text-foreground/80">
+                        <span className="font-medium text-muted-foreground">[선택]</span>
+                        <span className="ml-1">마케팅 정보 수신에 동의합니다</span>
+                      </span>
+                    </label>
                   </div>
+                );
 
-                  <button
-                    onClick={handleGoogleLogin}
-                    disabled={loading}
-                    className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl border-2 border-border bg-background hover:bg-muted transition-colors text-sm font-semibold mb-4 disabled:opacity-50"
-                  >
-                    <GoogleIcon />
-                    Google로 계속하기
-                  </button>
-                  <Divider />
-
-                  <form onSubmit={handleSignupSubmit} className="flex flex-col gap-3">
-                    <input
-                      type="email"
-                      value={email}
-                      onChange={e => { setEmail(e.target.value); setEmailError(null); }}
-                      placeholder="사용할 이메일을 입력해주세요"
-                      required
-                      className="w-full px-4 py-2.5 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                    />
-
-                    {emailError && (
-                      <div className="p-3 rounded-xl bg-destructive/10 border border-destructive/30" data-testid="email-exists-error">
-                        <p className="text-sm font-semibold text-destructive">{emailError}</p>
-                        <button
-                          type="button"
-                          onClick={() => switchMode("login")}
-                          className="text-xs font-bold text-primary mt-1"
-                          data-testid="goto-login-button"
-                        >
-                          로그인하기
-                        </button>
-                      </div>
-                    )}
-
-                    {/* 약관 동의 */}
-                    <div className="flex flex-col gap-2.5 mt-1 p-3 rounded-xl bg-muted/40 border border-border">
-                      <label className="flex items-start gap-2.5 text-sm cursor-pointer hover:bg-background/50 rounded-lg px-2 py-1.5 -mx-2 transition-colors">
-                        <input
-                          type="checkbox"
-                          checked={tosAgreed}
-                          onChange={e => setTosAgreed(e.target.checked)}
-                          className="mt-0.5 w-4 h-4 accent-primary cursor-pointer"
-                          data-testid="tos-checkbox"
-                        />
-                        <span>
-                          <span className="font-bold text-destructive">[필수]</span>
-                          <span className="ml-1 text-foreground">만 14세 이상이며, </span>
-                          <a href="/terms" target="_blank" rel="noreferrer" className="text-primary underline underline-offset-2">이용약관</a>
-                          <span>·</span>
-                          <a href="/privacy" target="_blank" rel="noreferrer" className="text-primary underline underline-offset-2">개인정보처리방침</a>
-                          <span>에 동의합니다</span>
-                        </span>
-                      </label>
-                      <label className="flex items-start gap-2.5 text-sm cursor-pointer hover:bg-background/50 rounded-lg px-2 py-1.5 -mx-2 transition-colors">
-                        <input
-                          type="checkbox"
-                          checked={marketingAgreed}
-                          onChange={e => setMarketingAgreed(e.target.checked)}
-                          className="mt-0.5 w-4 h-4 accent-primary cursor-pointer"
-                          data-testid="marketing-checkbox"
-                        />
-                        <span className="text-foreground/80">
-                          <span className="font-medium text-muted-foreground">[선택]</span>
-                          <span className="ml-1">마케팅 정보 수신에 동의합니다</span>
-                        </span>
-                      </label>
+                return (
+                  <>
+                    <div className="mb-4 p-3 rounded-xl bg-muted/50 border border-border">
+                      <p className="text-xs font-semibold text-foreground mb-2">🎁 가입하면 이런 게 가능해요</p>
+                      <ul className="space-y-1 text-xs text-muted-foreground">
+                        <li className="flex items-start gap-1.5"><span className="text-primary">✓</span><span>연주 기록 저장 및 성장 추적</span></li>
+                        <li className="flex items-start gap-1.5"><span className="text-primary">✓</span><span>모든 레벨 자유롭게 도전</span></li>
+                        <li className="flex items-start gap-1.5"><span className="text-primary">✓</span><span>학습 통계로 약점 분석</span></li>
+                      </ul>
                     </div>
 
+                    {/* SMTP 점검 중 — ToS를 Google 버튼 위로 노출 (Google 클릭 전 동의 필요) */}
+                    {!EMAIL_AUTH_ENABLED && (
+                      <div className="mb-4">{tosBlock}</div>
+                    )}
+
                     <button
-                      type="submit"
-                      disabled={loading || !tosAgreed}
-                      className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-semibold text-sm shadow hover:shadow-md transition-all active:scale-95 disabled:opacity-50"
-                      data-testid="signup-submit-button"
+                      onClick={handleGoogleLogin}
+                      disabled={loading}
+                      className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl border-2 border-border bg-background hover:bg-muted transition-colors text-sm font-semibold mb-4 disabled:opacity-50"
                     >
-                      {loading ? "전송 중..." : "이메일로 시작"}
+                      <GoogleIcon />
+                      Google로 계속하기
                     </button>
-                  </form>
-                </>
-              )}
+
+                    {EMAIL_AUTH_ENABLED ? (
+                      <>
+                        <Divider />
+
+                        <form onSubmit={handleSignupSubmit} className="flex flex-col gap-3">
+                          <input
+                            type="email"
+                            value={email}
+                            onChange={e => { setEmail(e.target.value); setEmailError(null); }}
+                            placeholder="사용할 이메일을 입력해주세요"
+                            required
+                            className="w-full px-4 py-2.5 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                          />
+
+                          {emailError && (
+                            <div className="p-3 rounded-xl bg-destructive/10 border border-destructive/30" data-testid="email-exists-error">
+                              <p className="text-sm font-semibold text-destructive">{emailError}</p>
+                              <button
+                                type="button"
+                                onClick={() => switchMode("login")}
+                                className="text-xs font-bold text-primary mt-1"
+                                data-testid="goto-login-button"
+                              >
+                                로그인하기
+                              </button>
+                            </div>
+                          )}
+
+                          {tosBlock}
+
+                          <button
+                            type="submit"
+                            disabled={loading || !tosAgreed}
+                            className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-semibold text-sm shadow hover:shadow-md transition-all active:scale-95 disabled:opacity-50"
+                            data-testid="signup-submit-button"
+                          >
+                            {loading ? "전송 중..." : "이메일로 시작"}
+                          </button>
+                        </form>
+                      </>
+                    ) : (
+                      <p className="text-xs text-muted-foreground text-center mt-1 leading-relaxed">
+                        📧 이메일 가입은 잠시 점검 중이에요. Google로 계속해주세요.
+                      </p>
+                    )}
+                  </>
+                );
+              })()}
 
               {/* ━━━━━━━━━━━━━━━━ Footer ━━━━━━━━━━━━━━━━ */}
               <div className="mt-5 pt-4 border-t border-border">
