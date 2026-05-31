@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, NavLink } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useT } from "@/contexts/LanguageContext";
 
@@ -68,7 +68,53 @@ export default function Header({
         {t.header.skipToContent}
       </a>
       <div className={`${container} py-4 flex items-center justify-between gap-4`}>
-        {left}
+        <div className="flex items-center gap-6 sm:gap-10 min-w-0">
+          {left}
+          {/* 5/31 데스크탑 헤더 nav — admin 등 below slot 있는 페이지에서는 중복 회피 위해 숨김. 모바일은 sub-step 4 햄버거로 대체. */}
+          {!below && (
+            <nav
+              aria-label={t.header.mainNav}
+              className="hidden md:flex items-center gap-6"
+            >
+              <NavLink
+                to="/pricing"
+                className={({ isActive }) =>
+                  `text-sm transition-colors ${
+                    isActive
+                      ? "text-foreground font-medium"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`
+                }
+              >
+                {t.footer.pricing}
+              </NavLink>
+              <NavLink
+                to="/blog"
+                className={({ isActive }) =>
+                  `text-sm transition-colors ${
+                    isActive
+                      ? "text-foreground font-medium"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`
+                }
+              >
+                {t.footer.blog}
+              </NavLink>
+              <NavLink
+                to="/faq"
+                className={({ isActive }) =>
+                  `text-sm transition-colors ${
+                    isActive
+                      ? "text-foreground font-medium"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`
+                }
+              >
+                {t.footer.faq}
+              </NavLink>
+            </nav>
+          )}
+        </div>
         <div className="flex items-center gap-4 shrink-0">
           {right}
         </div>
