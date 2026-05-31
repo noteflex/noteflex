@@ -7,6 +7,13 @@
 
 ---
 
+## 2026-05-31 출시 D-0/D+1 후속 (가오픈 후 트랙)
+
+- [출시후-긴급] **Supabase 이메일 로그인 SMTP 정상화** — Google OAuth만으로 일시 운영. 진단: Supabase 대시보드 → Authentication → Logs → SMTP 에러 메시지 확인. 외부 SMTP (SendGrid/Resend 등) API key 만료·rate limit·DNS 등 가능성. 정상화 후 `EMAIL_AUTH_ENABLED = true`로 복원.
+- [출시후] **모바일 게임 페이지 화면 layout 재조정** — Pixel 7 (Android viewport 915px) 등 세로로 긴 디바이스에서 콘텐츠 아래 빈 공간 큼. 권장 핫픽스: `min-h-[100dvh]` + `flex justify-center`, 또는 하단 보조 정보(연속 정답·다음 stage 정보) 추가. 가로 모드 강제는 비추 (한 손 조작 마찰).
+
+---
+
 ## 2026-05-30 SEO·통과 시스템 후속 (출시 후 트랙)
 
 - [출시후] **vercel.json `redirects`로 옛 블로그 URL → 새 URL HTTP 301 명시** — 현재는 SPA 클라 navigate replace라 Google에 redirect 신호 약함. backlink·GSC 옛 인덱스 처리에 HTTP 301이 더 명확. 글마다 `{ source: "/blog/:lang/YYYY-MM-DD-:slug", destination: "/blog/:lang/:slug", permanent: true }` 식으로 일괄 등록 또는 generate-sitemap.ts에서 redirects 함께 자동 생성.
