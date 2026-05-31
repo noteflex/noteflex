@@ -4,6 +4,57 @@
 
 ---
 
+## 2026-05-31 (Sun) — 출시 D-7
+
+### 완료 (push)
+
+**출제 로직 ② 검증 + 5단계 시뮬레이션**
+- 4-E pickDecision trace · 4-F-1/F-2/F-3 NoteGame hook 통합 (8a5cfca · f66becc · 73b34b5)
+- 5단계 simulator (simSession + 5종 시나리오 + 9 메트릭 + reporter + `npm run notegen`)
+  · 5704636 · 9a96b23 · cb83d5a · a335016 · c9d2c15
+- 외부 N+2 분석 반박: events 단위(시도) ≠ turn 단위. Turn 단위 연속 출제 0건, 최단 gap=2 (N+2 의도 작동 검증).
+
+**핫픽스·인프라**
+- PWA SW denylist 추가 (sitemap·ads·robots·GSC 인증) — 3eda4fc
+- SEO Title ko/en 통일 (브랜드 우선) — e7f87c0
+- Sound Sampler 폴백 (외부 CDN sample 실패 시 synth fallback + 다운그레이드) — 55fdc08
+- Vercel Analytics + 아바타 관리자 메뉴 — ddc4b8c
+
+**Edge Glow 정답·오답 시각 피드백 (5라운드)**
+- 27124ff → de83582 (Portal 마운트) → 6a8600d (시간·강도) → 13541ea (vmin 비례) → 1cec98e (색상·spread)
+- box-shadow inset (GPU compositor layer 회피)
+- Portal 마운트 함정 학습: 부모 transform이 containing block 생성 → position:fixed가 부모 기준 됨.
+
+**코칭 다이얼로그 전면 정비**
+- CoachingDialogShell + NoteAnalysisSection 신규 — b833a4c
+- Hero 정답률 + 트렌드 배지 + 동기부여 메시지 + 보조 stats(3-col) + 음표별 분석 2x2 카드
+- 6 분기 동기부여 메시지 (ko/en)
+- 글자 크기 일괄 키움 (가독성) — f658d37
+
+**Navigation 정비 (Sub-step 1·2·3)**
+- Sub-step 1: Skip to content a11y WCAG — 9e57317
+  · LangToggle 헤더 마운트·UserMenu Pricing/Blog shortcuts는 사용자 의도로 제외 (롤백)
+- Sub-step 2: Footer 색·위계만 미세 조정 — 56c74f6 (1차 시도 부피 키워서 거의 원복)
+- Sub-step 3: 데스크탑 헤더 nav 3개 (Pricing·Blog·FAQ, md+ 분기) — 666ccba
+- Sub-step 4 (모바일 햄버거): PENDING 강등 — ROI 낮음, Vercel Analytics 데이터 확인 후 결정
+
+### 학습·인사이트
+- 외부 분석 검증 시 단위 구분 중요 (events vs turn) — 단위 오독이 잘못된 결론 도출.
+- Edge Glow Portal 마운트 함정 — transform 가진 부모는 containing block. fixed가 부모 기준 됨.
+- 사용자 의도 보존 — 분석가 권장 ≠ 사용자 의도. 이전에 의도적 제거한 항목 다시 살리지 않을 것 (LangToggle·UserMenu shortcuts).
+- 1차 수정 분량 조절 — "미세 조정" 의도면 미세하게. 부피 키우면 모바일 뚱뚱화.
+
+### PENDING 추가
+- [출시후] LangToggle 헤더 마운트 재검토 — ja·zh 언어 추가 시. IP 자동 감지로 guest UX 충분, UI 미니멀 톤 + 한국 색채 회피 의도.
+- [출시후] 모바일 햄버거 메뉴 (Sub-step 4) — Vercel Analytics 사용자 행동 데이터 확인 후 진짜 필요 시 추가. 현재 footer로 충분, ROI 낮음.
+
+### 남은 출시 작업 (D-7)
+- 환경변수 적용 (Paddle prod·Supabase·AdSense) — AdSense 심사 통과 후
+- Android PWA 실기기 테스트 — 출시 1일 전
+- 블로그 일일 작성
+
+---
+
 ## 2026-05-30 (SEO 인프라 fix + /play 7판 윈도우 시스템)
 
 ### 1. sitemap·ads.txt·robots.txt 404 fix (`e1e463a`)
