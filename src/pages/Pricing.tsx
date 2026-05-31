@@ -8,15 +8,10 @@ import { PaymentErrorBoundary } from "@/components/PaymentErrorBoundary";
 import { openCheckout, PADDLE_PRICES, getPaddleLocale } from "@/lib/paddle";
 import { logger } from "@/lib/sentry";
 import Seo from "@/components/Seo";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { supabase } from "@/integrations/supabase/client";
 
 // 가오픈(5/31) — Paddle 심사 통과 후 PAYMENT_LOCKED=false로 전환, 다이얼로그 분기 제거.
 const PAYMENT_LOCKED = true;
@@ -61,10 +56,14 @@ const CONTENT = {
     upgradeMo: "월간 구독 시작",
     upgradeYr: "연간 구독 시작",
     signupFirst: "회원가입 후 시작",
-    // 가오픈(5/31) — Paddle 심사 중 결제 잠금
-    paymentReviewTitle: "결제 시스템 점검 중",
-    paymentReviewBody: "결제 시스템 점검 중입니다. 잠시만 기다려 주세요.",
-    paymentReviewOk: "확인",
+    // 가오픈(5/31) — Paddle 심사 중 결제 잠금 + Premium waitlist 이메일 수집
+    paymentReviewTitle: "Premium이 곧 찾아옵니다",
+    paymentReviewBody1: "결제 시스템 점검 중이에요.",
+    paymentReviewBody2: "오픈 알림을 받고 싶으시면 이메일을 남겨주세요.",
+    paymentReviewSubmit: "알림 신청",
+    paymentReviewLater: "나중에",
+    paymentReviewSuccess: "신청 완료! 오픈 시 알려드릴게요.",
+    paymentReviewError: "잠시 후 다시 시도해 주세요.",
     compareTitle: "플랜 비교",
     compareHeaders: ["기능", "비가입", "Free", "Premium"],
     compareRows: [
@@ -129,9 +128,13 @@ const CONTENT = {
     alreadyPremium: "Already on Premium",
     startFree: "Get Started Free",
     upgradeMo: "Start Monthly",
-    paymentReviewTitle: "Payment Under Review",
-    paymentReviewBody: "Payment system under review. Please check back soon.",
-    paymentReviewOk: "OK",
+    paymentReviewTitle: "Premium is on the way",
+    paymentReviewBody1: "Payment system is under review.",
+    paymentReviewBody2: "Leave your email if you'd like an opening notice.",
+    paymentReviewSubmit: "Notify Me",
+    paymentReviewLater: "Later",
+    paymentReviewSuccess: "Thanks! We'll notify you when we open.",
+    paymentReviewError: "Please try again in a moment.",
     upgradeYr: "Start Annual",
     signupFirst: "Sign Up to Start",
     compareTitle: "Plan Comparison",
@@ -172,6 +175,48 @@ export default function Pricing() {
   const tier = getUserTier(user ?? null, profile ?? null);
   const [isCheckoutLoading, setIsCheckoutLoading] = useState(false);
   const [paymentReviewOpen, setPaymentReviewOpen] = useState(false);
+  // waitlist 다이얼로그 상태 — 다이얼로그 열릴 때마다 초기화 (onOpenChange 핸들러)
+  const [waitlistEmail, setWaitlistEmail] = useState("");
+  const [waitlistStatus, setWaitlistStatus] = useState<
+    "idle" | "submitting" | "success" | "error"
+  >("idle");
+
+  const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(waitlistEmail.trim());
+
+  const closeWaitlistDialog = () => {
+    setPaymentReviewOpen(false);
+    // 다이얼로그 close 애니메이션 후 상태 리셋 (즉시 리셋하면 close 중 텍스트 깜빡임)
+    window.setTimeout(() => {
+      setWaitlistEmail("");
+      setWaitlistStatus("idle");
+    }, 200);
+  };
+
+  const handleWaitlistSubmit = async () => {
+    if (!isEmailValid || waitlistStatus === "submitting") return;
+    setWaitlistStatus("submitting");
+    const { error } = await supabase
+      .from("premium_waitlist")
+      .upsert(
+        {
+          email: waitlistEmail.trim().toLowerCase(),
+          locale: lang === "ko" ? "ko" : "en",
+          source: "pricing",
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "email" },
+      );
+    if (error) {
+      logger.warn("premium_waitlist upsert 실패", {
+        email_hash: waitlistEmail.length,
+        error_message: error.message,
+      });
+      setWaitlistStatus("error");
+      return;
+    }
+    setWaitlistStatus("success");
+    window.setTimeout(closeWaitlistDialog, 1500);
+  };
 
   const handleCta = async (plan: "free" | "monthly" | "yearly") => {
     if (tier === "pro") return;
@@ -516,20 +561,67 @@ export default function Pricing() {
       </div>
     </div>
 
-    {/* 가오픈(5/31) — Paddle 심사 중 결제 잠금 안내 */}
-    <Dialog open={paymentReviewOpen} onOpenChange={setPaymentReviewOpen}>
-      <DialogContent className="sm:max-w-sm">
-        <DialogHeader>
-          <DialogTitle>{c.paymentReviewTitle}</DialogTitle>
-          <DialogDescription className="pt-2">
-            {c.paymentReviewBody}
-          </DialogDescription>
-        </DialogHeader>
-        <DialogFooter>
-          <Button onClick={() => setPaymentReviewOpen(false)} className="w-full sm:w-auto">
-            {c.paymentReviewOk}
-          </Button>
-        </DialogFooter>
+    {/* 가오픈(5/31) — Paddle 심사 중 결제 잠금 + Premium waitlist 이메일 수집 */}
+    <Dialog
+      open={paymentReviewOpen}
+      onOpenChange={(open) => (open ? setPaymentReviewOpen(true) : closeWaitlistDialog())}
+    >
+      <DialogContent className="sm:max-w-sm text-center">
+        <div aria-hidden="true" className="text-[32px] leading-none">✨</div>
+        <h2 className="text-[18px] font-medium text-foreground">
+          {c.paymentReviewTitle}
+        </h2>
+        {waitlistStatus === "success" ? (
+          <p className="text-sm text-emerald-600 dark:text-emerald-400 py-2">
+            {c.paymentReviewSuccess}
+          </p>
+        ) : (
+          <>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              {c.paymentReviewBody1}
+              <br />
+              {c.paymentReviewBody2}
+            </p>
+            <div className="flex flex-col gap-2 pt-2">
+              <Input
+                type="email"
+                inputMode="email"
+                autoComplete="email"
+                placeholder="your@email.com"
+                value={waitlistEmail}
+                onChange={(e) => {
+                  setWaitlistEmail(e.target.value);
+                  if (waitlistStatus === "error") setWaitlistStatus("idle");
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && isEmailValid) handleWaitlistSubmit();
+                }}
+                aria-label="Email"
+                disabled={waitlistStatus === "submitting"}
+                className="text-center"
+              />
+              {waitlistStatus === "error" && (
+                <p className="text-xs text-red-600 dark:text-red-400">
+                  {c.paymentReviewError}
+                </p>
+              )}
+              <Button
+                onClick={handleWaitlistSubmit}
+                disabled={!isEmailValid || waitlistStatus === "submitting"}
+                className="w-full"
+              >
+                {c.paymentReviewSubmit}
+              </Button>
+              <button
+                type="button"
+                onClick={closeWaitlistDialog}
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors py-1"
+              >
+                {c.paymentReviewLater}
+              </button>
+            </div>
+          </>
+        )}
       </DialogContent>
     </Dialog>
     </PaymentErrorBoundary>
