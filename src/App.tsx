@@ -24,6 +24,7 @@ import AdminUsers from "./pages/admin/AdminUsers.tsx";
 import AdminUserDetail from "./pages/admin/AdminUserDetail.tsx";
 import AdminLogs from "./pages/admin/AdminLogs.tsx";
 import AdminBatchRuns from "./pages/admin/AdminBatchRuns.tsx";
+import WaitlistPage from "./pages/admin/WaitlistPage.tsx";
 import StaffPreview from "./pages/admin/StaffPreview.tsx";
 import ProfilePage from "./pages/ProfilePage.tsx";
 import LegalPage from "./pages/legal/LegalPage.tsx";
@@ -179,6 +180,7 @@ const App = () => (
                 <Route path="users/:id" element={<AdminUserDetail />} />
                 <Route path="logs" element={<AdminLogs />} />
                 <Route path="batch-runs" element={<AdminBatchRuns />} />
+                <Route path="waitlist" element={<WaitlistPage />} />
                 <Route path="staff-preview" element={<StaffPreview />} />
               </Route>
 
