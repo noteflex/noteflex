@@ -11,6 +11,7 @@
 
 - [출시후-긴급] **Supabase 이메일 로그인 SMTP 정상화** — Google OAuth만으로 일시 운영. 진단: Supabase 대시보드 → Authentication → Logs → SMTP 에러 메시지 확인. 외부 SMTP (SendGrid/Resend 등) API key 만료·rate limit·DNS 등 가능성. 정상화 후 `EMAIL_AUTH_ENABLED = true`로 복원.
 - [출시후] **모바일 게임 페이지 화면 layout 재조정** — Pixel 7 (Android viewport 915px) 등 세로로 긴 디바이스에서 콘텐츠 아래 빈 공간 큼. 권장 핫픽스: `min-h-[100dvh]` + `flex justify-center`, 또는 하단 보조 정보(연속 정답·다음 stage 정보) 추가. 가로 모드 강제는 비추 (한 손 조작 마찰).
+- [출시후] **AuthModal 테스트 sprint** — SMTP hotfix(658fd75) + i18n 변경(bcaa46e)으로 `AuthModal.test.tsx` 39/45 fail. 셀렉터들이 한국어 하드코딩 텍스트에 묶여 있어 i18n 도입 후 자동 fail. SMTP 정상화 + `EMAIL_AUTH_ENABLED=true` 복원 시점에 ko/en 둘 다 검증 가능하도록 테스트 재작성 (data-testid 기반 셀렉터로 전환, `useT()` mock·강제 lang 주입 패턴 도입).
 
 ---
 
