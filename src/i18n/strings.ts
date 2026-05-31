@@ -711,7 +711,7 @@ const ko: Strings = {
     effectiveDate: "시행일:",
   },
   footer: {
-    copyright: "© 2026 Donofear",
+    copyright: "© 2026 Donofear. All rights reserved.",
     pricing: "요금제",
     product: "서비스",
     company: "회사",
@@ -1337,7 +1337,7 @@ const en: Strings = {
     effectiveDate: "Effective:",
   },
   footer: {
-    copyright: "© 2026 Donofear",
+    copyright: "© 2026 Donofear. All rights reserved.",
     pricing: "Pricing",
     product: "Product",
     company: "Company",
