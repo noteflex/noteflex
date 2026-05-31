@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useT } from "@/contexts/LanguageContext";
 
 interface HeaderProps {
   /** Page-specific right-side content */
@@ -31,6 +32,7 @@ export default function Header({
   containerClassName,
 }: HeaderProps) {
   const { profile } = useAuth();
+  const t = useT();
   const isPremium = !!profile?.is_premium;
   const container = `${containerClassName ?? "max-w-3xl"} mx-auto px-4`;
   const left = title ? (
@@ -58,6 +60,13 @@ export default function Header({
     <header
       className={`border-b border-border bg-background/95 backdrop-blur-sm sticky top-0 z-10 ${headerClassName ?? ""}`}
     >
+      {/* a11y skip link — sr-only 기본, focus 시 visible. 페이지의 id="main-content" 요소로 이동. */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:left-2 focus:top-2 focus:z-50 focus:rounded-md focus:bg-primary focus:px-3 focus:py-1.5 focus:text-sm focus:font-medium focus:text-primary-foreground focus:shadow"
+      >
+        {t.header.skipToContent}
+      </a>
       <div className={`${container} py-4 flex items-center justify-between gap-4`}>
         {left}
         <div className="flex items-center gap-4 shrink-0">
