@@ -3,6 +3,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { checkEmailExists } from "@/lib/profile";
 import { logger } from "@/lib/sentry";
+import { useT } from "@/contexts/LanguageContext";
+import { format as fmt } from "@/i18n/strings";
 
 /**
  * Supabase SMTP 일시 장애 (2026-05-31) — 매직링크 발송 실패.
@@ -32,11 +34,11 @@ function GoogleIcon() {
   );
 }
 
-function Divider() {
+function Divider({ orLabel }: { orLabel: string }) {
   return (
     <div className="flex items-center gap-3 mb-4">
       <div className="flex-1 h-px bg-border" />
-      <span className="text-xs text-muted-foreground">또는</span>
+      <span className="text-xs text-muted-foreground">{orLabel}</span>
       <div className="flex-1 h-px bg-border" />
     </div>
   );
@@ -45,6 +47,8 @@ function Divider() {
 // ─── Component ───────────────────────────────────────────────────────────
 
 export default function AuthModal({ onClose }: AuthModalProps) {
+  const t = useT();
+  const tA = t.authModal;
   const [mode, setMode] = useState<Mode>("login");
   const [step, setStep] = useState(1); // 1: 이메일 폼, 2: 매직링크 전송 완료, 3: 복구 패널, 4: Paddle 심사관 액세스
 
@@ -133,7 +137,7 @@ export default function AuthModal({ onClose }: AuthModalProps) {
   // ───────── Google OAuth ─────────
   const handleGoogleLogin = async () => {
     if (mode === "signup" && !tosAgreed) {
-      toast({ title: "필수 약관에 동의해주세요", variant: "destructive" });
+      toast({ title: tA.toastTosRequired, variant: "destructive" });
       return;
     }
     setLoading(true);
@@ -159,7 +163,7 @@ export default function AuthModal({ onClose }: AuthModalProps) {
         impact: "사용자 영역 Google 영역으로 가입·로그인 미설정",
         action: "Supabase OAuth 설정 확인, Google Cloud Console redirect URI 확인",
       });
-      toast({ title: "Google 로그인 실패", description: err.message, variant: "destructive" });
+      toast({ title: tA.toastGoogleFailed, description: err.message, variant: "destructive" });
       setLoading(false);
     }
   };
@@ -168,7 +172,7 @@ export default function AuthModal({ onClose }: AuthModalProps) {
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.includes("@")) {
-      toast({ title: "이메일을 확인해주세요", variant: "destructive" });
+      toast({ title: tA.toastEmailInvalid, variant: "destructive" });
       return;
     }
     setLoading(true);
@@ -198,7 +202,7 @@ export default function AuthModal({ onClose }: AuthModalProps) {
           email_domain: email.split("@")[1],
         },
       });
-      setEmailError("가입된 이메일이 아니에요. 회원가입을 시작해볼까요?");
+      setEmailError(tA.loginEmailNotFound);
     } finally {
       setLoading(false);
     }
@@ -208,7 +212,7 @@ export default function AuthModal({ onClose }: AuthModalProps) {
   const handleSignupSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.includes("@")) {
-      toast({ title: "이메일을 확인해주세요", variant: "destructive" });
+      toast({ title: tA.toastEmailInvalid, variant: "destructive" });
       return;
     }
     setLoading(true);
@@ -217,7 +221,7 @@ export default function AuthModal({ onClose }: AuthModalProps) {
       // accountStatus takes precedence; fall back to v2 exists/confirmed for mock compat
       const status = result.accountStatus ?? ((result.exists && result.confirmed) ? "active" : "new");
       if (status === "active") {
-        setEmailError("이미 가입된 이메일이에요.");
+        setEmailError(tA.signupEmailExists);
         setLoading(false);
         return;
       }
@@ -228,7 +232,7 @@ export default function AuthModal({ onClose }: AuthModalProps) {
         return;
       }
       if (status === "deleted_expired") {
-        setEmailError("이 계정은 완전히 삭제되었습니다. 다른 이메일로 가입해주세요.");
+        setEmailError(tA.signupEmailHardDeleted);
         setLoading(false);
         return;
       }
@@ -264,7 +268,7 @@ export default function AuthModal({ onClose }: AuthModalProps) {
           email_domain: email.split("@")[1],
         },
       });
-      toast({ title: "오류가 발생했어요", description: err.message, variant: "destructive" });
+      toast({ title: tA.toastGenericError, description: err.message, variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -300,7 +304,7 @@ export default function AuthModal({ onClose }: AuthModalProps) {
           email_domain: email.split("@")[1],
         },
       });
-      toast({ title: "오류가 발생했어요", description: err.message, variant: "destructive" });
+      toast({ title: tA.toastGenericError, description: err.message, variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -319,7 +323,7 @@ export default function AuthModal({ onClose }: AuthModalProps) {
           action: "hard_delete_account RPC 있는지 확인, auth.users 권한 확인",
           metadata: { email_domain: email.split("@")[1] },
         });
-        toast({ title: "오류가 발생했어요", description: error.message, variant: "destructive" });
+        toast({ title: tA.toastGenericError, description: error.message, variant: "destructive" });
         return;
       }
       logger.info("계정 영구 삭제 완료", {
@@ -361,7 +365,7 @@ export default function AuthModal({ onClose }: AuthModalProps) {
           email_domain: email.split("@")[1],
         },
       });
-      toast({ title: "오류가 발생했어요", description: err.message, variant: "destructive" });
+      toast({ title: tA.toastGenericError, description: err.message, variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -406,9 +410,9 @@ export default function AuthModal({ onClose }: AuthModalProps) {
         if (error) throw error;
       }
       startCooldown();
-      toast({ title: "메일을 재전송했어요", description: "이메일함을 확인해주세요." });
+      toast({ title: tA.toastResendSent, description: tA.toastResendSentDesc });
     } catch (err: any) {
-      toast({ title: "재전송 실패", description: err.message, variant: "destructive" });
+      toast({ title: tA.toastResendFailed, description: err.message, variant: "destructive" });
     }
   };
 
@@ -524,9 +528,9 @@ export default function AuthModal({ onClose }: AuthModalProps) {
               <>
                 <div className="text-5xl">⚠️</div>
                 <div className="text-center space-y-2">
-                  <h3 className="text-lg font-bold text-foreground">정말 진행하시겠어요?</h3>
+                  <h3 className="text-lg font-bold text-foreground">{tA.freshStartConfirmTitle}</h3>
                   <p className="text-sm text-muted-foreground leading-relaxed" data-testid="fresh-start-confirm-text">
-                    이전 데이터가 영구 삭제됩니다. 진행하시겠어요?
+                    {tA.freshStartConfirmBody}
                   </p>
                 </div>
                 <button
@@ -536,7 +540,7 @@ export default function AuthModal({ onClose }: AuthModalProps) {
                   className="w-full py-3 rounded-xl bg-destructive text-destructive-foreground font-semibold text-sm shadow hover:shadow-md transition-all active:scale-95 disabled:opacity-50"
                   data-testid="fresh-start-confirm-button"
                 >
-                  {loading ? "처리 중..." : "확인"}
+                  {loading ? tA.submitWorking : tA.freshStartConfirmYes}
                 </button>
                 <button
                   type="button"
@@ -544,7 +548,7 @@ export default function AuthModal({ onClose }: AuthModalProps) {
                   className="text-xs text-muted-foreground hover:text-foreground transition-colors"
                   data-testid="fresh-start-back-button"
                 >
-                  뒤로
+                  {tA.freshStartBack}
                 </button>
               </>
             ) : (
@@ -552,11 +556,15 @@ export default function AuthModal({ onClose }: AuthModalProps) {
               <>
                 <div className="text-5xl">⏳</div>
                 <div className="text-center space-y-2">
-                  <h3 className="text-lg font-bold text-foreground">계정 복구 가능</h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    <span className="font-medium text-foreground">{email}</span>은<br />
-                    삭제 처리 중인 계정이에요.<br />
-                    <span className="font-semibold text-primary">{recoveryDaysLeft}일 이내</span>에 복구할 수 있어요.
+                  <h3 className="text-lg font-bold text-foreground">{tA.recoveryTitle}</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line">
+                    {tA.recoveryBodyPre}
+                    <span className="font-medium text-foreground">{email}</span>
+                    {tA.recoveryBodyMid}
+                    <br />
+                    <span className="font-semibold text-primary">
+                      {fmt(tA.recoveryBodyDays, { n: String(recoveryDaysLeft ?? 30) })}
+                    </span>
                   </p>
                 </div>
                 <button
@@ -566,7 +574,7 @@ export default function AuthModal({ onClose }: AuthModalProps) {
                   className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-semibold text-sm shadow hover:shadow-md transition-all active:scale-95 disabled:opacity-50"
                   data-testid="recover-account-button"
                 >
-                  {loading ? "전송 중..." : "계정 복구하기"}
+                  {loading ? tA.recoveryActionSending : tA.recoveryAction}
                 </button>
                 <button
                   type="button"
@@ -575,7 +583,7 @@ export default function AuthModal({ onClose }: AuthModalProps) {
                   className="text-sm text-muted-foreground hover:text-foreground transition-colors underline-offset-2 hover:underline"
                   data-testid="fresh-start-button"
                 >
-                  새로 시작
+                  {tA.freshStartButton}
                 </button>
                 <button
                   type="button"
@@ -583,7 +591,7 @@ export default function AuthModal({ onClose }: AuthModalProps) {
                   className="text-xs text-muted-foreground hover:text-foreground transition-colors"
                   data-testid="recovery-cancel-button"
                 >
-                  취소
+                  {tA.recoveryCancel}
                 </button>
               </>
             )}
@@ -593,17 +601,25 @@ export default function AuthModal({ onClose }: AuthModalProps) {
           <div className="px-6 py-10 flex flex-col items-center gap-5" data-testid="magic-link-screen">
             <div className="text-5xl">✉️</div>
             <div className="text-center space-y-2">
-              <h3 className="text-lg font-bold text-foreground">메일을 확인해주세요</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                <span className="font-medium text-foreground" data-testid="magic-link-email">{email}</span>로<br />
-                인증 메일을 보냈어요.<br />
-                메일 속 링크를 클릭하면 {isRecovery ? "계정 복구가" : mode === "login" ? "로그인이" : "가입이"} 이어집니다.
+              <h3 className="text-lg font-bold text-foreground">{tA.magicLinkTitle}</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line">
+                {tA.magicLinkSentPre}
+                <span className="font-medium text-foreground" data-testid="magic-link-email">{email}</span>
+                {tA.magicLinkSentPost}
+                <br />
+                {fmt(tA.magicLinkActionBody, {
+                  action: isRecovery
+                    ? tA.magicLinkActionRecover
+                    : mode === "login"
+                      ? tA.magicLinkActionLogin
+                      : tA.magicLinkActionSignup,
+                })}
               </p>
             </div>
-            <p className="text-xs text-muted-foreground">스팸함도 확인해보세요 📁</p>
+            <p className="text-xs text-muted-foreground">{tA.magicLinkSpamHint}</p>
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground animate-pulse" data-testid="auth-waiting-indicator">
               <span>⏳</span>
-              <span>인증 대기 중...</span>
+              <span>{tA.magicLinkWaiting}</span>
             </div>
             <button
               type="button"
@@ -612,7 +628,9 @@ export default function AuthModal({ onClose }: AuthModalProps) {
               className="text-sm font-semibold text-primary disabled:text-muted-foreground disabled:cursor-not-allowed transition-colors"
               data-testid="resend-button"
             >
-              {resendCooldown > 0 ? `${resendCooldown}초 후 재전송` : "메일 재전송"}
+              {resendCooldown > 0
+                ? fmt(tA.magicLinkResendCooldown, { n: String(resendCooldown) })
+                : tA.magicLinkResend}
             </button>
             <button
               type="button"
@@ -620,7 +638,7 @@ export default function AuthModal({ onClose }: AuthModalProps) {
               className="text-xs text-muted-foreground hover:text-foreground transition-colors"
               data-testid="magic-link-back"
             >
-              이메일 다시 입력하기
+              {tA.magicLinkBackEmail}
             </button>
           </div>
         ) : (
@@ -629,8 +647,8 @@ export default function AuthModal({ onClose }: AuthModalProps) {
             {mode === "login" ? (
               <div className="flex flex-col items-center gap-2 pt-6 pb-5 px-6">
                 <span className="text-4xl">🎹</span>
-                <h2 className="text-xl font-bold text-foreground">로그인</h2>
-                <p className="text-xs text-muted-foreground">돌아오신 것을 환영해요</p>
+                <h2 className="text-xl font-bold text-foreground">{tA.loginTitle}</h2>
+                <p className="text-xs text-muted-foreground">{tA.loginSubtitle}</p>
               </div>
             ) : (
               <div className="px-6 pt-6 pb-5 bg-gradient-to-br from-primary/15 via-primary/10 to-accent/10 border-b border-border rounded-t-2xl">
@@ -639,15 +657,15 @@ export default function AuthModal({ onClose }: AuthModalProps) {
                     <span className="text-3xl">✨</span>
                     <span className="text-3xl">🎹</span>
                   </div>
-                  <h2 className="text-xl font-bold text-foreground">독보 마스터 시작하기</h2>
-                  <p className="text-xs text-muted-foreground text-center">계정을 만들고 첫 걸음을 시작해요</p>
+                  <h2 className="text-xl font-bold text-foreground">{tA.signupTitle}</h2>
+                  <p className="text-xs text-muted-foreground text-center">{tA.signupSubtitle}</p>
                   <div className="w-full mt-3 flex items-center gap-2">
                     <div className="flex-1 h-1.5 rounded-full bg-primary" />
                     <div className="flex-1 h-1.5 rounded-full bg-muted" />
                   </div>
                   <div className="w-full flex justify-between text-[10px] font-medium">
-                    <span className="text-primary font-bold">① 이메일 + 약관</span>
-                    <span className="text-muted-foreground">② 메일 확인</span>
+                    <span className="text-primary font-bold">{tA.signupStep1}</span>
+                    <span className="text-muted-foreground">{tA.signupStep2}</span>
                   </div>
                 </div>
               </div>
@@ -663,17 +681,17 @@ export default function AuthModal({ onClose }: AuthModalProps) {
                     className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl border-2 border-border bg-background hover:bg-muted transition-colors text-sm font-semibold mb-4 disabled:opacity-50"
                   >
                     <GoogleIcon />
-                    Google로 계속하기
+                    {tA.googleContinue}
                   </button>
                   {EMAIL_AUTH_ENABLED ? (
                     <>
-                      <Divider />
+                      <Divider orLabel={tA.orDivider} />
                       <form onSubmit={handleLoginSubmit} className="flex flex-col gap-3">
                         <input
                           type="email"
                           value={email}
                           onChange={e => { setEmail(e.target.value); setEmailError(null); }}
-                          placeholder="이메일을 입력해주세요"
+                          placeholder={tA.loginEmailPlaceholder}
                           required
                           autoComplete="email"
                           className="w-full px-4 py-2.5 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
@@ -687,7 +705,7 @@ export default function AuthModal({ onClose }: AuthModalProps) {
                               className="text-xs font-bold text-primary mt-1"
                               data-testid="goto-signup-button"
                             >
-                              회원가입하기
+                              {tA.loginEmailNotFoundCta}
                             </button>
                           </div>
                         )}
@@ -696,13 +714,13 @@ export default function AuthModal({ onClose }: AuthModalProps) {
                           disabled={loading}
                           className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-semibold text-sm shadow hover:shadow-md transition-all active:scale-95 disabled:opacity-50"
                         >
-                          {loading ? "처리 중..." : "이메일로 로그인"}
+                          {loading ? tA.submitProcessing : tA.loginSubmit}
                         </button>
                       </form>
                     </>
                   ) : (
                     <p className="text-xs text-muted-foreground text-center mt-1 leading-relaxed">
-                      📧 이메일 로그인은 잠시 점검 중이에요. Google로 계속해주세요.
+                      {tA.smtpNoticeLogin}
                     </p>
                   )}
                 </>
@@ -722,12 +740,12 @@ export default function AuthModal({ onClose }: AuthModalProps) {
                         data-testid="tos-checkbox"
                       />
                       <span>
-                        <span className="font-bold text-destructive">[필수]</span>
-                        <span className="ml-1 text-foreground">만 14세 이상이며, </span>
-                        <a href="/terms" target="_blank" rel="noreferrer" className="text-primary underline underline-offset-2">이용약관</a>
-                        <span>·</span>
-                        <a href="/privacy" target="_blank" rel="noreferrer" className="text-primary underline underline-offset-2">개인정보처리방침</a>
-                        <span>에 동의합니다</span>
+                        <span className="font-bold text-destructive">{tA.tosRequiredLabel}</span>
+                        <span className="ml-1 text-foreground">{tA.tosBodyBefore}</span>
+                        <a href="/terms" target="_blank" rel="noreferrer" className="text-primary underline underline-offset-2">{tA.tosTermsLink}</a>
+                        <span>{tA.tosSeparator}</span>
+                        <a href="/privacy" target="_blank" rel="noreferrer" className="text-primary underline underline-offset-2">{tA.tosPrivacyLink}</a>
+                        <span>{tA.tosBodyAfter}</span>
                       </span>
                     </label>
                     <label className="flex items-start gap-2.5 text-sm cursor-pointer hover:bg-background/50 rounded-lg px-2 py-1.5 -mx-2 transition-colors">
@@ -739,8 +757,8 @@ export default function AuthModal({ onClose }: AuthModalProps) {
                         data-testid="marketing-checkbox"
                       />
                       <span className="text-foreground/80">
-                        <span className="font-medium text-muted-foreground">[선택]</span>
-                        <span className="ml-1">마케팅 정보 수신에 동의합니다</span>
+                        <span className="font-medium text-muted-foreground">{tA.tosOptionalLabel}</span>
+                        <span className="ml-1">{tA.marketingText}</span>
                       </span>
                     </label>
                   </div>
@@ -749,11 +767,11 @@ export default function AuthModal({ onClose }: AuthModalProps) {
                 return (
                   <>
                     <div className="mb-4 p-3 rounded-xl bg-muted/50 border border-border">
-                      <p className="text-xs font-semibold text-foreground mb-2">🎁 가입하면 이런 게 가능해요</p>
+                      <p className="text-xs font-semibold text-foreground mb-2">{tA.giftHeadline}</p>
                       <ul className="space-y-1 text-xs text-muted-foreground">
-                        <li className="flex items-start gap-1.5"><span className="text-primary">✓</span><span>연주 기록 저장 및 성장 추적</span></li>
-                        <li className="flex items-start gap-1.5"><span className="text-primary">✓</span><span>모든 레벨 자유롭게 도전</span></li>
-                        <li className="flex items-start gap-1.5"><span className="text-primary">✓</span><span>학습 통계로 약점 분석</span></li>
+                        <li className="flex items-start gap-1.5"><span className="text-primary">✓</span><span>{tA.giftBullet1}</span></li>
+                        <li className="flex items-start gap-1.5"><span className="text-primary">✓</span><span>{tA.giftBullet2}</span></li>
+                        <li className="flex items-start gap-1.5"><span className="text-primary">✓</span><span>{tA.giftBullet3}</span></li>
                       </ul>
                     </div>
 
@@ -768,19 +786,19 @@ export default function AuthModal({ onClose }: AuthModalProps) {
                       className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl border-2 border-border bg-background hover:bg-muted transition-colors text-sm font-semibold mb-4 disabled:opacity-50"
                     >
                       <GoogleIcon />
-                      Google로 계속하기
+                      {tA.googleContinue}
                     </button>
 
                     {EMAIL_AUTH_ENABLED ? (
                       <>
-                        <Divider />
+                        <Divider orLabel={tA.orDivider} />
 
                         <form onSubmit={handleSignupSubmit} className="flex flex-col gap-3">
                           <input
                             type="email"
                             value={email}
                             onChange={e => { setEmail(e.target.value); setEmailError(null); }}
-                            placeholder="사용할 이메일을 입력해주세요"
+                            placeholder={tA.signupEmailPlaceholder}
                             required
                             className="w-full px-4 py-2.5 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                           />
@@ -794,7 +812,7 @@ export default function AuthModal({ onClose }: AuthModalProps) {
                                 className="text-xs font-bold text-primary mt-1"
                                 data-testid="goto-login-button"
                               >
-                                로그인하기
+                                {tA.signupEmailExistsCta}
                               </button>
                             </div>
                           )}
@@ -807,13 +825,13 @@ export default function AuthModal({ onClose }: AuthModalProps) {
                             className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-semibold text-sm shadow hover:shadow-md transition-all active:scale-95 disabled:opacity-50"
                             data-testid="signup-submit-button"
                           >
-                            {loading ? "전송 중..." : "이메일로 시작"}
+                            {loading ? tA.submitSending : tA.signupSubmit}
                           </button>
                         </form>
                       </>
                     ) : (
                       <p className="text-xs text-muted-foreground text-center mt-1 leading-relaxed">
-                        📧 이메일 가입은 잠시 점검 중이에요. Google로 계속해주세요.
+                        {tA.smtpNoticeSignup}
                       </p>
                     )}
                   </>
@@ -828,10 +846,10 @@ export default function AuthModal({ onClose }: AuthModalProps) {
                   className="w-full text-center text-sm py-1 group"
                 >
                   <span className="text-muted-foreground">
-                    {mode === "login" ? "아직 계정이 없으신가요? " : "이미 계정이 있으신가요? "}
+                    {mode === "login" ? tA.loginPrompt : tA.signupPrompt}
                   </span>
                   <span className="font-bold text-primary underline underline-offset-2 group-hover:text-primary/80 transition-colors">
-                    {mode === "login" ? "회원가입" : "로그인"}
+                    {mode === "login" ? tA.signupLink : tA.loginLink}
                   </span>
                 </button>
               </div>
@@ -841,7 +859,7 @@ export default function AuthModal({ onClose }: AuthModalProps) {
                 onClick={onClose}
                 className="w-full text-center text-sm text-muted-foreground mt-3 py-2 rounded-lg hover:bg-muted hover:text-foreground transition-colors font-medium"
               >
-                닫기
+                {tA.closeButton}
               </button>
 
               {/* Paddle 심사관 액세스 (눈에 띄지 않게 완료) */}

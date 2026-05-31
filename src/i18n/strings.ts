@@ -106,6 +106,85 @@ export interface Strings {
     ko: string;
     en: string;
   };
+  authModal: {
+    // Login mode
+    loginTitle: string;
+    loginSubtitle: string;
+    loginEmailPlaceholder: string;
+    loginSubmit: string;
+    loginEmailNotFound: string;
+    loginEmailNotFoundCta: string;
+    smtpNoticeLogin: string;
+    // Signup mode
+    signupTitle: string;
+    signupSubtitle: string;
+    signupStep1: string;
+    signupStep2: string;
+    signupEmailPlaceholder: string;
+    signupSubmit: string;
+    signupEmailExists: string;
+    signupEmailHardDeleted: string;
+    signupEmailExistsCta: string;
+    smtpNoticeSignup: string;
+    giftHeadline: string;
+    giftBullet1: string;
+    giftBullet2: string;
+    giftBullet3: string;
+    // Common
+    googleContinue: string;
+    orDivider: string;
+    closeButton: string;
+    submitProcessing: string;
+    submitSending: string;
+    submitWorking: string;
+    loginPrompt: string;
+    signupPrompt: string;
+    loginLink: string;
+    signupLink: string;
+    // ToS
+    tosRequiredLabel: string;
+    tosOptionalLabel: string;
+    tosBodyBefore: string;
+    tosTermsLink: string;
+    tosPrivacyLink: string;
+    tosSeparator: string;
+    tosBodyAfter: string;
+    marketingText: string;
+    // Step 2 magic link
+    magicLinkTitle: string;
+    magicLinkSentPre: string;
+    magicLinkSentPost: string;
+    magicLinkActionLogin: string;
+    magicLinkActionSignup: string;
+    magicLinkActionRecover: string;
+    magicLinkActionBody: string;
+    magicLinkSpamHint: string;
+    magicLinkWaiting: string;
+    magicLinkResend: string;
+    magicLinkResendCooldown: string;
+    magicLinkBackEmail: string;
+    // Step 3 recovery
+    recoveryTitle: string;
+    recoveryBodyPre: string;
+    recoveryBodyMid: string;
+    recoveryBodyDays: string;
+    recoveryAction: string;
+    recoveryActionSending: string;
+    freshStartButton: string;
+    freshStartConfirmTitle: string;
+    freshStartConfirmBody: string;
+    freshStartConfirmYes: string;
+    freshStartBack: string;
+    recoveryCancel: string;
+    // Toasts
+    toastTosRequired: string;
+    toastEmailInvalid: string;
+    toastGoogleFailed: string;
+    toastGenericError: string;
+    toastResendSent: string;
+    toastResendSentDesc: string;
+    toastResendFailed: string;
+  };
   premiumDialog: {
     title: string;
     subtitle: string;
@@ -673,6 +752,78 @@ const ko: Strings = {
     ko: "한국어",
     en: "English",
   },
+  authModal: {
+    loginTitle: "로그인",
+    loginSubtitle: "돌아오신 것을 환영해요",
+    loginEmailPlaceholder: "이메일을 입력해주세요",
+    loginSubmit: "이메일로 로그인",
+    loginEmailNotFound: "가입된 이메일이 아니에요. 회원가입을 시작해볼까요?",
+    loginEmailNotFoundCta: "회원가입하기",
+    smtpNoticeLogin: "📧 이메일 로그인은 잠시 점검 중이에요. Google로 계속해주세요.",
+    signupTitle: "독보 마스터 시작하기",
+    signupSubtitle: "계정을 만들고 첫 걸음을 시작해요",
+    signupStep1: "① 이메일 + 약관",
+    signupStep2: "② 메일 확인",
+    signupEmailPlaceholder: "사용할 이메일을 입력해주세요",
+    signupSubmit: "이메일로 시작",
+    signupEmailExists: "이미 가입된 이메일이에요.",
+    signupEmailHardDeleted: "이 계정은 완전히 삭제되었습니다. 다른 이메일로 가입해주세요.",
+    signupEmailExistsCta: "로그인하기",
+    smtpNoticeSignup: "📧 이메일 가입은 잠시 점검 중이에요. Google로 계속해주세요.",
+    giftHeadline: "🎁 가입하면 이런 게 가능해요",
+    giftBullet1: "연주 기록 저장 및 성장 추적",
+    giftBullet2: "모든 레벨 자유롭게 도전",
+    giftBullet3: "학습 통계로 약점 분석",
+    googleContinue: "Google로 계속하기",
+    orDivider: "또는",
+    closeButton: "닫기",
+    submitProcessing: "처리 중...",
+    submitSending: "전송 중...",
+    submitWorking: "처리 중...",
+    loginPrompt: "아직 계정이 없으신가요? ",
+    signupPrompt: "이미 계정이 있으신가요? ",
+    loginLink: "로그인",
+    signupLink: "회원가입",
+    tosRequiredLabel: "[필수]",
+    tosOptionalLabel: "[선택]",
+    tosBodyBefore: "만 14세 이상이며, ",
+    tosTermsLink: "이용약관",
+    tosPrivacyLink: "개인정보처리방침",
+    tosSeparator: "·",
+    tosBodyAfter: "에 동의합니다",
+    marketingText: "마케팅 정보 수신에 동의합니다",
+    magicLinkTitle: "메일을 확인해주세요",
+    magicLinkSentPre: "",
+    magicLinkSentPost: "로\n인증 메일을 보냈어요.",
+    magicLinkActionLogin: "로그인이 이어집니다",
+    magicLinkActionSignup: "가입이 이어집니다",
+    magicLinkActionRecover: "계정 복구가 이어집니다",
+    magicLinkActionBody: "메일 속 링크를 클릭하면 {action}.",
+    magicLinkSpamHint: "스팸함도 확인해보세요 📁",
+    magicLinkWaiting: "인증 대기 중...",
+    magicLinkResend: "메일 재전송",
+    magicLinkResendCooldown: "{n}초 후 재전송",
+    magicLinkBackEmail: "이메일 다시 입력하기",
+    recoveryTitle: "계정 복구 가능",
+    recoveryBodyPre: "",
+    recoveryBodyMid: "은\n삭제 처리 중인 계정이에요.",
+    recoveryBodyDays: "{n}일 이내에 복구할 수 있어요.",
+    recoveryAction: "계정 복구하기",
+    recoveryActionSending: "전송 중...",
+    freshStartButton: "새로 시작",
+    freshStartConfirmTitle: "정말 진행하시겠어요?",
+    freshStartConfirmBody: "이전 데이터가 영구 삭제됩니다. 진행하시겠어요?",
+    freshStartConfirmYes: "확인",
+    freshStartBack: "뒤로",
+    recoveryCancel: "취소",
+    toastTosRequired: "필수 약관에 동의해주세요",
+    toastEmailInvalid: "이메일을 확인해주세요",
+    toastGoogleFailed: "Google 로그인 실패",
+    toastGenericError: "오류가 발생했어요",
+    toastResendSent: "메일을 재전송했어요",
+    toastResendSentDesc: "이메일함을 확인해주세요.",
+    toastResendFailed: "재전송 실패",
+  },
   premiumDialog: {
     title: "✨ Pro 구독으로 전체 단계 해제",
     subtitle: "전체 21단계 · 상세 약점 분석 · 광고 제거",
@@ -1226,6 +1377,78 @@ const en: Strings = {
   langToggle: {
     ko: "한국어",
     en: "English",
+  },
+  authModal: {
+    loginTitle: "Sign In",
+    loginSubtitle: "Welcome back",
+    loginEmailPlaceholder: "Enter your email",
+    loginSubmit: "Continue with email",
+    loginEmailNotFound: "We couldn't find that email. Want to sign up instead?",
+    loginEmailNotFoundCta: "Sign up",
+    smtpNoticeLogin: "📧 Email sign-in is under maintenance. Please continue with Google.",
+    signupTitle: "Start Mastering Sight-Reading",
+    signupSubtitle: "Create your account and take the first step",
+    signupStep1: "① Email + Terms",
+    signupStep2: "② Email Verify",
+    signupEmailPlaceholder: "Enter the email you'd like to use",
+    signupSubmit: "Continue with email",
+    signupEmailExists: "This email is already registered.",
+    signupEmailHardDeleted: "This account was permanently deleted. Please sign up with a different email.",
+    signupEmailExistsCta: "Sign in",
+    smtpNoticeSignup: "📧 Email signup is under maintenance. Please continue with Google.",
+    giftHeadline: "🎁 Here's what you'll get",
+    giftBullet1: "Save play history and track progress",
+    giftBullet2: "Free access to all levels",
+    giftBullet3: "Analyze weak notes via stats",
+    googleContinue: "Continue with Google",
+    orDivider: "or",
+    closeButton: "Close",
+    submitProcessing: "Working...",
+    submitSending: "Sending...",
+    submitWorking: "Working...",
+    loginPrompt: "Don't have an account? ",
+    signupPrompt: "Already have an account? ",
+    loginLink: "Sign in",
+    signupLink: "Sign up",
+    tosRequiredLabel: "[Required]",
+    tosOptionalLabel: "[Optional]",
+    tosBodyBefore: "I am 14+ and agree to the ",
+    tosTermsLink: "Terms",
+    tosPrivacyLink: "Privacy Policy",
+    tosSeparator: " and ",
+    tosBodyAfter: "",
+    marketingText: "I agree to receive marketing communications",
+    magicLinkTitle: "Check your email",
+    magicLinkSentPre: "We sent a verification email to\n",
+    magicLinkSentPost: "",
+    magicLinkActionLogin: "to continue signing in",
+    magicLinkActionSignup: "to complete signup",
+    magicLinkActionRecover: "to recover your account",
+    magicLinkActionBody: "Click the link in your email {action}.",
+    magicLinkSpamHint: "Don't forget to check spam 📁",
+    magicLinkWaiting: "Waiting for verification...",
+    magicLinkResend: "Resend email",
+    magicLinkResendCooldown: "Resend in {n}s",
+    magicLinkBackEmail: "Use a different email",
+    recoveryTitle: "Account recovery available",
+    recoveryBodyPre: "",
+    recoveryBodyMid: " is being deleted.",
+    recoveryBodyDays: "You can recover it within {n} days.",
+    recoveryAction: "Recover account",
+    recoveryActionSending: "Sending...",
+    freshStartButton: "Start fresh",
+    freshStartConfirmTitle: "Are you sure?",
+    freshStartConfirmBody: "Previous data will be permanently deleted. Continue?",
+    freshStartConfirmYes: "Confirm",
+    freshStartBack: "Back",
+    recoveryCancel: "Cancel",
+    toastTosRequired: "Please agree to the required terms",
+    toastEmailInvalid: "Please check your email",
+    toastGoogleFailed: "Google sign-in failed",
+    toastGenericError: "Something went wrong",
+    toastResendSent: "Email resent",
+    toastResendSentDesc: "Please check your inbox.",
+    toastResendFailed: "Resend failed",
   },
   premiumDialog: {
     title: "✨ Unlock All Levels with Pro",
