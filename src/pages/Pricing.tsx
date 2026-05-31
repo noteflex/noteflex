@@ -8,7 +8,12 @@ import { PaymentErrorBoundary } from "@/components/PaymentErrorBoundary";
 import { openCheckout, PADDLE_PRICES, getPaddleLocale } from "@/lib/paddle";
 import { logger } from "@/lib/sentry";
 import Seo from "@/components/Seo";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
@@ -568,59 +573,66 @@ export default function Pricing() {
     >
       <DialogContent className="sm:max-w-sm text-center">
         <div aria-hidden="true" className="text-[32px] leading-none">✨</div>
-        <h2 className="text-[18px] font-medium text-foreground">
+        {/* Radix a11y 요구: DialogTitle·DialogDescription은 state 무관 항상 마운트 (visual 스타일 유지) */}
+        <DialogTitle className="text-[18px] font-medium text-foreground">
           {c.paymentReviewTitle}
-        </h2>
-        {waitlistStatus === "success" ? (
-          <p className="text-sm text-emerald-600 dark:text-emerald-400 py-2">
-            {c.paymentReviewSuccess}
-          </p>
-        ) : (
-          <>
-            <p className="text-sm text-muted-foreground leading-relaxed">
+        </DialogTitle>
+        <DialogDescription
+          className={
+            waitlistStatus === "success"
+              ? "text-sm text-emerald-600 dark:text-emerald-400 py-2 leading-relaxed"
+              : "text-sm text-muted-foreground leading-relaxed"
+          }
+        >
+          {waitlistStatus === "success" ? (
+            c.paymentReviewSuccess
+          ) : (
+            <>
               {c.paymentReviewBody1}
               <br />
               {c.paymentReviewBody2}
-            </p>
-            <div className="flex flex-col gap-2 pt-2">
-              <Input
-                type="email"
-                inputMode="email"
-                autoComplete="email"
-                placeholder="your@email.com"
-                value={waitlistEmail}
-                onChange={(e) => {
-                  setWaitlistEmail(e.target.value);
-                  if (waitlistStatus === "error") setWaitlistStatus("idle");
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && isEmailValid) handleWaitlistSubmit();
-                }}
-                aria-label="Email"
-                disabled={waitlistStatus === "submitting"}
-                className="text-center"
-              />
-              {waitlistStatus === "error" && (
-                <p className="text-xs text-red-600 dark:text-red-400">
-                  {c.paymentReviewError}
-                </p>
-              )}
-              <Button
-                onClick={handleWaitlistSubmit}
-                disabled={!isEmailValid || waitlistStatus === "submitting"}
-                className="w-full"
-              >
-                {c.paymentReviewSubmit}
-              </Button>
-              <button
-                type="button"
-                onClick={closeWaitlistDialog}
-                className="text-sm text-muted-foreground hover:text-foreground transition-colors py-1"
-              >
-                {c.paymentReviewLater}
-              </button>
-            </div>
-          </>
+            </>
+          )}
+        </DialogDescription>
+        {waitlistStatus !== "success" && (
+          <div className="flex flex-col gap-2 pt-2">
+            <Input
+              type="email"
+              inputMode="email"
+              autoComplete="email"
+              placeholder="your@email.com"
+              value={waitlistEmail}
+              onChange={(e) => {
+                setWaitlistEmail(e.target.value);
+                if (waitlistStatus === "error") setWaitlistStatus("idle");
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && isEmailValid) handleWaitlistSubmit();
+              }}
+              aria-label="Email"
+              disabled={waitlistStatus === "submitting"}
+              className="text-center"
+            />
+            {waitlistStatus === "error" && (
+              <p className="text-xs text-red-600 dark:text-red-400">
+                {c.paymentReviewError}
+              </p>
+            )}
+            <Button
+              onClick={handleWaitlistSubmit}
+              disabled={!isEmailValid || waitlistStatus === "submitting"}
+              className="w-full"
+            >
+              {c.paymentReviewSubmit}
+            </Button>
+            <button
+              type="button"
+              onClick={closeWaitlistDialog}
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors py-1"
+            >
+              {c.paymentReviewLater}
+            </button>
+          </div>
         )}
       </DialogContent>
     </Dialog>
