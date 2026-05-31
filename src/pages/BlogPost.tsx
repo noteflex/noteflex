@@ -4,6 +4,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
 import MarkdownContent from "@/components/MarkdownContent";
+import BlogPostCTA from "@/components/blog/BlogPostCTA";
 import { useT } from "@/contexts/LanguageContext";
 import {
   loadBlogPost,
@@ -118,6 +119,9 @@ export default function BlogPost() {
                 <p className="text-sm text-muted-foreground mb-10">{post.meta.date}</p>
               )}
               <MarkdownContent>{post.content}</MarkdownContent>
+
+              {/* 게임 시작 CTA — 본문 끝, 광고 위 */}
+              <BlogPostCTA />
 
               {/* 글 본문 하단 배너 (PC + 모바일 모두 노출) */}
               <div className="mt-12 pt-8 border-t border-border">

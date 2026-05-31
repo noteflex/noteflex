@@ -102,6 +102,13 @@ export interface Strings {
     adLabel: string;
     categories: readonly string[];
   };
+  blogCta: {
+    /** 8 main hook lines, indexed in parallel with `subs` */
+    mains: readonly string[];
+    /** 8 sub lines (empty string = no sub line rendered) */
+    subs: readonly string[];
+    buttonLabel: string;
+  };
   langToggle: {
     ko: string;
     en: string;
@@ -748,6 +755,29 @@ const ko: Strings = {
       "뮤직 테크 & 미래",
     ],
   },
+  blogCta: {
+    mains: [
+      "여기서 멈추지 마세요.",
+      "지금 한 판 해볼까요?",
+      "읽는 것과 익히는 건 다릅니다.",
+      "5초 안에 첫 음을 맞춰보세요.",
+      "음표가 당신을 기다려요.",
+      "딱 한 판. 진짜요.",
+      "안 해보면 모릅니다.",
+      "5초면 끝나요.",
+    ],
+    subs: [
+      "직접 해보면 다릅니다.",
+      "1분이면 충분합니다.",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+    ],
+    buttonLabel: "Play →",
+  },
   langToggle: {
     ko: "한국어",
     en: "English",
@@ -1373,6 +1403,29 @@ const en: Strings = {
       "Theory & Harmony",
       "Music Tech",
     ],
+  },
+  blogCta: {
+    mains: [
+      "Don't stop here.",
+      "One quick round.",
+      "Reading is one thing.",
+      "Match your first note.",
+      "Your notes are waiting.",
+      "Just one round.",
+      "You'll never know.",
+      "5 seconds.",
+    ],
+    subs: [
+      "Try it yourself.",
+      "A minute is all it takes.",
+      "Playing is another.",
+      "in 5 seconds.",
+      "for you.",
+      "Really.",
+      "unless you try.",
+      "That's it.",
+    ],
+    buttonLabel: "Play →",
   },
   langToggle: {
     ko: "한국어",
