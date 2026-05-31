@@ -8,6 +8,18 @@ import { PaymentErrorBoundary } from "@/components/PaymentErrorBoundary";
 import { openCheckout, PADDLE_PRICES, getPaddleLocale } from "@/lib/paddle";
 import { logger } from "@/lib/sentry";
 import Seo from "@/components/Seo";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+
+// 가오픈(5/31) — Paddle 심사 통과 후 PAYMENT_LOCKED=false로 전환, 다이얼로그 분기 제거.
+const PAYMENT_LOCKED = true;
 
 // ── 다국어 콘텐츠 (ja·zh = en fallback, Phase 3에서 정식 번역 예정) ──────
 const CONTENT = {
@@ -49,6 +61,10 @@ const CONTENT = {
     upgradeMo: "월간 구독 시작",
     upgradeYr: "연간 구독 시작",
     signupFirst: "회원가입 후 시작",
+    // 가오픈(5/31) — Paddle 심사 중 결제 잠금
+    paymentReviewTitle: "결제 시스템 점검 중",
+    paymentReviewBody: "결제 시스템 점검 중입니다. 잠시만 기다려 주세요.",
+    paymentReviewOk: "확인",
     compareTitle: "플랜 비교",
     compareHeaders: ["기능", "비가입", "Free", "Premium"],
     compareRows: [
@@ -113,6 +129,9 @@ const CONTENT = {
     alreadyPremium: "Already on Premium",
     startFree: "Get Started Free",
     upgradeMo: "Start Monthly",
+    paymentReviewTitle: "Payment Under Review",
+    paymentReviewBody: "Payment system under review. Please check back soon.",
+    paymentReviewOk: "OK",
     upgradeYr: "Start Annual",
     signupFirst: "Sign Up to Start",
     compareTitle: "Plan Comparison",
@@ -152,12 +171,18 @@ export default function Pricing() {
   const c = CONTENT[lang === "ko" ? "ko" : "en"];
   const tier = getUserTier(user ?? null, profile ?? null);
   const [isCheckoutLoading, setIsCheckoutLoading] = useState(false);
+  const [paymentReviewOpen, setPaymentReviewOpen] = useState(false);
 
   const handleCta = async (plan: "free" | "monthly" | "yearly") => {
     if (tier === "pro") return;
     if (plan === "free" && tier !== "guest") return; // Free 가입자는 현재 플랜
     if (tier === "guest") {
       navigate("/signup");
+      return;
+    }
+    // 가오픈(5/31) — Paddle 심사 중. monthly/yearly 결제 시도 시 안내 다이얼로그만.
+    if (PAYMENT_LOCKED && (plan === "monthly" || plan === "yearly")) {
+      setPaymentReviewOpen(true);
       return;
     }
     // Free 가입자 → Paddle Checkout 호출
@@ -490,6 +515,23 @@ export default function Pricing() {
         </div>
       </div>
     </div>
+
+    {/* 가오픈(5/31) — Paddle 심사 중 결제 잠금 안내 */}
+    <Dialog open={paymentReviewOpen} onOpenChange={setPaymentReviewOpen}>
+      <DialogContent className="sm:max-w-sm">
+        <DialogHeader>
+          <DialogTitle>{c.paymentReviewTitle}</DialogTitle>
+          <DialogDescription className="pt-2">
+            {c.paymentReviewBody}
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter>
+          <Button onClick={() => setPaymentReviewOpen(false)} className="w-full sm:w-auto">
+            {c.paymentReviewOk}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
     </PaymentErrorBoundary>
   );
 }
