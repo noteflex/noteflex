@@ -44,6 +44,7 @@ export default function PlayPage() {
     totalAttempts: number;
     totalCorrect: number;
     bestStreak: number;
+    play_count?: number;
     passed: boolean;
     just_passed: boolean;
     fast_track?: boolean;
@@ -61,6 +62,7 @@ export default function PlayPage() {
     totalAttempts: number;
     totalCorrect: number;
     bestStreak: number;
+    play_count?: number;
     passed: boolean;
     just_passed: boolean;
     fast_track?: boolean;
@@ -200,6 +202,7 @@ export default function PlayPage() {
             totalAttempts={lastResult.totalAttempts}
             totalCorrect={lastResult.totalCorrect}
             bestStreak={lastResult.bestStreak}
+            playCount={lastResult.play_count}
             onReplay={handleReplaySameSublevel}
             onGoToPreviousSublevel={handleGoToPreviousSublevel}
             onClose={handleDialogDismiss}
@@ -211,6 +214,7 @@ export default function PlayPage() {
             totalAttempts={lastResult.totalAttempts}
             totalCorrect={lastResult.totalCorrect}
             bestStreak={lastResult.bestStreak}
+            playCount={lastResult.play_count}
             justPassed={lastResult.just_passed}
             fastTrack={lastResult.fast_track ?? false}
             onReplay={handleReplaySameSublevel}

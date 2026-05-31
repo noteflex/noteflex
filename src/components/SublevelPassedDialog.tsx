@@ -14,7 +14,7 @@ import { useLang, useT } from "@/contexts/LanguageContext";
 import { format as formatI18n } from "@/i18n/strings";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLevelProgress } from "@/hooks/useLevelProgress";
-import { AICoachingDetail } from "./AICoachingDetail";
+import CoachingDialogShell from "./coaching/CoachingDialogShell";
 
 interface SublevelPassedDialogProps {
   open: boolean;
@@ -24,6 +24,8 @@ interface SublevelPassedDialogProps {
   totalCorrect: number;
   bestStreak: number;
   avgReactionRatio?: number;
+  /** 누적 플레이 횟수 (game_over coaching branch에서만 사용 — passed에서는 무관). */
+  playCount?: number;
   justPassed: boolean;
   fastTrack?: boolean;
   onReplay: () => void;
@@ -42,6 +44,7 @@ export function SublevelPassedDialog({
   totalCorrect,
   bestStreak,
   avgReactionRatio,
+  playCount = 0,
   justPassed,
   fastTrack = false,
   onReplay,
@@ -55,10 +58,6 @@ export function SublevelPassedDialog({
   const { getProgressFor } = useLevelProgress();
   const [countdown, setCountdown] = useState(AUTO_ADVANCE_SECONDS);
   const autoAdvancedRef = useRef(false);
-
-  const accuracy = totalAttempts > 0
-    ? Math.round((totalCorrect / totalAttempts) * 100)
-    : 0;
 
   // 이전 누적 정답률 — 사인인 사용자 + 이전 세션 충분(≥5 시도) 적용된 영역만 비교 완료
   const historicalAccuracy: number | undefined = (() => {
@@ -101,7 +100,7 @@ export function SublevelPassedDialog({
       accuracy: totalAttempts > 0 ? totalCorrect / totalAttempts : 0,
       bestStreak,
       avgReactionRatio,
-      playCount: 0,
+      playCount,
       fastTrack,
       historicalAccuracy,
     },
@@ -174,58 +173,21 @@ export function SublevelPassedDialog({
     );
   }
 
-  // ── 일반 통과 분기 (Group C 영역 무손상) ────────────────────────
-  const title = justPassed
-    ? formatI18n(t.gameDialogs.passedTitle, { label: currentLabel })
-    : formatI18n(t.gameDialogs.clearTitle, { label: currentLabel });
-  const description = justPassed
-    ? hasNext && nextLabel
-      ? formatI18n(t.gameDialogs.passedDescNext, { nextLabel })
-      : t.gameDialogs.passedDescLast
-    : t.gameDialogs.clearDesc;
-
+  // ── 일반 통과 분기 — 5/31 디자인 리뉴얼 (CoachingDialogShell 사용) ─────
   return (
-    <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent
-        className="sm:max-w-md"
-        onPointerDownOutside={(e) => e.preventDefault()}
-        onEscapeKeyDown={(e) => e.preventDefault()}
-      >
-        <DialogHeader>
-          <DialogTitle className="text-xl">{title}</DialogTitle>
-          <DialogDescription className="pt-2">{description}</DialogDescription>
-        </DialogHeader>
-
-        <div className="my-4 grid grid-cols-3 gap-2 rounded-lg bg-emerald-50 p-3 text-center text-sm dark:bg-emerald-950/30">
-          <div>
-            <div className="text-xs text-muted-foreground">{t.gameDialogs.statAttempts}</div>
-            <div className="font-semibold">{totalAttempts}</div>
-          </div>
-          <div>
-            <div className="text-xs text-muted-foreground">{t.gameDialogs.statAccuracy}</div>
-            <div className="font-semibold text-emerald-600 dark:text-emerald-400">
-              {accuracy}%
-            </div>
-          </div>
-          <div>
-            <div className="text-xs text-muted-foreground">{t.gameDialogs.statBestStreak}</div>
-            <div className="font-semibold text-emerald-600 dark:text-emerald-400">
-              {bestStreak}
-            </div>
-          </div>
-        </div>
-
-        <p
-          className="text-sm text-muted-foreground text-center px-1"
-          data-testid="coaching-comment"
-        >
-          {coaching}
-        </p>
-
-        {/* 음표별 비교 분석 — Guest = 박지 말 것 (AICoachingDetail 내부에서 useAuth 분기) */}
-        <AICoachingDetail />
-
-        <DialogFooter className="flex flex-col gap-2 sm:flex-row sm:justify-between">
+    <CoachingDialogShell
+      open={open}
+      onClose={onClose}
+      variant="passed"
+      stageLabel={currentLabel}
+      accuracy={totalAttempts > 0 ? totalCorrect / totalAttempts : 0}
+      historicalAccuracy={historicalAccuracy}
+      coachingMessage={coaching}
+      totalAttempts={totalAttempts}
+      bestStreak={bestStreak}
+      avgReactionRatio={avgReactionRatio}
+      footer={
+        <>
           <Button
             variant="outline"
             onClick={onBackToSelect}
@@ -247,8 +209,8 @@ export function SublevelPassedDialog({
               </Button>
             )}
           </div>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </>
+      }
+    />
   );
 }

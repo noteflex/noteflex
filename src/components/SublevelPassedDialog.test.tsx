@@ -18,17 +18,19 @@ describe("SublevelPassedDialog", () => {
     onClose: vi.fn(),
   };
 
-  it("just_passed=true: 통과 축하 메시지 표시", () => {
+  it("just_passed=true: Passed 배지 + 단계 라벨 + 다음 단계 버튼 (5/31 리뉴얼 후)", () => {
     render(<SublevelPassedDialog {...baseProps} />);
-    // EN default lang — useT() fallback
-    expect(screen.getByText(/Lv 2-1 cleared/)).toBeInTheDocument();
-    expect(screen.getByText(/Lv 2-2.*unlocked/)).toBeInTheDocument();
+    // 5/31 리뉴얼: 큰 축하 타이틀 → 컴팩트 배지 + 단계 라벨
+    expect(screen.getByTestId("coaching-variant-badge")).toHaveTextContent(/Passed/);
+    expect(screen.getByText("Lv 2-1")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Lv 2-2/ })).toBeInTheDocument();
   });
 
-  it("just_passed=false: 클리어 메시지 (이미 통과한 단계 재플레이)", () => {
+  it("just_passed=false: 단계 라벨 표시 + 다음 단계 버튼 없음 (이미 통과한 단계 재플레이)", () => {
     render(<SublevelPassedDialog {...baseProps} justPassed={false} />);
-    expect(screen.getByText(/Lv 2-1 clear/)).toBeInTheDocument();
-    expect(screen.queryByText(/unlocked/)).not.toBeInTheDocument();
+    expect(screen.getByTestId("coaching-variant-badge")).toHaveTextContent(/Passed/);
+    expect(screen.getByText("Lv 2-1")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Lv 2-2/ })).not.toBeInTheDocument();
   });
 
   it("정답률 계산 정확 (27/30 = 90%)", () => {
@@ -45,9 +47,10 @@ describe("SublevelPassedDialog", () => {
     expect(screen.queryByRole("button", { name: /Lv 2-2/ })).not.toBeInTheDocument();
   });
 
-  it("Lv 7-3 통과 시 그랜드마스터 메시지", () => {
+  it("Lv 7-3 통과 시 단계 라벨·Passed 배지 표시 (그랜드마스터 텍스트는 5/31 리뉴얼에서 제거 — 컴팩트 디자인)", () => {
     render(<SublevelPassedDialog {...baseProps} level={7} sublevel={3} />);
-    expect(screen.getByText(/grandmaster/)).toBeInTheDocument();
+    expect(screen.getByTestId("coaching-variant-badge")).toHaveTextContent(/Passed/);
+    expect(screen.getByText("Lv 7-3")).toBeInTheDocument();
   });
 
   it("Lv 7-3에서 다음 단계 버튼 안 보임", () => {

@@ -17,74 +17,57 @@ export interface CoachingInput {
 }
 
 interface CoachingStrings {
-  passed: readonly [string, string, string];    // 3 branches
-  game_over: readonly [string, string, string, string]; // 4 branches
-  fast_track: string; // fastTrack 전용
-  /** "{delta}%p" placeholder 적용됨. {direction} = "↑/→/↓" 적용됨 */
-  comparisonPrefix: {
-    up: string;       // "이전 대비 정확도 +{delta}%p ↑"
-    flat: string;     // "이전 대비 정확도 유지"
-    down: string;     // "이전 대비 정확도 -{delta}%p ↓"
-  };
+  /** passed 3 branches: 상승 / 안정 / 낮은 상승. 기존 임계값(top / great / borderline) 그대로 매핑. */
+  passed: readonly [string, string, string];
+  /** game_over 3 branches: 첫 시도(playCount≤1) / 평소보다 약함(delta<-5%p) / 평소 수준. */
+  game_over: readonly [string, string, string];
+  fast_track: string;
 }
 
 const STRINGS: Record<"ko" | "en", CoachingStrings> = {
   ko: {
     passed: [
-      // branch 0: accuracy ≥ 0.95 + reaction ≤ 0.25  (top)
-      "완벽에 가까운 클리어! 정확도도, 반응속도도 모두 최상이에요.",
-      // branch 1: accuracy ≥ 0.90  (great)
-      "훌륭해요! 꾸준한 연습이 빛을 발하고 있어요.",
-      // branch 2: else — passed but borderline  (encouraging)
-      "통과! 아슬아슬하게 통과했지만 충분히 잘하고 있어요. 계속 도전해봐요.",
+      // branch 0: accuracy ≥ 0.95 + reaction ≤ 0.25 — 상승 (top)
+      "이 흐름을 멈추지 마세요.",
+      // branch 1: accuracy ≥ 0.90 — 안정 (great)
+      "한 단계 더 가까워졌습니다.",
+      // branch 2: else — 낮은 상승 (borderline pass)
+      "한 끗 차이입니다. 다음도 갑니다.",
     ],
     game_over: [
-      // branch 0: accuracy < 0.70  (focus accuracy)
-      "정확도가 조금 낮아요. 노트를 천천히 확인하면서 연습해봐요.",
-      // branch 1: bestStreak < 3  (concentration)
-      "연속 정답이 아직 부족해요. 리듬을 유지하는 데 집중해봐요.",
-      // branch 2: avgReactionRatio > 0.50  (too slow)
-      "반응이 조금 느려요. 노트를 미리 예측하는 습관을 들여봐요.",
-      // branch 3: else — general encouragement
-      "조금만 더 하면 돼요! 플레이할수록 기준에 가까워지고 있어요.",
+      // branch 0: playCount ≤ 1 — 첫 시도
+      "첫 시작입니다. 매일 한 판.",
+      // branch 1: historicalAccuracy 있고 current - historical < -0.05 — 평소보다 약함
+      "다시 잡을 수 있습니다.",
+      // branch 2: else — 평소 수준
+      "같은 자리에서 다시.",
     ],
     fast_track: "이미 충분합니다. 다음 단계로.",
-    comparisonPrefix: {
-      up: "이전 대비 정확도 +{delta}%p ↑ — ",
-      flat: "이전 대비 정확도 유지 → ",
-      down: "이전 대비 정확도 -{delta}%p ↓ — ",
-    },
   },
   en: {
     passed: [
-      // branch 0: top
-      "Near-perfect clear! Your accuracy and speed are both outstanding.",
-      // branch 1: great
-      "Great work! Consistent practice is really paying off.",
-      // branch 2: encouraging
-      "You passed! It was close, but you made it. Keep pushing!",
+      // branch 0: top — 상승
+      "Don't stop this streak.",
+      // branch 1: great — 안정
+      "One step closer.",
+      // branch 2: borderline — 낮은 상승
+      "So close. Next round.",
     ],
     game_over: [
-      // branch 0: focus accuracy
-      "Your accuracy is a bit low. Try reading notes carefully before tapping.",
-      // branch 1: concentration
-      "Still working on those consecutive answers. Focus on keeping a steady rhythm.",
-      // branch 2: too slow
-      "Reaction time is a bit slow. Practice anticipating the next note.",
-      // branch 3: general
-      "Almost there! Every play brings you closer to passing.",
+      // branch 0: 첫 시도
+      "Just the beginning. One round a day.",
+      // branch 1: 평소보다 약함
+      "You can catch this back.",
+      // branch 2: 평소 수준
+      "Try again from here.",
     ],
     fast_track: "Already enough. Onto the next.",
-    comparisonPrefix: {
-      up: "Accuracy +{delta}%p ↑ vs your average — ",
-      flat: "Accuracy steady vs your average → ",
-      down: "Accuracy -{delta}%p ↓ vs your average — ",
-    },
   },
 };
 
 function baseComment(input: CoachingInput, s: CoachingStrings): string {
   if (input.outcome === "passed") {
+    // 기존 임계값 그대로: top (acc≥95% + reaction≤25%) → 상승
     if (
       input.accuracy >= 0.95 &&
       input.avgReactionRatio !== undefined &&
@@ -92,37 +75,25 @@ function baseComment(input: CoachingInput, s: CoachingStrings): string {
     ) {
       return s.passed[0];
     }
+    // 기존 great (acc≥90%) → 안정
     if (input.accuracy >= 0.90) {
       return s.passed[1];
     }
+    // borderline → 낮은 상승
     return s.passed[2];
   }
 
-  // game_over — find primary blocker
-  if (input.accuracy < 0.70) {
-    return s.game_over[0];
+  // game_over — 새 3분기 (playCount + historicalAccuracy delta 기반)
+  if (input.playCount <= 1) {
+    return s.game_over[0]; // 첫 시도
   }
-  if (input.bestStreak < 3) {
-    return s.game_over[1];
+  if (
+    input.historicalAccuracy !== undefined &&
+    input.accuracy - input.historicalAccuracy < -0.05
+  ) {
+    return s.game_over[1]; // 평소보다 약함
   }
-  if (input.avgReactionRatio !== undefined && input.avgReactionRatio > 0.50) {
-    return s.game_over[2];
-  }
-  return s.game_over[3];
-}
-
-function comparisonPrefix(
-  current: number,
-  historical: number,
-  prefixes: CoachingStrings["comparisonPrefix"]
-): string {
-  const deltaPct = Math.round((current - historical) * 100);
-  // ±2%p 이내는 유지로 완료 (노이즈 회피)
-  if (deltaPct >= -2 && deltaPct <= 2) return prefixes.flat;
-  if (deltaPct > 2) {
-    return prefixes.up.replace("{delta}", String(deltaPct));
-  }
-  return prefixes.down.replace("{delta}", String(Math.abs(deltaPct)));
+  return s.game_over[2]; // 평소 수준
 }
 
 export function generateCoachingComment(
@@ -135,12 +106,7 @@ export function generateCoachingComment(
     return s.fast_track;
   }
 
-  const base = baseComment(input, s);
-
-  // 비교 분기: historicalAccuracy 적용된 영역만 prefix 완료 (Guest = X)
-  if (input.historicalAccuracy !== undefined) {
-    return comparisonPrefix(input.accuracy, input.historicalAccuracy, s.comparisonPrefix) + base;
-  }
-
-  return base;
+  // 비교 prefix는 디자인 리뉴얼(5/31)에서 제거 — 트렌드 정보는 다이얼로그 Hero 배지로 분리.
+  // 한 줄 메시지는 짧은 동기부여 미니멀 톤만 유지.
+  return baseComment(input, s);
 }

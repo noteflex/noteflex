@@ -1,11 +1,3 @@
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { formatSublevel, getPreviousSublevel } from "@/lib/levelSystem";
 import { generateCoachingComment } from "@/lib/aiCoaching";
@@ -13,7 +5,7 @@ import { useLang, useT } from "@/contexts/LanguageContext";
 import { format as formatI18n } from "@/i18n/strings";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLevelProgress } from "@/hooks/useLevelProgress";
-import { AICoachingDetail } from "./AICoachingDetail";
+import CoachingDialogShell from "./coaching/CoachingDialogShell";
 
 interface GameOverDialogProps {
   open: boolean;
@@ -46,9 +38,6 @@ export function GameOverDialog({
   const t = useT();
   const { user } = useAuth();
   const { getProgressFor } = useLevelProgress();
-  const accuracy = totalAttempts > 0
-    ? Math.round((totalCorrect / totalAttempts) * 100)
-    : 0;
   const prev = getPreviousSublevel(level, sublevel);
   const hasPrevious = prev !== null;
   const currentLabel = formatSublevel(level, sublevel);
@@ -80,47 +69,19 @@ export function GameOverDialog({
   );
 
   return (
-    <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent
-        className="sm:max-w-md"
-        onPointerDownOutside={(e) => e.preventDefault()}
-        onEscapeKeyDown={(e) => e.preventDefault()}
-      >
-        <DialogHeader>
-          <DialogTitle className="text-xl">
-            {formatI18n(t.gameDialogs.gameOverTitle, { label: currentLabel })}
-          </DialogTitle>
-          <DialogDescription className="pt-2">
-            {t.gameDialogs.gameOverDesc}
-          </DialogDescription>
-        </DialogHeader>
-
-        <div className="my-4 grid grid-cols-3 gap-2 rounded-lg bg-muted p-3 text-center text-sm">
-          <div>
-            <div className="text-xs text-muted-foreground">{t.gameDialogs.statAttempts}</div>
-            <div className="font-semibold">{totalAttempts}</div>
-          </div>
-          <div>
-            <div className="text-xs text-muted-foreground">{t.gameDialogs.statAccuracy}</div>
-            <div className="font-semibold">{accuracy}%</div>
-          </div>
-          <div>
-            <div className="text-xs text-muted-foreground">{t.gameDialogs.statBestStreak}</div>
-            <div className="font-semibold">{bestStreak}</div>
-          </div>
-        </div>
-
-        <p
-          className="text-sm text-muted-foreground text-center px-1"
-          data-testid="coaching-comment"
-        >
-          {coaching}
-        </p>
-
-        {/* 음표별 비교 분석 — Guest = 박지 말 것 */}
-        <AICoachingDetail />
-
-        <DialogFooter className="flex flex-col gap-2 sm:flex-row sm:justify-between">
+    <CoachingDialogShell
+      open={open}
+      onClose={onClose}
+      variant="gameover"
+      stageLabel={currentLabel}
+      accuracy={accuracyRatio}
+      historicalAccuracy={historicalAccuracy}
+      coachingMessage={coaching}
+      totalAttempts={totalAttempts}
+      bestStreak={bestStreak}
+      avgReactionRatio={avgReactionRatio}
+      footer={
+        <>
           {hasPrevious && prevLabel && (
             <Button
               variant="outline"
@@ -133,8 +94,8 @@ export function GameOverDialog({
           <Button onClick={onReplay} className="w-full sm:w-auto">
             {t.gameDialogs.retrySameLevel}
           </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </>
+      }
+    />
   );
 }

@@ -18,11 +18,11 @@ describe("GameOverDialog", () => {
     onClose: vi.fn(),
   };
 
-  it("게임오버 제목 + 단계 라벨 표시", () => {
+  it("Failed 배지 + 단계 라벨 표시 (5/31 리뉴얼 후 컴팩트 디자인)", () => {
     render(<GameOverDialog {...baseProps} />);
-    // EN default lang — useT() fallback
-    expect(screen.getByText(/Game Over/)).toBeInTheDocument();
-    expect(screen.getByRole("heading")).toHaveTextContent("Lv 2-2");
+    // 5/31 리뉴얼: 큰 'Game Over' 타이틀 → 컴팩트 배지 + 단계 라벨
+    expect(screen.getByTestId("coaching-variant-badge")).toHaveTextContent(/Failed/);
+    expect(screen.getByText("Lv 2-2")).toBeInTheDocument();
   });
 
   it("정답률 계산 정확 (4/10 = 40%)", () => {

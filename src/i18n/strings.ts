@@ -258,8 +258,17 @@ export interface Strings {
     statAttempts: string;
     statAccuracy: string;
     statBestStreak: string;
+    statAvgReaction: string;     // "평균 반응" / "Avg response"
     backToPrevious: string;      // "이전 단계로 ({label})"
     retrySameLevel: string;
+    // 5/31 디자인 리뉴얼 — 트렌드·variant·음표 분석
+    variantPassed: string;       // "통과" / "Passed"
+    variantFailed: string;       // "실패" / "Failed"
+    vsAvgUp: string;             // "+{n}%p vs 평균" / "+{n}%p vs avg"
+    vsAvgDown: string;           // "-{n}%p vs 평균" / "-{n}%p vs avg"
+    vsAvgFlat: string;           // "평소 수준 vs 평균" / "On par with avg"
+    noteAnalysisTitle: string;   // "음표별 분석 · 최근 30회" / "Note analysis · Recent 30"
+    noteAnalysisEmpty: string;   // "수치가 부족합니다. ..." / "Not enough data yet. ..."
     // SublevelPassedDialog — fast track
     fastTrackBadge: string;
     fastTrackAutoAdvance: string; // "{n}초 후 자동 진입" / "Auto-advance in {n}s"
@@ -821,8 +830,16 @@ const ko: Strings = {
     statAttempts: "시도",
     statAccuracy: "정답률",
     statBestStreak: "최고 연속",
+    statAvgReaction: "평균 반응",
     backToPrevious: "이전 단계로 ({label})",
     retrySameLevel: "같은 단계 다시 도전",
+    variantPassed: "통과",
+    variantFailed: "실패",
+    vsAvgUp: "+{n}%p vs 평균",
+    vsAvgDown: "-{n}%p vs 평균",
+    vsAvgFlat: "평소 수준 vs 평균",
+    noteAnalysisTitle: "음표별 분석 · 최근 30회",
+    noteAnalysisEmpty: "수치가 부족합니다. 더 진행하면 음표별 분석을 보여드려요.",
     fastTrackBadge: "🚀 패스트트랙",
     fastTrackAutoAdvance: "{n}초 후 자동 진입",
     fastTrackGoNow: "지금 바로 다음 단계",
@@ -1365,8 +1382,16 @@ const en: Strings = {
     statAttempts: "Attempts",
     statAccuracy: "Accuracy",
     statBestStreak: "Best streak",
+    statAvgReaction: "Avg response",
     backToPrevious: "Back to {label}",
     retrySameLevel: "Retry this stage",
+    variantPassed: "Passed",
+    variantFailed: "Failed",
+    vsAvgUp: "+{n}%p vs avg",
+    vsAvgDown: "-{n}%p vs avg",
+    vsAvgFlat: "On par with avg",
+    noteAnalysisTitle: "Note analysis · Recent 30",
+    noteAnalysisEmpty: "Not enough data yet. Keep playing to see note-level analysis.",
     fastTrackBadge: "🚀 Fast Track",
     fastTrackAutoAdvance: "Auto-advance in {n}s",
     fastTrackGoNow: "Next stage now",
