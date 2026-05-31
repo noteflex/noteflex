@@ -88,7 +88,7 @@ export default function CoachingDialogShell({
         {/* 1. Header — variant 배지 + stage 라벨 */}
         <div className="flex items-center gap-2">
           <VariantBadge isPassed={isPassed} t={t} />
-          <span className="text-xs text-muted-foreground">{stageLabel}</span>
+          <span className="text-[15px] text-muted-foreground">{stageLabel}</span>
         </div>
 
         {/* 2. Hero — 정답률 큰 숫자 + 트렌드 배지 */}
@@ -116,7 +116,7 @@ export default function CoachingDialogShell({
         </p>
 
         {/* 4. 보조 stats 3-col */}
-        <div className="grid grid-cols-3 gap-2 border-y border-border py-3 text-center text-sm">
+        <div className="grid grid-cols-3 gap-2 border-y border-border py-3 text-center">
           <SubStat
             label={t.gameDialogs.statAttempts}
             value={String(totalAttempts)}
@@ -165,10 +165,10 @@ function VariantBadge({
   const label = isPassed ? t.gameDialogs.variantPassed : t.gameDialogs.variantFailed;
   return (
     <span
-      className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs font-semibold ${cls}`}
+      className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[13px] font-semibold ${cls}`}
       data-testid="coaching-variant-badge"
     >
-      <Icon className="h-3 w-3" aria-hidden="true" />
+      <Icon className="h-3.5 w-3.5" aria-hidden="true" />
       {label}
     </span>
   );
@@ -219,8 +219,8 @@ function TrendBadge({
 function SubStat({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <div className="text-xs text-muted-foreground">{label}</div>
-      <div className="font-semibold tabular-nums">{value}</div>
+      <div className="text-[13px] text-muted-foreground">{label}</div>
+      <div className="text-xl font-semibold tabular-nums">{value}</div>
     </div>
   );
 }

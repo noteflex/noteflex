@@ -56,7 +56,7 @@ export function NoteAnalysisSection() {
   if (!result.hasEnough) {
     return (
       <div data-testid="note-analysis-empty">
-        <h3 className="mb-2 text-xs font-semibold text-muted-foreground">
+        <h3 className="mb-2 text-sm font-semibold text-muted-foreground">
           {t.gameDialogs.noteAnalysisTitle}
         </h3>
         <div className="rounded-lg border border-blue-200/60 bg-blue-50/50 px-3 py-2 text-xs text-blue-700 dark:bg-blue-950/20 dark:text-blue-300 dark:border-blue-900/40">
@@ -76,7 +76,7 @@ export function NoteAnalysisSection() {
 
   return (
     <div data-testid="note-analysis-grid">
-      <h3 className="mb-2 text-xs font-semibold text-muted-foreground">
+      <h3 className="mb-2 text-sm font-semibold text-muted-foreground">
         {t.gameDialogs.noteAnalysisTitle}
       </h3>
       <div className="grid grid-cols-2 gap-2">
@@ -170,16 +170,16 @@ function AnalysisCard({
       ? "border-emerald-200/70 bg-emerald-50/40 text-emerald-900 dark:bg-emerald-950/20 dark:text-emerald-200 dark:border-emerald-900/40"
       : "border-red-200/70 bg-red-50/40 text-red-900 dark:bg-red-950/20 dark:text-red-200 dark:border-red-900/40";
   return (
-    <div className={`rounded-lg border px-2.5 py-2 ${cls}`}>
-      <div className="flex items-center gap-1 text-[11px] font-semibold">
+    <div className={`rounded-lg border px-3 py-2.5 ${cls}`}>
+      <div className="flex items-center gap-1.5 text-[13px] font-semibold">
         {icon}
         <span>{title}</span>
       </div>
-      <div className="mt-1 space-y-0.5">
+      <div className="mt-1.5 space-y-1">
         {items.map((it, i) => (
-          <div key={i} className="flex items-baseline justify-between text-xs">
-            <span className="font-semibold tabular-nums">{it.note}</span>
-            <span className="font-mono text-[10px] opacity-80">{it.delta}</span>
+          <div key={i} className="flex items-baseline justify-between">
+            <span className="text-[17px] font-semibold tabular-nums">{it.note}</span>
+            <span className="font-mono text-[14px] opacity-80">{it.delta}</span>
           </div>
         ))}
       </div>
