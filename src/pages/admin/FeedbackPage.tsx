@@ -106,23 +106,35 @@ export default function FeedbackPage() {
   const load = async () => {
     setLoading(true);
     setError(null);
-    const { data, error: queryError } = await supabase
-      .from("feedback")
-      .select(
-        "id, message, email, user_id, ip_address, country, user_agent, page_url, locale, created_at",
-      )
-      .order("created_at", { ascending: false })
-      .limit(PAGE_SIZE);
-    if (queryError) {
-      setError(queryError.message);
+    console.info("[FeedbackPage] load() start");
+    try {
+      const { data, error: queryError, status } = await supabase
+        .from("feedback")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(PAGE_SIZE);
+      console.info("[FeedbackPage] supabase response", {
+        status,
+        rowCount: data?.length ?? null,
+        error: queryError ?? null,
+      });
+      if (queryError) {
+        setError(`${queryError.code ?? ""} ${queryError.message}`.trim());
+        setRows([]);
+      } else {
+        setRows((data ?? []) as FeedbackRow[]);
+      }
+    } catch (e) {
+      console.error("[FeedbackPage] load() threw", e);
+      setError(e instanceof Error ? e.message : String(e));
       setRows([]);
-    } else {
-      setRows((data ?? []) as FeedbackRow[]);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   useEffect(() => {
+    console.info("[FeedbackPage] mount — calling load()");
     void load();
   }, []);
 
