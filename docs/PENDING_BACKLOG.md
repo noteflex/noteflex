@@ -14,6 +14,16 @@
 - [출시후] **모바일 게임 페이지 화면 layout 재조정** — Pixel 7 (Android viewport 915px) 등 세로로 긴 디바이스에서 콘텐츠 아래 빈 공간 큼. 권장 핫픽스: `min-h-[100dvh]` + `flex justify-center`, 또는 하단 보조 정보(연속 정답·다음 stage 정보) 추가. 가로 모드 강제는 비추 (한 손 조작 마찰).
 - [출시후] **AuthModal 테스트 sprint** — SMTP hotfix(658fd75) + i18n 변경(bcaa46e)으로 `AuthModal.test.tsx` 39/45 fail. 셀렉터들이 한국어 하드코딩 텍스트에 묶여 있어 i18n 도입 후 자동 fail. SMTP 정상화 + `EMAIL_AUTH_ENABLED=true` 복원 시점에 ko/en 둘 다 검증 가능하도록 테스트 재작성 (data-testid 기반 셀렉터로 전환, `useT()` mock·강제 lang 주입 패턴 도입).
 - [출시후-AdSense 통과 시] **Vercel 환경변수 15개 추가** — `VITE_ADS_ENABLED=true` · `VITE_INFEED_ADS_ENABLED=true` · `VITE_ADSENSE_PUBLISHER_ID=ca-pub-4314740126698954` · `VITE_ADSENSE_SLOT_*` 12개 (`.env.local` 실제 값 그대로 복사) → Vercel Settings → Environment Variables (Production) → Redeploy. 현재 가오픈은 광고 OFF로 영향 X. AdSense 심사 통과 메일 수신 후 즉시 활성.
+- [출시후-중기 sprint] **멀티 staff line 도입** — 오선지를 여러 줄(2~4 line)로 쌓아 모바일 viewport 채움 + sight-reading 본질(다음 음표 미리 보기) 강화. 실제 sight-reading 앱(Tenuto·Notereading 등) 표준 패턴.
+  - 영향 영역:
+    - 메모리 #16 음표 위치 정책 update 필요 (line별 M등분 vs 전체 통합)
+    - N+2 알고리즘 시각화·retry queue 영향
+    - batch 흐름 (line 단위 vs 흐름 단위)
+    - 게임 난이도 변화 가능 (사용자 여유 ↑)
+    - 모바일·데스크탑 분기 검토 (데스크탑은 단일 line 가독성 ↑ 가능성)
+    - 카운트다운·첫 음표 동기화 (메모리 #17) 재검증
+  - 분량: 5~10시간 (사전 설계 + 구현 + 검증).
+  - 조건: 출시 후 1~2주 사용자 피드백·이탈 패턴 보고 결정. Code Opus 사전 분석 후 진행.
 
 ---
 
