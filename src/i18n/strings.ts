@@ -109,6 +109,12 @@ export interface Strings {
     subs: readonly string[];
     buttonLabel: string;
   };
+  notFoundPage: {
+    headline: string;     // "음표가 길을 잃었어요" / "This note got lost"
+    body: string;         // "찾으시는 페이지가 없습니다" / "The page you're looking for isn't here"
+    backHome: string;     // "메인으로" / "Back to home"
+    playGame: string;     // "게임 시작" / "Play game"
+  };
   feedback: {
     // FAB
     fabLabel: string;          // "한 마디" / "Drop a note"
@@ -802,6 +808,12 @@ const ko: Strings = {
     ],
     buttonLabel: "Play →",
   },
+  notFoundPage: {
+    headline: "음표가 길을 잃었어요",
+    body: "찾으시는 페이지가 없습니다",
+    backHome: "메인으로",
+    playGame: "게임 시작",
+  },
   feedback: {
     fabLabel: "한 마디",
     fabAriaLabel: "피드백 남기기",
@@ -1470,6 +1482,12 @@ const en: Strings = {
       "That's it.",
     ],
     buttonLabel: "Play →",
+  },
+  notFoundPage: {
+    headline: "This note got lost",
+    body: "The page you're looking for isn't here",
+    backHome: "Back to home",
+    playGame: "Play game",
   },
   feedback: {
     fabLabel: "Drop a note",
