@@ -777,7 +777,7 @@ AI·정밀 데이터·Noteflex 기능·음악 교육의 미래.
 80. 일간·주간·월간 진단의 의미
 81. 학습 동기 유지의 심리학 — 스트릭의 효과 ✅ 작성 완료 (2026-05-31, streak-psychology-music-learning)
 82. 게이미피케이션과 음악 학습
-83. 정확도 vs 반응속도 — 우선순위와 균형
+83. 정확도 vs 반응속도 — 우선순위와 균형 ✅ 작성 완료 (2026-06-02, accuracy-vs-speed-sight-reading)
 84. 음표별 마스터리 측정 — 진도의 객관화
 85. 음악 학습 앱의 미래 — AI와 데이터 기반 개인화
 
@@ -890,6 +890,8 @@ AI·정밀 데이터·Noteflex 기능·음악 교육의 미래.
 | 2026-05-31 | 31 | §7-81 | The Psychology of Streaks in Music Learning — Why Five Daily Minutes Beat One Weekly Hour (en) ✅ 작성 완료 | streak-psychology-music-learning | Music Tech | ~960 words | music practice streak, daily music practice habit, music learning motivation, streak psychology, habit formation 66 days, duolingo streak music | Lally + Locke & Latham 전통 |
 | 2026-06-01 | 32 | §1-10 | 초견은 타고나는가 학습되는가 — 재능 신화와 누적 시간의 진짜 비중 (ko) ✅ 작성 완료 | sight-reading-innate-or-learned | 초견의 정석 | ~1894자 | 초견 재능, 초견 타고난다, 초견 학습, 음악 재능 유전, 초견 만 시간, 음악 천재 신화 | Mosing + Ericsson 전통 |
 | 2026-06-01 | 32 | §1-10 | Is Sight-Reading Innate or Learned? — Behind the Talent Myth, the Real Weight of Cumulative Practice (en) ✅ 작성 완료 | sight-reading-innate-or-learned | Sight-Reading Lab | ~981 words | sight-reading talent, is sight-reading innate, sight-reading learned skill, music ability genetics, deliberate practice music, music prodigy myth | Mosing + Ericsson 전통 |
+| 2026-06-02 | 33 | §7-83 | 초견의 정확도와 속도 — 어느 쪽을 먼저 키워야 하나 (ko) ✅ 작성 완료 | accuracy-vs-speed-sight-reading | 뮤직 테크 & 미래 | ~1572자 | 초견 정확도, 초견 속도, 정확도 vs 속도, 초견 연습 우선순위, 속도 정확도 균형, 초견 빠르게, errorless 학습 | Schmidt & Bjork + Repp 전통 |
+| 2026-06-02 | 33 | §7-83 | Accuracy or Speed in Sight-Reading — Which Comes First (en) ✅ 작성 완료 | accuracy-vs-speed-sight-reading | Music Tech | ~821 words | sight-reading accuracy vs speed, accuracy or speed music practice, speed-accuracy tradeoff music, sight-reading practice order, errorless practice music, how to sight-read faster | Schmidt & Bjork + Repp 전통 |
 
 ---
 
