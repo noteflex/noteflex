@@ -12,7 +12,7 @@ import {
 
 /**
  * 5/31 코칭 다이얼로그 — 음표별 분석 섹션.
- * 데이터 fetch는 AICoachingDetail에서 사용한 fetchUserNoteLogs(200) 그대로 활용.
+ * 데이터 fetch는 fetchUserNoteLogs(200) 사용.
  * 표시 컴포넌트 새로:
  *   - 헤더: "음표별 분석 · 최근 30회"
  *   - 4 카테고리(빨라진/정확도↑/느려진/정확도↓) 중 데이터 있는 것만 카드로 표시

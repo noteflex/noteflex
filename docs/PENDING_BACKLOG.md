@@ -45,7 +45,7 @@
 ## 2026-05-29 대시보드 정비 후속 (출시 후 트랙)
 
 - [ ] **weak_score v2 엔진 마이그레이션 적용** — `supabase/migrations/20260528_weak_score_v2.sql` 작성됨, DB 미적용. 적용 후 `build_period_rollup` 재호출(또는 일배치 다음 사이클)로 기존 `user_analytics_rollup.weak_notes_top` 재생성 필요. 현재 대시보드 클라(`WeakSlowNotesCards.tsx`)만 v2 공식, 엔진은 옛 sqrt(n) 공식.
-- [ ] **MiniStaff.tsx · StaffDisplay.tsx dead code 정리** — 둘 다 import 0 (NextStepCard에서 텍스트 표시로 전환). `vexflow` 의존성 제거 가능(StaffDisplay 정리 후 `npm uninstall vexflow`).
+- [✅ 2026-06-01] **MiniStaff.tsx · StaffDisplay.tsx · AICoachingDetail.tsx dead code 정리** — 3개 파일 삭제(732 lines) + `vexflow` 의존성 제거 완료.
 - [ ] **대시보드 음표 오선지 시각화** — 작은 박스(150×88, 78×56) 음높이 정확 표시는 게임 `GrandStaffPractice`가 grand staff·여백 가정이라 소형 부적합. 별도 좌표 컴포넌트 신규 제작이 필요.
 - [ ] **user_stats_daily_backup_20260527 백업 테이블** — 2배 중복집계 복구 시 생성한 백업. 안정 확인 후(약 2주~1개월) 삭제.
 - [ ] **약점 카드 툴팁/fetch 일관성 점검** — 과거 "최근 200개" 툴팁 vs 실제 `fetchUserNoteLogs(500)` 불일치 이력. 출시 후 모든 dashboard 카드의 데이터 윈도우·툴팁 정합 전수 점검.

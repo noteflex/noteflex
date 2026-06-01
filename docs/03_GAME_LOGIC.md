@@ -530,8 +530,6 @@ phase==="gameover":
 - `batchIndex`로 현재 활성 음표 강조
 - batch 갈이 시 답변 이력 초기화
 
-> 🔗 일부 fallback은 `src/components/StaffDisplay.tsx` 사용.
-
 ---
 
 ## 13. 진도 기록 (`src/hooks/useLevelProgress.ts:58-93`)

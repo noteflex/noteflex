@@ -221,7 +221,6 @@ AdminLayout
 | `NoteGame.tsx` | 게임 엔진 — 정답/오답/타이머/라이프/스테이지 진행 (1100+ 라인) | `Index.tsx` |
 | `GameHeader.tsx` | 점수/라이프/연속정답 표시 | `NoteGame` |
 | `NoteButtons.tsx` | 음표 정답 버튼 그리드 + 스와이프 (Lv5+) | `NoteGame` |
-| `StaffDisplay.tsx` | 단일 오선지 SVG 렌더 (legacy, 일부 fallback) | `NoteGame` |
 | `CountdownTimer.tsx` | 음표당 제한시간 (색상·펄스 단계) | `NoteGame` |
 | `CountdownOverlay.tsx` | 게임 시작 전 3-2-1 카운트다운 | `NoteGame` |
 | `practice/GrandStaffPractice.tsx` | 양손 오선지(treble+bass) + 키사인 + 배치 음표 | `NoteGame` |

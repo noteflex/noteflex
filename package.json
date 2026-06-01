@@ -87,7 +87,6 @@
     "tailwindcss-animate": "^1.0.7",
     "tone": "^15.1.22",
     "vaul": "^0.9.9",
-    "vexflow": "^5.0.0",
     "zod": "^3.25.76"
   },
   "devDependencies": {

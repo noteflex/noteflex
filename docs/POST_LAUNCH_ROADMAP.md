@@ -40,7 +40,7 @@
 | 14 | **focus_mode 출제 로직 통합** — 현재 enum만, 로직 X | 3~4시간 | ⏳ |
 | 15 | **weak_score v2 엔진 DB 적용** — 마이그레이션 | 2시간 | ⏳ |
 | 16 | **7판 윈도우 시스템 후속 테스트 재작성** — LevelSelect · MasteryScoreCard · levelSystem | 2~3시간 | ⏳ |
-| 17 | **Dead code 정리** — AICoachingDetail.tsx · MiniStaff/StaffDisplay · vexflow 의존성 제거 | 1시간 | ⏳ |
+| 17 | **Dead code 정리** — AICoachingDetail.tsx · MiniStaff/StaffDisplay · vexflow 의존성 제거 | 1시간 | ✅ 2026-06-01 |
 | 18 | **SEO 모니터링** — Google Search Console 인덱싱 · 검색어 · CTR 분석 | 주간 30분 | 🔄 |
 
 ---

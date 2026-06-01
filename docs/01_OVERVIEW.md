@@ -55,7 +55,7 @@
 | 상태 관리 | **React Context** (AuthContext) + `@tanstack/react-query 5.83` + `useState`/`useRef` | Redux 미사용 |
 | UI 라이브러리 | **Tailwind CSS 3.4** + **shadcn/ui** + **Radix UI Primitives** | `tailwind.config.ts`, `components.json` |
 | 폼 검증 | `react-hook-form 7.61` + `@hookform/resolvers` + `zod 3.25` | |
-| 음악 렌더링 | `vexflow 5.0` + `abcjs 6.6` | 오선지 SVG, 사용은 `src/components/practice/GrandStaffPractice.tsx` |
+| 음악 렌더링 | `abcjs 6.6` | 오선지 SVG, 사용은 `src/components/practice/GrandStaffPractice.tsx` |
 | 사운드 | `tone 15.1` | 음표 재생, `src/lib/sound.ts` |
 | 차트 | `recharts 2.15` | XP·정확도 추이 |
 | 아이콘 | `lucide-react 0.462` | |
@@ -168,7 +168,6 @@ noteflex/
 | `@capacitor/cli` | 7.6.1 | Capacitor CLI |
 | `@lovable.dev/cloud-auth-js` | 1.0.1 | Lovable 클라우드 인증 (현재 사용 미확인) |
 | `@radix-ui/react-*` | 1.x ~ 2.x | shadcn/ui 기반 헤드리스 프리미티브 (30+ 패키지) |
-| `vexflow` | 5.0.0 | 오선지 렌더링 (SVG) |
 | `abcjs` | 6.6.2 | ABC notation → 악보 변환 |
 | `tone` | 15.1.22 | Web Audio 기반 사운드 합성 |
 | `recharts` | 2.15.4 | 통계 차트 (XP 막대, 정확도 라인) |

@@ -169,7 +169,7 @@
 - `LevelSelect`, `NoteGame` (3종 테스트), `UpgradeModal`, `GameOverDialog`, `SublevelPassedDialog`
 
 테스트 없음 (주요):
-- `NoteButtons`, `GameHeader`, `CountdownTimer`, `CountdownOverlay`, `StaffDisplay`, `GrandStaffPractice`
+- `NoteButtons`, `GameHeader`, `CountdownTimer`, `CountdownOverlay`, `GrandStaffPractice`
 - `MissionSuccessModal`, `AccidentalSwipeTutorial`
 - `AuthModal`, `PremiumRequiredDialog`, `ComingSoonGate`, `AdminGuard`
 - `Footer`, `NavLink`, `MarkdownContent`, `CookieBanner`, `BatchAnalysisSection`, `DiagnosisTab`
