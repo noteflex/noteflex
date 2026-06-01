@@ -15,6 +15,24 @@ import { AdBanner } from "@/components/AdBanner";
 import { getSlot } from "@/lib/adsense";
 import Seo from "@/components/Seo";
 
+/**
+ * 본문 끝의 "## 이미지 출처/Image Sources/참고 문헌/References" H2 섹션을 분리.
+ * 4 마커 중 가장 일찍 등장하는 위치 기준. 마커 없으면 tail=null (4/30 초기 2편 등).
+ */
+function splitContentAtReferences(content: string): { body: string; tail: string | null } {
+  const markers = ["\n## 이미지 출처", "\n## Image Sources", "\n## 참고 문헌", "\n## References"];
+  let earliest = -1;
+  for (const m of markers) {
+    const idx = content.indexOf(m);
+    if (idx >= 0 && (earliest === -1 || idx < earliest)) earliest = idx;
+  }
+  if (earliest === -1) return { body: content, tail: null };
+  return {
+    body: content.slice(0, earliest).trimEnd(),
+    tail: content.slice(earliest).trimStart(),
+  };
+}
+
 export default function BlogPost() {
   // URL :lang 유지 — 콘텐츠 lang은 URL 명시 값 사용 (SEO·linkability)
   const { lang, slug } = useParams<{ lang: string; slug: string }>();
@@ -118,21 +136,33 @@ export default function BlogPost() {
               {post.meta.date && (
                 <p className="text-sm text-muted-foreground mb-10">{post.meta.date}</p>
               )}
-              <MarkdownContent>{post.content}</MarkdownContent>
+              {(() => {
+                const { body, tail } = splitContentAtReferences(post.content);
+                return (
+                  <>
+                    <MarkdownContent>{body}</MarkdownContent>
 
-              {/* 게임 시작 CTA — 본문 끝, 광고 위 */}
-              <BlogPostCTA />
+                    {/* 게임 시작 CTA — 본문 직후, 참고문헌 앞 */}
+                    <div className="my-12">
+                      <BlogPostCTA />
+                    </div>
 
-              {/* 글 본문 하단 배너 (PC + 모바일 모두 노출) */}
-              <div className="mt-12 pt-8 border-t border-border">
-                <AdBanner
-                  slot={getSlot("BLOG_POST_BOTTOM")}
-                  format="horizontal"
-                  placeholderVariant="horizontal-random"
-                  excludeSlug={lang && slug ? `${lang}/${slug}` : undefined}
-                  className="w-full"
-                />
-              </div>
+                    {/* 참고문헌·이미지 출처 (마커 있는 글만) */}
+                    {tail && <MarkdownContent>{tail}</MarkdownContent>}
+
+                    {/* 글 본문 하단 배너 (PC + 모바일 모두 노출) */}
+                    <div className="mt-12 pt-8 border-t border-border">
+                      <AdBanner
+                        slot={getSlot("BLOG_POST_BOTTOM")}
+                        format="horizontal"
+                        placeholderVariant="horizontal-random"
+                        excludeSlug={lang && slug ? `${lang}/${slug}` : undefined}
+                        className="w-full"
+                      />
+                    </div>
+                  </>
+                );
+              })()}
             </>
           )}
         </main>

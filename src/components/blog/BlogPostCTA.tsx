@@ -13,7 +13,7 @@ export default function BlogPostCTA() {
   const sub = subs[idx];
 
   return (
-    <aside className="mt-8 rounded-lg border-[1.5px] border-[#D3224E] bg-white px-7 py-8 text-center shadow-sm">
+    <aside className="rounded-lg border-[1.5px] border-[#D3224E] bg-white px-7 py-8 text-center shadow-sm">
       <div className="flex justify-center mb-4">
         <svg
           viewBox="0 0 24 24"
