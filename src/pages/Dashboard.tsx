@@ -353,12 +353,57 @@ function LastActivityCard({
 function NewUserView({ onStart }: { onStart: () => void }) {
   const t = useT();
   return (
-    <div className="rounded-2xl border-2 border-dashed border-primary/30 bg-primary/5 p-8 text-center">
-      <p className="text-2xl font-bold text-foreground mb-2">{t.dashboard.newUserTitle}</p>
-      <p className="text-sm text-muted-foreground mb-6">{t.dashboard.newUserSubtitle}</p>
-      <Button size="lg" onClick={onStart}>
+    <div
+      className="rounded-2xl text-center"
+      style={{
+        backgroundColor: "#F9F5EC",
+        border: "0.5px solid rgba(0,0,0,0.04)",
+        padding: "40px 32px",
+      }}
+    >
+      {/* Noteflex 브랜드 로고 — Header.tsx 인라인 SVG 동일 (16분음표 두 개) */}
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="#D3224E"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="mx-auto w-16 h-16"
+        style={{ marginBottom: "20px" }}
+        aria-hidden="true"
+      >
+        <circle cx="6" cy="17" r="3" />
+        <circle cx="16" cy="17" r="3" />
+        <path d="M9 17V4h10v13" />
+        <path d="M9 8h10" />
+      </svg>
+      <p
+        className="font-medium"
+        style={{ fontSize: "22px", color: "#1A1A1A", margin: "0 0 8px" }}
+      >
+        {t.dashboard.newUserTitle}
+      </p>
+      <p
+        className="font-normal"
+        style={{ fontSize: "15px", color: "#1A1A1A", margin: "0 0 32px" }}
+      >
+        {t.dashboard.newUserSubtitle}
+      </p>
+      <button
+        type="button"
+        onClick={onStart}
+        className="text-white font-medium transition-opacity hover:opacity-90"
+        style={{
+          backgroundColor: "#D3224E",
+          border: "none",
+          borderRadius: "12px",
+          padding: "16px 40px",
+          fontSize: "17px",
+        }}
+      >
         {t.dashboard.newUserCta}
-      </Button>
+      </button>
     </div>
   );
 }

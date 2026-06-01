@@ -98,8 +98,8 @@ describe("Dashboard — 미니멀 단일 페이지 (3 상태 분기)", () => {
 
     renderAt("/dashboard");
 
-    // 신규 사용자 영역 적용됨 (EN default)
-    expect(screen.getByText(/Start your first session/)).toBeInTheDocument();
+    // 신규 사용자 영역 적용됨 (EN default — 2026-06-02 카피 리뉴얼)
+    expect(screen.getByText(/Let's start your music journey/)).toBeInTheDocument();
     // AI Feedback 카드 적용됨 (Pro 후킹)
     expect(screen.getByTestId("ai-feedback-card")).toBeInTheDocument();
     // KPI 카드는 노출 X (신규 사용자 영역)

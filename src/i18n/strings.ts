@@ -1192,9 +1192,9 @@ const ko: Strings = {
     emptyTodayStreakHint: "오늘 연습하면 {n}일째 ✨",
     emptyTodayCta: "지금 시작 →",
 
-    newUserTitle: "🎵 첫 세션을 시작해보세요",
-    newUserSubtitle: "연습이 누적되면 약한 음표·진행 영역이 표시됩니다",
-    newUserCta: "지금 시작하기 →",
+    newUserTitle: "음악 학습 시작해요",
+    newUserSubtitle: "첫 게임 한 판으로 시작",
+    newUserCta: "게임 시작",
 
     vsLast: "vs 7일 평균",
     noLastSessionYet: "첫 세션 이후 표시",
@@ -1867,9 +1867,9 @@ const en: Strings = {
     emptyTodayStreakHint: "Practice today to make it day {n} ✨",
     emptyTodayCta: "Start now →",
 
-    newUserTitle: "🎵 Start your first session",
-    newUserSubtitle: "Stats appear here as you practice",
-    newUserCta: "Start now →",
+    newUserTitle: "Let's start your music journey",
+    newUserSubtitle: "One round to begin",
+    newUserCta: "Start playing",
 
     vsLast: "vs 7-day avg",
     noLastSessionYet: "Shown after first session",
