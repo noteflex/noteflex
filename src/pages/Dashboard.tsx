@@ -356,8 +356,8 @@ function NewUserView({ onStart }: { onStart: () => void }) {
     <div
       className="rounded-2xl text-center"
       style={{
-        backgroundColor: "#F9F5EC",
-        border: "0.5px solid rgba(0,0,0,0.04)",
+        backgroundColor: "#FFFFFF",
+        border: "0.5px solid rgba(0,0,0,0.08)",
         padding: "40px 32px",
       }}
     >
