@@ -24,6 +24,34 @@
     - 카운트다운·첫 음표 동기화 (메모리 #17) 재검증
   - 분량: 5~10시간 (사전 설계 + 구현 + 검증).
   - 조건: 출시 후 1~2주 사용자 피드백·이탈 패턴 보고 결정. Code Opus 사전 분석 후 진행.
+- [출시후-중기 sprint] **사용자 피드백 시스템** — 메인 페이지 또는 floating FAB 버튼 → 텍스트 입력 모달 → Supabase 저장 → admin/feedback 페이지에서 조회. 기대효과: 사용자 피드백 즉시 수집·반영, 출시 직후 사용성 문제 빠른 발견.
+  - 명세:
+    - 버튼: "주인님" 결정 사항 — 명칭 후보 (💭 "Drop a note" / "한 마디", 🎵 "Tune in", 📮 "Quick note" / "쪽지함", ☕ "Coffee chat" / "차 한 잔"). 권장: 💭 Drop a note / 한 마디 (워드플레이·브랜드 정합)
+    - 위치: 메인 페이지 또는 floating FAB (게임·인증·결제 페이지 제외). 권장: floating FAB
+    - 로그인 강제 X — 이메일 선택 필드 (답변 받기 원할 시)
+    - 카테고리 분류 X — 자유 텍스트만 (메모리 #18 사용자 편의성)
+    - 자동 수집: 날짜·시간·IP 주소·국가·user_agent·page_url·locale·user_id(로그인 시)
+    - IP·국가: Vercel headers → Supabase Edge Function 경유 저장 (클라이언트 spoofing 방지)
+  - 스키마 (Supabase):
+    - 테이블: `feedback` (id uuid · message text not null · email text · user_id uuid nullable · ip_address text · country text · user_agent text · page_url text · locale text · created_at timestamptz)
+    - RLS: INSERT TO anon·authenticated · WITH CHECK(true) · SELECT TO authenticated · USING(is_admin()). `GRANT EXECUTE ON FUNCTION is_admin() TO anon, authenticated` prerequisite (premium_waitlist 실패 사례 학습)
+    - 백업안: RLS 또 실패 시 신규 테이블만 비활성 + 별도 PENDING
+  - UI:
+    - FAB 버튼: 우하단 고정, 시그니처 #D3224E 또는 친화적 톤, 메모리 #25 스티브잡스 정합 (compact·세련)
+    - 모달 (Dialog): textarea (필수, 5~500자) + 이메일 input (선택) + 제출 버튼 (시그니처 #D3224E)
+    - 제출 후 토스트 "감사합니다 — 의견 잘 받았습니다" / "Thanks — feedback received" + 모달 닫힘
+  - admin/feedback 페이지:
+    - 목록 (최신순) + 검색 + 카테고리 필터(향후) + CSV export
+    - `/admin/waitlist` 패턴 그대로
+  - i18n:
+    - ko + en 모든 카피
+    - 한국어 검증: 정중·친근 톤 (메모리 #4)
+  - 분량: 3~5시간 (사전 분석 Code Opus + 구현). 다음 세션에서 결정 사항 (1)버튼 명칭·(2)위치·(3)RLS 시도 여부 받고 시작.
+  - 영향 영역:
+    - App.tsx 또는 Layout에 FAB 마운트 (또는 메인 페이지만)
+    - 신규 Supabase 마이그레이션 + Edge Function
+    - 신규 admin 페이지
+    - i18n strings 추가
 
 ---
 
