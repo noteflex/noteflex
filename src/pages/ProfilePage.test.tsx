@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
+import { HelmetProvider } from "react-helmet-async";
 import ProfilePage from "./ProfilePage";
 import { useNicknameAvailability } from "@/hooks/useNicknameAvailability";
 
@@ -88,9 +89,11 @@ const mockUseNicknameAvailability = vi.mocked(useNicknameAvailability);
 
 function renderProfilePage() {
   return render(
-    <MemoryRouter>
-      <ProfilePage />
-    </MemoryRouter>
+    <HelmetProvider>
+      <MemoryRouter>
+        <ProfilePage />
+      </MemoryRouter>
+    </HelmetProvider>
   );
 }
 

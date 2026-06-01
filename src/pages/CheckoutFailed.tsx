@@ -1,17 +1,26 @@
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import Header from "@/components/Header";
-import { useT } from "@/contexts/LanguageContext";
+import Seo from "@/components/Seo";
+import { useLang, useT } from "@/contexts/LanguageContext";
 
 export default function CheckoutFailed() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const reason = searchParams.get("reason");
   const t = useT();
+  const { lang } = useLang();
 
   const isCancelled = reason === "cancelled";
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-muted/30 via-background to-muted/20">
+      <Seo
+        title={t.pageMeta.checkoutFailed.title}
+        description={t.pageMeta.checkoutFailed.description}
+        canonical="https://noteflex.app/checkout/failed"
+        lang={lang === "ko" ? "ko" : "en"}
+        noindex
+      />
       <Header
         right={
           <Link to="/" className="text-sm text-muted-foreground hover:text-foreground transition-colors">

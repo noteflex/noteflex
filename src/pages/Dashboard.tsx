@@ -3,6 +3,7 @@ import { Link, Navigate, useSearchParams } from "react-router-dom";
 import { RefreshCw } from "lucide-react";
 import UserMenu from "@/components/UserMenu";
 import Header from "@/components/Header";
+import Seo from "@/components/Seo";
 import { AdBanner } from "@/components/AdBanner";
 import UpgradeModal from "@/components/UpgradeModal";
 import { getSlot } from "@/lib/adsense";
@@ -457,6 +458,7 @@ export default function Dashboard() {
   const stats = useUserStats(user);
   const myStats = useMyStats(user);
   const t = useT();
+  const { lang } = useLang();
   const [searchParams, setSearchParams] = useSearchParams();
 
   useEffect(() => {
@@ -671,6 +673,13 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-background">
+      <Seo
+        title={t.pageMeta.dashboard.title}
+        description={t.pageMeta.dashboard.description}
+        canonical="https://noteflex.app/dashboard"
+        lang={lang === "ko" ? "ko" : "en"}
+        noindex
+      />
       <Header
         right={<UserMenu />}
         below={

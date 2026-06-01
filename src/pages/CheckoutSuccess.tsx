@@ -1,8 +1,9 @@
 import { useEffect } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import Header from "@/components/Header";
+import Seo from "@/components/Seo";
 import { useAuth } from "@/contexts/AuthContext";
-import { useT } from "@/contexts/LanguageContext";
+import { useLang, useT } from "@/contexts/LanguageContext";
 import { logger } from "@/lib/sentry";
 
 export default function CheckoutSuccess() {
@@ -10,6 +11,7 @@ export default function CheckoutSuccess() {
   const { user, refreshProfile } = useAuth();
   const [searchParams] = useSearchParams();
   const t = useT();
+  const { lang } = useLang();
 
   useEffect(() => {
     const transactionId =
@@ -37,6 +39,13 @@ export default function CheckoutSuccess() {
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-primary/10 via-background to-accent/10">
+      <Seo
+        title={t.pageMeta.checkoutSuccess.title}
+        description={t.pageMeta.checkoutSuccess.description}
+        canonical="https://noteflex.app/checkout/success"
+        lang={lang === "ko" ? "ko" : "en"}
+        noindex
+      />
       <Header
         right={
           <Link to="/" className="text-sm text-muted-foreground hover:text-foreground transition-colors">

@@ -7,8 +7,9 @@ import NoteGame from "@/components/NoteGame";
 import LevelSelect from "@/components/LevelSelect";
 import AuthModal from "@/components/AuthModal";
 import { useAuth } from "@/contexts/AuthContext";
-import { useT } from "@/contexts/LanguageContext";
+import { useLang, useT } from "@/contexts/LanguageContext";
 import { GAME_ENABLED } from "@/lib/featureFlags";
+import Seo from "@/components/Seo";
 import { AdBanner } from "@/components/AdBanner";
 import { AdInterstitialModal } from "@/components/AdInterstitialModal";
 import { onAdGameEnd } from "@/lib/adInterstitial";
@@ -27,6 +28,7 @@ type PlayScreen = "levelSelect" | "game";
 export default function PlayPage() {
   const { user, loading: authLoading } = useAuth();
   const t = useT();
+  const { lang } = useLang();
   const navigate = useNavigate();
 
   const [screen, setScreen] = useState<PlayScreen>("levelSelect");
@@ -140,9 +142,20 @@ export default function PlayPage() {
   const handleGoMain = () => navigate("/");
   const handleNextLevel = () => setScreen("levelSelect");
 
+  const seoBlock = (
+    <Seo
+      title={t.pageMeta.play.title}
+      description={t.pageMeta.play.description}
+      canonical="https://noteflex.app/play"
+      lang={lang === "ko" ? "ko" : "en"}
+      noindex
+    />
+  );
+
   if (screen === "levelSelect") {
     return (
       <div className="flex flex-col min-h-screen">
+        {seoBlock}
         <Header right={
           !GAME_ENABLED ? null
             : user ? <UserMenu />
@@ -176,7 +189,7 @@ export default function PlayPage() {
   // game screen — h-screen, no scroll
   return (
     <GameErrorBoundary>
-
+      {seoBlock}
       {showAuth && <AuthModal onClose={() => setShowAuth(false)} />}
       <div
         className="safe-area-page min-h-[100dvh] overflow-y-auto flex flex-col items-center justify-center py-4 px-4"

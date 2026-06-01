@@ -115,6 +115,15 @@ export interface Strings {
     backHome: string;     // "메인으로" / "Back to home"
     playGame: string;     // "게임 시작" / "Play game"
   };
+  pageMeta: {
+    // 2026-06-02 — 누락 6 페이지 Seo 보강. 사용자 영역은 noindex 적용.
+    notFound: { title: string; description: string };
+    dashboard: { title: string; description: string };
+    play: { title: string; description: string };
+    profile: { title: string; description: string };
+    checkoutSuccess: { title: string; description: string };
+    checkoutFailed: { title: string; description: string };
+  };
   feedback: {
     // FAB
     fabLabel: string;          // "한 마디" / "Drop a note"
@@ -814,6 +823,32 @@ const ko: Strings = {
     backHome: "메인으로",
     playGame: "게임 시작",
   },
+  pageMeta: {
+    notFound: {
+      title: "페이지를 찾을 수 없어요 | Noteflex",
+      description: "요청하신 페이지가 사라졌어요. 메인이나 게임 페이지로 돌아가세요.",
+    },
+    dashboard: {
+      title: "대시보드 | Noteflex",
+      description: "오늘의 연습과 진행 영역.",
+    },
+    play: {
+      title: "게임 | Noteflex",
+      description: "악보 읽기 게임 — 레벨 선택 후 시작.",
+    },
+    profile: {
+      title: "프로필 | Noteflex",
+      description: "닉네임·언어·계정 설정.",
+    },
+    checkoutSuccess: {
+      title: "결제 완료 | Noteflex",
+      description: "구독이 활성화되었어요. Premium 모든 기능을 이용할 수 있어요.",
+    },
+    checkoutFailed: {
+      title: "결제 미완료 | Noteflex",
+      description: "결제가 완료되지 않았어요. 다시 시도해주세요.",
+    },
+  },
   feedback: {
     fabLabel: "한 마디",
     fabAriaLabel: "피드백 남기기",
@@ -1488,6 +1523,32 @@ const en: Strings = {
     body: "The page you're looking for isn't here",
     backHome: "Back to home",
     playGame: "Play game",
+  },
+  pageMeta: {
+    notFound: {
+      title: "Page not found | Noteflex",
+      description: "The page you're looking for has moved or never existed. Head back home or jump into the game.",
+    },
+    dashboard: {
+      title: "Dashboard | Noteflex",
+      description: "Your daily practice and progress.",
+    },
+    play: {
+      title: "Play | Noteflex",
+      description: "Sight-reading game — pick a level and start playing.",
+    },
+    profile: {
+      title: "Profile | Noteflex",
+      description: "Nickname, language, and account settings.",
+    },
+    checkoutSuccess: {
+      title: "Payment complete | Noteflex",
+      description: "Your subscription is active. Enjoy every Premium feature.",
+    },
+    checkoutFailed: {
+      title: "Payment incomplete | Noteflex",
+      description: "We couldn't complete the payment. Please try again.",
+    },
   },
   feedback: {
     fabLabel: "Drop a note",

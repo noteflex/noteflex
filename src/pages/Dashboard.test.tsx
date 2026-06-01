@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
+import { HelmetProvider } from "react-helmet-async";
 
 const { mockUseAuth, mockUseUserStats, mockUseMyStats } = vi.hoisted(() => ({
   mockUseAuth: vi.fn(),
@@ -74,11 +75,13 @@ const defaultMyStats = {
 
 function renderAt(initialPath: string) {
   return render(
-    <MemoryRouter initialEntries={[initialPath]}>
-      <Routes>
-        <Route path="/dashboard" element={<Dashboard />} />
-      </Routes>
-    </MemoryRouter>
+    <HelmetProvider>
+      <MemoryRouter initialEntries={[initialPath]}>
+        <Routes>
+          <Route path="/dashboard" element={<Dashboard />} />
+        </Routes>
+      </MemoryRouter>
+    </HelmetProvider>
   );
 }
 

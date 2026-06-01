@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
+import Seo from "@/components/Seo";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLang, useT, type Lang } from "@/contexts/LanguageContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -333,6 +334,13 @@ export default function ProfilePage() {
       className="min-h-screen flex flex-col"
       style={{ background: "radial-gradient(circle at top, #ffffff 0%, #f8f5e4 100%)" }}
     >
+      <Seo
+        title={t.pageMeta.profile.title}
+        description={t.pageMeta.profile.description}
+        canonical="https://noteflex.app/profile"
+        lang={lang === "ko" ? "ko" : "en"}
+        noindex
+      />
       <Header
         right={
           <Link to="/" className="text-sm text-muted-foreground hover:text-foreground transition-colors">

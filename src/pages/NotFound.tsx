@@ -1,11 +1,13 @@
 import { Link, useLocation } from "react-router-dom";
 import { useEffect } from "react";
 import Header from "@/components/Header";
-import { useT } from "@/contexts/LanguageContext";
+import Seo from "@/components/Seo";
+import { useLang, useT } from "@/contexts/LanguageContext";
 
 export default function NotFound() {
   const location = useLocation();
   const t = useT();
+  const { lang } = useLang();
 
   useEffect(() => {
     console.error(
@@ -19,6 +21,13 @@ export default function NotFound() {
       className="flex flex-col min-h-[100dvh]"
       style={{ background: "radial-gradient(circle at top, #ffffff 0%, #f8f5e4 100%)" }}
     >
+      <Seo
+        title={t.pageMeta.notFound.title}
+        description={t.pageMeta.notFound.description}
+        canonical={`https://noteflex.app${location.pathname}`}
+        lang={lang === "ko" ? "ko" : "en"}
+        noindex
+      />
       <Header />
       <main className="flex-1 flex flex-col items-center justify-center px-6 py-12 text-center">
         <svg
