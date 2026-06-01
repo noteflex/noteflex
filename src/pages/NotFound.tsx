@@ -1,6 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
 import { useEffect } from "react";
-import { Music2 } from "lucide-react";
 import Header from "@/components/Header";
 import { useT } from "@/contexts/LanguageContext";
 
@@ -16,18 +15,30 @@ export default function NotFound() {
   }, [location.pathname]);
 
   return (
-    <div className="flex flex-col min-h-[100dvh] bg-background">
+    <div
+      className="flex flex-col min-h-[100dvh]"
+      style={{ background: "radial-gradient(circle at top, #ffffff 0%, #f8f5e4 100%)" }}
+    >
       <Header />
       <main className="flex-1 flex flex-col items-center justify-center px-6 py-12 text-center">
-        <Music2
-          className="mb-6 h-12 w-12"
-          style={{ color: "#D3224E" }}
-          strokeWidth={1.5}
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="#D3224E"
+          strokeWidth="1.6"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className="mb-6 w-16 h-16"
           aria-hidden="true"
-        />
+        >
+          <circle cx="6" cy="17" r="3" />
+          <circle cx="16" cy="17" r="3" />
+          <path d="M9 17V4h10v13" />
+          <path d="M9 8h10" />
+        </svg>
         <div
           className="font-medium tracking-tight leading-none"
-          style={{ fontSize: "96px", color: "#888" }}
+          style={{ fontSize: "96px", color: "rgba(211, 34, 78, 0.35)" }}
           aria-label="404"
         >
           404
@@ -49,7 +60,8 @@ export default function NotFound() {
           </Link>
           <Link
             to="/play"
-            className="rounded-md border border-border bg-transparent px-6 py-3 text-sm font-medium text-foreground transition-colors hover:bg-muted text-center"
+            className="rounded-md border px-6 py-3 text-sm font-medium transition-colors text-center hover:bg-[#FFF5F7]"
+            style={{ borderColor: "#D3224E", color: "#D3224E" }}
           >
             {t.notFoundPage.playGame}
           </Link>
