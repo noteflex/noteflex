@@ -9,6 +9,7 @@ import {
   type NoteComparisonResult,
   type NoteComparison,
 } from "@/lib/noteComparison";
+import { GuestNoteBreakdownTeaser } from "./GuestNoteBreakdownTeaser";
 
 /**
  * 5/31 코칭 다이얼로그 — 음표별 분석 섹션.
@@ -48,8 +49,8 @@ export function NoteAnalysisSection() {
     };
   }, [user]);
 
-  // 게스트 = 섹션 미렌더 (개인화 비교 데이터 없음)
-  if (!user) return null;
+  // 6/01 게스트 = 블러된 더미 카드 + 잠금 오버레이 + 가입 CTA (전환 후킹)
+  if (!user) return <GuestNoteBreakdownTeaser />;
   if (loading) return null;
 
   // 데이터 부족 → friendly empty state

@@ -357,6 +357,10 @@ export interface Strings {
     vsAvgFlat: string;           // "평소 수준 vs 평균" / "On par with avg"
     noteAnalysisTitle: string;   // "음표별 분석 · 최근 30회" / "Note analysis · Recent 30"
     noteAnalysisEmpty: string;   // "수치가 부족합니다. ..." / "Not enough data yet. ..."
+    // 6/01 비가입자 teaser (NoteAnalysisSection이 guest일 때 노출)
+    guestTeaserTitle: string;    // "음표별 분석" / "Note breakdown"
+    guestTeaserPrompt: string;   // "음표별 분석을 보려면 로그인하세요" / "Sign up to see note breakdown"
+    guestTeaserCta: string;      // "5초만에 시작" / "Sign up — 5 seconds"
     // SublevelPassedDialog — fast track
     fastTrackBadge: string;
     fastTrackAutoAdvance: string; // "{n}초 후 자동 진입" / "Auto-advance in {n}s"
@@ -1025,6 +1029,9 @@ const ko: Strings = {
     vsAvgFlat: "평소 수준 vs 평균",
     noteAnalysisTitle: "음표별 분석 · 최근 30회",
     noteAnalysisEmpty: "수치가 부족합니다. 더 진행하면 음표별 분석을 보여드려요.",
+    guestTeaserTitle: "음표별 분석",
+    guestTeaserPrompt: "음표별 분석을 보려면 로그인하세요",
+    guestTeaserCta: "5초만에 시작",
     fastTrackBadge: "🚀 패스트트랙",
     fastTrackAutoAdvance: "{n}초 후 자동 진입",
     fastTrackGoNow: "지금 바로 다음 단계",
@@ -1674,6 +1681,9 @@ const en: Strings = {
     vsAvgFlat: "On par with avg",
     noteAnalysisTitle: "Note analysis · Recent 30",
     noteAnalysisEmpty: "Not enough data yet. Keep playing to see note-level analysis.",
+    guestTeaserTitle: "Note breakdown",
+    guestTeaserPrompt: "Sign up to see note breakdown",
+    guestTeaserCta: "Sign up — 5 seconds",
     fastTrackBadge: "🚀 Fast Track",
     fastTrackAutoAdvance: "Auto-advance in {n}s",
     fastTrackGoNow: "Next stage now",
