@@ -109,6 +109,26 @@ export interface Strings {
     subs: readonly string[];
     buttonLabel: string;
   };
+  feedback: {
+    // FAB
+    fabLabel: string;          // "한 마디" / "Drop a note"
+    fabAriaLabel: string;      // 접근성용 long label
+    // Dialog
+    dialogTitle: string;       // "한 마디 남겨주세요" / "Drop a note"
+    dialogSubtitle: string;    // "버그·개선 사항·..." / "Bugs, ideas, anything..."
+    messagePlaceholder: string;
+    emailPlaceholder: string;
+    counter: string;           // "{n} / 500"
+    minHint: string;           // "최소 5자" / "Min 5 characters"
+    submit: string;            // "보내기" / "Send"
+    submitting: string;        // "보내는 중..." / "Sending..."
+    cancel: string;            // "취소" / "Cancel"
+    // Toasts
+    toastSuccess: string;      // "감사합니다 — 잘 받았습니다" / "Thanks — got it"
+    toastError: string;        // "전송 실패 — 잠시 후 다시 시도해주세요" / "Send failed — please retry"
+    toastTooShort: string;     // "최소 5자 이상 적어주세요" / "Please write at least 5 characters"
+    toastInvalidEmail: string; // "이메일 형식을 확인해주세요" / "Please check email format"
+  };
   langToggle: {
     ko: string;
     en: string;
@@ -782,6 +802,23 @@ const ko: Strings = {
     ],
     buttonLabel: "Play →",
   },
+  feedback: {
+    fabLabel: "한 마디",
+    fabAriaLabel: "피드백 남기기",
+    dialogTitle: "한 마디 남겨주세요",
+    dialogSubtitle: "버그·개선 사항·뭐든 환영합니다.",
+    messagePlaceholder: "여기에 적어주세요…",
+    emailPlaceholder: "답변 받고 싶으시면 이메일 (선택)",
+    counter: "{n} / 500",
+    minHint: "최소 5자",
+    submit: "보내기",
+    submitting: "보내는 중…",
+    cancel: "취소",
+    toastSuccess: "감사합니다 — 잘 받았습니다",
+    toastError: "전송에 실패했어요. 잠시 후 다시 시도해주세요.",
+    toastTooShort: "최소 5자 이상 적어주세요",
+    toastInvalidEmail: "이메일 형식을 확인해주세요",
+  },
   langToggle: {
     ko: "한국어",
     en: "English",
@@ -1433,6 +1470,23 @@ const en: Strings = {
       "That's it.",
     ],
     buttonLabel: "Play →",
+  },
+  feedback: {
+    fabLabel: "Drop a note",
+    fabAriaLabel: "Leave feedback",
+    dialogTitle: "Drop a note",
+    dialogSubtitle: "Bugs, ideas, anything — we read them all.",
+    messagePlaceholder: "Write anything here…",
+    emailPlaceholder: "Email for reply (optional)",
+    counter: "{n} / 500",
+    minHint: "Min 5 characters",
+    submit: "Send",
+    submitting: "Sending…",
+    cancel: "Cancel",
+    toastSuccess: "Thanks — got it.",
+    toastError: "Send failed. Please try again in a moment.",
+    toastTooShort: "Please write at least 5 characters.",
+    toastInvalidEmail: "Please check email format.",
   },
   langToggle: {
     ko: "한국어",

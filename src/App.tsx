@@ -24,6 +24,7 @@ import AdminUserDetail from "./pages/admin/AdminUserDetail.tsx";
 import AdminLogs from "./pages/admin/AdminLogs.tsx";
 import AdminBatchRuns from "./pages/admin/AdminBatchRuns.tsx";
 import WaitlistPage from "./pages/admin/WaitlistPage.tsx";
+import FeedbackPage from "./pages/admin/FeedbackPage.tsx";
 import StaffPreview from "./pages/admin/StaffPreview.tsx";
 import ProfilePage from "./pages/ProfilePage.tsx";
 import LegalPage from "./pages/legal/LegalPage.tsx";
@@ -33,6 +34,7 @@ import FAQ from "./pages/FAQ.tsx";
 import About from "./pages/About.tsx";
 import Contact from "./pages/Contact.tsx";
 import CookieBanner from "./components/CookieBanner.tsx";
+import FeedbackFab from "./components/feedback/FeedbackFab.tsx";
 import ComingSoonGate from "./components/ComingSoonGate.tsx";
 import ResetPasswordPage from "./pages/ResetPasswordPage.tsx";
 import AuthCallback from "./pages/AuthCallback.tsx";
@@ -178,12 +180,14 @@ const App = () => (
                 <Route path="logs" element={<AdminLogs />} />
                 <Route path="batch-runs" element={<AdminBatchRuns />} />
                 <Route path="waitlist" element={<WaitlistPage />} />
+                <Route path="feedback" element={<FeedbackPage />} />
                 <Route path="staff-preview" element={<StaffPreview />} />
               </Route>
 
               <Route path="*" element={<NotFound />} />
             </Routes>
             <CookieBanner />
+            <FeedbackFab />
             <AuthBroadcastListener />
             <Analytics />
           </BrowserRouter>
