@@ -226,13 +226,17 @@ export default function Pricing() {
   const handleCta = async (plan: "free" | "monthly" | "yearly") => {
     if (tier === "pro") return;
     if (plan === "free" && tier !== "guest") return; // Free 가입자는 현재 플랜
-    if (tier === "guest") {
-      navigate("/signup");
-      return;
-    }
-    // 가오픈(5/31) — Paddle 심사 중. monthly/yearly 결제 시도 시 안내 다이얼로그만.
+    // 가오픈(5/31) — PAYMENT_LOCKED 분기를 guest 분기보다 먼저:
+    // 비로그인·로그인 모두 동일하게 waitlist 다이얼로그 노출. (이 줄을 guest 분기보다 뒤로 두면
+    // 비로그인 사용자가 monthly·yearly 클릭 시 미존재 /signup 라우트로 가서 404 발생.)
     if (PAYMENT_LOCKED && (plan === "monthly" || plan === "yearly")) {
       setPaymentReviewOpen(true);
+      return;
+    }
+    // guest 분기 — /signup 라우트 미존재. 홈으로 보내 AuthModal 진입 유도.
+    // 현재로선 plan === "free" 케이스만 여기 도달 (monthly·yearly는 위 분기에서 처리).
+    if (tier === "guest") {
+      navigate("/");
       return;
     }
     // Free 가입자 → Paddle Checkout 호출
