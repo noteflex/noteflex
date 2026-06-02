@@ -79,6 +79,11 @@ CREATE POLICY <table>_admin_select
 
 -- ★ 정책뿐 아니라 role grants도 명시 (정책은 row 단위 필터, grants는 table 단위 권한)
 GRANT SELECT, INSERT, UPDATE, DELETE ON public.<table> TO anon, authenticated;
+
+-- ★ PostgREST schema cache 즉시 갱신 (DDL 직후 자동 reload 보장 X)
+-- 정책·grants 변경 후 이 줄이 없으면 PostgREST가 이전 상태로 인식해 RLS 위반
+-- 에러를 응답할 수 있음. 선례: 2026-06-02 premium_waitlist 사례 4.
+NOTIFY pgrst, 'reload schema';
 ```
 
 ---
@@ -107,6 +112,19 @@ GRANT EXECUTE ON FUNCTION public.is_admin() TO anon, authenticated;
 - `/admin/feedback`에서 row 0건 응답 (RLS off + grant 없음 = 빈 결과)
 - 정상화 마이그레이션 (`20260602_feedback_rls_grants.sql`)에서 `GRANT ALL ON public.feedback TO anon, authenticated`로 해결
 
+### 사례 3: `premium_waitlist` 어제 재시도 실패 (2026-06-01)
+- 사례 1 해결책(`20260601_premium_waitlist_rls_restore.sql`)을 prod 적용했으나 INSERT 또 실패
+- 정책·grants·`is_admin()` EXECUTE 모두 정상이었음 (사용자 SQL Editor 진단으로 확인)
+- 실제 원인은 **PostgREST schema cache stale** — RLS ENABLE 시점에 PostgREST가 "정책 없는 RLS ON" 상태로 인식해 모든 INSERT를 `new row violates RLS policy`로 차단
+- 즉시 `ALTER TABLE DISABLE ROW LEVEL SECURITY`로 롤백
+
+### 사례 4: `premium_waitlist` 최종 해결 (2026-06-02)
+- 진단으로 사례 3 원인이 PostgREST 캐시임을 확정
+- 정상화 마이그레이션 (`20260603_premium_waitlist_rls_enable.sql`):
+  - `ALTER TABLE ... ENABLE ROW LEVEL SECURITY` (정책 재생성 불필요 — 이미 존재)
+  - 끝에 `NOTIFY pgrst, 'reload schema'` 추가
+- 교훈: **Supabase SQL Editor에서 DDL 직접 실행 시 PostgREST 자동 reload는 보장 X**. 정책·grants 변경 후 `NOTIFY pgrst, 'reload schema'` 명시 필수.
+
 ---
 
 ## 5. 체크리스트 (신규 테이블 마이그레이션 작성 시)
@@ -118,6 +136,7 @@ GRANT EXECUTE ON FUNCTION public.is_admin() TO anon, authenticated;
 - [ ] **GRANT 명시적 부여** (`GRANT SELECT, INSERT, UPDATE, DELETE ON ... TO anon, authenticated`)
 - [ ] RLS ON 시 정책 4종(SELECT/INSERT/UPDATE/DELETE) 모두 `TO <role>` 절 포함
 - [ ] `is_admin()` 사용 시 `GRANT EXECUTE TO anon, authenticated` 사전 부여 확인
+- [ ] **`NOTIFY pgrst, 'reload schema'` 끝에 포함** (정책·grants 변경 시 PostgREST 캐시 즉시 갱신 — 사례 3·4 학습)
 - [ ] 마이그레이션 끝에 검증 SQL 주석 (RLS 상태·정책·grants 조회)
 - [ ] prod 적용 후 클라이언트 SELECT/INSERT 직접 검증
 
