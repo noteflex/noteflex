@@ -1,11 +1,11 @@
 ---
 title: "쿠키 정책"
-effective: "2026-05-13"
+effective: "2026-06-03"
 ---
 
 # 쿠키 정책
 
-**최종 업데이트: 2026년 5월 13일**
+**최종 업데이트: 2026년 6월 3일**
 
 본 쿠키 정책은 Donofear(이하 "**회사**", "**당사**")가 [https://noteflex.app](https://noteflex.app)("**웹사이트**") 방문 시 이용자를 인식하기 위해 쿠키 및 유사 기술을 어떻게 사용하는지 설명합니다. 본 정책은 이러한 기술이 무엇이며 왜 사용하는지, 그리고 이용자가 당사의 사용을 통제할 권리에 대해 설명합니다.
 
@@ -40,6 +40,28 @@ effective: "2026-05-13"
 | 서비스 | [Google 개인정보처리방침](https://business.safety.google/privacy/) |
 | 유형 | html_local_storage |
 | 만료 | 영구 |
+
+### 분석 쿠키
+
+이러한 쿠키는 본 웹사이트에 대한 방문자 사용 패턴(페이지뷰·세션·트래픽 출처 등)을 집계 분석하여 서비스 개선에 사용됩니다. 개별 이용자를 식별하지 않으며, 통계 목적의 집계 데이터 형태로 처리됩니다.
+
+| 항목 | 값 |
+|---|---|
+| 이름 | `_ga` |
+| 목적 | 고유 방문자 구분(이용자별 고유 ID 부여) |
+| 제공자 | .noteflex.app |
+| 서비스 | Google Analytics 4 — [Google 개인정보처리방침](https://policies.google.com/privacy) |
+| 유형 | server_cookie |
+| 만료 | 2년 |
+
+| 항목 | 값 |
+|---|---|
+| 이름 | `_ga_HHXHDJ6HF3` |
+| 목적 | 세션 상태 유지(GA4 property별 세션 ID) |
+| 제공자 | .noteflex.app |
+| 서비스 | Google Analytics 4 — [Google 개인정보처리방침](https://policies.google.com/privacy) |
+| 유형 | server_cookie |
+| 만료 | 2년 |
 
 ### 광고 쿠키
 

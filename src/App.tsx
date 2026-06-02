@@ -34,6 +34,7 @@ import FAQ from "./pages/FAQ.tsx";
 import About from "./pages/About.tsx";
 import Contact from "./pages/Contact.tsx";
 import CookieBanner from "./components/CookieBanner.tsx";
+import AnalyticsTracker from "./components/AnalyticsTracker.tsx";
 import FeedbackFab from "./components/feedback/FeedbackFab.tsx";
 import ComingSoonGate from "./components/ComingSoonGate.tsx";
 import ResetPasswordPage from "./pages/ResetPasswordPage.tsx";
@@ -189,6 +190,7 @@ const App = () => (
             <CookieBanner />
             <FeedbackFab />
             <AuthBroadcastListener />
+            <AnalyticsTracker />
             <Analytics />
           </BrowserRouter>
         </TooltipProvider>

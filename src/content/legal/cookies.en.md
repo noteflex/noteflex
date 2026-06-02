@@ -1,11 +1,11 @@
 ---
 title: "Cookie Policy"
-effective: "2026-05-13"
+effective: "2026-06-03"
 ---
 
 # Cookie Policy
 
-**Last updated May 13, 2026**
+**Last updated June 3, 2026**
 
 This Cookie Policy explains how Donofear ("**Company**," "**we**," "**us**," and "**our**") uses cookies and similar technologies to recognize you when you visit our website at [https://noteflex.app](https://noteflex.app) ("**Website**"). It explains what these technologies are and why we use them, as well as your rights to control our use of them.
 
@@ -40,6 +40,28 @@ These cookies are used to enhance the performance and functionality of our Websi
 | Service | [Google Privacy Policy](https://business.safety.google/privacy/) |
 | Type | html_local_storage |
 | Expires in | persistent |
+
+### Analytics cookies
+
+These cookies are used to aggregate and analyze visitor usage patterns on our Website (page views, sessions, traffic sources, etc.) to help us improve the Service. They do not identify individual users and are processed in aggregate statistical form.
+
+| Field | Value |
+|---|---|
+| Name | `_ga` |
+| Purpose | Distinguishes unique visitors (assigns a unique ID per user) |
+| Provider | .noteflex.app |
+| Service | Google Analytics 4 — [Google Privacy Policy](https://policies.google.com/privacy) |
+| Type | server_cookie |
+| Expires in | 2 years |
+
+| Field | Value |
+|---|---|
+| Name | `_ga_HHXHDJ6HF3` |
+| Purpose | Maintains session state (session ID per GA4 property) |
+| Provider | .noteflex.app |
+| Service | Google Analytics 4 — [Google Privacy Policy](https://policies.google.com/privacy) |
+| Type | server_cookie |
+| Expires in | 2 years |
 
 ### Advertising cookies
 

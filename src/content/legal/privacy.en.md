@@ -1,11 +1,11 @@
 ---
 title: "Privacy Policy"
-effective: "2026-05-13"
+effective: "2026-06-03"
 ---
 
 # Privacy Policy
 
-**Last updated May 13, 2026**
+**Last updated June 3, 2026**
 
 This Privacy Notice for Donofear (doing business as Noteflex) ("**we**," "**us**," or "**our**"), describes how and why we might access, collect, store, use, and/or share ("**process**") your personal information when you use our services ("**Services**"), including when you:
 
@@ -147,6 +147,8 @@ The third parties we may share personal information with are as follows:
 
 - **Advertising, Direct Marketing, and Lead Generation**
   - Google AdSense
+- **Web Analytics**
+  - Google Analytics 4
 - **Allow Users to Connect to Their Third-Party Accounts**
   - Google account
 - **Cloud Computing Services**
