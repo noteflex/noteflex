@@ -12,6 +12,7 @@ import { format as formatI18n } from "@/i18n/strings";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { trackEvent } from "@/lib/analytics";
 
 interface Props {
   open: boolean;
@@ -73,6 +74,10 @@ export default function FeedbackDialog({ open, onClose }: Props) {
       toast.error(t.feedback.toastError);
       return;
     }
+    trackEvent("feedback_submit", {
+      has_email: !!trimmedEmail,
+      message_length: trimmedLen,
+    });
     toast.success(t.feedback.toastSuccess);
     onClose();
   };

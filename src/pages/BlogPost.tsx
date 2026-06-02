@@ -14,6 +14,7 @@ import {
 import { AdBanner } from "@/components/AdBanner";
 import { getSlot } from "@/lib/adsense";
 import Seo from "@/components/Seo";
+import { trackEvent } from "@/lib/analytics";
 
 /**
  * 본문 끝의 "## 이미지 출처/Image Sources/참고 문헌/References" H2 섹션을 분리.
@@ -63,6 +64,11 @@ export default function BlogPost() {
         setNotFound(true);
       } else {
         setPost(p);
+        trackEvent("blog_view", {
+          slug,
+          lang,
+          category: p.meta.category ?? "",
+        });
       }
       setLoading(false);
     });

@@ -53,3 +53,13 @@ export function trackPageView(path: string): void {
     page_location: window.location.href,
   });
 }
+
+// Custom event 전송. params 의 undefined 값은 GA4 가 무시함 — 호출 측 분기 단순화 가능.
+// reserved name (sign_up · login · purchase 등) GA4 가 recommended event 로 별도 처리.
+export function trackEvent(
+  name: string,
+  params?: Record<string, string | number | boolean | undefined>,
+): void {
+  if (!isAnalyticsEnabled() || typeof window.gtag !== "function") return;
+  window.gtag("event", name, params ?? {});
+}

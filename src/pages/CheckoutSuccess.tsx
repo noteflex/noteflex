@@ -5,6 +5,7 @@ import Seo from "@/components/Seo";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLang, useT } from "@/contexts/LanguageContext";
 import { logger } from "@/lib/sentry";
+import { trackEvent } from "@/lib/analytics";
 
 export default function CheckoutSuccess() {
   const navigate = useNavigate();
@@ -22,6 +23,8 @@ export default function CheckoutSuccess() {
       user_id: user?.id ?? "(no_user)",
       transaction_id: transactionId,
     });
+
+    trackEvent("subscribe", { transaction_id: transactionId });
 
     const refreshTimer = setTimeout(() => {
       refreshProfile?.();

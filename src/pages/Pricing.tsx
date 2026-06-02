@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import Header from "@/components/Header";
 import { useAuth } from "@/contexts/AuthContext";
@@ -17,6 +17,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
+import { trackEvent } from "@/lib/analytics";
 
 // 가오픈(5/31) — Paddle 심사 통과 후 PAYMENT_LOCKED=false로 전환, 다이얼로그 분기 제거.
 const PAYMENT_LOCKED = true;
@@ -188,6 +189,10 @@ export default function Pricing() {
 
   const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(waitlistEmail.trim());
 
+  useEffect(() => {
+    trackEvent("pricing_view", { tier });
+  }, [tier]);
+
   const closeWaitlistDialog = () => {
     setPaymentReviewOpen(false);
     // 다이얼로그 close 애니메이션 후 상태 리셋 (즉시 리셋하면 close 중 텍스트 깜빡임)
@@ -219,6 +224,10 @@ export default function Pricing() {
       setWaitlistStatus("error");
       return;
     }
+    trackEvent("waitlist_signup", {
+      locale: lang === "ko" ? "ko" : "en",
+      source: "pricing",
+    });
     setWaitlistStatus("success");
     window.setTimeout(closeWaitlistDialog, 1500);
   };

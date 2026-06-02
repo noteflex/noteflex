@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { logger } from "@/lib/sentry";
+import { trackEvent } from "@/lib/analytics";
 
 export default function AuthCallback() {
   const navigate = useNavigate();
@@ -91,6 +92,7 @@ export default function AuthCallback() {
 
       // Google OAuth 가입 시 localStorage에 저장된 TOS 동의 시점을 profile에 반영
       const stored = localStorage.getItem("noteflex_consent");
+      trackEvent(stored ? "sign_up" : "login", { method: "google" });
       if (stored) {
         try {
           const consent = JSON.parse(stored);

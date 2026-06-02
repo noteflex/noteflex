@@ -22,6 +22,7 @@ import {
 import { GameOverDialog } from "@/components/GameOverDialog";
 import { SublevelPassedDialog } from "@/components/SublevelPassedDialog";
 import { GameErrorBoundary } from "@/components/GameErrorBoundary";
+import { trackEvent } from "@/lib/analytics";
 
 type PlayScreen = "levelSelect" | "game";
 
@@ -71,6 +72,21 @@ export default function PlayPage() {
     gameStatus: "success" | "gameover";
   }) => {
     setLastResult(result);
+    trackEvent("game_complete", {
+      level: result.level,
+      sublevel: result.sublevel,
+      passed: result.passed,
+      just_passed: result.just_passed,
+      total_attempts: result.totalAttempts,
+      total_correct: result.totalCorrect,
+      best_streak: result.bestStreak,
+    });
+    if (result.just_passed) {
+      trackEvent("stage_unlock", {
+        level: result.level,
+        sublevel: result.sublevel,
+      });
+    }
     if (onAdGameEnd(result.just_passed)) {
       setInterstitialOpen(true);
       return;
@@ -137,6 +153,7 @@ export default function PlayPage() {
     setSelectedSublevel(sublevel);
     setReplayCounter(0);
     setScreen("game");
+    trackEvent("game_start", { level, sublevel });
   };
 
   const handleGoMain = () => navigate("/");
