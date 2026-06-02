@@ -892,6 +892,8 @@ AI·정밀 데이터·Noteflex 기능·음악 교육의 미래.
 | 2026-06-01 | 32 | §1-10 | Is Sight-Reading Innate or Learned? — Behind the Talent Myth, the Real Weight of Cumulative Practice (en) ✅ 작성 완료 | sight-reading-innate-or-learned | Sight-Reading Lab | ~981 words | sight-reading talent, is sight-reading innate, sight-reading learned skill, music ability genetics, deliberate practice music, music prodigy myth | Mosing + Ericsson 전통 |
 | 2026-06-02 | 33 | §7-83 | 초견의 정확도와 속도 — 어느 쪽을 먼저 키워야 하나 (ko) ✅ 작성 완료 | accuracy-vs-speed-sight-reading | 뮤직 테크 & 미래 | ~1572자 | 초견 정확도, 초견 속도, 정확도 vs 속도, 초견 연습 우선순위, 속도 정확도 균형, 초견 빠르게, errorless 학습 | Schmidt & Bjork + Repp 전통 |
 | 2026-06-02 | 33 | §7-83 | Accuracy or Speed in Sight-Reading — Which Comes First (en) ✅ 작성 완료 | accuracy-vs-speed-sight-reading | Music Tech | ~821 words | sight-reading accuracy vs speed, accuracy or speed music practice, speed-accuracy tradeoff music, sight-reading practice order, errorless practice music, how to sight-read faster | Schmidt & Bjork + Repp 전통 |
+| 2026-06-03 | 34 | §3-39 | 메트로놈은 언제 켜고 언제 꺼야 하나 — 초견 연습에서 박자기의 자리 (ko) ✅ 작성 완료 | metronome-in-sight-reading-practice | 실전 연습 가이드 | ~2050자 | 메트로놈 활용법, 초견 메트로놈, 메트로놈 사용법, 박자 연습, 메트로놈 연습, 내적 박자, 음악 동기화 연습 | Drake/Penel/Bigand + Carrer/Pompéia/Miranda 전통 |
+| 2026-06-03 | 34 | §3-39 | When to Turn the Metronome On and When to Turn It Off — Its Place in Sight-Reading Practice (en) ✅ 작성 완료 | metronome-in-sight-reading-practice | Practice Hub | ~960 words | metronome practice, how to use metronome, metronome sight-reading, internal pulse music, sensorimotor synchronization music, metronome on or off, practicing with metronome | Drake/Penel/Bigand + Carrer/Pompéia/Miranda 전통 |
 
 ---
 
