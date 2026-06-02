@@ -52,6 +52,20 @@
     - 신규 Supabase 마이그레이션 + Edge Function
     - 신규 admin 페이지
     - i18n strings 추가
+- [출시후 LOW] **PWA Service Worker register graceful catch** — 2026-06-02 Sentry 캡처: Chrome Mobile 148 + Android 6.0.1 + Nexus 5X (US, en-US) 사용자에서 SW 등록 거부 (`Error: Rejected`). vite-plugin-pwa의 `registerSW.js`가 `navigator.serviceWorker.register()` Promise rejection을 catch 안 함 → unhandled rejection이 onunhandledrejection global handler를 거쳐 Sentry에 capture. 페이지 로드·AdSense·게임 동작 영향 X, PWA "홈 화면 추가" 기능만 영향. 누적 시 Sentry noise → 진짜 에러 묻힘 위험.
+  - 원인 (사용자 환경):
+    - 구형 Android OS (6.0.1 등)
+    - 광고/추적 차단 도구·privacy 확장 프로그램
+    - 시크릿/incognito 모드
+    - 브라우저 SW 권한 거부 설정
+  - 작업 옵션:
+    - (a) vite.config.ts → vite-plugin-pwa 옵션의 `onRegisterError` callback 추가
+    - (b) `injectRegister: false`로 설정 후 src/main.tsx에 자체 register + try/catch
+    - (c) Sentry SDK에서 이 메시지 ignore rule 추가 (보조)
+  - 분량: 30분 (코드 + 빌드 + commit)
+  - 검증:
+    - prod 재배포 후 같은 에러 Sentry에 캡처 X 확인 (24~48h)
+    - PWA 정상 환경에서 SW 등록 작동 유지 (Chrome 최신·Safari iOS 등)
 
 ---
 
