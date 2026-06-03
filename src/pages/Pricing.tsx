@@ -205,18 +205,15 @@ export default function Pricing() {
   const handleWaitlistSubmit = async () => {
     if (!isEmailValid || waitlistStatus === "submitting") return;
     setWaitlistStatus("submitting");
-    const { error } = await supabase
-      .from("premium_waitlist")
-      .upsert(
-        {
-          email: waitlistEmail.trim().toLowerCase(),
-          locale: lang === "ko" ? "ko" : "en",
-          source: "pricing",
-        },
-        { onConflict: "email", ignoreDuplicates: true },
-      );
+    const { error } = await supabase.functions.invoke("waitlist-signup", {
+      body: {
+        email: waitlistEmail.trim().toLowerCase(),
+        locale: lang === "ko" ? "ko" : "en",
+        source: "pricing",
+      },
+    });
     if (error) {
-      logger.warn("premium_waitlist insert 실패", {
+      logger.warn("waitlist-signup 호출 실패", {
         email_hash: waitlistEmail.length,
         error_message: error.message,
       });
