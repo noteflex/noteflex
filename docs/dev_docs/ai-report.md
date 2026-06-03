@@ -121,7 +121,46 @@ export type WeeklyHeadlineKind = "up" | "down" | "same" | "grace" | "nodata";
 
 티어: Pro 전용(`ProLockScreen`).
 
-## 10. 알려진 함정 (Known Pitfalls)
+## 10. 월간 리포트 (설계 — 빌드 PARKED)
+
+**목적**: 성장/리텐션 레이어. 일간=진단, 주간=습관/패턴, 월간=한 달간 성장 궤적 + 지속 여부. 진단이 아니라 성취·궤적 중심(이탈 방지 보상 보고서).
+
+**상태**: 설계 완료(목업 승인). 빌드 PARKED. 전제 조건 2개 충족 전 빌드 금지 —
+1. RLS audit 완료(`usePeriodReport`에 명시적 `user_id` 필터 추가).
+2. 완료된 한 달 + 직전 달(MoM 비교용) 데이터 존재.
+
+**데이터 소스**: `user_analytics_rollup`(`period_type='month'`, 현재·직전 달), 월 내 daily rollup, 월 내 weekly rollup(없으면 daily를 주 단위 집계), `graduated`/`regressed` JSONB.
+
+### 섹션 구성 (위→아래)
+
+1. **헤드라인(성장 우선)** — "한 달 동안 정확도 N%p ↑ · 음표 N개 졸업". `accuracyDeltaPp` = 이번달 avg − 지난달 avg(첫 달이면 숨김). `graduatedCount` = `graduated.length`.
+2. **지표 4장** — 🎯정확도(MoM Δ) / ⚡반응속도(MoM Δ, ms↓=빨라짐=emerald) / 🗓️연습일(active일/경과일) / 🏅졸업 음표 수. month rollup baseline + 월 내 daily rollup count.
+3. **주차별 성장 곡선** — 월 내 주별 평균 정확도 선(4–5점). weekly rollup 또는 daily 주 집계. 데이터 없는 주는 점 생략. 선 색 `#D3224E`.
+4. **연습 캘린더(히트맵)** — 칸 = 그 달의 한 날, offset = 그 달 1일의 요일. 색 농도 = 그 날 연습량 = `user_note_logs`의 그 날 시도 수(session_id 없으므로 세션 수 대신 시도 수). 버킷 4단계: 0(빈 칸) / 연한 / 중간 / 진한. 임계값은 placeholder — 첫 달 실데이터 분포 확인 후 확정. 범례 캡션 필수: "칸 색이 진할수록 그 날 연습을 많이 했어요". 최장 연속일은 경과일(과거)만 대상.
+5. **졸업한 음표** — 월초 weak(<0.75) → 월말 양호(≥0.75)로 전이한 음표. `graduated` JSONB. "X% → Y% ✓" 형식. 가장 강한 성장 신호.
+6. **아직 잡을 음표** — 여러 주에 걸쳐 weak(<0.75)였던 음표만. `weak_notes_top`을 주별 등장 횟수로 필터. 다음 달 focus로 이월.
+7. **격려/다음** — `graduatedCount > 0`이면 축하 + 다음 목표, 성장 flat이면 정직한 격려, 한 달 미만 데이터면 grace("아직 한 달치 데이터가 없어요").
+
+### 알려진 함정 / 전제
+
+- **첫 달은 MoM Δ 전부 숨김** — 직전 달이 없으면 모든 delta 표기를 숨긴다(주간 delta 버그와 동일 패턴).
+- **반응속도 부호 주의** — ms 감소 = 빨라짐 = emerald. 주간과 동일하지만 뒤집히기 쉬움.
+- **graduated/regressed 신뢰도** — 배치가 기간 시작/끝 상태 전이를 정확히 계산해야 신뢰 가능. 실데이터 검증 필요.
+- **usePeriodReport는 RLS audit 대상** — admin RLS 오염(`is_admin()` 전체 반환) 대상. `user_id` 필터 audit 완료 후에만 검증 가능.
+- **한 달 미만 데이터** — grace 상태로 처리. 강한 empty state("아직 한 달치 데이터가 없어요") 표시.
+
+### 색상 팔레트
+
+| 용도 | 값 |
+|---|---|
+| 성장 곡선 | `#D3224E` |
+| 히트맵·active | `#22c55e` (연한 `#86d9a0`) |
+| positive delta / 졸업 ✓ | `#1a9d52` |
+| 약점 점 | `#EF9F27` |
+
+이모지는 헤드라인·지표·섹션·격려에만 절제 사용.
+
+## 11. 알려진 함정 (Known Pitfalls)
 
 - **개인 분석 read는 RLS 스코핑에 의존하지 말 것** — `is_admin()` 정책은 전 유저 행을 반환한다. 개인 보고서·대시보드 read는 반드시 명시적 `.eq("user_id", userId)` 필터를 추가해야 한다. 이 필터 없이 RLS에만 의존하면 admin 계정이 조회 시 다른 유저 데이터가 혼입된다(활동일 오버카운트, 추세선 왜곡, delta 계산 오류). admin 전용 전체 조회는 `/admin/*` 경로에서만.
 - **`Promise.all`에서 sub-query 오류를 throw하지 말 것** — 직전 주·일간 rows처럼 없어도 동작 가능한 쿼리는 오류 시 `null`/빈 배열로 처리하고 `console.warn`으로만 기록. `throw`하면 선택적 데이터 부재가 전체 보고서 오류 화면으로 전이된다.
