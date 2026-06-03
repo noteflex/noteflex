@@ -52,6 +52,10 @@ export interface Strings {
     body: string;
     blogButton: string;
   };
+  updateBanner: {
+    message: string;
+    action: string;
+  };
   header: {
     signIn: string;
     mainNav: string;
@@ -736,6 +740,10 @@ const ko: Strings = {
     badge: "🚀 2026년 6월 출시 예정",
     body: "정식 출시까지 마지막 다듬기 중입니다. 출시 알림을 원하시면 {email}으로 메일을 보내주세요.",
     blogButton: "📝 블로그 읽기",
+  },
+  updateBanner: {
+    message: "새 버전이 있어요",
+    action: "새로고침",
   },
   header: {
     signIn: "로그인 / 회원가입",
@@ -1436,6 +1444,10 @@ const en: Strings = {
     badge: "🚀 Launching June 2026",
     body: "Final polishing before official launch. For launch notifications, email {email}.",
     blogButton: "📝 Read Blog",
+  },
+  updateBanner: {
+    message: "A new version is available",
+    action: "Refresh",
   },
   header: {
     signIn: "Sign In / Sign Up",

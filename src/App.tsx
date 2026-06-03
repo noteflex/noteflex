@@ -41,6 +41,7 @@ import ResetPasswordPage from "./pages/ResetPasswordPage.tsx";
 import AuthCallback from "./pages/AuthCallback.tsx";
 import ReviewerLogin from "./pages/ReviewerLogin.tsx";
 import { ErrorBoundary } from "./components/ErrorBoundary.tsx";
+import { UpdateBanner } from "./components/UpdateBanner.tsx";
 import { HelmetProvider } from "react-helmet-async";
 
 const queryClient = new QueryClient();
@@ -189,6 +190,7 @@ const App = () => (
             </Routes>
             <CookieBanner />
             <FeedbackFab />
+            <UpdateBanner />
             <AuthBroadcastListener />
             <AnalyticsTracker />
             <Analytics />
