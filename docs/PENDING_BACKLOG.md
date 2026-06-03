@@ -57,6 +57,17 @@
     - i18n strings 추가
 - [✅ 2026-06-03] **PWA Service Worker register graceful catch** — `injectRegister: false` + `virtual:pwa-register`의 `onRegisterError` callback으로 graceful catch 완료. Sentry `ignoreErrors` 보조 필터 추가. commit `416ca00`. Sentry noise 해소 24~48h 모니터링 진행 중.
 - [✅ 2026-06-03] **feedback·premium_waitlist RLS 보안 정상화** — 두 테이블 RLS ON, anon SELECT 전부 차단. feedback: `feedback_admin_all`(is_admin) 단일 정책 — INSERT는 기존 Edge Function(service_role) 경유라 anon INSERT 정책 없음. premium_waitlist: 직접 클라이언트 INSERT가 RLS 42501로 지속 충돌 → `waitlist-signup` Edge Function(service_role) 신규 생성·prod 배포, `Pricing.tsx` → `functions.invoke('waitlist-signup')` 전환. anon/authenticated 직접 INSERT 정책 제거(`20260603_premium_waitlist_remove_anon_insert.sql`). admin_all만 유지. (커밋 9b1f22e·ed66cb4)
+- [✅ 2026-06-04] **chunk-load PWA 복원력 + SW 새 버전 배너** — Vite chunk-load 오류 자동 감지 후 1회 reload 복구 + Service Worker 새 버전 감지 시 배너 노출. (커밋 b0ca878)
+- [✅ 2026-06-04] **사용자 노출 "AI" 표현 전면 제거** — 분석/코칭에 LLM 없음(순수 SQL 규칙 엔진). Pricing·Index/SEO·Dashboard·strings.ts·index.html의 노출 "AI" 표기 전부 제거(🤖→📊). 코드 식별자(AiFeedbackCard 등)는 내부 명칭으로 유지. 정직성·심사/환불 리스크 대응.
+- [✅ 2026-06-04] **일간 보고서 강화 + interval 0% 버그 수정** — WeakNoteHighlightSection + IntervalSection(user_note_logs 라이브, leap-size 버킷 5종, 시도 <5회/<2버킷 graceful hide) + takeaway 자동 선택. pct 계산 errorRate→accuracy 정정으로 0% 표시 버그 해소.
+- [✅ 2026-06-04] **분석 시드·teardown 스크립트 작성** — `scripts/dev/seed_analytics_current.sql`(5/11~6/4 22일, raw log 시뮬), `scripts/dev/teardown_analytics_seed.sql`(marker 삭제 후 real-only rollup 재빌드). admin 개발 검증용.
+- [✅ 2026-06-04] **주간 리포트 빌드** — `useWeeklyReport.ts`(현재/직전 주+7일 day 병렬 조회, user_id 필터), `WeeklyReport.tsx`(헤드라인·메트릭 3개·추세선·리듬 원·집중 음표), `WeeklyAnalyticsPage` ComingSoonGate 제거. `/analytics/weekly` Pro 전용 라이브.
+- [✅ 2026-06-04] **[중대] admin RLS 오염 발견·수정 (user_id 필터)** — `is_admin()` 정책이 전 유저 rollup 반환 → 훅이 RLS에만 의존해 타 유저 데이터 혼입(활동일 10/7, 추세선 1점, delta —). `useWeeklyReport` 세 쿼리에 `.eq("user_id", userId)` 추가로 해소. RLS 정책 미변경(admin 전체 조회는 /admin/* 의도).
+- [✅ 2026-06-04] **주간 보고서 D1/D2/D3 + 디자인 전면 개선 (4파일)** — D1: 헤드라인을 주간 delta 기반 win-first(up/down/same/grace/nodata)로 교체, "낮았어요"는 delta ≤−1%p 시만("떨어졌어요" 완전 제거). D2: `WEAK_NOTE_GREEN_THRESHOLD=0.75` 상수 통일, 녹색(≥75%) 음표 집중 목록에서 제외. D3: "최장 공백"(미래 날짜 포함 오류) → 경과일 연속 streak 로직. 계산 전부 `useWeeklyReport.ts` 이전. 이모지 레이블·격려 카드·i18n 24개 키 추가/갱신.
+- [🔴 중대·Opus] **개인 분석 read 전체 admin RLS user_id 필터 audit** — 동일 패턴(`is_admin()` 전체 반환)이 일간(`usePeriodReport`/`useDailyReport`/`useDailyIntervals`)·월간·대시보드 read에 잔존 가능. admin 과거 검증(일간 ▲31%p 등) 부분 오염 상태. 개인 분석 read 경로 전부에 명시적 `.eq("user_id", userId)` 필터 추가 후 admin으로 일간/주간/월간 재검증. RLS 미변경(admin 전체 조회는 `/admin/*` 전용 의도 유지).
+- [출시후] **일간 delta baseline 가드** — 직전 active days < 3이면 "vs avg" delta 표시 숨김. baseline이 1일치 희소 데이터일 때 ▲31%p 류 허수 방지. rollup에서 직전 활동일 수 조회 후 가드 추가.
+- [출시후] **주간 보고서 검증 잔여** — 반응속도 delta 부호(ms↓=빨라짐=emerald) 실측 확인, 격려 카드 grace/nodata 분기, 엣지 5종(정확도 하락·반응 느려짐·약점0·streak≤1·grace) 화면 검증 후 push.
+- [출시후-MEDIUM] **월간 보고서 설계(§9 수준) + 빌드** — 데이터 성숙(2~4주) 후. 월간 목적 = 성장·정체·유지율. §9 수준 설계 문서 작성 후 빌드.
 - [출시후-MEDIUM] **repo/prod 마이그레이션 동기화** — 대시보드 수동 정책 변경(drop/create·AS PERMISSIVE 재생성)과 `20260603` 제거 마이그레이션, `waitlist-signup` 함수 코드가 repo에 커밋·push 됐는지 확인. 마이그레이션 파일들이 현재 prod 정책 상태를 순서대로 재현할 수 있는지 정합. Supabase Dashboard > Authentication > Policies와 repo `supabase/migrations/` 대조 기준으로 진행.
 - [출시후-모니터링] **Sentry `[object Object]` 패턴 재발 시 logger.error 호출 정리** — 2026-06-03 Sentry 정리 시 2주 전 `[object Object]` 패턴 이슈 2건 발견 (JAVASCRIPT-REACT-4, JAVASCRIPT-REACT-5). `logger.error('title', errorObject)` 호출 시 errorObject가 Error 인스턴스가 아닌 일반 객체일 때 Sentry가 `String()` 변환 → `[object Object]`로 stringify. 진짜 에러 정보는 잡혀 있지만 Sentry message가 의미 없는 상태 → 디버깅 어려움. 2주 전 발생 이후 코드 큰 폭 변경(NextStepCard 리뉴얼·`/play` 리팩토링 등) → 이미 fix됐을 가능성 있음.
   - 모니터링: 24~48시간 → 새 빌드에서 같은 패턴 재발 시 진단·fix. Resolve 후 동일 stack hash로 재발 시 Sentry 자동 unresolved 처리.
@@ -131,7 +142,7 @@
 
 ### Paddle 검토 중 대응 (메일 대기)
 
-- [ ] billing@noteflex.app(=admin@ 받은편지함) 주시: 신원 인증(여권+셀피영상), 도메인 인증 코드(오면 사이트 작업 → Claude에 전달), 추가서류
+- [ ] billing@noteflex.app(=admin@ 받은편지함) 주시: 신원 인증(여권+셀피영상), 도메인 인증 코드(오면 사이트 작업 → Claude에 전달), 추가서류. **KYC proof-of-address 제출 완료(2026-06-04), 회신 대기 중.**
 - [ ] 사업자 통장 개설(내일/모레 은행) → Paddle 정산(banking) 계좌 등록
 
 ### AdSense 승인 후

@@ -4,6 +4,36 @@
 
 ---
 
+## 2026-06-04 — 분석 리포트 · 보안 · 주간 리포트 빌드 (06-03 시작)
+
+### 완료
+- **보안:** feedback·premium_waitlist 쓰기를 Edge Function 경유로 전환, RLS clean audit 통과. chunk-load PWA 복원력 추가(b0ca878).
+- **"AI" 카피 제거:** 분석/코칭에 LLM 없음(순수 SQL 규칙 엔진) → 사용자 노출 "AI" 표기 전부 제거(Pricing·Index·SEO·index.html·strings·Dashboard 🤖→📊). 정직성·심사/환불 리스크 대응. "AI"는 추후 LLM narration layer용 이름으로 보류. 코드 식별자(AiFeedbackCard 등) 유지.
+- **백로그 재정렬:** noteflex-backlog-status.md(47항목) 작성. 실제 레버 = 트래픽(SEO #37) + 결제(Paddle); 분석 깊이는 트래픽 전 저ROI로 정리.
+- **분석 아키텍처 확정:** 야간 배치 rollup + 최소 live. 보고서 3종(일간=진단/행동, 주간=패턴/습관, 월간=성장/리텐션). clef·accidental 집계는 레벨 게이팅 혼동+per-note 중복으로 제외. interval은 "플레이한 레벨 내"로 한정 유지.
+- **일간 강화:** WeakNoteHighlightSection + IntervalSection(user_note_logs live, leap-size 버킷, <5회/<2버킷 graceful hide) + takeaway 자동 선택.
+- **interval 0% 버그 수정:** IntervalSection pct가 errorRate→accuracy. 로깅 정합성(30/30) 정상 확인.
+- **dev_docs/ai-report.md 생성**, §9 주간 설계 추가.
+- **시드(Opus):** admin user_note_logs 5/11–6/4 시드 후 배치 실행(raw log 기반, 가짜 rollup 아님). teardown은 marker 삭제 후 real-only 재빌드. JSONB 5컬럼 정상.
+- **주간 리포트 빌드:** useWeeklyReport.ts(현재/직전 주+7일 병렬), WeeklyReport.tsx, WeeklyAnalyticsPage 사용, strings/types 반영. /analytics/weekly(weekly·monthly ComingSoonGate 제거).
+- **"데이터 못 불러옴" 수정:** Promise.all 전부-실패-아니어도 죽던 것 → current fatal, prev·daily non-fatal+warn.
+- **[중대] admin RLS 오염 발견·수정:** is_admin()이 전 유저 rollup 반환 → 훅이 user_id 필터 없이 RLS 의존해 타 유저 혼입(활동일 10/7, 추세선 1점, delta —). useWeeklyReport 세 쿼리에 .eq("user_id", userId) 추가. RLS 미변경(admin 전체 조회는 /admin/* 의도).
+- **주간 polish + 데이터 3건 수정(Sonnet, 4파일):** 헤드라인을 "지난주 대비" 단일 기준으로(주중 기울기 모순 제거, win-first) / WEAK_NOTE_GREEN_THRESHOLD=0.75로 dot색·포함 기준 통일해 녹색(≥75%) 제외(D5 78% 제거), 섹션명 "집중할 음표"로 / "최장 공백"(미래 날짜 오류) → 경과일 연속 streak / 이모지 절제 추가.
+
+### 진행 중 · 보류
+- **[중대][Opus] RLS 오염 systemic audit:** 같은 패턴이 일간·월간(usePeriodReport)·useDailyIntervals·대시보드 read에 잔존 가능. admin 과거 검증(일간 ▲31%p 포함) 부분 오염. 개인 분석 read 전부에 명시적 user_id 필터 후 재검증.
+- **일간 delta 버그:** ▲31%p가 1일 baseline에서 나옴. 직전 active days ≥3 가드 필요.
+- **주간 검증 잔여:** 반응속도 delta 방향(빨라짐=emerald), 격려 카드 grace/nodata 분기.
+- **월간 보고서:** 데이터 성숙 전 PARK. §9 수준 설계 미작성.
+- **Paddle KYC:** proof-of-address 제출, 회신 대기(매출 게이트).
+
+### 다음
+- 주간 엣지 5종 화면 검증(정확도 하락/반응 느려짐/약점0/streak≤1/grace) → push.
+- Opus RLS user_id 필터 audit 프롬프트.
+- 사업 레버: SEO #37(트래픽) + Paddle 회신.
+
+---
+
 ## 2026-06-03 — RLS 보안 정상화 + waitlist Edge Function 전환
 
 ### feedback · premium_waitlist RLS 보안 정상화
