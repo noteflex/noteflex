@@ -212,12 +212,11 @@ export default function Pricing() {
           email: waitlistEmail.trim().toLowerCase(),
           locale: lang === "ko" ? "ko" : "en",
           source: "pricing",
-          updated_at: new Date().toISOString(),
         },
-        { onConflict: "email" },
+        { onConflict: "email", ignoreDuplicates: true },
       );
     if (error) {
-      logger.warn("premium_waitlist upsert 실패", {
+      logger.warn("premium_waitlist insert 실패", {
         email_hash: waitlistEmail.length,
         error_message: error.message,
       });
