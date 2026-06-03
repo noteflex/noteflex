@@ -250,7 +250,7 @@ function IntervalSection({
           const acc = 1 - b.errorRate;
           const barColor =
             acc >= 0.75 ? "bg-emerald-400" : acc >= 0.5 ? "bg-amber-400" : "bg-red-400";
-          const pct = Math.round(b.errorRate * 100);
+          const pct = Math.round(acc * 100);
           return (
             <li key={b.key}>
               <div className="flex items-center justify-between text-[11px] mb-0.5">
