@@ -157,6 +157,9 @@ export interface PeriodRollup {
 // 일간 롤업 row (user_analytics_rollup where period_type = 'day')
 export type DayRollupRow = PeriodRollup & { period_type: "day" };
 
+export const WEAK_NOTE_GREEN_THRESHOLD = 0.75;
+export type WeeklyHeadlineKind = "up" | "down" | "same" | "grace" | "nodata";
+
 // 공용 — UI에서 다루기 편한 정규화 약점 항목
 export interface WeakNoteForChip {
   note_key: string;

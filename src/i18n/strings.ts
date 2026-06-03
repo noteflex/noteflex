@@ -685,25 +685,42 @@ export interface Strings {
     /** {bucket} placeholder */
     takeawayIntervalWeak: string;
     // 주간 보고서 전용
+    weeklyThisWeekLabel: string;
     weeklyAccTrendTitle: string;
     weeklyThreshold85: string;
     weeklyRhythmTitle: string;
-    /** {activeDays} {gap} placeholders */
-    weeklyRhythmSummary: string;
-    weeklyWeakTitle: string;
+    weeklyFocusTitle: string;
     /** {n} {m} placeholders */
     weeklyWeakMissedOf: string;
-    /** {note} placeholder */
+    /** {n} placeholder */
     weeklyHeadlineUp: string;
-    /** {note} placeholder */
+    /** {n} placeholder */
     weeklyHeadlineDown: string;
+    weeklyHeadlineSame: string;
     /** {note} placeholder */
-    weeklyHeadlineFlat: string;
-    weeklyHeadlineNoNote: string;
+    weeklyHeadlineSubFocus: string;
+    weeklyHeadlineSubNone: string;
     /** {n} placeholder */
     weeklyGrace: string;
     weeklyNoData: string;
-    weeklyDeltaVsPrev: string;
+    weeklyMetricAccLabel: string;
+    weeklyMetricReactionLabel: string;
+    weeklyMetricActiveDaysLabel: string;
+    /** {n} placeholder */
+    weeklyDeltaAccUp: string;
+    /** {n} placeholder */
+    weeklyDeltaAccDown: string;
+    /** {n} placeholder */
+    weeklyDeltaMsFaster: string;
+    /** {n} placeholder */
+    weeklyDeltaMsSlower: string;
+    /** {streak} placeholder */
+    weeklyStreakN: string;
+    /** {active} placeholder */
+    weeklyStreakOne: string;
+    /** {note} placeholder */
+    weeklyEncouragingFocus: string;
+    weeklyEncouragingNone: string;
   };
   checkout: {
     backHome: string;
@@ -1414,19 +1431,30 @@ const ko: Strings = {
     intervalBucketLeap: "6~9도",
     intervalBucketWide: "10도+",
     takeawayIntervalWeak: "오늘은 {bucket} 구간이 특히 어려웠어요",
-    weeklyAccTrendTitle: "정확도 추세 (7일)",
+    weeklyThisWeekLabel: "이번 주 요약",
+    weeklyAccTrendTitle: "📈 정확도 추세",
     weeklyThreshold85: "목표 85%",
-    weeklyRhythmTitle: "연습 리듬",
-    weeklyRhythmSummary: "{activeDays}/7일 · 최장 공백 {gap}일",
-    weeklyWeakTitle: "이번 주 내내 약했어요",
+    weeklyRhythmTitle: "🗓️ 연습 리듬",
+    weeklyFocusTitle: "🎯 이번 주 집중할 음표",
     weeklyWeakMissedOf: "{n}/{m}일",
-    weeklyHeadlineUp: "정확도가 오르고 있어요 — {note}만 잡으면 완벽해요",
-    weeklyHeadlineDown: "이번 주 정확도가 떨어졌어요 — {note} 복습이 필요해요",
-    weeklyHeadlineFlat: "정확도가 안정적이에요 — {note}에 집중하면 더 나아질 거예요",
-    weeklyHeadlineNoNote: "이번 주 모든 음표에서 좋은 실력이에요",
+    weeklyHeadlineUp: "📈 지난주보다 {n}%p 올랐어요",
+    weeklyHeadlineDown: "지난주보다 {n}%p 낮았어요",
+    weeklyHeadlineSame: "지난주와 비슷한 흐름이에요",
+    weeklyHeadlineSubFocus: "이번 주 제일 걸린 음은 {note} — 여기만 잡으면 더 오를 거예요 🎯",
+    weeklyHeadlineSubNone: "이번 주는 약점이 거의 없었어요 ✨",
     weeklyGrace: "{n}일째 연습 중이에요 · 7일치가 채워지면 전체 추세가 나타나요",
     weeklyNoData: "이번 주 아직 연습 기록이 없어요",
-    weeklyDeltaVsPrev: "vs 지난주",
+    weeklyMetricAccLabel: "🎯 정확도",
+    weeklyMetricReactionLabel: "⚡ 반응속도",
+    weeklyMetricActiveDaysLabel: "🔥 활동일",
+    weeklyDeltaAccUp: "▲{n}%p 지난주 대비",
+    weeklyDeltaAccDown: "▼{n}%p 지난주 대비",
+    weeklyDeltaMsFaster: "▲{n}ms 더 빨라짐",
+    weeklyDeltaMsSlower: "▼{n}ms 더 느려짐",
+    weeklyStreakN: "🔥 {streak}일 연속 연습 중!",
+    weeklyStreakOne: "이번 주 {active}일 연습",
+    weeklyEncouragingFocus: "✨ 이 페이스면 다음 주엔 {note}도 졸업할 수 있어요. 같은 흐름으로 가요!",
+    weeklyEncouragingNone: "✨ 이번 주 흐름 그대로 가면 돼요.",
   },
   checkout: {
     backHome: "← 홈으로",
@@ -2154,19 +2182,30 @@ const en: Strings = {
     intervalBucketLeap: "Leap",
     intervalBucketWide: "Wide",
     takeawayIntervalWeak: "Intervals were the main challenge today — {bucket} leaps",
-    weeklyAccTrendTitle: "Accuracy trend (7 days)",
-    weeklyThreshold85: "Target 85%",
-    weeklyRhythmTitle: "Practice rhythm",
-    weeklyRhythmSummary: "{activeDays}/7 days · {gap}-day gap",
-    weeklyWeakTitle: "Weak all week",
+    weeklyThisWeekLabel: "This week",
+    weeklyAccTrendTitle: "📈 Accuracy trend",
+    weeklyThreshold85: "Goal 85%",
+    weeklyRhythmTitle: "🗓️ Practice rhythm",
+    weeklyFocusTitle: "🎯 Notes to focus on",
     weeklyWeakMissedOf: "{n}/{m} days",
-    weeklyHeadlineUp: "Accuracy is improving — work on {note} to keep going",
-    weeklyHeadlineDown: "Accuracy dipped this week — review {note}",
-    weeklyHeadlineFlat: "Accuracy is steady — focus on {note} to level up",
-    weeklyHeadlineNoNote: "Great accuracy across all notes this week",
+    weeklyHeadlineUp: "📈 Up {n}%p from last week",
+    weeklyHeadlineDown: "Down {n}%p from last week",
+    weeklyHeadlineSame: "About the same as last week",
+    weeklyHeadlineSubFocus: "{note} gave you the most trouble — clear it and you'll climb 🎯",
+    weeklyHeadlineSubNone: "Barely any weak notes this week ✨",
     weeklyGrace: "Day {n} of 7 this week · full trend appears when the week is complete",
     weeklyNoData: "No practice recorded this week yet",
-    weeklyDeltaVsPrev: "vs last week",
+    weeklyMetricAccLabel: "🎯 Accuracy",
+    weeklyMetricReactionLabel: "⚡ Reaction",
+    weeklyMetricActiveDaysLabel: "🔥 Active days",
+    weeklyDeltaAccUp: "▲{n}%p vs last week",
+    weeklyDeltaAccDown: "▼{n}%p vs last week",
+    weeklyDeltaMsFaster: "▲{n}ms faster",
+    weeklyDeltaMsSlower: "▼{n}ms slower",
+    weeklyStreakN: "🔥 {streak}-day streak!",
+    weeklyStreakOne: "{active} active days this week",
+    weeklyEncouragingFocus: "✨ Keep this pace and you'll graduate {note} next week.",
+    weeklyEncouragingNone: "✨ Just keep this week's flow going.",
   },
   checkout: {
     backHome: "← Home",
