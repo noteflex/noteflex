@@ -32,6 +32,11 @@ export function initSentry() {
       "Network request failed",
       "Failed to fetch",
       "Load failed",
+      // PWA SW 등록 거부 — registerSW.ts 의 onRegisterError 가 잡지 못한 경로 (workbox-window
+      // dynamic import 실패·구형 Android·incognito·확장프로그램 차단 등) 대비 보조 필터.
+      /service\s?worker/i,
+      /registerSW/i,
+      /^Rejected$/,
     ],
 
     beforeSend(event) {

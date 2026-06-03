@@ -43,7 +43,9 @@ export default defineConfig(() => {
       react(),
       VitePWA({
         registerType: "autoUpdate",
-        injectRegister: "auto",
+        // false: 자동 생성 registerSW.js(catch 없음) 주입 차단.
+        // 등록은 src/lib/registerSW.ts 에서 virtual:pwa-register 사용 → onRegisterError 로 graceful catch.
+        injectRegister: false,
         includeAssets: ["favicon.svg", "favicon.ico", "favicon-32x32.png", "apple-touch-icon.png"],
         manifest: {
           name: "Noteflex",
