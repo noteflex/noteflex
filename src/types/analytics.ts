@@ -159,6 +159,32 @@ export type DayRollupRow = PeriodRollup & { period_type: "day" };
 
 export const WEAK_NOTE_GREEN_THRESHOLD = 0.75;
 export type WeeklyHeadlineKind = "up" | "down" | "same" | "grace" | "nodata";
+export type MonthlyHeadlineKind = "up" | "down" | "same" | "grace" | "nodata";
+
+export interface GraduatedNoteEntry {
+  note_key: string;
+  octave: number;
+  clef: Clef;
+  prevAccuracy: number | null;
+  currAccuracy: number | null;
+}
+
+export interface PersistentWeakNote {
+  note_key: string;
+  octave: number;
+  clef: Clef;
+  accuracy: number;
+  weeksCount: number;
+  totalWeeks: number;
+}
+
+export type CalendarBucket = 0 | 1 | 2 | 3;
+export const CALENDAR_MEDIUM_THRESHOLD = 20;
+export const CALENDAR_DARK_THRESHOLD = 50;
+
+// Weekly bar chart volume thresholds (placeholder — tune after first real-data month)
+export const WEEKLY_VOLUME_MEDIUM_THRESHOLD = 50;
+export const WEEKLY_VOLUME_HIGH_THRESHOLD = 150;
 
 // 공용 — UI에서 다루기 편한 정규화 약점 항목
 export interface WeakNoteForChip {

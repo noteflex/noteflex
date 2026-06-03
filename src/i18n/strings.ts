@@ -721,6 +721,51 @@ export interface Strings {
     /** {note} placeholder */
     weeklyEncouragingFocus: string;
     weeklyEncouragingNone: string;
+    // 월간 보고서 전용
+    monthlyThisMonthLabel: string;
+    /** {n} placeholder */
+    monthlyHeadlineUp: string;
+    /** {n} placeholder */
+    monthlyHeadlineDown: string;
+    monthlyHeadlineSame: string;
+    monthlyHeadlineGrace: string;
+    /** {n} placeholder */
+    monthlyHeadlineGraduated: string;
+    monthlyMetricAccLabel: string;
+    monthlyMetricReactionLabel: string;
+    monthlyMetricActiveDaysLabel: string;
+    monthlyMetricGraduatedLabel: string;
+    /** {n} placeholder */
+    monthlyDeltaAccUp: string;
+    /** {n} placeholder */
+    monthlyDeltaAccDown: string;
+    /** {n} placeholder */
+    monthlyDeltaMsFaster: string;
+    /** {n} placeholder */
+    monthlyDeltaMsSlower: string;
+    monthlyWeeklyGrowthTitle: string;
+    monthlyThreshold85: string;
+    monthlyCalendarTitle: string;
+    monthlyCalendarLegend: string;
+    /** {n} placeholder */
+    monthlyCalendarStreak: string;
+    monthlyGraduatedTitle: string;
+    monthlyGraduatedDesc: string;
+    monthlyPersistentWeakTitle: string;
+    monthlyPersistentWeakDesc: string;
+    /** {n} {m} placeholders */
+    monthlyPersistentWeakNOfM: string;
+    monthlyVolumeLow: string;
+    monthlyVolumeMed: string;
+    monthlyVolumeHigh: string;
+    monthlyWeeklyGrowthDesc: string;
+    monthlyCalendarDesc: string;
+    /** {n} placeholder */
+    monthlyEncouragingGraduated: string;
+    monthlyEncouragingSame: string;
+    monthlyEncouragingDown: string;
+    monthlyGraceMessage: string;
+    monthlyNoData: string;
   };
   checkout: {
     backHome: string;
@@ -1455,6 +1500,40 @@ const ko: Strings = {
     weeklyStreakOne: "이번 주 {active}일 연습",
     weeklyEncouragingFocus: "✨ 이 페이스면 다음 주엔 {note}도 졸업할 수 있어요. 같은 흐름으로 가요!",
     weeklyEncouragingNone: "✨ 이번 주 흐름 그대로 가면 돼요.",
+    monthlyThisMonthLabel: "이번 달 요약",
+    monthlyHeadlineUp: "📈 지난달보다 {n}%p 올랐어요",
+    monthlyHeadlineDown: "지난달보다 {n}%p 낮았어요",
+    monthlyHeadlineSame: "지난달과 비슷한 흐름이에요",
+    monthlyHeadlineGrace: "첫 달 기록이에요 — 이제 쌓기 시작했어요",
+    monthlyHeadlineGraduated: "음표 {n}개 졸업 🏅",
+    monthlyMetricAccLabel: "🎯 정확도",
+    monthlyMetricReactionLabel: "⚡ 반응속도",
+    monthlyMetricActiveDaysLabel: "🗓️ 연습일",
+    monthlyMetricGraduatedLabel: "🏅 졸업 음표",
+    monthlyDeltaAccUp: "▲{n}%p 지난달 대비",
+    monthlyDeltaAccDown: "▼{n}%p 지난달 대비",
+    monthlyDeltaMsFaster: "▼{n}ms 더 빨라짐",
+    monthlyDeltaMsSlower: "▲{n}ms 더 느려짐",
+    monthlyWeeklyGrowthTitle: "📈 주차별 정확도",
+    monthlyThreshold85: "목표 85%",
+    monthlyCalendarTitle: "🗓️ 연습 캘린더",
+    monthlyCalendarLegend: "칸 색이 진할수록 그 날 연습을 많이 했어요",
+    monthlyCalendarStreak: "최장 연속 {n}일",
+    monthlyGraduatedTitle: "🏅 이번 달 졸업한 음표",
+    monthlyGraduatedDesc: "이번 달 약점에서 벗어난 음표예요.",
+    monthlyPersistentWeakTitle: "🎯 다음 달 집중할 음표",
+    monthlyPersistentWeakDesc: "한 달 내내 어려웠던 음표 — 다음 달 집중 대상이에요.",
+    monthlyPersistentWeakNOfM: "{n}/{m}주",
+    monthlyVolumeLow: "연습 적음",
+    monthlyVolumeMed: "보통",
+    monthlyVolumeHigh: "연습 많음",
+    monthlyWeeklyGrowthDesc: "한 주 한 주 정확도가 어떻게 변했는지 — 막대가 높을수록 정확하고, 색이 진할수록 그 주에 많이 연습했어요.",
+    monthlyCalendarDesc: "이번 달 어떤 날 연습했는지 한눈에 — 색이 진할수록 그 날 더 많이 연습했어요.",
+    monthlyEncouragingGraduated: "✨ {n}개 음표를 졸업했어요! 이 흐름 그대로 가요.",
+    monthlyEncouragingSame: "✨ 이달도 꾸준히 쌓았어요. 다음 달이 기대돼요.",
+    monthlyEncouragingDown: "📝 이번 달 조금 어려웠어도 괜찮아요. 다음 달에 더 잘할 수 있어요.",
+    monthlyGraceMessage: "아직 한 달치 데이터가 없어요. 연습을 계속하면 다음 달부터 비교 추세가 보여요.",
+    monthlyNoData: "이번 달 아직 연습 기록이 없어요",
   },
   checkout: {
     backHome: "← 홈으로",
@@ -2206,6 +2285,40 @@ const en: Strings = {
     weeklyStreakOne: "{active} active days this week",
     weeklyEncouragingFocus: "✨ Keep this pace and you'll graduate {note} next week.",
     weeklyEncouragingNone: "✨ Just keep this week's flow going.",
+    monthlyThisMonthLabel: "This month",
+    monthlyHeadlineUp: "📈 Up {n}%p from last month",
+    monthlyHeadlineDown: "Down {n}%p from last month",
+    monthlyHeadlineSame: "About the same as last month",
+    monthlyHeadlineGrace: "Your first month recorded — it starts here",
+    monthlyHeadlineGraduated: "{n} notes graduated 🏅",
+    monthlyMetricAccLabel: "🎯 Accuracy",
+    monthlyMetricReactionLabel: "⚡ Reaction",
+    monthlyMetricActiveDaysLabel: "🗓️ Active days",
+    monthlyMetricGraduatedLabel: "🏅 Graduated",
+    monthlyDeltaAccUp: "▲{n}%p vs last month",
+    monthlyDeltaAccDown: "▼{n}%p vs last month",
+    monthlyDeltaMsFaster: "▼{n}ms faster",
+    monthlyDeltaMsSlower: "▲{n}ms slower",
+    monthlyWeeklyGrowthTitle: "📈 Weekly accuracy",
+    monthlyThreshold85: "Goal 85%",
+    monthlyCalendarTitle: "🗓️ Practice calendar",
+    monthlyCalendarLegend: "Darker means more practice that day",
+    monthlyCalendarStreak: "Best streak: {n} days",
+    monthlyGraduatedTitle: "🏅 Notes graduated this month",
+    monthlyGraduatedDesc: "Notes you moved out of your weak list this month.",
+    monthlyPersistentWeakTitle: "🎯 Notes to focus on next month",
+    monthlyPersistentWeakDesc: "Notes that stayed hard all month — your focus for next month.",
+    monthlyPersistentWeakNOfM: "{n}/{m} weeks",
+    monthlyVolumeLow: "Less practice",
+    monthlyVolumeMed: "Moderate",
+    monthlyVolumeHigh: "More practice",
+    monthlyWeeklyGrowthDesc: "How accuracy changed week by week — taller bars are more accurate, darker bars mean more practice that week.",
+    monthlyCalendarDesc: "Which days you practiced this month — darker days mean more practice.",
+    monthlyEncouragingGraduated: "✨ You graduated {n} notes this month — keep this going.",
+    monthlyEncouragingSame: "✨ Consistent month. Let's see what next month brings.",
+    monthlyEncouragingDown: "📝 A tough month is still a month played. Next one will be better.",
+    monthlyGraceMessage: "Not enough data yet for a month-over-month comparison. Keep playing and it'll show next month.",
+    monthlyNoData: "No practice recorded this month yet",
   },
   checkout: {
     backHome: "← Home",
