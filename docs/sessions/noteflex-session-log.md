@@ -4,6 +4,30 @@
 
 ---
 
+## 2026-06-03 — RLS 보안 정상화 + waitlist Edge Function 전환
+
+### feedback · premium_waitlist RLS 보안 정상화
+- 초기 문제: 두 테이블 RLS OFF + GRANT 상태 → anon 키로 전체 행 SELECT 가능한 노출
+- feedback: RLS ON, `feedback_admin_all`(is_admin) 단일 정책. INSERT는 기존 Edge Function(service_role) 경유라 직접 INSERT 정책 불필요·제거(스팸 경로 차단)
+- premium_waitlist 1차: anon UPDATE 정책 제거(임의 행 변조 구멍 차단), `Pricing.tsx` upsert → `ignoreDuplicates:true`(ON CONFLICT DO NOTHING)
+- 직접 클라이언트 INSERT가 RLS 42501로 지속 실패(정책 상태로 설명 안 되는 충돌/upsert 상호작용) → 직접 경로 폐기 결정
+- `waitlist-signup` Edge Function(service_role) 신규 생성·prod 배포, `Pricing.tsx` → `functions.invoke('waitlist-signup')` 전환 (커밋 9b1f22e)
+- 저장·중복 처리 검증 통과 후, `20260603_premium_waitlist_remove_anon_insert.sql`로 anon/authenticated 직접 INSERT 정책 제거
+- 최종 상태: 클라이언트는 Edge Function(service_role) 경유로만 기록, 외부 SELECT/INSERT/UPDATE 전부 차단, admin만 전체 접근
+
+### AdSense 심사 정체 원인 규명 (미해결 → 다음 세션)
+- prod Vercel에 `VITE_ADS_ENABLED` 미설정 확인 → publisher ID 코드가 라이브에 없음
+- Google 문서: head Auto ads 코드 또는 body 광고 유닛으로 publisher ID가 페이지에 있어야 심사 가능 → 현재 검증 대상이 없어 5/24 제출 심사가 정체
+
+### 교훈
+- 공개 쓰기 경로는 클라이언트 직접 테이블 INSERT + RLS 조합 대신 Edge Function(service_role) 우선 채택
+- 정책 상태는 추측 말고 실제 요청 응답(DevTools status·body)으로 먼저 확정
+
+### 정리 필요
+- 대시보드 수동 정책 변경들이 마이그레이션 파일과 어긋남 → repo 동기화 필요
+
+---
+
 ## 2026-05-31 (Sun) — 출시 D-7
 
 ### 완료 (push)
