@@ -92,9 +92,7 @@ export default function Index() {
       )}
 
       <main
-        id="main-content"
-        tabIndex={-1}
-        className="safe-area-page flex-1 flex flex-col items-center justify-center px-4 py-8 focus:outline-none"
+        className="safe-area-page flex-1 flex flex-col items-center justify-center px-4 py-8"
       >
         <h1
           className="text-4xl sm:text-5xl md:text-6xl font-semibold text-foreground text-center tracking-tight leading-tight whitespace-pre-line animate-fade-up"

@@ -60,14 +60,6 @@ export default function Header({
     <header
       className={`border-b border-border bg-background/95 backdrop-blur-sm sticky top-0 z-10 ${headerClassName ?? ""}`}
     >
-      {/* a11y skip link — sr-only 기본, 키보드 Tab focus 시만 visible. 페이지의 id="main-content" 요소로 이동.
-       * focus-visible: 마우스 클릭으로는 노출 X, 키보드/AT focus만 노출 (WCAG 2.1+ 표준). */}
-      <a
-        href="#main-content"
-        className="sr-only focus-visible:not-sr-only focus-visible:absolute focus-visible:left-2 focus-visible:top-2 focus-visible:z-50 focus-visible:rounded-md focus-visible:bg-primary focus-visible:px-3 focus-visible:py-1.5 focus-visible:text-sm focus-visible:font-medium focus-visible:text-primary-foreground focus-visible:shadow"
-      >
-        {t.header.skipToContent}
-      </a>
       <div className={`${container} py-4 flex items-center justify-between gap-4`}>
         <div className="flex items-center gap-6 sm:gap-10 min-w-0">
           {left}

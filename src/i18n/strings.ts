@@ -54,7 +54,6 @@ export interface Strings {
   };
   header: {
     signIn: string;
-    skipToContent: string;
     mainNav: string;
     signOut: string;
     profile: string;
@@ -744,7 +743,6 @@ const ko: Strings = {
     profile: "프로필",
     dashboard: "대시보드",
     setNicknameHint: "닉네임 설정하기 →",
-    skipToContent: "본문으로 건너뛰기",
     mainNav: "주 메뉴",
   },
   legal: {
@@ -1445,7 +1443,6 @@ const en: Strings = {
     profile: "Profile",
     dashboard: "Dashboard",
     setNicknameHint: "Set your nickname →",
-    skipToContent: "Skip to content",
     mainNav: "Main navigation",
   },
   legal: {
