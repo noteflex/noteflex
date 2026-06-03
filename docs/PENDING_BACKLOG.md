@@ -52,20 +52,8 @@
     - 신규 Supabase 마이그레이션 + Edge Function
     - 신규 admin 페이지
     - i18n strings 추가
-- [출시후 LOW] **PWA Service Worker register graceful catch** — 2026-06-02 Sentry 캡처: Chrome Mobile 148 + Android 6.0.1 + Nexus 5X (US, en-US) 사용자에서 SW 등록 거부 (`Error: Rejected`). vite-plugin-pwa의 `registerSW.js`가 `navigator.serviceWorker.register()` Promise rejection을 catch 안 함 → unhandled rejection이 onunhandledrejection global handler를 거쳐 Sentry에 capture. 페이지 로드·AdSense·게임 동작 영향 X, PWA "홈 화면 추가" 기능만 영향. 누적 시 Sentry noise → 진짜 에러 묻힘 위험.
-  - 원인 (사용자 환경):
-    - 구형 Android OS (6.0.1 등)
-    - 광고/추적 차단 도구·privacy 확장 프로그램
-    - 시크릿/incognito 모드
-    - 브라우저 SW 권한 거부 설정
-  - 작업 옵션:
-    - (a) vite.config.ts → vite-plugin-pwa 옵션의 `onRegisterError` callback 추가
-    - (b) `injectRegister: false`로 설정 후 src/main.tsx에 자체 register + try/catch
-    - (c) Sentry SDK에서 이 메시지 ignore rule 추가 (보조)
-  - 분량: 30분 (코드 + 빌드 + commit)
-  - 검증:
-    - prod 재배포 후 같은 에러 Sentry에 캡처 X 확인 (24~48h)
-    - PWA 정상 환경에서 SW 등록 작동 유지 (Chrome 최신·Safari iOS 등)
+- [✅ 2026-06-03] **PWA Service Worker register graceful catch** — `injectRegister: false` + `virtual:pwa-register`의 `onRegisterError` callback으로 graceful catch 완료. Sentry `ignoreErrors` 보조 필터 추가. commit `416ca00`. Sentry noise 해소 24~48h 모니터링 진행 중.
+- [출시후-prod 적용 대기] **feedback·premium_waitlist RLS 보안 정상화** — 두 테이블 RLS OFF 상태에서 anon 키로 전체 행(이메일 포함) 읽기 가능. 마이그레이션 `20260603_enable_rls_feedback_premium_waitlist.sql` 작성 완료. Supabase SQL Editor에서 prod 적용 + 수동 검증 필요. 적용 후 anon SELECT 차단·admin SELECT/UPDATE 정상·Pricing waitlist UPSERT 정상 확인. ⚠️ anon UPDATE 정책(UPSERT 호환성 유지) 포함 — 향후 Pricing.tsx를 `ON CONFLICT DO NOTHING`으로 변경 시 제거 가능.
 - [출시후-모니터링] **Sentry `[object Object]` 패턴 재발 시 logger.error 호출 정리** — 2026-06-03 Sentry 정리 시 2주 전 `[object Object]` 패턴 이슈 2건 발견 (JAVASCRIPT-REACT-4, JAVASCRIPT-REACT-5). `logger.error('title', errorObject)` 호출 시 errorObject가 Error 인스턴스가 아닌 일반 객체일 때 Sentry가 `String()` 변환 → `[object Object]`로 stringify. 진짜 에러 정보는 잡혀 있지만 Sentry message가 의미 없는 상태 → 디버깅 어려움. 2주 전 발생 이후 코드 큰 폭 변경(NextStepCard 리뉴얼·`/play` 리팩토링 등) → 이미 fix됐을 가능성 있음.
   - 모니터링: 24~48시간 → 새 빌드에서 같은 패턴 재발 시 진단·fix. Resolve 후 동일 stack hash로 재발 시 Sentry 자동 unresolved 처리.
   - 재발 시 fix 작업: `src/lib/sentry.ts` `logger.error` 호출 위치 grep → 잘못된 패턴(객체 직접 전달)을 정합 패턴으로 일괄 변경. 또는 logger 자체에 wrapping 추가 (err 이 Error 인스턴스가 아닐 때 `JSON.stringify`로 변환 후 `new Error(...)`).
