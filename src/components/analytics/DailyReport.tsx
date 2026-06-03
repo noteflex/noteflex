@@ -188,21 +188,27 @@ function WeakNoteHighlightSection({ notes }: { notes: WeakNoteForChip[] }) {
               : accuracy >= 0.5
               ? "bg-amber-400"
               : "bg-red-500";
+          const accColor =
+            accuracy >= 0.75
+              ? "text-emerald-600 dark:text-emerald-400"
+              : accuracy >= 0.5
+              ? "text-amber-500 dark:text-amber-400"
+              : "text-red-500 dark:text-red-400";
           return (
             <li
               key={`${w.clef}-${w.note_key}-${w.octave}-${idx}`}
-              className="flex items-center gap-3 rounded-lg border border-border bg-card px-3 py-2"
+              className="flex items-center gap-3 rounded-lg border border-border bg-card px-3 py-2.5"
             >
-              <span className={`h-2.5 w-2.5 shrink-0 rounded-full ${dot}`} aria-hidden />
-              <div className="flex-1 min-w-0">
-                <span className="text-sm font-bold text-foreground">
+              <span className={`h-[9px] w-[9px] shrink-0 rounded-full ${dot}`} aria-hidden />
+              <div className="flex-1 min-w-0 flex items-baseline gap-1.5">
+                <span className="text-[19px] font-bold text-foreground leading-tight">
                   {w.note_key}{w.octave}
                 </span>
-                <span className="ml-1.5 text-[11px] text-muted-foreground">{clefLabel}</span>
+                <span className="text-[11px] text-muted-foreground">· {clefLabel}</span>
               </div>
-              <div className="text-right tabular-nums">
-                <p className="text-sm font-semibold text-foreground">{fmtPct(accuracy)}</p>
-                <p className="text-[11px] text-muted-foreground">
+              <div className="text-right tabular-nums shrink-0">
+                <p className={`text-lg font-bold leading-tight ${accColor}`}>{fmtPct(accuracy)}</p>
+                <p className="text-[13px] text-muted-foreground">
                   {formatI18n(t.analytics.weakNoteMissedOf, {
                     errors: String(errors),
                     attempts: String(w.attempts),
@@ -239,32 +245,32 @@ function IntervalSection({
   };
 
   return (
-    <section>
-      <div className="flex items-baseline justify-between mb-2">
+    <section className="rounded-xl border border-border bg-card px-4 py-4">
+      <div className="flex items-baseline justify-between mb-3">
         <p className="text-xs font-semibold text-foreground">{t.analytics.intervalSectionTitle}</p>
         <p className="text-[10px] text-muted-foreground">{t.analytics.intervalSectionNote}</p>
       </div>
       {/* TODO v1.1: normalize bar widths by per-level difficulty */}
-      <ul className="space-y-2">
+      <ul className="space-y-[9px]">
         {qualified.map((b) => {
           const acc = 1 - b.errorRate;
-          const barColor =
+          const fillColor =
             acc >= 0.75 ? "bg-emerald-400" : acc >= 0.5 ? "bg-amber-400" : "bg-red-400";
           const pct = Math.round(acc * 100);
           return (
-            <li key={b.key}>
-              <div className="flex items-center justify-between text-[11px] mb-0.5">
-                <span className="font-medium text-foreground">{bucketLabel[b.key]}</span>
-                <span className="tabular-nums text-muted-foreground">
-                  {pct}% · {b.attempts}{t.analytics.chipAttemptsUnit}
-                </span>
-              </div>
-              <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
+            <li key={b.key} className="flex items-center gap-3">
+              <span className="w-[88px] shrink-0 text-[14px] font-medium text-foreground truncate">
+                {bucketLabel[b.key]}
+              </span>
+              <div className="flex-1 h-2 rounded-full bg-muted/60 overflow-hidden">
                 <div
-                  className={`h-full rounded-full transition-all ${barColor}`}
+                  className={`h-full rounded-full transition-all ${fillColor}`}
                   style={{ width: `${Math.min(pct, 100)}%` }}
                 />
               </div>
+              <span className="w-[44px] shrink-0 text-right text-[13px] text-muted-foreground tabular-nums">
+                {pct}%
+              </span>
             </li>
           );
         })}
