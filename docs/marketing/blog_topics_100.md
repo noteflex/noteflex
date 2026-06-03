@@ -894,6 +894,8 @@ AI·정밀 데이터·Noteflex 기능·음악 교육의 미래.
 | 2026-06-02 | 33 | §7-83 | Accuracy or Speed in Sight-Reading — Which Comes First (en) ✅ 작성 완료 | accuracy-vs-speed-sight-reading | Music Tech | ~821 words | sight-reading accuracy vs speed, accuracy or speed music practice, speed-accuracy tradeoff music, sight-reading practice order, errorless practice music, how to sight-read faster | Schmidt & Bjork + Repp 전통 |
 | 2026-06-03 | 34 | §3-39 | 메트로놈은 언제 켜고 언제 꺼야 하나 — 초견 연습에서 박자기의 자리 (ko) ✅ 작성 완료 | metronome-in-sight-reading-practice | 실전 연습 가이드 | ~2050자 | 메트로놈 활용법, 초견 메트로놈, 메트로놈 사용법, 박자 연습, 메트로놈 연습, 내적 박자, 음악 동기화 연습 | Drake/Penel/Bigand + Carrer/Pompéia/Miranda 전통 |
 | 2026-06-03 | 34 | §3-39 | When to Turn the Metronome On and When to Turn It Off — Its Place in Sight-Reading Practice (en) ✅ 작성 완료 | metronome-in-sight-reading-practice | Practice Hub | ~960 words | metronome practice, how to use metronome, metronome sight-reading, internal pulse music, sensorimotor synchronization music, metronome on or off, practicing with metronome | Drake/Penel/Bigand + Carrer/Pompéia/Miranda 전통 |
+| 2026-06-04 | 35 | §1-6 | 초견 연습이 두뇌를 바꾼다 — 악보 읽기가 뇌 구조에 남기는 흔적 (ko) ✅ 작성 완료 | sight-reading-and-the-brain | 초견의 정석 | ~2100자 | 초견 두뇌, 악보 읽기 뇌, 음악 뇌 가소성, 초견 신경과학, 음악 학습 뇌 변화, 청각운동 통합 음악 | Zatorre/Chen/Penhune + Wan/Schlaug 전통 |
+| 2026-06-04 | 35 | §1-6 | Sight-Reading and the Brain — What Neuroscience Reveals About Reading Music (en) ✅ 작성 완료 | sight-reading-and-the-brain | Sight-Reading Lab | ~920 words | sight-reading brain, music reading neuroscience, brain plasticity music, sight-reading cognitive science, auditory-motor integration music, music training brain changes | Zatorre/Chen/Penhune + Wan/Schlaug 전통 |
 
 ---
 
