@@ -215,8 +215,8 @@ BEGIN
         CASE WHEN v_total_notes > 0
           THEN (v_total_resp_ms / v_total_notes)::int  ELSE 0 END,
         v_correct_notes * 10,   -- xp
-        'practice',
-        '{}',
+        'regular',
+        '[]',
         '{"dev_seed": true}',
         v_session_start
       );
@@ -275,9 +275,10 @@ BEGIN
   PERFORM build_period_rollup(v_admin, 'month', '2026-04-01', '2026-04-30');
   RAISE NOTICE 'April 2026 month rollup done';
 
-  -- Current week (Jun 2–8) from real admin data — makes weekly UI show something now
-  PERFORM build_period_rollup(v_admin, 'week', '2026-06-02', '2026-06-08');
-  RAISE NOTICE 'Current week rollup done (Jun 2–8, real data)';
+  -- Current week (Jun 1–7) from real admin data — makes weekly UI show something now
+  -- NOTE: Jun 1 = Monday (isoWeekStart('2026-06-04') = '2026-06-01')
+  PERFORM build_period_rollup(v_admin, 'week', '2026-06-01', '2026-06-07');
+  RAISE NOTICE 'Current week rollup done (Jun 1–7, real data)';
 
   -- Current month (Jun 1–30) from real admin data
   PERFORM build_period_rollup(v_admin, 'month', '2026-06-01', '2026-06-30');
