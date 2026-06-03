@@ -178,7 +178,7 @@ function AiFeedbackCard({
     <Card data-testid="ai-feedback-card">
       <CardHeader>
         <CardTitle className="text-base flex items-center gap-2">
-          <span aria-hidden>🤖</span>
+          <span aria-hidden>📊</span>
           {t.dashboard.aiFeedbackTitle}
         </CardTitle>
         <CardDescription>{subtitle}</CardDescription>

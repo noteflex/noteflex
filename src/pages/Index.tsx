@@ -80,8 +80,8 @@ export default function Index() {
         }
         description={
           isKo
-            ? "게임처럼 익히는 악보 읽기. Lv1~7 단계별 학습, AI 분석 보고서, 일일 진척 추적. 무료로 시작하세요."
-            : "Learn to read sheet music like a game. Lv1–7 progressive levels, AI analysis reports, daily progress tracking. Free to start."
+            ? "게임처럼 익히는 악보 읽기. Lv1~7 단계별 학습, 맞춤 분석 보고서, 일일 진척 추적. 무료로 시작하세요."
+            : "Learn to read sheet music like a game. Lv1–7 progressive levels, data-driven analysis, daily progress tracking. Free to start."
         }
         canonical="https://noteflex.app/"
         lang={isKo ? "ko" : "en"}
