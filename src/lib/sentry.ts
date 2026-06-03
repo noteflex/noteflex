@@ -25,18 +25,38 @@ export function initSentry() {
     // 환경별 완료 — development 영역 미설정
     enabled: ENVIRONMENT === "production",
 
-    // 미설정 기록할 영역 (noise)
+    // Sentry SDK 10 default ignoreErrors (eventFilters.js) 가 이미 잡는 패턴은 재등록 X:
+    //   /^Script error\.?$/, /^ResizeObserver loop completed with undelivered notifications.$/,
+    //   GTM·Google Search·CEFSharp·Facebook 인앱 브라우저 등 11개.
     ignoreErrors: [
       "ResizeObserver loop limit exceeded",
       "Non-Error promise rejection captured",
+      // 네트워크 일시 실패·사용자 abort (라우트 변경·페이지 이탈 시 fetch 취소 패턴)
       "Network request failed",
       "Failed to fetch",
       "Load failed",
+      "AbortError",
+      "The user aborted a request",
+      "NetworkError when attempting to fetch resource",
+      "cancelled",
+      // Storage quota — private browsing·storage 가득
+      "QuotaExceededError",
       // PWA SW 등록 거부 — registerSW.ts 의 onRegisterError 가 잡지 못한 경로 (workbox-window
       // dynamic import 실패·구형 Android·incognito·확장프로그램 차단 등) 대비 보조 필터.
       /service\s?worker/i,
       /registerSW/i,
       /^Rejected$/,
+    ],
+
+    // 확장 프로그램·3rd-party 광고·analytics 스크립트 noise. stacktrace URL 기준 차단.
+    denyUrls: [
+      /^chrome-extension:\/\//,
+      /^moz-extension:\/\//,
+      /^safari-(web-)?extension:\/\//,
+      /googletagmanager\.com/,
+      /pagead2\.googlesyndication\.com/,
+      /google-analytics\.com/,
+      /googleadservices\.com/,
     ],
 
     beforeSend(event) {
