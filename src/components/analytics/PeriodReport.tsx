@@ -140,7 +140,11 @@ export default function PeriodReport({ periodType }: PeriodReportProps) {
     return (
       <NoDataState
         onRetry={() => void refresh()}
-        hint={t.analytics.periodNoDataHint}
+        hint={
+          isWeekly
+            ? t.analytics.periodWeeklyNoDataHint
+            : t.analytics.periodMonthlyNoDataHint
+        }
       />
     );
   }

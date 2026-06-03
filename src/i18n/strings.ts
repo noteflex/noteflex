@@ -669,7 +669,8 @@ export interface Strings {
     /** {n} placeholder */
     periodRegressed: string;
     periodNoData: string;
-    periodNoDataHint: string;
+    periodWeeklyNoDataHint: string;
+    periodMonthlyNoDataHint: string;
   };
   checkout: {
     backHome: string;
@@ -1369,7 +1370,8 @@ const ko: Strings = {
     periodGraduated: "졸업 {n}개",
     periodRegressed: "퇴보 {n}개",
     periodNoData: "아직 이번 기간 기록이 없어요",
-    periodNoDataHint: "오늘 연습하면 내일 자정에 분석이 갱신됩니다",
+    periodWeeklyNoDataHint: "계속 연습하세요 — 주간 분석은 이번 주가 쌓이며 채워집니다.",
+    periodMonthlyNoDataHint: "계속 연습하세요 — 월간 분석은 한 달이 쌓이며 채워집니다.",
   },
   checkout: {
     backHome: "← 홈으로",
@@ -2086,7 +2088,8 @@ const en: Strings = {
     periodGraduated: "{n} graduated",
     periodRegressed: "{n} regressed",
     periodNoData: "No data for this period yet",
-    periodNoDataHint: "Practice today and analysis will update at midnight",
+    periodWeeklyNoDataHint: "Keep playing — weekly insights build over the week.",
+    periodMonthlyNoDataHint: "Keep playing — monthly insights build over the month.",
   },
   checkout: {
     backHome: "← Home",
