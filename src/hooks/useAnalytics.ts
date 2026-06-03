@@ -105,3 +105,47 @@ export function usePeriodReport(periodType: "week" | "month"): UsePeriodReportRe
 
   return { data, loading, error, refresh: fetchOnce };
 }
+
+export interface DailyLogRow {
+  is_correct: boolean;
+  interval_from_prev: number | null;
+}
+
+function kstDayBounds(): { gte: string; lt: string } {
+  const KST_OFFSET_MS = 9 * 60 * 60 * 1000;
+  const kstMs = Date.now() + KST_OFFSET_MS;
+  const kstDayMs = Math.floor(kstMs / 86_400_000) * 86_400_000;
+  return {
+    gte: new Date(kstDayMs - KST_OFFSET_MS).toISOString(),
+    lt: new Date(kstDayMs - KST_OFFSET_MS + 86_400_000).toISOString(),
+  };
+}
+
+export function useDailyIntervals(): { logs: DailyLogRow[]; loading: boolean } {
+  const [logs, setLogs] = useState<DailyLogRow[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const { gte, lt } = kstDayBounds();
+        const { data, error } = await supabase
+          .from("user_note_logs")
+          .select("is_correct, interval_from_prev")
+          .gte("created_at", gte)
+          .lt("created_at", lt);
+        if (!cancelled && !error && data) {
+          setLogs(data as DailyLogRow[]);
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  return { logs, loading };
+}

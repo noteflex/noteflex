@@ -1,10 +1,9 @@
 import { useMemo } from "react";
 import { Button } from "@/components/ui/button";
-import { useDailyReport } from "@/hooks/useAnalytics";
+import { useDailyReport, useDailyIntervals, type DailyLogRow } from "@/hooks/useAnalytics";
 import { useT } from "@/contexts/LanguageContext";
 import { format as formatI18n } from "@/i18n/strings";
 import MetricCard from "./MetricCard";
-import WeakNoteChip from "./WeakNoteChip";
 import {
   isLive,
   isNoData,
@@ -12,11 +11,54 @@ import {
   normalizeWeakNotes,
   type DailyReport as DailyReportData,
   type SessionSummary,
+  type WeakNoteForChip,
 } from "@/types/analytics";
 
 interface DailyReportProps {
   /** 기본: 오늘 (RPC KST 처리) */
   date?: Date;
+}
+
+/* ---------- 인터벌 버킷 ---------- */
+
+type BucketKey = "repeat" | "step" | "skip" | "leap" | "wide";
+
+interface BucketStat {
+  key: BucketKey;
+  attempts: number;
+  errors: number;
+  errorRate: number;
+}
+
+const BUCKETS: ReadonlyArray<{ key: BucketKey; min: number; max: number }> = [
+  { key: "repeat", min: 0,  max: 0        },
+  { key: "step",   min: 1,  max: 2        },
+  { key: "skip",   min: 3,  max: 5        },
+  { key: "leap",   min: 6,  max: 9        },
+  { key: "wide",   min: 10, max: Infinity },
+];
+
+function computeBuckets(logs: DailyLogRow[]): BucketStat[] {
+  const raw: Record<string, { attempts: number; errors: number }> = {};
+  for (const log of logs) {
+    if (log.interval_from_prev == null) continue;
+    const abs = Math.abs(log.interval_from_prev);
+    const bucket = BUCKETS.find((b) => abs >= b.min && abs <= b.max);
+    if (!bucket) continue;
+    const s = raw[bucket.key] ?? { attempts: 0, errors: 0 };
+    s.attempts++;
+    if (!log.is_correct) s.errors++;
+    raw[bucket.key] = s;
+  }
+  return BUCKETS.map((b) => {
+    const s = raw[b.key] ?? { attempts: 0, errors: 0 };
+    return {
+      key: b.key,
+      attempts: s.attempts,
+      errors: s.errors,
+      errorRate: s.attempts > 0 ? s.errors / s.attempts : 0,
+    };
+  });
 }
 
 /* ---------- 헬퍼 ---------- */
@@ -74,7 +116,7 @@ function pickValues(report: DailyReportData):
       streak: report.streak_days ?? 0,
       baselineAccuracy: report.baseline_accuracy,
       baselineAvgMs: report.baseline_avg_reaction_ms,
-      baselineDays: 14,
+      baselineDays: report.baseline_accuracy != null ? 14 : 0,
     };
   }
   return null;
@@ -127,14 +169,129 @@ function ErrorState({ msg, onRetry }: { msg: string; onRetry: () => void }) {
   );
 }
 
+/* ---------- 약점 음표 강조 카드 ---------- */
+
+function WeakNoteHighlightSection({ notes }: { notes: WeakNoteForChip[] }) {
+  const t = useT();
+  if (notes.length === 0) return null;
+  return (
+    <section>
+      <p className="text-xs font-semibold text-foreground mb-2">{t.analytics.weakNotesTitle}</p>
+      <ul className="space-y-1.5">
+        {notes.map((w, idx) => {
+          const clefLabel = w.clef === "bass" ? t.analytics.clefBass : t.analytics.clefTreble;
+          const accuracy = 1 - w.error_rate;
+          const errors = Math.round(w.error_rate * w.attempts);
+          const dot =
+            accuracy >= 0.75
+              ? "bg-emerald-500"
+              : accuracy >= 0.5
+              ? "bg-amber-400"
+              : "bg-red-500";
+          return (
+            <li
+              key={`${w.clef}-${w.note_key}-${w.octave}-${idx}`}
+              className="flex items-center gap-3 rounded-lg border border-border bg-card px-3 py-2"
+            >
+              <span className={`h-2.5 w-2.5 shrink-0 rounded-full ${dot}`} aria-hidden />
+              <div className="flex-1 min-w-0">
+                <span className="text-sm font-bold text-foreground">
+                  {w.note_key}{w.octave}
+                </span>
+                <span className="ml-1.5 text-[11px] text-muted-foreground">{clefLabel}</span>
+              </div>
+              <div className="text-right tabular-nums">
+                <p className="text-sm font-semibold text-foreground">{fmtPct(accuracy)}</p>
+                <p className="text-[11px] text-muted-foreground">
+                  {formatI18n(t.analytics.weakNoteMissedOf, {
+                    errors: String(errors),
+                    attempts: String(w.attempts),
+                  })}
+                </p>
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+    </section>
+  );
+}
+
+/* ---------- 인터벌 섹션 ---------- */
+
+function IntervalSection({
+  allBuckets,
+  loadingLogs,
+}: {
+  allBuckets: BucketStat[];
+  loadingLogs: boolean;
+}) {
+  const t = useT();
+  const qualified = allBuckets.filter((b) => b.attempts >= 5);
+  if (loadingLogs || qualified.length < 2) return null;
+
+  const bucketLabel: Record<BucketKey, string> = {
+    repeat: t.analytics.intervalBucketRepeat,
+    step:   t.analytics.intervalBucketStep,
+    skip:   t.analytics.intervalBucketSkip,
+    leap:   t.analytics.intervalBucketLeap,
+    wide:   t.analytics.intervalBucketWide,
+  };
+
+  return (
+    <section>
+      <div className="flex items-baseline justify-between mb-2">
+        <p className="text-xs font-semibold text-foreground">{t.analytics.intervalSectionTitle}</p>
+        <p className="text-[10px] text-muted-foreground">{t.analytics.intervalSectionNote}</p>
+      </div>
+      {/* TODO v1.1: normalize bar widths by per-level difficulty */}
+      <ul className="space-y-2">
+        {qualified.map((b) => {
+          const acc = 1 - b.errorRate;
+          const barColor =
+            acc >= 0.75 ? "bg-emerald-400" : acc >= 0.5 ? "bg-amber-400" : "bg-red-400";
+          const pct = Math.round(b.errorRate * 100);
+          return (
+            <li key={b.key}>
+              <div className="flex items-center justify-between text-[11px] mb-0.5">
+                <span className="font-medium text-foreground">{bucketLabel[b.key]}</span>
+                <span className="tabular-nums text-muted-foreground">
+                  {pct}% · {b.attempts}{t.analytics.chipAttemptsUnit}
+                </span>
+              </div>
+              <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
+                <div
+                  className={`h-full rounded-full transition-all ${barColor}`}
+                  style={{ width: `${Math.min(pct, 100)}%` }}
+                />
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+    </section>
+  );
+}
+
 /* ---------- 본체 ---------- */
 
 export default function DailyReport({ date }: DailyReportProps) {
   const t = useT();
   const { data, loading, error, refresh } = useDailyReport(date);
+  const { logs, loading: logsLoading } = useDailyIntervals();
 
   const values = useMemo(() => (data ? pickValues(data) : null), [data]);
   const weakNotes = useMemo(() => normalizeWeakNotes(data, 5), [data]);
+  const isLiveData = !!data && isLive(data);
+
+  const allBuckets = useMemo(
+    () => (isLiveData ? computeBuckets(logs) : []),
+    [isLiveData, logs],
+  );
+  const qualifiedBuckets = useMemo(
+    () => allBuckets.filter((b) => b.attempts >= 5),
+    [allBuckets],
+  );
 
   const showDelta = !!values && values.baselineDays >= 3;
   const accDelta =
@@ -148,22 +305,36 @@ export default function DailyReport({ date }: DailyReportProps) {
 
   const headline = useMemo(() => {
     if (!data || isNoData(data)) return null;
-    if (weakNotes.length > 0) {
-      const w = weakNotes[0];
-      const clefLabel = w.clef === "bass" ? t.analytics.clefBass : t.analytics.clefTreble;
-      return formatI18n(t.analytics.headlineWeak, { note: `${clefLabel} ${w.note_key}${w.octave}` });
+    const worstNote = weakNotes[0] ?? null;
+    const worstBucket =
+      qualifiedBuckets.length >= 2
+        ? qualifiedBuckets.reduce((a, b) => (b.errorRate > a.errorRate ? b : a), qualifiedBuckets[0])
+        : null;
+
+    if (worstNote && worstBucket && worstBucket.errorRate > worstNote.error_rate) {
+      const bucketLabels: Record<BucketKey, string> = {
+        repeat: t.analytics.intervalBucketRepeat,
+        step:   t.analytics.intervalBucketStep,
+        skip:   t.analytics.intervalBucketSkip,
+        leap:   t.analytics.intervalBucketLeap,
+        wide:   t.analytics.intervalBucketWide,
+      };
+      return formatI18n(t.analytics.takeawayIntervalWeak, { bucket: bucketLabels[worstBucket.key] });
+    }
+    if (worstNote) {
+      const clefLabel = worstNote.clef === "bass" ? t.analytics.clefBass : t.analytics.clefTreble;
+      return formatI18n(t.analytics.headlineWeak, {
+        note: `${clefLabel} ${worstNote.note_key}${worstNote.octave}`,
+      });
     }
     return t.analytics.headlineClean;
-  }, [data, weakNotes, t]);
+  }, [data, weakNotes, qualifiedBuckets, t]);
 
   if (loading) return <Skeleton />;
   if (error) return <ErrorState msg={error} onRetry={() => void refresh()} />;
   if (!data || isNoData(data)) return <GraceState />;
   if (!values) return <GraceState />;
-
-  if (values.totalAttempts === 0 && values.sessions.length === 0) {
-    return <GraceState />;
-  }
+  if (values.totalAttempts === 0 && values.sessions.length === 0) return <GraceState />;
 
   const accDeltaLabel =
     accDelta == null
@@ -214,22 +385,10 @@ export default function DailyReport({ date }: DailyReportProps) {
         />
       </div>
 
-      {weakNotes.length > 0 && (
-        <section>
-          <p className="text-xs font-semibold text-foreground mb-2">{t.analytics.weakNotesTitle}</p>
-          <div className="flex flex-wrap gap-1.5">
-            {weakNotes.map((w, idx) => (
-              <WeakNoteChip
-                key={`${w.clef}-${w.note_key}-${w.octave}-${idx}`}
-                noteKey={w.note_key}
-                octave={w.octave}
-                clef={w.clef}
-                errorRate={w.error_rate}
-                attempts={w.attempts}
-              />
-            ))}
-          </div>
-        </section>
+      <WeakNoteHighlightSection notes={weakNotes} />
+
+      {isLiveData && (
+        <IntervalSection allBuckets={allBuckets} loadingLogs={logsLoading} />
       )}
 
       {values.sessions.length > 0 && (

@@ -671,6 +671,19 @@ export interface Strings {
     periodNoData: string;
     periodWeeklyNoDataHint: string;
     periodMonthlyNoDataHint: string;
+    // DailyReport 약점 음표 강조 카드
+    /** {errors} {attempts} placeholders */
+    weakNoteMissedOf: string;
+    // 인터벌 섹션 (live-only)
+    intervalSectionTitle: string;
+    intervalSectionNote: string;
+    intervalBucketRepeat: string;
+    intervalBucketStep: string;
+    intervalBucketSkip: string;
+    intervalBucketLeap: string;
+    intervalBucketWide: string;
+    /** {bucket} placeholder */
+    takeawayIntervalWeak: string;
   };
   checkout: {
     backHome: string;
@@ -1372,6 +1385,15 @@ const ko: Strings = {
     periodNoData: "아직 이번 기간 기록이 없어요",
     periodWeeklyNoDataHint: "계속 연습하세요 — 주간 분석은 이번 주가 쌓이며 채워집니다.",
     periodMonthlyNoDataHint: "계속 연습하세요 — 월간 분석은 한 달이 쌓이며 채워집니다.",
+    weakNoteMissedOf: "{attempts}번 중 {errors}번 틀림",
+    intervalSectionTitle: "도약 크기 분포",
+    intervalSectionNote: "오늘 친 레벨 기준",
+    intervalBucketRepeat: "반복",
+    intervalBucketStep: "반음·온음",
+    intervalBucketSkip: "3~5도",
+    intervalBucketLeap: "6~9도",
+    intervalBucketWide: "10도+",
+    takeawayIntervalWeak: "오늘은 {bucket} 구간이 특히 어려웠어요",
   },
   checkout: {
     backHome: "← 홈으로",
@@ -2090,6 +2112,15 @@ const en: Strings = {
     periodNoData: "No data for this period yet",
     periodWeeklyNoDataHint: "Keep playing — weekly insights build over the week.",
     periodMonthlyNoDataHint: "Keep playing — monthly insights build over the month.",
+    weakNoteMissedOf: "missed {errors} of {attempts}",
+    intervalSectionTitle: "Interval distribution",
+    intervalSectionNote: "Within the levels you played today",
+    intervalBucketRepeat: "Repeat",
+    intervalBucketStep: "Step",
+    intervalBucketSkip: "Skip",
+    intervalBucketLeap: "Leap",
+    intervalBucketWide: "Wide",
+    takeawayIntervalWeak: "Intervals were the main challenge today — {bucket} leaps",
   },
   checkout: {
     backHome: "← Home",
