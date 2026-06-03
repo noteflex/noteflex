@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useT } from "@/contexts/LanguageContext";
 import { getUserTier } from "@/lib/subscriptionTier";
-import PeriodReport from "./PeriodReport";
+import WeeklyReport from "./WeeklyReport";
 
 /* ── 뒤로 가는 카드 (보조, 연함) ── */
 function BackReportCard({ to, label }: { to: string; label: string }) {
@@ -104,7 +104,7 @@ export default function WeeklyAnalyticsPage() {
 
         {isPro ? (
           <>
-            <PeriodReport periodType="week" />
+            <WeeklyReport />
             <ForwardReportCard
               to="/analytics/monthly"
               eyebrow={t.analytics.nextReport}

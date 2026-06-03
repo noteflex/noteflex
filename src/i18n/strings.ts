@@ -684,6 +684,26 @@ export interface Strings {
     intervalBucketWide: string;
     /** {bucket} placeholder */
     takeawayIntervalWeak: string;
+    // 주간 보고서 전용
+    weeklyAccTrendTitle: string;
+    weeklyThreshold85: string;
+    weeklyRhythmTitle: string;
+    /** {activeDays} {gap} placeholders */
+    weeklyRhythmSummary: string;
+    weeklyWeakTitle: string;
+    /** {n} {m} placeholders */
+    weeklyWeakMissedOf: string;
+    /** {note} placeholder */
+    weeklyHeadlineUp: string;
+    /** {note} placeholder */
+    weeklyHeadlineDown: string;
+    /** {note} placeholder */
+    weeklyHeadlineFlat: string;
+    weeklyHeadlineNoNote: string;
+    /** {n} placeholder */
+    weeklyGrace: string;
+    weeklyNoData: string;
+    weeklyDeltaVsPrev: string;
   };
   checkout: {
     backHome: string;
@@ -1394,6 +1414,19 @@ const ko: Strings = {
     intervalBucketLeap: "6~9도",
     intervalBucketWide: "10도+",
     takeawayIntervalWeak: "오늘은 {bucket} 구간이 특히 어려웠어요",
+    weeklyAccTrendTitle: "정확도 추세 (7일)",
+    weeklyThreshold85: "목표 85%",
+    weeklyRhythmTitle: "연습 리듬",
+    weeklyRhythmSummary: "{activeDays}/7일 · 최장 공백 {gap}일",
+    weeklyWeakTitle: "이번 주 내내 약했어요",
+    weeklyWeakMissedOf: "{n}/{m}일",
+    weeklyHeadlineUp: "정확도가 오르고 있어요 — {note}만 잡으면 완벽해요",
+    weeklyHeadlineDown: "이번 주 정확도가 떨어졌어요 — {note} 복습이 필요해요",
+    weeklyHeadlineFlat: "정확도가 안정적이에요 — {note}에 집중하면 더 나아질 거예요",
+    weeklyHeadlineNoNote: "이번 주 모든 음표에서 좋은 실력이에요",
+    weeklyGrace: "{n}일째 연습 중이에요 · 7일치가 채워지면 전체 추세가 나타나요",
+    weeklyNoData: "이번 주 아직 연습 기록이 없어요",
+    weeklyDeltaVsPrev: "vs 지난주",
   },
   checkout: {
     backHome: "← 홈으로",
@@ -2121,6 +2154,19 @@ const en: Strings = {
     intervalBucketLeap: "Leap",
     intervalBucketWide: "Wide",
     takeawayIntervalWeak: "Intervals were the main challenge today — {bucket} leaps",
+    weeklyAccTrendTitle: "Accuracy trend (7 days)",
+    weeklyThreshold85: "Target 85%",
+    weeklyRhythmTitle: "Practice rhythm",
+    weeklyRhythmSummary: "{activeDays}/7 days · {gap}-day gap",
+    weeklyWeakTitle: "Weak all week",
+    weeklyWeakMissedOf: "{n}/{m} days",
+    weeklyHeadlineUp: "Accuracy is improving — work on {note} to keep going",
+    weeklyHeadlineDown: "Accuracy dipped this week — review {note}",
+    weeklyHeadlineFlat: "Accuracy is steady — focus on {note} to level up",
+    weeklyHeadlineNoNote: "Great accuracy across all notes this week",
+    weeklyGrace: "Day {n} of 7 this week · full trend appears when the week is complete",
+    weeklyNoData: "No practice recorded this week yet",
+    weeklyDeltaVsPrev: "vs last week",
   },
   checkout: {
     backHome: "← Home",

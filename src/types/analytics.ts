@@ -122,7 +122,7 @@ export type DailyReport = DailyReportLive | DailyReportRollup | DailyReportNoDat
 export interface PeriodRollup {
   id: string;
   user_id: string;
-  period_type: "week" | "month";
+  period_type: "week" | "month" | "day";
   period_start: string;
   period_end: string;
 
@@ -153,6 +153,9 @@ export interface PeriodRollup {
 
   computed_at: string;
 }
+
+// 일간 롤업 row (user_analytics_rollup where period_type = 'day')
+export type DayRollupRow = PeriodRollup & { period_type: "day" };
 
 // 공용 — UI에서 다루기 편한 정규화 약점 항목
 export interface WeakNoteForChip {
