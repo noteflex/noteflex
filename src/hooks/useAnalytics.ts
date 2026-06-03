@@ -80,11 +80,16 @@ export function usePeriodReport(periodType: "week" | "month"): UsePeriodReportRe
     setLoading(true);
     setError(null);
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const userId = session?.user?.id;
+      if (!userId) throw new Error("인증 필요");
+
       const now = new Date();
       const periodStart = periodType === "week" ? isoWeekStart(now) : monthStart(now);
       const { data: row, error: dbErr } = await supabase
         .from("user_analytics_rollup")
         .select("*")
+        .eq("user_id", userId)
         .eq("period_type", periodType)
         .eq("period_start", periodStart)
         .maybeSingle();
@@ -129,10 +134,15 @@ export function useDailyIntervals(): { logs: DailyLogRow[]; loading: boolean } {
     let cancelled = false;
     (async () => {
       try {
+        const { data: { session } } = await supabase.auth.getSession();
+        const userId = session?.user?.id;
+        if (!userId) return;
+
         const { gte, lt } = kstDayBounds();
         const { data, error } = await supabase
           .from("user_note_logs")
           .select("is_correct, interval_from_prev")
+          .eq("user_id", userId)
           .gte("created_at", gte)
           .lt("created_at", lt);
         if (!cancelled && !error && data) {
