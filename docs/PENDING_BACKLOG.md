@@ -66,6 +66,26 @@
   - 검증:
     - prod 재배포 후 같은 에러 Sentry에 캡처 X 확인 (24~48h)
     - PWA 정상 환경에서 SW 등록 작동 유지 (Chrome 최신·Safari iOS 등)
+- [출시후-모니터링] **Sentry `[object Object]` 패턴 재발 시 logger.error 호출 정리** — 2026-06-03 Sentry 정리 시 2주 전 `[object Object]` 패턴 이슈 2건 발견 (JAVASCRIPT-REACT-4, JAVASCRIPT-REACT-5). `logger.error('title', errorObject)` 호출 시 errorObject가 Error 인스턴스가 아닌 일반 객체일 때 Sentry가 `String()` 변환 → `[object Object]`로 stringify. 진짜 에러 정보는 잡혀 있지만 Sentry message가 의미 없는 상태 → 디버깅 어려움. 2주 전 발생 이후 코드 큰 폭 변경(NextStepCard 리뉴얼·`/play` 리팩토링 등) → 이미 fix됐을 가능성 있음.
+  - 모니터링: 24~48시간 → 새 빌드에서 같은 패턴 재발 시 진단·fix. Resolve 후 동일 stack hash로 재발 시 Sentry 자동 unresolved 처리.
+  - 재발 시 fix 작업: `src/lib/sentry.ts` `logger.error` 호출 위치 grep → 잘못된 패턴(객체 직접 전달)을 정합 패턴으로 일괄 변경. 또는 logger 자체에 wrapping 추가 (err 이 Error 인스턴스가 아닐 때 `JSON.stringify`로 변환 후 `new Error(...)`).
+    ```ts
+    // 잘못된 패턴
+    logger.error('가입 실패', { code, message });
+
+    // 정합 패턴 A
+    logger.error('가입 실패', new Error(`${code}: ${message}`));
+
+    // 정합 패턴 B (err 이 Error 인스턴스)
+    logger.error('가입 실패', err);
+
+    // logger 내부 wrapping (한 곳 변경으로 전역 적용)
+    const errorObj = err instanceof Error
+      ? err
+      : new Error(typeof err === 'object' ? JSON.stringify(err) : String(err));
+    Sentry.captureException(errorObj, { tags: { title } });
+    ```
+  - 분량: 1~2시간 (logger.error 호출 위치 grep + 일괄 변경 + 빌드 검증)
 
 ---
 
