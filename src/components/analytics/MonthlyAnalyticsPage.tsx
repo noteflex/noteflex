@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useT } from "@/contexts/LanguageContext";
 import { getUserTier } from "@/lib/subscriptionTier";
+import PeriodReport from "./PeriodReport";
 
 /* ── 뒤로 가는 카드 (보조, 연함) ── */
 function BackReportCard({ to, label }: { to: string; label: string }) {
@@ -36,18 +37,6 @@ function ProLockScreen({ reportLabel }: { reportLabel: string }) {
       <Button className="mt-6" onClick={() => navigate("/dashboard?upgrade=1")}>
         {t.analytics.proLockCta}
       </Button>
-    </div>
-  );
-}
-
-/* ── Pro용 콘텐츠 placeholder ── */
-function MonthlyPlaceholder() {
-  const t = useT();
-  return (
-    <div className="rounded-xl border border-dashed border-border bg-card p-8 text-center">
-      <p className="text-2xl mb-2" aria-hidden>🏆</p>
-      <p className="text-sm font-semibold text-foreground">{t.analytics.monthlyPlaceholderTitle}</p>
-      <p className="mt-1 text-xs text-muted-foreground">{t.analytics.monthlyPlaceholderDesc}</p>
     </div>
   );
 }
@@ -83,7 +72,11 @@ export default function MonthlyAnalyticsPage() {
         {/* 뒤로 — 항상 노출 */}
         <BackReportCard to="/analytics/weekly" label={t.analytics.backToWeekly} />
 
-        {isPro ? <MonthlyPlaceholder /> : <ProLockScreen reportLabel={t.analytics.monthlyTitle} />}
+        {isPro ? (
+          <PeriodReport periodType="month" />
+        ) : (
+          <ProLockScreen reportLabel={t.analytics.monthlyTitle} />
+        )}
       </main>
     </div>
   );

@@ -151,19 +151,11 @@ const App = () => (
               />
               <Route
                 path="/analytics/weekly"
-                element={
-                  <ComingSoonGate>
-                    <WeeklyAnalyticsPage />
-                  </ComingSoonGate>
-                }
+                element={<WeeklyAnalyticsPage />}
               />
               <Route
                 path="/analytics/monthly"
-                element={
-                  <ComingSoonGate>
-                    <MonthlyAnalyticsPage />
-                  </ComingSoonGate>
-                }
+                element={<MonthlyAnalyticsPage />}
               />
               <Route
                 path="/profile"

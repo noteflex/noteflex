@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useT } from "@/contexts/LanguageContext";
 import { getUserTier } from "@/lib/subscriptionTier";
+import PeriodReport from "./PeriodReport";
 
 /* ── 뒤로 가는 카드 (보조, 연함) ── */
 function BackReportCard({ to, label }: { to: string; label: string }) {
@@ -70,18 +71,6 @@ function ProLockScreen({ reportLabel }: { reportLabel: string }) {
   );
 }
 
-/* ── Pro용 콘텐츠 placeholder ── */
-function WeeklyPlaceholder() {
-  const t = useT();
-  return (
-    <div className="rounded-xl border border-dashed border-border bg-card p-8 text-center">
-      <p className="text-2xl mb-2" aria-hidden>📊</p>
-      <p className="text-sm font-semibold text-foreground">{t.analytics.weeklyPlaceholderTitle}</p>
-      <p className="mt-1 text-xs text-muted-foreground">{t.analytics.weeklyPlaceholderDesc}</p>
-    </div>
-  );
-}
-
 export default function WeeklyAnalyticsPage() {
   const { user, profile, loading: authLoading } = useAuth();
   const t = useT();
@@ -110,12 +99,12 @@ export default function WeeklyAnalyticsPage() {
           <p className="text-xs text-muted-foreground">{t.analytics.weeklySubtitle}</p>
         </div>
 
-        {/* 뒤로 — 항상 노출 (잠금 상태에서도 이전 페이지로 돌아갈 수 있어야 함) */}
+        {/* 뒤로 — 항상 노출 */}
         <BackReportCard to="/analytics/daily" label={t.analytics.backToDaily} />
 
         {isPro ? (
           <>
-            <WeeklyPlaceholder />
+            <PeriodReport periodType="week" />
             <ForwardReportCard
               to="/analytics/monthly"
               eyebrow={t.analytics.nextReport}

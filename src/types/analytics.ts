@@ -118,6 +118,42 @@ export interface DailyReportRollup {
 
 export type DailyReport = DailyReportLive | DailyReportRollup | DailyReportNoData;
 
+// 주간·월간 롤업 — user_analytics_rollup에서 직접 조회
+export interface PeriodRollup {
+  id: string;
+  user_id: string;
+  period_type: "week" | "month";
+  period_start: string;
+  period_end: string;
+
+  sessions_count: number;
+  total_attempts: number;
+  correct_attempts: number;
+  total_duration_seconds: number;
+  active_days: number;
+
+  overall_accuracy: number | null;
+  avg_reaction_ms: number | null;
+  median_reaction_ms: number | null;
+
+  by_clef: unknown;
+  by_accidental: unknown;
+  by_level: unknown;
+  per_note: PerNote[] | null;
+  interval_error_rates: unknown;
+  weak_notes_top: WeakNoteRollup[] | null;
+
+  streak_days: number | null;
+
+  baseline_accuracy: number | null;
+  baseline_avg_reaction_ms: number | null;
+
+  graduated_count: number;
+  regressed_count: number;
+
+  computed_at: string;
+}
+
 // 공용 — UI에서 다루기 편한 정규화 약점 항목
 export interface WeakNoteForChip {
   note_key: string;

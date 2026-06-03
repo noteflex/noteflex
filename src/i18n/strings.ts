@@ -651,6 +651,25 @@ export interface Strings {
     // WeakNoteChip tooltip
     chipErrorRateLabel: string;
     chipAttemptsUnit: string;
+    // PeriodReport (주간·월간 공용)
+    periodWeeklyEyebrow: string;
+    periodMonthlyEyebrow: string;
+    /** {note} placeholder */
+    periodWeeklyHeadlineWeak: string;
+    periodWeeklyHeadlineClean: string;
+    /** {note} placeholder */
+    periodMonthlyHeadlineWeak: string;
+    periodMonthlyHeadlineClean: string;
+    periodWeeklyWeakNotesTitle: string;
+    periodMonthlyWeakNotesTitle: string;
+    /** {n} placeholder */
+    periodActiveDays: string;
+    /** {n} placeholder */
+    periodGraduated: string;
+    /** {n} placeholder */
+    periodRegressed: string;
+    periodNoData: string;
+    periodNoDataHint: string;
   };
   checkout: {
     backHome: string;
@@ -1338,6 +1357,19 @@ const ko: Strings = {
     clefBass: "낮은음",
     chipErrorRateLabel: "오답률",
     chipAttemptsUnit: "회",
+    periodWeeklyEyebrow: "이번 주 요약",
+    periodMonthlyEyebrow: "이번 달 요약",
+    periodWeeklyHeadlineWeak: "이번 주 가장 어려운 음: {note}",
+    periodWeeklyHeadlineClean: "이번 주 깔끔하게 연습했어요",
+    periodMonthlyHeadlineWeak: "이번 달 가장 어려운 음: {note}",
+    periodMonthlyHeadlineClean: "이번 달 꾸준히 잘 쳤어요",
+    periodWeeklyWeakNotesTitle: "이번 주 약점 음표",
+    periodMonthlyWeakNotesTitle: "이번 달 약점 음표",
+    periodActiveDays: "활동 {n}일",
+    periodGraduated: "졸업 {n}개",
+    periodRegressed: "퇴보 {n}개",
+    periodNoData: "아직 이번 기간 기록이 없어요",
+    periodNoDataHint: "오늘 연습하면 내일 자정에 분석이 갱신됩니다",
   },
   checkout: {
     backHome: "← 홈으로",
@@ -2042,6 +2074,19 @@ const en: Strings = {
     clefBass: "Bass",
     chipErrorRateLabel: "error rate",
     chipAttemptsUnit: " tries",
+    periodWeeklyEyebrow: "This week's summary",
+    periodMonthlyEyebrow: "This month's summary",
+    periodWeeklyHeadlineWeak: "This week's hardest note: {note}",
+    periodWeeklyHeadlineClean: "Clean week — no standout weak notes",
+    periodMonthlyHeadlineWeak: "This month's hardest note: {note}",
+    periodMonthlyHeadlineClean: "Strong month — no standout weak notes",
+    periodWeeklyWeakNotesTitle: "This week's weak notes",
+    periodMonthlyWeakNotesTitle: "This month's weak notes",
+    periodActiveDays: "{n} active days",
+    periodGraduated: "{n} graduated",
+    periodRegressed: "{n} regressed",
+    periodNoData: "No data for this period yet",
+    periodNoDataHint: "Practice today and analysis will update at midnight",
   },
   checkout: {
     backHome: "← Home",
