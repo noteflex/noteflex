@@ -596,10 +596,12 @@ export default function MonthlyReport() {
             {t.analytics.monthlyWeeklyGrowthTitle}
           </p>
           <SectionDesc text={t.analytics.monthlyWeeklyGrowthDesc} />
-          <WeeklyBarChart
-            chartData={weeklyChartData}
-            threshold85Label={t.analytics.monthlyThreshold85}
-          />
+          <div style={{ width: "80%", margin: "0 auto" }}>
+            <WeeklyBarChart
+              chartData={weeklyChartData}
+              threshold85Label={t.analytics.monthlyThreshold85}
+            />
+          </div>
           {/* Volume legend */}
           <div className="flex items-center gap-4 mt-3">
             {(
@@ -609,9 +611,9 @@ export default function MonthlyReport() {
                 { color: VOL_HIGH, label: t.analytics.monthlyVolumeHigh },
               ] as const
             ).map(({ color, label }) => (
-              <div key={label} className="flex items-center gap-1">
-                <div className="w-2.5 h-2.5 rounded-sm shrink-0" style={{ backgroundColor: color }} />
-                <span className="text-[10px] text-muted-foreground">{label}</span>
+              <div key={label} className="flex items-center gap-1.5">
+                <div className="w-3 h-3 rounded-sm shrink-0" style={{ backgroundColor: color }} />
+                <span className="text-[12px] text-muted-foreground">{label}</span>
               </div>
             ))}
           </div>
