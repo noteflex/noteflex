@@ -29,20 +29,13 @@ function isSupportedLang(value: string | null): value is Lang {
 
 function detectAutoLang(): Lang {
   if (typeof window === "undefined") return DEFAULT_LANG;
-  // 1. timezone === 'Asia/Seoul' → 한국 사용자로 추정 (PIPA 정합)
-  try {
-    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    if (tz === "Asia/Seoul") return "ko";
-  } catch {
-    // Intl 미지원 환경 = skip
-  }
-  // 2. navigator.language === 'ko-*' → 한국어 우선
+  // 타임존 검사 제거: 위치는 언어 선호가 아님 — 한국 거주 영어 기기 사용자 오판 방지
+  // navigator.language === 'ko-*' → 한국어 우선
   try {
     if (navigator.language?.toLowerCase().startsWith("ko")) return "ko";
   } catch {
     // navigator 미지원 = skip
   }
-  // 3. 그 외 → 기본 영어
   return DEFAULT_LANG;
 }
 
