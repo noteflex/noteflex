@@ -74,9 +74,7 @@ export default function Index() {
     >
       <Seo
         title={
-          isKo
-            ? "Noteflex — See it, Play it. 음악 학습 게임"
-            : "Noteflex — See it, Play it. Sight-reading game"
+          "Noteflex — See it, Play it. Sight-Reading Game"
         }
         description={
           isKo
