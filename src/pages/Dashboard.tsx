@@ -349,6 +349,24 @@ function LastActivityCard({
   );
 }
 
+/* ---------- 로딩 스켈레톤 (갱신 중 신규 여부 미확정 상태) ---------- */
+
+function DashboardLoadingSkeleton() {
+  return (
+    <div className="space-y-4 animate-pulse" aria-hidden="true">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        {[0, 1, 2, 3].map((i) => (
+          <div key={i} className="rounded-lg border border-border bg-card px-4 py-4 h-[88px]">
+            <div className="h-3 w-16 rounded bg-muted mb-3" />
+            <div className="h-7 w-12 rounded bg-muted" />
+          </div>
+        ))}
+      </div>
+      <div className="rounded-lg border border-border bg-card h-24" />
+    </div>
+  );
+}
+
 /* ---------- 신규 사용자 영역 (상태 3) ---------- */
 
 function NewUserView({ onStart }: { onStart: () => void }) {
@@ -588,7 +606,8 @@ export default function Dashboard() {
   const hasAnySession = sessionsTyped.length > 0;
   // user_sessions RLS가 reviewer를 막을 경우 대비: user_sublevel_progress를 추가 게임 이력 신호로 사용
   const hasAnyProgress = levelProgress.length > 0;
-  const isNewUser = !hasAnySession && !hasAnyProgress && !stats.lastPracticeDate;
+  // 갱신 중에는 isNewUser를 false로 고정 — 빈 상태 카피가 세션 직후 잠깐 노출되는 현상 방지
+  const isNewUser = !isRefreshing && !hasAnySession && !hasAnyProgress && !stats.lastPracticeDate;
 
   // profiles.last_practice_date 트리거 미적용 대비:
   // user_sessions에 오늘 세션이 있으면 오늘 연습 완료로 처리
@@ -699,8 +718,10 @@ export default function Dashboard() {
           <p className="text-xs text-muted-foreground">{t.dashboard.pageSubtitle}</p>
         </div>
 
-        {/* 상태 분기 — 신규 사용자 */}
-        {isNewUser ? (
+        {/* 상태 분기 — 갱신 중 신규 여부 미확정 → 스켈레톤 */}
+        {isRefreshing && !hasAnySession && !hasAnyProgress && !stats.lastPracticeDate ? (
+          <DashboardLoadingSkeleton />
+        ) : isNewUser ? (
           <>
             <NewUserView onStart={handleStart} />
             <AiFeedbackCard

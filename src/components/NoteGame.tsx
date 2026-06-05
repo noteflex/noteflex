@@ -869,10 +869,13 @@ export default function NoteGame({
       const reason     = phase === "success" ? "completed" : "gameover";
       const gameStatus: "success" | "gameover" = phase === "success" ? "success" : "gameover";
 
+      // avgReactionRatio를 두 번째 .then()에서도 참조할 수 있도록 외부에서 캡처
+      let capturedAvgReactionRatio: number | undefined = undefined;
+
       recorder.endSession(reason).then((sessionResult) => {
         if (sessionResult) setSessionResult(sessionResult);
         // avg_reaction_ratio = 보정된 평균 반응 ms / 타이머 ms (§7.3 calibration 기반)
-        const avgReactionRatio =
+        capturedAvgReactionRatio =
           sessionResult && TIMER_SECONDS > 0
             ? sessionResult.avgReactionMs / (TIMER_SECONDS * 1000)
             : undefined;
@@ -883,7 +886,7 @@ export default function NoteGame({
           totalCorrectRef.current,
           bestStreakRef.current,
           gameStatus,
-          avgReactionRatio,
+          capturedAvgReactionRatio,
         );
       }).then((result) => {
         // 비로그인 시 result=null — fake payload 생성 (DB unlock X, 모달 노출 영역 보장).
@@ -910,6 +913,7 @@ export default function NoteGame({
           totalCorrect: totalCorrectRef.current,
           bestStreak: bestStreakRef.current,
           gameStatus,
+          avgReactionRatio: capturedAvgReactionRatio,
         });
       });
     }

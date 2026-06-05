@@ -1620,8 +1620,8 @@ const en: Strings = {
     tryAgain: "Try again!",
     backToHome: "Back to Home 🔥",
     finalStage: "Final stage — {n} left",
-    notesSequential: "{n} notes in sequence",
-    notesSimultaneous: "{n} notes at once",
+    notesSequential: "{n} {n:note:notes} in sequence",
+    notesSimultaneous: "{n} {n:note:notes} at once",
     setProgress: "({cur}/{total} sets)",
     questionOfTotal: "What is note {a} of {b}?",
     question: "What is note {a}?",
@@ -1845,7 +1845,7 @@ const en: Strings = {
     recoveryTitle: "Account recovery available",
     recoveryBodyPre: "",
     recoveryBodyMid: " is being deleted.",
-    recoveryBodyDays: "You can recover it within {n} days.",
+    recoveryBodyDays: "You can recover it within {n} {n:day:days}.",
     recoveryAction: "Recover account",
     recoveryActionSending: "Sending...",
     freshStartButton: "Start fresh",
@@ -2080,7 +2080,7 @@ const en: Strings = {
     refreshSuccess: "Updated with the latest data",
     dataError: "Failed to load dashboard data: {error}",
     currentStreak: "Current Streak",
-    streakValueDays: "{n} days",
+    streakValueDays: "{n} {n:day:days}",
     streakTodayDone: "Today's practice done ✓",
     streakTodayContinues: "Practice today to keep the streak",
     streakTodayFirst: "Start your first practice today",
@@ -2155,7 +2155,7 @@ const en: Strings = {
     noLastSessionYet: "Shown after first session",
     lastActivityTitle: "Last activity",
     lastActivityFormat: "{when} · Acc {acc} · Speed {speed} · XP {xp}",
-    daysAgo: "{n} days ago",
+    daysAgo: "{n} {n:day:days} ago",
     yesterday: "Yesterday",
     today: "Today",
     streakStartFresh: "Start fresh today",
@@ -2192,7 +2192,7 @@ const en: Strings = {
     nextStepLearningTitle: "Gathering data",
     nextStepLearningSubtitle: "A few more sessions and the next goal appears",
     nextStepFootGraduated: "{n} graduated this week",
-    nextStepFootWeakness: "{n} weak notes left",
+    nextStepFootWeakness: "{n} weak {n:note:notes} left",
     nextStepFootGradZero: "Aim for your first graduation this week 🎯",
     nextStepFootEmpty: "Building analytics",
     nextStepFocusBoxTitle: "Focus on this note",
@@ -2241,7 +2241,7 @@ const en: Strings = {
     metricAccuracy: "Accuracy",
     metricAvgReaction: "Avg Reaction",
     metricTotalAttempts: "Total Attempts",
-    metricSessions: "{n} sessions",
+    metricSessions: "{n} {n:session:sessions}",
     deltaVsBaseline: "vs avg",
     weakNotesTitle: "Today's weak notes",
     sessionsTitle: "Today's sessions",
@@ -2260,7 +2260,7 @@ const en: Strings = {
     periodMonthlyHeadlineClean: "Strong month — no standout weak notes",
     periodWeeklyWeakNotesTitle: "This week's weak notes",
     periodMonthlyWeakNotesTitle: "This month's weak notes",
-    periodActiveDays: "{n} active days",
+    periodActiveDays: "{n} active {n:day:days}",
     periodGraduated: "{n} graduated",
     periodRegressed: "{n} regressed",
     periodNoData: "No data for this period yet",
@@ -2304,7 +2304,7 @@ const en: Strings = {
     monthlyHeadlineDown: "Down {n}%p from last month",
     monthlyHeadlineSame: "About the same as last month",
     monthlyHeadlineGrace: "Your first month recorded — it starts here",
-    monthlyHeadlineGraduated: "{n} notes graduated 🏅",
+    monthlyHeadlineGraduated: "{n} {n:note:notes} graduated 🏅",
     monthlyMetricAccLabel: "🎯 Accuracy",
     monthlyMetricReactionLabel: "⚡ Reaction",
     monthlyMetricActiveDaysLabel: "🗓️ Active days",
@@ -2317,7 +2317,7 @@ const en: Strings = {
     monthlyThreshold85: "Goal 85%",
     monthlyCalendarTitle: "🗓️ Practice calendar",
     monthlyCalendarLegend: "Darker means more practice that day",
-    monthlyCalendarStreak: "Best streak: {n} days",
+    monthlyCalendarStreak: "Best streak: {n} {n:day:days}",
     monthlyGraduatedTitle: "🏅 Notes graduated this month",
     monthlyGraduatedDesc: "Notes you moved out of your weak list this month.",
     monthlyPersistentWeakTitle: "🎯 Notes to focus on next month",
@@ -2328,7 +2328,7 @@ const en: Strings = {
     monthlyVolumeHigh: "More practice",
     monthlyWeeklyGrowthDesc: "How accuracy changed week by week — taller bars are more accurate, darker bars mean more practice that week.",
     monthlyCalendarDesc: "Which days you practiced this month — darker days mean more practice.",
-    monthlyEncouragingGraduated: "✨ You graduated {n} notes this month — keep this going.",
+    monthlyEncouragingGraduated: "✨ You graduated {n} {n:note:notes} this month — keep this going.",
     monthlyEncouragingSame: "✨ Consistent month. Let's see what next month brings.",
     monthlyEncouragingDown: "📝 A tough month is still a month played. Next one will be better.",
     monthlyGraceMessage: "Not enough data yet for a month-over-month comparison. Keep playing and it'll show next month.",
@@ -2409,9 +2409,21 @@ export function getStrings(lang: Lang): Strings {
   return STRINGS[lang] ?? en;
 }
 
-/** "{email}" placeholder를 실제 값으로 치환. */
+/**
+ * "{key}" placeholder 치환.
+ * "{key:singular:plural}" — vars[key] === "1" 이면 singular, 아니면 plural.
+ * 예: format("{n} {n:day:days}", { n: "1" }) → "1 day"
+ */
 export function format(template: string, vars: Record<string, string>): string {
-  return template.replace(/\{(\w+)\}/g, (_, key: string) =>
-    Object.prototype.hasOwnProperty.call(vars, key) ? vars[key] : `{${key}}`
+  return template.replace(
+    /\{(\w+)(?::([^:}]+):([^}]+))?\}/g,
+    (match, key: string, singular?: string, plural?: string) => {
+      if (!Object.prototype.hasOwnProperty.call(vars, key)) return match;
+      const val = vars[key];
+      if (singular !== undefined && plural !== undefined) {
+        return val === "1" ? singular : plural;
+      }
+      return val;
+    },
   );
 }

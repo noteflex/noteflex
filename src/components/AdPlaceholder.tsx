@@ -62,11 +62,15 @@ export function AdPlaceholder({
   return renderBlogHorizontal(decision.post, t, className);
 }
 
+// trial은 post-launch 보류 — Paddle 미승인 상태에서 Start trial 동작 불가
+const TRIAL_BANNER_ENABLED = false;
+
 // ─── 수평형 (프리미엄) ────────────────────────────────
 function renderPremiumHorizontal(
   t: ReturnType<typeof useT>,
   className?: string
-): JSX.Element {
+): JSX.Element | null {
+  if (!TRIAL_BANNER_ENABLED) return null;
   const copy = t.adPlaceholder.premium;
   return (
     <Link
@@ -160,7 +164,8 @@ function renderBlogVertical(
 function renderPremiumVertical(
   t: ReturnType<typeof useT>,
   className?: string
-): JSX.Element {
+): JSX.Element | null {
+  if (!TRIAL_BANNER_ENABLED) return null;
   const copy = t.adPlaceholder.premium;
   return (
     <Link

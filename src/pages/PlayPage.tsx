@@ -52,6 +52,7 @@ export default function PlayPage() {
     just_passed: boolean;
     fast_track?: boolean;
     gameStatus: "success" | "gameover";
+    avgReactionRatio?: number;
   } | null>(null);
 
   useEffect(() => {
@@ -70,6 +71,7 @@ export default function PlayPage() {
     just_passed: boolean;
     fast_track?: boolean;
     gameStatus: "success" | "gameover";
+    avgReactionRatio?: number;
   }) => {
     setLastResult(result);
     trackEvent("game_complete", {
@@ -232,6 +234,7 @@ export default function PlayPage() {
             totalAttempts={lastResult.totalAttempts}
             totalCorrect={lastResult.totalCorrect}
             bestStreak={lastResult.bestStreak}
+            avgReactionRatio={lastResult.avgReactionRatio}
             playCount={lastResult.play_count}
             onReplay={handleReplaySameSublevel}
             onGoToPreviousSublevel={handleGoToPreviousSublevel}
@@ -244,6 +247,7 @@ export default function PlayPage() {
             totalAttempts={lastResult.totalAttempts}
             totalCorrect={lastResult.totalCorrect}
             bestStreak={lastResult.bestStreak}
+            avgReactionRatio={lastResult.avgReactionRatio}
             playCount={lastResult.play_count}
             justPassed={lastResult.just_passed}
             fastTrack={lastResult.fast_track ?? false}
