@@ -806,6 +806,13 @@ export interface Strings {
     dashboard: string;
     logout: string;
   };
+  cookieBanner: {
+    body: string;       // link 앞 텍스트
+    linkText: string;   // 링크 레이블
+    linkSuffix: string; // link 뒤 텍스트 (KO: "을 확인해 주세요.", EN: "for details.")
+    accept: string;
+    reject: string;
+  };
 }
 
 const ko: Strings = {
@@ -1591,6 +1598,13 @@ const ko: Strings = {
     dashboard: "대시보드",
     logout: "로그아웃",
   },
+  cookieBanner: {
+    body: "Noteflex는 서비스 개선과 분석을 위해 쿠키를 사용합니다. 자세한 내용은",
+    linkText: "쿠키 정책",
+    linkSuffix: "을 확인해 주세요.",
+    accept: "동의",
+    reject: "거부",
+  },
 };
 
 const en: Strings = {
@@ -2375,6 +2389,13 @@ const en: Strings = {
     profile: "Edit profile",
     dashboard: "Dashboard",
     logout: "Log out",
+  },
+  cookieBanner: {
+    body: "Noteflex uses cookies to improve the service and for analytics. See our",
+    linkText: "Cookie Policy",
+    linkSuffix: "for details.",
+    accept: "Accept",
+    reject: "Decline",
   },
 };
 
