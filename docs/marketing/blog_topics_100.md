@@ -677,7 +677,7 @@ day: N
 5. 초견 실력의 4단계 — 입문·중급·숙련·전문가
 6. 초견 연습이 두뇌에 미치는 영향 (인지과학 관점)
 7. 어른이 되어 초견을 배우는 것 — 늦지 않은 이유
-8. 초견 연습과 일반 곡 연습의 차이 — 시간 배분
+8. 초견 연습과 일반 곡 연습의 차이 — 시간 배분 ✅ 작성 완료 (2026-06-05, sight-reading-vs-repertoire-practice)
 9. "악보를 읽는다"는 것의 진짜 의미 — 글 읽기와의 비교
 10. 초견 능력은 타고나는가 학습되는가 ✅ 작성 완료 (2026-06-01, sight-reading-innate-or-learned)
 11. 초견과 절대음감 — 절대음감 없어도 초견 잘 할 수 있는 이유 ✅ 작성 완료 (2026-05-30, absolute-pitch-and-sight-reading)
@@ -896,6 +896,8 @@ AI·정밀 데이터·Noteflex 기능·음악 교육의 미래.
 | 2026-06-03 | 34 | §3-39 | When to Turn the Metronome On and When to Turn It Off — Its Place in Sight-Reading Practice (en) ✅ 작성 완료 | metronome-in-sight-reading-practice | Practice Hub | ~960 words | metronome practice, how to use metronome, metronome sight-reading, internal pulse music, sensorimotor synchronization music, metronome on or off, practicing with metronome | Drake/Penel/Bigand + Carrer/Pompéia/Miranda 전통 |
 | 2026-06-04 | 35 | §1-6 | 초견 연습이 두뇌를 바꾼다 — 악보 읽기가 뇌 구조에 남기는 흔적 (ko) ✅ 작성 완료 | sight-reading-and-the-brain | 초견의 정석 | ~2100자 | 초견 두뇌, 악보 읽기 뇌, 음악 뇌 가소성, 초견 신경과학, 음악 학습 뇌 변화, 청각운동 통합 음악 | Zatorre/Chen/Penhune + Wan/Schlaug 전통 |
 | 2026-06-04 | 35 | §1-6 | Sight-Reading and the Brain — What Neuroscience Reveals About Reading Music (en) ✅ 작성 완료 | sight-reading-and-the-brain | Sight-Reading Lab | ~920 words | sight-reading brain, music reading neuroscience, brain plasticity music, sight-reading cognitive science, auditory-motor integration music, music training brain changes | Zatorre/Chen/Penhune + Wan/Schlaug 전통 |
+| 2026-06-05 | 36 | §1-8 | 초견 연습과 일반 곡 연습의 차이 — 시간을 어떻게 나눌 것인가 (ko) ✅ 작성 완료 | sight-reading-vs-repertoire-practice | 초견의 정석 | ~1700자 | 초견 연습 방법, 레퍼토리 연습 차이, 음악 연습 시간 배분, 초견 효과, 의도적 연습 음악, 음악 연습 계획 | Sloboda et al. 1996 + Nielsen 2001 전통 |
+| 2026-06-05 | 36 | §1-8 | Sight-Reading vs. Repertoire Practice — How to Divide Your Time (en) ✅ 작성 완료 | sight-reading-vs-repertoire-practice | Sight-Reading Lab | ~980 words | sight-reading practice tips, repertoire vs sight-reading, music practice time split, deliberate practice music, sight-reading improvement, how to practice music | Sloboda et al. 1996 + Nielsen 2001 전통 |
 
 ---
 
