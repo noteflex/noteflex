@@ -225,85 +225,84 @@ function CalendarGrid({
 
   return (
     <div className="space-y-2">
-      {/* max-w constrains cell size to ~40px per cell (7 * 40 + 6 * 4px gap ≈ 304px) */}
-      <div style={{ maxWidth: "304px" }}>
-        <div className="grid grid-cols-7 gap-1">
-          {dayLabels.map((label) => (
+      {/* Full-width grid — cells are wide flat rectangles (~48px tall), like Google Calendar month view */}
+      <div className="grid grid-cols-7 gap-1">
+        {dayLabels.map((label) => (
+          <div
+            key={label}
+            className="text-center text-[9px] text-muted-foreground font-medium pb-1"
+          >
+            {label}
+          </div>
+        ))}
+
+        {cells.map((cell, i) => {
+          if (!cell) {
+            return <div key={`empty-${i}`} style={{ height: "48px" }} />;
+          }
+
+          const dayNum = parseInt(cell.date.slice(8, 10));
+          const bucket = cell.bucket as 0 | 1 | 2 | 3;
+          const isToday = cell.date === todayStr;
+          const isFuture = cell.date > todayStr;
+          const isActive = bucket > 0;
+
+          const bgColor = isActive
+            ? ([VOL_LOW, VOL_MED, VOL_HIGH] as const)[bucket - 1]
+            : "transparent";
+
+          // No opacity stacking — future gets its own lighter text color
+          const numColor = isActive
+            ? VOL_NUM_COLOR
+            : isFuture
+              ? "#d1d5db"
+              : "#6b7280";
+
+          return (
             <div
-              key={label}
-              className="text-center text-[9px] text-muted-foreground font-medium pb-1"
+              key={cell.date}
+              className="rounded-sm relative"
+              style={{
+                height: "48px",
+                backgroundColor: bgColor,
+                border: isFuture
+                  ? "1px solid #f3f4f6"
+                  : !isActive
+                    ? "1px solid #e5e7eb"
+                    : "none",
+              }}
             >
-              {label}
-            </div>
-          ))}
-
-          {cells.map((cell, i) => {
-            if (!cell) {
-              return <div key={`empty-${i}`} className="aspect-square" />;
-            }
-
-            const dayNum = parseInt(cell.date.slice(8, 10));
-            const bucket = cell.bucket as 0 | 1 | 2 | 3;
-            const isToday = cell.date === todayStr;
-            const isFuture = cell.date > todayStr;
-            const isActive = bucket > 0;
-
-            const bgColor = isActive
-              ? ([VOL_LOW, VOL_MED, VOL_HIGH] as const)[bucket - 1]
-              : "transparent";
-
-            // D2: no opacity stacking — future gets its own lighter text color
-            const numColor = isActive
-              ? VOL_NUM_COLOR
-              : isFuture
-                ? "#d1d5db"
-                : "#6b7280";
-
-            return (
-              <div
-                key={cell.date}
-                className="aspect-square rounded-sm relative"
+              {isToday && (
+                <div
+                  className="absolute inset-0 rounded-sm pointer-events-none"
+                  style={{ boxShadow: `inset 0 0 0 2px ${TODAY_RING_COLOR}` }}
+                />
+              )}
+              <span
+                className="absolute leading-none select-none"
                 style={{
-                  backgroundColor: bgColor,
-                  border: isFuture
-                    ? "1px solid #f3f4f6"
-                    : !isActive
-                      ? "1px solid #e5e7eb"
-                      : "none",
+                  top: "4px",
+                  right: "5px",
+                  fontSize: "12px",
+                  fontWeight: isToday ? 700 : 500,
+                  color: numColor,
                 }}
               >
-                {isToday && (
-                  <div
-                    className="absolute inset-0 rounded-sm pointer-events-none"
-                    style={{ boxShadow: `inset 0 0 0 2px ${TODAY_RING_COLOR}` }}
-                  />
-                )}
-                <span
-                  className="absolute leading-none select-none"
-                  style={{
-                    top: "4px",
-                    right: "5px",
-                    fontSize: "12px",
-                    fontWeight: isToday ? 700 : 500,
-                    color: numColor,
-                  }}
-                >
-                  {dayNum}
-                </span>
-              </div>
-            );
-          })}
-        </div>
+                {dayNum}
+              </span>
+            </div>
+          );
+        })}
+      </div>
 
-        {/* D3: streak 14px #15803d, month-year 13px muted */}
-        <div className="flex items-center justify-between mt-2">
-          {longestStreak >= 2 ? (
-            <p style={{ fontSize: "14px", fontWeight: 500, color: "#15803d" }}>{streakText}</p>
-          ) : (
-            <span />
-          )}
-          <p className="text-[13px] text-muted-foreground">{monthYearLabel}</p>
-        </div>
+      {/* D3: streak 14px #15803d, month-year 13px muted */}
+      <div className="flex items-center justify-between mt-2">
+        {longestStreak >= 2 ? (
+          <p style={{ fontSize: "14px", fontWeight: 500, color: "#15803d" }}>{streakText}</p>
+        ) : (
+          <span />
+        )}
+        <p className="text-[13px] text-muted-foreground">{monthYearLabel}</p>
       </div>
     </div>
   );
@@ -597,13 +596,10 @@ export default function MonthlyReport() {
             {t.analytics.monthlyWeeklyGrowthTitle}
           </p>
           <SectionDesc text={t.analytics.monthlyWeeklyGrowthDesc} />
-          {/* D1: cap chart width so a single bar doesn't dominate on wide screens */}
-          <div style={{ maxWidth: "320px" }}>
-            <WeeklyBarChart
-              chartData={weeklyChartData}
-              threshold85Label={t.analytics.monthlyThreshold85}
-            />
-          </div>
+          <WeeklyBarChart
+            chartData={weeklyChartData}
+            threshold85Label={t.analytics.monthlyThreshold85}
+          />
           {/* Volume legend */}
           <div className="flex items-center gap-4 mt-3">
             {(
