@@ -79,8 +79,8 @@ const CR = 8;     // chart right padding
 const CT = 18;    // chart top (accuracy label space)
 const CB = 22;    // chart bottom (week label space)
 const VB_W = 280; // viewBox width
-const VB_H = 180; // viewBox height
-const PH = VB_H - CT - CB; // plot height = 140
+const VB_H = 130; // viewBox height (reduced for compact layout)
+const PH = VB_H - CT - CB; // plot height = 90
 const PW = VB_W - CL - CR; // plot width = 240
 
 const Y_TICKS = [0, 25, 50, 75, 100];
@@ -101,7 +101,7 @@ function WeeklyBarChart({
 
   const numSlots = chartData.length;
   const slotW = PW / Math.max(numSlots, 1);
-  const barW = Math.min(slotW * 0.55, 48);
+  const barW = Math.min(slotW * 0.55, 36);
   const y85 = barY(85);
 
   return (
@@ -225,68 +225,85 @@ function CalendarGrid({
 
   return (
     <div className="space-y-2">
-      <div className="grid grid-cols-7 gap-1">
-        {dayLabels.map((label) => (
-          <div
-            key={label}
-            className="text-center text-[9px] text-muted-foreground font-medium pb-1"
-          >
-            {label}
-          </div>
-        ))}
-
-        {cells.map((cell, i) => {
-          if (!cell) {
-            return <div key={`empty-${i}`} className="aspect-square" />;
-          }
-
-          const dayNum = parseInt(cell.date.slice(8, 10));
-          const bucket = cell.bucket as 0 | 1 | 2 | 3;
-          const isToday = cell.date === todayStr;
-          const isFuture = cell.date > todayStr;
-          const isActive = bucket > 0;
-
-          const bgColor = isActive
-            ? ([VOL_LOW, VOL_MED, VOL_HIGH] as const)[bucket - 1]
-            : "transparent";
-
-          return (
+      {/* max-w constrains cell size to ~40px per cell (7 * 40 + 6 * 4px gap ≈ 304px) */}
+      <div style={{ maxWidth: "304px" }}>
+        <div className="grid grid-cols-7 gap-1">
+          {dayLabels.map((label) => (
             <div
-              key={cell.date}
-              className="aspect-square rounded-sm relative flex items-center justify-center"
-              style={{
-                backgroundColor: bgColor,
-                border: !isActive && !isFuture ? "1px solid #e5e7eb" : "none",
-                opacity: isFuture ? 0.45 : 1,
-              }}
+              key={label}
+              className="text-center text-[9px] text-muted-foreground font-medium pb-1"
             >
-              {isToday && (
-                <div
-                  className="absolute inset-0 rounded-sm pointer-events-none"
-                  style={{ boxShadow: `inset 0 0 0 2px ${TODAY_RING_COLOR}` }}
-                />
-              )}
-              <span
-                className="text-[10px] leading-none select-none"
+              {label}
+            </div>
+          ))}
+
+          {cells.map((cell, i) => {
+            if (!cell) {
+              return <div key={`empty-${i}`} className="aspect-square" />;
+            }
+
+            const dayNum = parseInt(cell.date.slice(8, 10));
+            const bucket = cell.bucket as 0 | 1 | 2 | 3;
+            const isToday = cell.date === todayStr;
+            const isFuture = cell.date > todayStr;
+            const isActive = bucket > 0;
+
+            const bgColor = isActive
+              ? ([VOL_LOW, VOL_MED, VOL_HIGH] as const)[bucket - 1]
+              : "transparent";
+
+            // D2: no opacity stacking — future gets its own lighter text color
+            const numColor = isActive
+              ? VOL_NUM_COLOR
+              : isFuture
+                ? "#d1d5db"
+                : "#6b7280";
+
+            return (
+              <div
+                key={cell.date}
+                className="aspect-square rounded-sm relative"
                 style={{
-                  color: isActive ? VOL_NUM_COLOR : "#9ca3af",
-                  fontWeight: isToday ? 700 : 400,
+                  backgroundColor: bgColor,
+                  border: isFuture
+                    ? "1px solid #f3f4f6"
+                    : !isActive
+                      ? "1px solid #e5e7eb"
+                      : "none",
                 }}
               >
-                {dayNum}
-              </span>
-            </div>
-          );
-        })}
-      </div>
+                {isToday && (
+                  <div
+                    className="absolute inset-0 rounded-sm pointer-events-none"
+                    style={{ boxShadow: `inset 0 0 0 2px ${TODAY_RING_COLOR}` }}
+                  />
+                )}
+                <span
+                  className="absolute leading-none select-none"
+                  style={{
+                    top: "4px",
+                    right: "5px",
+                    fontSize: "12px",
+                    fontWeight: isToday ? 700 : 500,
+                    color: numColor,
+                  }}
+                >
+                  {dayNum}
+                </span>
+              </div>
+            );
+          })}
+        </div>
 
-      <div className="flex items-center justify-between">
-        {longestStreak >= 2 ? (
-          <p className="text-[10px] text-muted-foreground font-medium">{streakText}</p>
-        ) : (
-          <span />
-        )}
-        <p className="text-[10px] text-muted-foreground">{monthYearLabel}</p>
+        {/* D3: streak 14px #15803d, month-year 13px muted */}
+        <div className="flex items-center justify-between mt-2">
+          {longestStreak >= 2 ? (
+            <p style={{ fontSize: "14px", fontWeight: 500, color: "#15803d" }}>{streakText}</p>
+          ) : (
+            <span />
+          )}
+          <p className="text-[13px] text-muted-foreground">{monthYearLabel}</p>
+        </div>
       </div>
     </div>
   );
@@ -580,10 +597,13 @@ export default function MonthlyReport() {
             {t.analytics.monthlyWeeklyGrowthTitle}
           </p>
           <SectionDesc text={t.analytics.monthlyWeeklyGrowthDesc} />
-          <WeeklyBarChart
-            chartData={weeklyChartData}
-            threshold85Label={t.analytics.monthlyThreshold85}
-          />
+          {/* D1: cap chart width so a single bar doesn't dominate on wide screens */}
+          <div style={{ maxWidth: "320px" }}>
+            <WeeklyBarChart
+              chartData={weeklyChartData}
+              threshold85Label={t.analytics.monthlyThreshold85}
+            />
+          </div>
           {/* Volume legend */}
           <div className="flex items-center gap-4 mt-3">
             {(

@@ -179,12 +179,13 @@ export interface PersistentWeakNote {
 }
 
 export type CalendarBucket = 0 | 1 | 2 | 3;
-export const CALENDAR_MEDIUM_THRESHOLD = 20;
-export const CALENDAR_DARK_THRESHOLD = 50;
+// Calibrated for initial data (64-108 attempts/day, ~330/week); re-tune after first real-data month
+export const CALENDAR_MEDIUM_THRESHOLD = 50;   // was 20 — 1 short session
+export const CALENDAR_DARK_THRESHOLD = 100;    // was 50 — 1 substantial session
 
-// Weekly bar chart volume thresholds (placeholder — tune after first real-data month)
-export const WEEKLY_VOLUME_MEDIUM_THRESHOLD = 50;
-export const WEEKLY_VOLUME_HIGH_THRESHOLD = 150;
+// Weekly bar chart volume thresholds — re-tune after first real-data month
+export const WEEKLY_VOLUME_MEDIUM_THRESHOLD = 200;  // was 50
+export const WEEKLY_VOLUME_HIGH_THRESHOLD = 600;    // was 150
 
 // 공용 — UI에서 다루기 편한 정규화 약점 항목
 export interface WeakNoteForChip {
