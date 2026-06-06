@@ -160,6 +160,8 @@ export type DayRollupRow = PeriodRollup & { period_type: "day" };
 export const WEAK_NOTE_GREEN_THRESHOLD = 0.75;
 /** 라이브 로그 기준 약점 판정 최소 시도 수 — WeakSlowNotesCards·NextStepCard 공유 */
 export const WEAK_NOTE_MIN_SAMPLES = 5;
+/** 일간 delta(▲/▼ %p) 표시 최소 baseline 활동일 수 — 미달 시 delta 숨기고 현재 값만 표시 */
+export const DELTA_MIN_BASELINE_DAYS = 3;
 export type WeeklyHeadlineKind = "up" | "down" | "same" | "grace" | "nodata";
 export type MonthlyHeadlineKind = "up" | "down" | "same" | "grace" | "nodata";
 

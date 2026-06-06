@@ -9,6 +9,7 @@ import {
   isNoData,
   isRollup,
   normalizeWeakNotes,
+  DELTA_MIN_BASELINE_DAYS,
   type DailyReport as DailyReportData,
   type SessionSummary,
   type WeakNoteForChip,
@@ -299,7 +300,7 @@ export default function DailyReport({ date }: DailyReportProps) {
     [allBuckets],
   );
 
-  const showDelta = !!values && values.baselineDays >= 3;
+  const showDelta = !!values && values.baselineDays >= DELTA_MIN_BASELINE_DAYS;
   const accDelta =
     showDelta && values && values.accuracy != null && values.baselineAccuracy != null
       ? values.accuracy - values.baselineAccuracy
