@@ -2,7 +2,7 @@
 
 > **작성일**: 2026-04-28
 > **선행 자료**: `docs/02_ARCHITECTURE.md` (NoteGame 트리)
-> **함께 보면 좋은 자료**: `docs/04_DB_SCHEMA.md` (`record_sublevel_attempt`, `user_note_logs`), `docs/PENDING_BACKLOG.md §7` (성능·정밀도)
+> **함께 보면 좋은 자료**: `docs/04_DB_SCHEMA.md` (`record_sublevel_attempt`, `user_note_logs`), `docs/active/PENDING_BACKLOG.md §7` (성능·정밀도)
 
 이 문서는 **출제 → 입력 → 정·오답 처리 → 진도 기록**의 전 흐름과 각 정책을 코드 위치까지 추적해 정리한 자료다. 이 문서를 읽으면 게임 알고리즘을 처음부터 다시 만들 수 있어야 한다.
 
@@ -596,7 +596,7 @@ recordAttempt({
 
 ## 15. 펜딩 백로그 (관련 항목)
 
-- 🔴 **반응속도 측정 정밀도**: `Date.now()` → `performance.now()` (`docs/PENDING_BACKLOG.md §7.1`)
+- 🔴 **반응속도 측정 정밀도**: `Date.now()` → `performance.now()` (`docs/active/PENDING_BACKLOG.md §7.1`)
 - 🔴 **첫 음표 buffering 이슈**: Lv 7-3 3초 제한 부담 (`§12.5`)
 - 🔴 **힌트 시스템 결정 보류**: 시간 50% 경과 시 시각 힌트? (`§4.4`)
 - 🟡 **세계화 정답 버튼**: 한/영/라틴 토글 (이미 useSolfegeSystem 존재) (`§4.5`)

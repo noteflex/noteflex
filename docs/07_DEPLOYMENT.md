@@ -116,7 +116,7 @@ PR / 브랜치 push 시 Vercel이 자동 preview URL 생성 — `*.vercel.app`.
 
 ### 3.3 펜딩 — 도메인 이메일
 
-`docs/PENDING_BACKLOG.md §9.1`:
+`docs/active/PENDING_BACKLOG.md §9.1`:
 
 - 🔴 `support@noteflex.app`, `tax@noteflex.app`, `admin@noteflex.app`
 - Google Workspace 또는 Cloudflare Email Routing 사용 예정
@@ -158,7 +158,7 @@ supabase/migrations/
 
 - 클라이언트는 anon key + JWT로만 접근 → RLS가 1차 방어선
 - service_role 키는 Edge Function에서만 사용 (관리자 액션, 결제 처리)
-- 키 노출 시 즉시 회전 (`docs/PENDING_BACKLOG.md §11`: `VITE_SUPABASE_ANON_KEY 회전`)
+- 키 노출 시 즉시 회전 (`docs/active/PENDING_BACKLOG.md §11`: `VITE_SUPABASE_ANON_KEY 회전`)
 
 ### 4.4 Edge Functions 배포
 
@@ -200,7 +200,7 @@ supabase functions deploy analyze-sheet-music
 
 ### 5.2 Production 전환 절차
 
-`docs/PENDING_BACKLOG.md §11` + `§9.2`:
+`docs/active/PENDING_BACKLOG.md §11` + `§9.2`:
 
 1. **사업자 등록**: Leo Republic 활용 (한국 사업자), Paddle Vendor 신청 (출시 핵심 의존성).
 2. **Production Vendor 활성화** + 도메인 등록 (`noteflex.app`).
@@ -442,7 +442,7 @@ supabase functions deploy <name>
 
 ---
 
-## 14. 펜딩 인프라 항목 (`docs/PENDING_BACKLOG.md §12`)
+## 14. 펜딩 인프라 항목 (`docs/active/PENDING_BACKLOG.md §12`)
 
 - 🟡 Sentry 도입 (출시 직전)
 - 🟡 E2E 테스트 (Playwright) — 가입 → 게임 → 결제

@@ -595,7 +595,7 @@ ALTER PUBLICATION supabase_realtime ADD TABLE user_note_logs;
 5. `consume_scan_quota()` RPC → 1 차감
 6. 응답: `{ notes, confidenceScore, validation, remainingScanQuota }`
 
-> 📌 펜딩: 사용자 악보 OCR 기능 (`docs/PENDING_BACKLOG.md §4.3`)
+> 📌 펜딩: 사용자 악보 OCR 기능 (`docs/active/PENDING_BACKLOG.md §4.3`)
 
 ### 11.5 `payment-webhook/` ⚠️ 미완성
 

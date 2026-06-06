@@ -9,9 +9,9 @@
 
 | 파일 | 갱신 시점 | 기록할 내용 |
 |---|---|---|
-| `docs/sessions/noteflex-session-log.md` | 모든 sprint 완료 후 | 날짜·sprint 제목·commit hash·변경 파일·검증 결과·후속 영역 |
-| `docs/PENDING_BACKLOG.md` | 출시 전·후 영향 항목 발견 시 | 출시 전 필수 vs 출시 후 즉시 분기, 우선순위·시간 추정 |
-| `docs/blog/BLOG_LOG.md` | 블로그 작업(글 수·정책·DOI) 변동 시 | 정책 변경·글 수 증감·이미지 정책·DOI 검증 결과 |
+| `docs/archive/sessions/noteflex-session-log.md` | 모든 sprint 완료 후 | 날짜·sprint 제목·commit hash·변경 파일·검증 결과·후속 영역 |
+| `docs/active/PENDING_BACKLOG.md` | 출시 전·후 영향 항목 발견 시 | 출시 전 필수 vs 출시 후 즉시 분기, 우선순위·시간 추정 |
+| `docs/active/BLOG_LOG.md` | 블로그 작업(글 수·정책·DOI) 변동 시 | 정책 변경·글 수 증감·이미지 정책·DOI 검증 결과 |
 
 ---
 
@@ -47,7 +47,7 @@
 
 ---
 
-## 블로그 로그 갱신 규칙 (`docs/blog/BLOG_LOG.md`)
+## 블로그 로그 갱신 규칙 (`docs/active/BLOG_LOG.md`)
 
 - 글 수 변동 시: 누적 글 수 표 갱신
 - 이미지·DOI 정책 변경 시: 정책 결정 섹션 추가/수정

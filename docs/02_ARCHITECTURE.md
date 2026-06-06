@@ -448,7 +448,7 @@ NoteGame.tsx
 | 상태 | 설정 | 노출 라우트 | 게임/결제 |
 |---|---|---|---|
 | Coming Soon (현재) | `VITE_GAME_ENABLED=false` (Vercel) | `/`, `/blog/*`, `/terms`, `/privacy`, `/refund`, `/cookies`, `/admin/*` | 비활성 (`/play` 등은 `/`로 리다이렉트) |
-| 실서비스 (출시) | `VITE_GAME_ENABLED=true` | 모든 라우트 | 활성 — `docs/PENDING_BACKLOG.md §11` 체크리스트 |
+| 실서비스 (출시) | `VITE_GAME_ENABLED=true` | 모든 라우트 | 활성 — `docs/active/PENDING_BACKLOG.md §11` 체크리스트 |
 | 로컬 개발 | `.env.local`에 `VITE_GAME_ENABLED=true` | 모든 라우트 | 활성 |
 
 ---

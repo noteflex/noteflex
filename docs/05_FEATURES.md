@@ -2,7 +2,7 @@
 
 > **작성일**: 2026-04-28
 > **선행 자료**: `docs/02_ARCHITECTURE.md`, `docs/03_GAME_LOGIC.md`
-> **미구현 기능**: `docs/PENDING_BACKLOG.md` 참조
+> **미구현 기능**: `docs/active/PENDING_BACKLOG.md` 참조
 
 이 문서는 **현재 코드에 구현된 기능**을 사용자 관점에서 카테고리별로 정리한다. 각 항목에는 진입 경로(URL/UI), 코드 위치, 테스트 커버리지를 명시한다.
 
@@ -438,7 +438,7 @@ export const GAME_ENABLED =
 
 ### 7.4 출시 전환 절차
 
-`docs/PENDING_BACKLOG.md §11` 체크리스트 → `docs/07_DEPLOYMENT.md` 참조.
+`docs/active/PENDING_BACKLOG.md §11` 체크리스트 → `docs/07_DEPLOYMENT.md` 참조.
 
 ---
 

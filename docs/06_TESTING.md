@@ -226,7 +226,7 @@
 | **E2E 테스트 파일** | ❌ (0개) |
 | `e2e/` 또는 `tests/` 디렉토리 | ❌ |
 
-> 🔴 **Phase 7 펜딩** — `docs/PENDING_BACKLOG.md §12.2`. 출시 직후 시나리오:
+> 🔴 **Phase 7 펜딩** — `docs/active/PENDING_BACKLOG.md §12.2`. 출시 직후 시나리오:
 > - 가입 → 첫 게임 → 통과 → 결제 → 게임오버
 > - 관리자: 권한 변경 → 학생 계정 알림
 > - 배치 분석 수동 실행 → 약점 갱신 확인
@@ -304,7 +304,7 @@ vi.mock("@/components/practice/GrandStaffPractice");
 
 ### 🟢 중장기
 
-9. **부하 테스트** — k6로 동시접속 (`docs/PENDING_BACKLOG.md §7.5`).
+9. **부하 테스트** — k6로 동시접속 (`docs/active/PENDING_BACKLOG.md §7.5`).
 10. **카오스 테스트** — Supabase 응답 지연·실패 시 UX 검증.
 
 ---

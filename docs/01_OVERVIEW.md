@@ -2,7 +2,7 @@
 
 > **작성일**: 2026-04-28
 > **대상 독자**: 새로 합류한 개발자 / 운영자 / 검토자
-> **선행 자료**: `README.md`, `docs/PENDING_BACKLOG.md`
+> **선행 자료**: `README.md`, `docs/active/PENDING_BACKLOG.md`
 
 ---
 
@@ -37,7 +37,7 @@
 | 플랜 | Price ID (Sandbox) | 기본가 |
 |---|---|---|
 | Monthly | `pri_01kpk2kf6f08bjhwvjhcn42rnw` | $2.99/월 (확정) |
-| Yearly | `pri_01kpk2qw52waj1c56j4y7xf6c9` | 미정 — `docs/PENDING_BACKLOG.md §1.2` |
+| Yearly | `pri_01kpk2qw52waj1c56j4y7xf6c9` | 미정 — `docs/active/PENDING_BACKLOG.md §1.2` |
 
 > 🔗 결제 통합: `src/lib/paddle.ts:1-96`, 가격 페이지: `src/pages/Pricing.tsx`
 
@@ -84,7 +84,7 @@
 
 ### 3.4 모니터링·관측
 
-- 현재 **부재** (Sentry 미도입 — `docs/PENDING_BACKLOG.md §12.1`)
+- 현재 **부재** (Sentry 미도입 — `docs/active/PENDING_BACKLOG.md §12.1`)
 - 자체 로깅: `console.log` / `console.error` 만 존재
 
 ---
@@ -245,7 +245,7 @@ noteflex/
 
 > 🔗 IAP 검증 로컬 실행 가이드: `README_IAP_TESTING.md`
 
-### 6.4 출시 시 환경변수 전환 체크리스트 (`docs/PENDING_BACKLOG.md §11`)
+### 6.4 출시 시 환경변수 전환 체크리스트 (`docs/active/PENDING_BACKLOG.md §11`)
 
 ```
 [ ] VITE_PADDLE_ENVIRONMENT     sandbox     → production
@@ -283,4 +283,4 @@ noteflex/
 - 사용자 관점 기능 카탈로그 → `docs/05_FEATURES.md`
 - 테스트 현황과 갭 분석 → `docs/06_TESTING.md`
 - 배포·도메인·환경변수 운영 → `docs/07_DEPLOYMENT.md`
-- 미구현 백로그·결정 보류 항목 → `docs/PENDING_BACKLOG.md`
+- 미구현 백로그·결정 보류 항목 → `docs/active/PENDING_BACKLOG.md`

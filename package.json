@@ -21,7 +21,7 @@
     "sim:test": "npm run sim:run && npm run sim:analyze",
     "notegen": "vitest run src/lib/notegenSimulator/notegen.test.ts",
     "notegen:full": "NOTEGEN_FULL=1 vitest run src/lib/notegenSimulator/notegen.test.ts",
-    "resume": "head -400 docs/sessions/noteflex-session-log.md && echo '\\n\\n=== PENDING_BACKLOG ===\\n' && cat docs/PENDING_BACKLOG.md && echo '\\n\\n=== DESIGN_VS_CODE_GAP ===\\n' && cat docs/DESIGN_VS_CODE_GAP.md && echo '\\n\\n=== RECENT MD CHANGES (last 14 days) ===\\n' && find docs -name '*.md' -mtime -14 | xargs ls -la 2>/dev/null"
+    "resume": "head -400 docs/archive/sessions/noteflex-session-log.md && echo '\\n\\n=== PENDING_BACKLOG ===\\n' && cat docs/active/PENDING_BACKLOG.md && echo '\\n\\n=== DESIGN_VS_CODE_GAP ===\\n' && cat docs/DESIGN_VS_CODE_GAP.md && echo '\\n\\n=== RECENT MD CHANGES (last 14 days) ===\\n' && find docs -name '*.md' -mtime -14 | xargs ls -la 2>/dev/null"
   },
   "dependencies": {
     "@capacitor/android": "^8.3.0",
