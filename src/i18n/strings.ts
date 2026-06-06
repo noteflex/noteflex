@@ -229,6 +229,18 @@ export interface Strings {
     toastResendSent: string;
     toastResendSentDesc: string;
     toastResendFailed: string;
+    // Step 2 — OTP code fallback
+    magicLinkOrCodeBody: string;
+    magicLinkCodePlaceholder: string;
+    magicLinkCodeSubmit: string;
+    magicLinkCodeError: string;
+    // AuthCallback error screens
+    authExpiredTitle: string;
+    authExpiredBody: string;
+    authExpiredCta: string;
+    authErrorTitle: string;
+    authErrorBody: string;
+    authErrorCta: string;
   };
   premiumDialog: {
     title: string;
@@ -1045,7 +1057,7 @@ const ko: Strings = {
     magicLinkActionSignup: "가입이 이어집니다",
     magicLinkActionRecover: "계정 복구가 이어집니다",
     magicLinkActionBody: "메일 속 링크를 클릭하면 {action}.",
-    magicLinkSpamHint: "스팸함도 확인해보세요 📁",
+    magicLinkSpamHint: "메일이 안 보이면 스팸함을 확인해 주세요.",
     magicLinkWaiting: "인증 대기 중...",
     magicLinkResend: "메일 재전송",
     magicLinkResendCooldown: "{n}초 후 재전송",
@@ -1069,6 +1081,16 @@ const ko: Strings = {
     toastResendSent: "메일을 재전송했어요",
     toastResendSentDesc: "이메일함을 확인해주세요.",
     toastResendFailed: "재전송 실패",
+    magicLinkOrCodeBody: "메일의 링크를 누르거나, 아래 6자리 코드를 입력해주세요.",
+    magicLinkCodePlaceholder: "6자리 코드 입력",
+    magicLinkCodeSubmit: "코드로 인증",
+    magicLinkCodeError: "코드가 올바르지 않거나 만료됐어요. 재전송 후 다시 시도해주세요.",
+    authExpiredTitle: "링크가 만료됐어요",
+    authExpiredBody: "로그인 링크가 만료됐어요. 다시 받아주세요.",
+    authExpiredCta: "다시 받기",
+    authErrorTitle: "인증에 실패했어요",
+    authErrorBody: "로그인 중 문제가 발생했어요. 다시 시도해주세요.",
+    authErrorCta: "처음으로 돌아가기",
   },
   premiumDialog: {
     title: "✨ Pro 구독으로 전체 단계 해제",
@@ -1837,7 +1859,7 @@ const en: Strings = {
     magicLinkActionSignup: "to complete signup",
     magicLinkActionRecover: "to recover your account",
     magicLinkActionBody: "Click the link in your email {action}.",
-    magicLinkSpamHint: "Don't forget to check spam 📁",
+    magicLinkSpamHint: "Can't find it? Check your spam folder.",
     magicLinkWaiting: "Waiting for verification...",
     magicLinkResend: "Resend email",
     magicLinkResendCooldown: "Resend in {n}s",
@@ -1861,6 +1883,16 @@ const en: Strings = {
     toastResendSent: "Email resent",
     toastResendSentDesc: "Please check your inbox.",
     toastResendFailed: "Resend failed",
+    magicLinkOrCodeBody: "Click the link in your email, or enter the 6-digit code below.",
+    magicLinkCodePlaceholder: "Enter 6-digit code",
+    magicLinkCodeSubmit: "Verify code",
+    magicLinkCodeError: "Invalid or expired code. Resend and try again.",
+    authExpiredTitle: "Link expired",
+    authExpiredBody: "This sign-in link has expired. Request a new one.",
+    authExpiredCta: "Request a new link",
+    authErrorTitle: "Authentication failed",
+    authErrorBody: "Something went wrong during sign-in. Please try again.",
+    authErrorCta: "Back to home",
   },
   premiumDialog: {
     title: "✨ Unlock All Levels with Pro",

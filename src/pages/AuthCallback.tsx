@@ -3,19 +3,51 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { logger } from "@/lib/sentry";
 import { trackEvent } from "@/lib/analytics";
+import { useT } from "@/contexts/LanguageContext";
+
+type AuthErrorKind = "expired" | "generic";
 
 export default function AuthCallback() {
   const navigate = useNavigate();
+  const t = useT();
+  const tA = t.authModal;
   const [closeFailed, setCloseFailed] = useState(false);
   const [deletionDone, setDeletionDone] = useState(false);
   const [restoreDone, setRestoreDone] = useState(false);
+  const [authErrorKind, setAuthErrorKind] = useState<AuthErrorKind | null>(null);
 
   useEffect(() => {
     const run = async () => {
+      // URL に error パラメータがある場合は getSession() の前に処理する
+      // (#error=... はハッシュ、error_code/error_description はクエリ両方を確認)
+      const hash = window.location.hash.substring(1);
+      const hashParams = new URLSearchParams(hash);
+      const qParams = new URLSearchParams(window.location.search);
+      const errorCode = hashParams.get("error_code") || qParams.get("error_code") || "";
+      const errorDesc = hashParams.get("error_description") || qParams.get("error_description") || "";
+      const hasUrlError = !!(hashParams.get("error") || qParams.get("error") || errorCode || errorDesc);
+
+      if (hasUrlError) {
+        const isExpired =
+          errorCode === "otp_expired" ||
+          errorDesc.toLowerCase().includes("expired") ||
+          errorDesc.toLowerCase().includes("otp");
+        logger.warn("AuthCallback URL 에러 파라미터 감지", {
+          errorCode,
+          errorDesc,
+          isExpired,
+        });
+        setAuthErrorKind(isExpired ? "expired" : "generic");
+        return;
+      }
+
       const { data: { session }, error } = await supabase.auth.getSession();
 
       if (error || !session) {
-        navigate("/?auth_error=session", { replace: true });
+        logger.warn("AuthCallback 세션 없음", {
+          cause: error?.message ?? "no session",
+        });
+        setAuthErrorKind("generic");
         return;
       }
 
@@ -160,6 +192,46 @@ export default function AuthCallback() {
         <p className="text-sm text-muted-foreground text-center leading-relaxed">
           이 탭을 닫고<br />기존 탭에서 계속 진행해주세요.
         </p>
+      </div>
+    );
+  }
+
+  if (authErrorKind === "expired") {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4 px-4" data-testid="auth-expired-screen">
+        <div className="text-5xl">⏰</div>
+        <p className="text-lg font-semibold text-foreground">{tA.authExpiredTitle}</p>
+        <p className="text-sm text-muted-foreground text-center leading-relaxed">
+          {tA.authExpiredBody}
+        </p>
+        <button
+          type="button"
+          onClick={() => navigate("/?open_auth=1", { replace: true })}
+          className="mt-2 px-6 py-2.5 rounded-xl bg-primary text-primary-foreground font-semibold text-sm shadow hover:shadow-md transition-all active:scale-95"
+          data-testid="auth-expired-cta"
+        >
+          {tA.authExpiredCta}
+        </button>
+      </div>
+    );
+  }
+
+  if (authErrorKind === "generic") {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4 px-4" data-testid="auth-error-screen">
+        <div className="text-5xl">⚠️</div>
+        <p className="text-lg font-semibold text-foreground">{tA.authErrorTitle}</p>
+        <p className="text-sm text-muted-foreground text-center leading-relaxed">
+          {tA.authErrorBody}
+        </p>
+        <button
+          type="button"
+          onClick={() => navigate("/?open_auth=1", { replace: true })}
+          className="mt-2 px-6 py-2.5 rounded-xl bg-primary text-primary-foreground font-semibold text-sm shadow hover:shadow-md transition-all active:scale-95"
+          data-testid="auth-error-cta"
+        >
+          {tA.authErrorCta}
+        </button>
       </div>
     );
   }

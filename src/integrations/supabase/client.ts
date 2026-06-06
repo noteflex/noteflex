@@ -12,5 +12,8 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     storage: localStorage,
     persistSession: true,
     autoRefreshToken: true,
+    // 매직링크는 교차 기기 클릭(폰 요청→데스크톱 메일)이 흔해 implicit 유지.
+    // PKCE는 요청 브라우저의 verifier에 묶여 메일 클릭과 상극.
+    flowType: 'implicit',
   },
 });

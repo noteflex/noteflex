@@ -3,6 +3,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useT } from "@/contexts/LanguageContext";
 import { format as formatI18n } from "@/i18n/strings";
 import { fetchUserNoteLogs, type UserNoteLogRecord } from "@/lib/userNoteLogs";
+import { WEAK_NOTE_GREEN_THRESHOLD, WEAK_NOTE_MIN_SAMPLES } from "@/types/analytics";
 import InfoTooltip from "@/components/ui/info-tooltip";
 
 interface NoteStat {
@@ -20,7 +21,6 @@ interface NoteStat {
   isTimeout: boolean;
 }
 
-const MIN_SAMPLES = 5;
 const TOP_N = 5;
 /** sublevel 1의 timeLimit = 7s. 평균이 6.5s 이상이면 timeout 다발로 간주 (가장 큰 timeLimit 케이스) */
 const TIMEOUT_THRESHOLD_SEC = 6.5;
@@ -93,8 +93,10 @@ export function WeakSlowNotesCards({ enabled = true }: WeakSlowNotesCardsProps) 
   if (loading) return null;
 
   const stats = aggregate(logs);
-  // 5+ 시도 (정책)
-  const eligible = stats.filter((s) => s.total >= MIN_SAMPLES);
+  // WEAK_NOTE_MIN_SAMPLES+ 시도 + WEAK_NOTE_GREEN_THRESHOLD 미만만 — D5 사건 원칙, NextStepCard와 동일 기준
+  const eligible = stats.filter(
+    (s) => s.total >= WEAK_NOTE_MIN_SAMPLES && s.accuracy < WEAK_NOTE_GREEN_THRESHOLD * 100,
+  );
 
   // 약점: 엔진 weak_score 내림차순 (표본 가중치로 소표본 극단값 보정)
   const weakest = [...eligible]

@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import Header from "@/components/Header";
 import { initSound } from "@/lib/sound";
 import AuthModal from "@/components/AuthModal";
@@ -41,6 +41,7 @@ export default function Index() {
   const t = useT();
   const { lang } = useLang();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [showAuth, setShowAuth] = useState(false);
   const isKo = lang === "ko";
 
@@ -48,6 +49,15 @@ export default function Index() {
   const isPrivilegedRole =
     profile?.role === "admin" || profile?.role === "reviewer";
   const showGameUI = GAME_ENABLED || isPrivilegedRole;
+
+  // AuthCallback 에러 후 재진입: ?open_auth=1 → 로그인 모달 자동 오픈
+  useEffect(() => {
+    if (searchParams.get("open_auth") === "1" && !user && showGameUI) {
+      setShowAuth(true);
+      // URL 파라미터 제거 (히스토리 교체)
+      navigate("/", { replace: true });
+    }
+  }, [searchParams, user, showGameUI, navigate]);
 
   const handleAuthClose = () => setShowAuth(false);
 

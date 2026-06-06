@@ -158,6 +158,8 @@ export interface PeriodRollup {
 export type DayRollupRow = PeriodRollup & { period_type: "day" };
 
 export const WEAK_NOTE_GREEN_THRESHOLD = 0.75;
+/** 라이브 로그 기준 약점 판정 최소 시도 수 — WeakSlowNotesCards·NextStepCard 공유 */
+export const WEAK_NOTE_MIN_SAMPLES = 5;
 export type WeeklyHeadlineKind = "up" | "down" | "same" | "grace" | "nodata";
 export type MonthlyHeadlineKind = "up" | "down" | "same" | "grace" | "nodata";
 

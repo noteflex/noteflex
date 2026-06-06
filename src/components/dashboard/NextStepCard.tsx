@@ -5,6 +5,7 @@ import { useLang, useT } from "@/contexts/LanguageContext";
 import { format as formatI18n } from "@/i18n/strings";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchUserNoteLogs, type UserNoteLogRecord } from "@/lib/userNoteLogs";
+import { WEAK_NOTE_GREEN_THRESHOLD, WEAK_NOTE_MIN_SAMPLES } from "@/types/analytics";
 import InfoTooltip from "@/components/ui/info-tooltip";
 
 interface NoteStatusRow {
@@ -152,6 +153,27 @@ export function NextStepCard() {
       })
       .sort((a, b) => b.live_correct - a.live_correct);
   }, [statusRows, recent20]);
+
+  // 라이브 로그 전체 집계 — WeakSlowNotesCards와 동일 임계값·최소 표본 기준.
+  // "No weak notes ✓"는 이 값이 false일 때만 표시 (D5 사건 원칙: 임계값 미만 음표가 Top5에
+  // 보이는 동안 약점 없음이 동시에 노출되는 일 방지).
+  const hasLiveWeakNote = useMemo(() => {
+    if (!loadedLogs) return false;
+    const totals = new Map<string, { total: number; correct: number }>();
+    for (const log of logs) {
+      const k = `${log.note_key}|${log.octave}|${log.clef}`;
+      const e = totals.get(k) ?? { total: 0, correct: 0 };
+      e.total++;
+      if (log.is_correct) e.correct++;
+      totals.set(k, e);
+    }
+    for (const v of totals.values()) {
+      if (v.total >= WEAK_NOTE_MIN_SAMPLES && v.correct / v.total < WEAK_NOTE_GREEN_THRESHOLD) {
+        return true;
+      }
+    }
+    return false;
+  }, [logs, loadedLogs]);
 
   const focusCandidate: LiveNote | null = liveCandidates[0] ?? null;
   const needsPractice: LiveNote[] = liveCandidates.slice(1, 1 + NEEDS_TOP_N);
@@ -329,7 +351,7 @@ export function NextStepCard() {
                 {t.dashboard.nextStepNeedsBoxTitle}
               </p>
             </div>
-            {!focusReady ? (
+            {!focusReady || (needsPractice.length === 0 && hasLiveWeakNote) ? (
               <p className="text-xs text-muted-foreground">
                 {t.dashboard.nextStepFootEmpty}
               </p>

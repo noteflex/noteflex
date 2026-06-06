@@ -6,12 +6,7 @@ import { logger } from "@/lib/sentry";
 import { useT } from "@/contexts/LanguageContext";
 import { format as fmt } from "@/i18n/strings";
 
-/**
- * Supabase SMTP 일시 장애 (2026-05-31) — 매직링크 발송 실패.
- * Google OAuth만 노출. SMTP 정상화 후 true로 복원하면 이메일 폼·복구·재전송 자동 활성.
- * 해소 후 작업 1줄: 이 상수를 true로 변경.
- */
-const EMAIL_AUTH_ENABLED = false;
+const EMAIL_AUTH_ENABLED = true;
 
 // ─── Types ────────────────────────────────────────────────────────────────
 
@@ -74,6 +69,11 @@ export default function AuthModal({ onClose }: AuthModalProps) {
   const [resendCooldown, setResendCooldown] = useState(0);
   const cooldownRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
+  // Step 2 — OTP 코드 폴백
+  const [otpCode, setOtpCode] = useState("");
+  const [otpError, setOtpError] = useState<string | null>(null);
+  const [otpLoading, setOtpLoading] = useState(false);
+
   // ESC 닫기
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
@@ -132,6 +132,8 @@ export default function AuthModal({ onClose }: AuthModalProps) {
     setRecoveryDaysLeft(null);
     setIsRecovery(false);
     setFreshStartConfirm(false);
+    setOtpCode("");
+    setOtpError(null);
   };
 
   // ───────── Google OAuth ─────────
@@ -371,6 +373,34 @@ export default function AuthModal({ onClose }: AuthModalProps) {
     }
   };
 
+  // ───────── Step 2: OTP 코드 폴백 검증 ─────────
+  const handleVerifyOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (otpCode.trim().length < 6) return;
+    setOtpLoading(true);
+    setOtpError(null);
+    try {
+      const { error } = await supabase.auth.verifyOtp({
+        email,
+        token: otpCode.trim(),
+        type: "email",
+      });
+      if (error) throw error;
+      // 성공 — 기존 매직링크 완료와 동일 채널 신호
+      localStorage.setItem("noteflex_auth_complete", Date.now().toString());
+      if ("BroadcastChannel" in window) {
+        const channel = new BroadcastChannel("noteflex_auth");
+        channel.postMessage({ type: "AUTH_COMPLETE" });
+        channel.close();
+      }
+      onClose();
+    } catch (err: any) {
+      setOtpError(tA.magicLinkCodeError);
+    } finally {
+      setOtpLoading(false);
+    }
+  };
+
   // ───────── Step 2: 재전송 ─────────
   const handleResend = async () => {
     if (resendCooldown > 0) return;
@@ -597,8 +627,8 @@ export default function AuthModal({ onClose }: AuthModalProps) {
             )}
           </div>
         ) : step === 2 ? (
-        /* ━━━━━━━━━━━━━━━━ Step 2: 매직링크 안내 ━━━━━━━━━━━━━━━━ */
-          <div className="px-6 py-10 flex flex-col items-center gap-5" data-testid="magic-link-screen">
+        /* ━━━━━━━━━━━━━━━━ Step 2: 매직링크 안내 + 코드 폴백 ━━━━━━━━━━━━━━━━ */
+          <div className="px-6 py-8 flex flex-col items-center gap-4" data-testid="magic-link-screen">
             <div className="text-5xl">✉️</div>
             <div className="text-center space-y-2">
               <h3 className="text-lg font-bold text-foreground">{tA.magicLinkTitle}</h3>
@@ -606,16 +636,36 @@ export default function AuthModal({ onClose }: AuthModalProps) {
                 {tA.magicLinkSentPre}
                 <span className="font-medium text-foreground" data-testid="magic-link-email">{email}</span>
                 {tA.magicLinkSentPost}
-                <br />
-                {fmt(tA.magicLinkActionBody, {
-                  action: isRecovery
-                    ? tA.magicLinkActionRecover
-                    : mode === "login"
-                      ? tA.magicLinkActionLogin
-                      : tA.magicLinkActionSignup,
-                })}
               </p>
+              <p className="text-sm text-muted-foreground">{tA.magicLinkOrCodeBody}</p>
             </div>
+
+            {/* OTP 코드 입력 */}
+            <form onSubmit={handleVerifyOtp} className="w-full flex flex-col gap-2">
+              <input
+                type="text"
+                inputMode="numeric"
+                pattern="\d{6}"
+                maxLength={6}
+                value={otpCode}
+                onChange={e => { setOtpCode(e.target.value.replace(/\D/g, "")); setOtpError(null); }}
+                placeholder={tA.magicLinkCodePlaceholder}
+                className="w-full px-4 py-2.5 rounded-xl border border-input bg-background text-sm text-center tracking-[0.3em] font-mono focus:outline-none focus:ring-2 focus:ring-ring"
+                data-testid="otp-code-input"
+              />
+              {otpError && (
+                <p className="text-xs text-destructive text-center" data-testid="otp-error">{otpError}</p>
+              )}
+              <button
+                type="submit"
+                disabled={otpLoading || otpCode.length < 6}
+                className="w-full py-2.5 rounded-xl bg-primary text-primary-foreground font-semibold text-sm shadow hover:shadow-md transition-all active:scale-95 disabled:opacity-50"
+                data-testid="otp-submit-button"
+              >
+                {otpLoading ? tA.submitProcessing : tA.magicLinkCodeSubmit}
+              </button>
+            </form>
+
             <p className="text-xs text-muted-foreground">{tA.magicLinkSpamHint}</p>
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground animate-pulse" data-testid="auth-waiting-indicator">
               <span>⏳</span>
@@ -634,7 +684,7 @@ export default function AuthModal({ onClose }: AuthModalProps) {
             </button>
             <button
               type="button"
-              onClick={() => setStep(1)}
+              onClick={() => { setStep(1); setOtpCode(""); setOtpError(null); }}
               className="text-xs text-muted-foreground hover:text-foreground transition-colors"
               data-testid="magic-link-back"
             >
