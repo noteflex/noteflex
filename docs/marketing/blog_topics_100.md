@@ -898,6 +898,8 @@ AI·정밀 데이터·Noteflex 기능·음악 교육의 미래.
 | 2026-06-04 | 35 | §1-6 | Sight-Reading and the Brain — What Neuroscience Reveals About Reading Music (en) ✅ 작성 완료 | sight-reading-and-the-brain | Sight-Reading Lab | ~920 words | sight-reading brain, music reading neuroscience, brain plasticity music, sight-reading cognitive science, auditory-motor integration music, music training brain changes | Zatorre/Chen/Penhune + Wan/Schlaug 전통 |
 | 2026-06-05 | 36 | §1-8 | 초견 연습과 일반 곡 연습의 차이 — 시간을 어떻게 나눌 것인가 (ko) ✅ 작성 완료 | sight-reading-vs-repertoire-practice | 초견의 정석 | ~1700자 | 초견 연습 방법, 레퍼토리 연습 차이, 음악 연습 시간 배분, 초견 효과, 의도적 연습 음악, 음악 연습 계획 | Sloboda et al. 1996 + Nielsen 2001 전통 |
 | 2026-06-05 | 36 | §1-8 | Sight-Reading vs. Repertoire Practice — How to Divide Your Time (en) ✅ 작성 완료 | sight-reading-vs-repertoire-practice | Sight-Reading Lab | ~980 words | sight-reading practice tips, repertoire vs sight-reading, music practice time split, deliberate practice music, sight-reading improvement, how to practice music | Sloboda et al. 1996 + Nielsen 2001 전통 |
+| 2026-06-06 | 37 | §6-75 | 지휘자·편곡자의 풀스코어 초견 — 한 줄이 아닌 스무 줄을 동시에 읽는 법 (ko) ✅ 작성 완료 | conductor-and-full-score-sight-reading | 악기별 초견 전략 | ~1900자 | 지휘자 초견, 풀스코어 읽기, 오케스트라 총보, 수직 읽기, 다성부 초견, 지휘자 훈련 | Goolsby (1994) 전통 |
+| 2026-06-06 | 37 | §6-75 | The Conductor and the Full Score — Sight-Reading When Every Line Matters (en) ✅ 작성 완료 | conductor-and-full-score-sight-reading | Sight-Reading by Instrument | ~1000 words | conductor sight-reading, full score reading, orchestral score, vertical reading, multi-staff sight-reading, conductor training | Goolsby (1994) 전통 |
 
 ---
 
