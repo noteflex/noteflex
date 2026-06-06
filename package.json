@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "sitemap": "vite-node scripts/generate-sitemap.ts",
-    "build": "npm run sitemap && vite build && cp public/robots.txt dist/robots.txt",
+    "prerender": "vite-node scripts/prerender-blog-og.ts",
+    "build": "npm run sitemap && vite build && npm run prerender && cp public/robots.txt dist/robots.txt",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview",

@@ -84,8 +84,8 @@
 
 ## 8. 참조 스펙
 
-- `docs/specs/noteflex-analytics-report-spec.md` (엔진 스펙)
-- `docs/specs/noteflex-analytics-UI-spec.md` (UI 스펙)
+- `docs/archive/specs/noteflex-analytics-report-spec.md` (엔진 스펙)
+- `docs/archive/specs/noteflex-analytics-UI-spec.md` (UI 스펙)
 
 ## 9. 주간 보고서 (2026-06-04 빌드 완료 + polish + 데이터 3건 수정)
 
