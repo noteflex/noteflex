@@ -54,10 +54,14 @@ export default function Index() {
   useEffect(() => {
     if (searchParams.get("open_auth") === "1" && !user && showGameUI) {
       setShowAuth(true);
-      // URL 파라미터 제거 (히스토리 교체)
       navigate("/", { replace: true });
     }
   }, [searchParams, user, showGameUI, navigate]);
+
+  // step 1에서 다른 탭 인증이 완료된 경우에도 모달이 남지 않도록
+  useEffect(() => {
+    if (user) setShowAuth(false);
+  }, [user]);
 
   const handleAuthClose = () => setShowAuth(false);
 

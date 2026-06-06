@@ -825,6 +825,74 @@ export interface Strings {
     accept: string;
     reject: string;
   };
+  welcome: {
+    title: string;
+    subtitle: string;
+    cta: string;
+  };
+  adBanner: {
+    placeholder: string;
+  };
+  adInterstitial: {
+    ariaLabel: string;
+    /** "{countdown}" placeholder */
+    waitingLabel: string;
+    skip: string;
+  };
+  calibration: {
+    ariaLabel: string;
+    title: string;
+    description: string;
+    startButton: string;
+    skipButton: string;
+    syncMeasuringTitle: string;
+    syncDesc: string;
+    envMeasuringTitle: string;
+    envDesc: string;
+    startMeasureButton: string;
+    ready: string;
+    nowButton: string;
+    /** "{ms}" placeholder */
+    recordedLabel: string;
+    completeTitle: string;
+    envOffsetLabel: string;
+    syncGapLabel: string;
+    confirmButton: string;
+    remeasureButton: string;
+  };
+  errorBoundary: {
+    title: string;
+    description: string;
+    retryButton: string;
+  };
+  paymentError: {
+    title: string;
+    safetyNote: string;
+    supportNote: string;
+    retryButton: string;
+    homeButton: string;
+  };
+  missionSuccess: {
+    finalTitle: string;
+    finalDescPre: string;
+    finalDescPost: string;
+    normalDescPre: string;
+    normalDescPost: string;
+    nextLevel: string;
+    replay: string;
+    levelSelect: string;
+  };
+  authCallback: {
+    restoreCompleteTitle: string;
+    restoreCompleteDesc: string;
+    redirecting: string;
+    deletionCompleteTitle: string;
+    deletionCompleteDesc: string;
+    authCompleteTitle: string;
+    authCompleteDesc: string;
+    homeButton: string;
+    processing: string;
+  };
 }
 
 const ko: Strings = {
@@ -1627,6 +1695,72 @@ const ko: Strings = {
     accept: "동의",
     reject: "거부",
   },
+  welcome: {
+    title: "Noteflex에 오신 걸 환영해요",
+    subtitle: "바로 첫 연습을 시작해 보세요",
+    cta: "시작하기",
+  },
+  adBanner: {
+    placeholder: "광고 영역",
+  },
+  adInterstitial: {
+    ariaLabel: "광고",
+    waitingLabel: "{countdown}초 후 건너뛸 수 있어요",
+    skip: "건너뛰기",
+  },
+  calibration: {
+    ariaLabel: "오디오 캘리브레이션",
+    title: "오디오 캘리브레이션",
+    description: "블루투스·외장 스피커 환경에서 정확한 반응 속도 측정을 위해\n30초 내 보정이 필요합니다.",
+    startButton: "시작 (약 5초)",
+    skipButton: "나중에",
+    syncMeasuringTitle: "sync 측정 중",
+    syncDesc: "화면과 오디오 동기 상태를 자동으로 측정합니다.",
+    envMeasuringTitle: "반응 측정",
+    envDesc: "소리가 들리는 즉시 아래 버튼을 탭하세요.",
+    startMeasureButton: "측정 시작",
+    ready: "준비 중…",
+    nowButton: "지금!",
+    recordedLabel: "기록됨 ({ms}ms)",
+    completeTitle: "캘리브레이션 완료",
+    envOffsetLabel: "환경 offset",
+    syncGapLabel: "sync gap",
+    confirmButton: "완료",
+    remeasureButton: "재측정",
+  },
+  errorBoundary: {
+    title: "문제가 발생했습니다",
+    description: "잠시 후 다시 시도해주세요. 문제가 계속되면 새로고침 해주세요.",
+    retryButton: "다시 시도",
+  },
+  paymentError: {
+    title: "결제 처리 중 문제가 발생했습니다",
+    safetyNote: "결제가 진행되지 않았으니 안심하세요. 잠시 후 다시 시도해주세요.",
+    supportNote: "문제가 계속되면 고객센터로 문의해주세요.",
+    retryButton: "다시 시도",
+    homeButton: "홈으로",
+  },
+  missionSuccess: {
+    finalTitle: "모든 레벨 완료!",
+    finalDescPre: "전 레벨을 마스터했어요! 점수 ",
+    finalDescPost: "점",
+    normalDescPre: "축하합니다! 점수 ",
+    normalDescPost: "점을\n달성했습니다!",
+    nextLevel: "🚀 다음 레벨",
+    replay: "🔄 다시 플레이",
+    levelSelect: "← 레벨 선택으로",
+  },
+  authCallback: {
+    restoreCompleteTitle: "계정이 복구됐어요.",
+    restoreCompleteDesc: "다시 오신 것을 환영합니다.\n이전 데이터가 그대로 유지됩니다.",
+    redirecting: "잠시 후 메인 페이지로 이동합니다...",
+    deletionCompleteTitle: "탈퇴가 완료됐어요.",
+    deletionCompleteDesc: "그동안 NoteFlex를 이용해 주셔서 감사합니다.\n30일 내 복구가 가능합니다.",
+    authCompleteTitle: "인증이 완료됐어요!",
+    authCompleteDesc: "이 탭을 닫고\n기존 탭에서 계속 진행해주세요.",
+    homeButton: "홈으로 이동",
+    processing: "인증 처리 중...",
+  },
 };
 
 const en: Strings = {
@@ -2428,6 +2562,72 @@ const en: Strings = {
     linkSuffix: "for details.",
     accept: "Accept",
     reject: "Decline",
+  },
+  welcome: {
+    title: "Welcome to Noteflex",
+    subtitle: "Let's start your first round",
+    cta: "Start playing",
+  },
+  adBanner: {
+    placeholder: "Ad space",
+  },
+  adInterstitial: {
+    ariaLabel: "Advertisement",
+    waitingLabel: "Skip in {countdown}s",
+    skip: "Skip",
+  },
+  calibration: {
+    ariaLabel: "Audio calibration",
+    title: "Audio Calibration",
+    description: "For accurate response time in Bluetooth or external speaker setups,\na quick 30-second calibration is needed.",
+    startButton: "Start (~5 sec)",
+    skipButton: "Later",
+    syncMeasuringTitle: "Measuring sync",
+    syncDesc: "Automatically measuring audio-visual sync.",
+    envMeasuringTitle: "Response test",
+    envDesc: "Tap the button as soon as you hear the sound.",
+    startMeasureButton: "Start",
+    ready: "Get ready…",
+    nowButton: "Now!",
+    recordedLabel: "Recorded ({ms}ms)",
+    completeTitle: "Calibration complete",
+    envOffsetLabel: "Env offset",
+    syncGapLabel: "Sync gap",
+    confirmButton: "Done",
+    remeasureButton: "Re-measure",
+  },
+  errorBoundary: {
+    title: "Something went wrong",
+    description: "Please try again in a moment. If the issue persists, refresh the page.",
+    retryButton: "Try again",
+  },
+  paymentError: {
+    title: "A problem occurred during payment",
+    safetyNote: "No payment was processed — you're safe. Please try again in a moment.",
+    supportNote: "If the issue persists, please contact support.",
+    retryButton: "Try again",
+    homeButton: "Go home",
+  },
+  missionSuccess: {
+    finalTitle: "All Levels Complete!",
+    finalDescPre: "You mastered every level! Score: ",
+    finalDescPost: " pts",
+    normalDescPre: "Congratulations! Score: ",
+    normalDescPost: " pts!",
+    nextLevel: "🚀 Next Level",
+    replay: "🔄 Play Again",
+    levelSelect: "← Level Select",
+  },
+  authCallback: {
+    restoreCompleteTitle: "Account restored.",
+    restoreCompleteDesc: "Welcome back.\nYour previous data is fully preserved.",
+    redirecting: "Redirecting to main page...",
+    deletionCompleteTitle: "Account deleted.",
+    deletionCompleteDesc: "Thank you for using NoteFlex.\nYou can restore your account within 30 days.",
+    authCompleteTitle: "Authentication complete!",
+    authCompleteDesc: "Close this tab and\ncontinue in your original tab.",
+    homeButton: "Go to Home",
+    processing: "Processing...",
   },
 };
 

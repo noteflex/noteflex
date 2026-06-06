@@ -3,6 +3,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { isAdsEnabled, pushAd, getPublisherId } from "@/lib/adsense";
 import { getUserTier } from "@/lib/subscriptionTier";
 import { AdPlaceholder, type AdPlaceholderVariant } from "./AdPlaceholder";
+import { useT } from "@/contexts/LanguageContext";
 
 interface AdBannerProps {
   slot: string;
@@ -23,6 +24,7 @@ export function AdBanner({
 }: AdBannerProps): JSX.Element | null {
   const { user, profile } = useAuth();
   const pushed = useRef(false);
+  const t = useT();
 
   const isPro = getUserTier(user, profile) === "pro";
   const adsEnabled = isAdsEnabled();
@@ -51,7 +53,7 @@ export function AdBanner({
         style={{ minHeight: 60 }}
         data-ad-slot={slot}
       >
-        광고 영역
+        {t.adBanner.placeholder}
       </div>
     );
   }

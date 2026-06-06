@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { checkEmailExists } from "@/lib/profile";
@@ -44,6 +45,7 @@ function Divider({ orLabel }: { orLabel: string }) {
 export default function AuthModal({ onClose }: AuthModalProps) {
   const t = useT();
   const tA = t.authModal;
+  const navigate = useNavigate();
   const [mode, setMode] = useState<Mode>("login");
   const [step, setStep] = useState(1); // 1: 이메일 폼, 2: 매직링크 전송 완료, 3: 복구 패널, 4: Paddle 심사관 액세스
 
@@ -386,14 +388,21 @@ export default function AuthModal({ onClose }: AuthModalProps) {
         type: "email",
       });
       if (error) throw error;
-      // 성공 — 기존 매직링크 완료와 동일 채널 신호
+      // 성공 — 기존 매직링크 완료와 동일 채널 신호 (다른 탭이 있을 경우 대비)
       localStorage.setItem("noteflex_auth_complete", Date.now().toString());
       if ("BroadcastChannel" in window) {
         const channel = new BroadcastChannel("noteflex_auth");
         channel.postMessage({ type: "AUTH_COMPLETE" });
         channel.close();
       }
-      onClose();
+      // 같은 탭 처리: 신규 유저면 /welcome, 기존 유저면 모달 닫기
+      const { data: { session: s } } = await supabase.auth.getSession();
+      const isNew = s && Date.now() - new Date(s.user.created_at).getTime() < 10 * 60 * 1000;
+      if (isNew) {
+        navigate("/welcome");
+      } else {
+        onClose();
+      }
     } catch (err: any) {
       setOtpError(tA.magicLinkCodeError);
     } finally {

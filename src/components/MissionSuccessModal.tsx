@@ -7,6 +7,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { useT } from "@/contexts/LanguageContext";
 
 interface MissionSuccessModalProps {
   open: boolean;
@@ -28,25 +29,27 @@ export default function MissionSuccessModal({
   onLevelSelect,
   isFinalLevel = false,
 }: MissionSuccessModalProps) {
+  const t = useT();
   return (
     <Dialog open={open}>
       <DialogContent className="sm:max-w-md text-center" onPointerDownOutside={(e) => e.preventDefault()}>
         <DialogHeader className="items-center">
           <div className="text-6xl mb-2">{isFinalLevel ? "🏆" : "🎉"}</div>
           <DialogTitle className="text-2xl">
-            {isFinalLevel ? "모든 레벨 완료!" : "Mission Success!"}
+            {isFinalLevel ? t.missionSuccess.finalTitle : "Mission Success!"}
           </DialogTitle>
           <DialogDescription className="text-base">
             {isFinalLevel ? (
               <>
-                전 레벨을 마스터했어요! 점수{" "}
-                <span className="font-bold text-foreground">{score}</span>점
+                {t.missionSuccess.finalDescPre}
+                <span className="font-bold text-foreground">{score}</span>
+                {t.missionSuccess.finalDescPost}
               </>
             ) : (
               <>
-                축하합니다! 점수{" "}
-                <span className="font-bold text-foreground">{score}</span>점을
-                달성했습니다!
+                {t.missionSuccess.normalDescPre}
+                <span className="font-bold text-foreground">{score}</span>
+                {t.missionSuccess.normalDescPost}
               </>
             )}
           </DialogDescription>
@@ -54,11 +57,11 @@ export default function MissionSuccessModal({
         <DialogFooter className="flex-col gap-3 sm:flex-col sm:gap-3 mt-4">
           {onNextLevel ? (
             <Button onClick={onNextLevel} className="w-full text-base py-5">
-              🚀 다음 레벨
+              {t.missionSuccess.nextLevel}
             </Button>
           ) : null}
           <Button onClick={onReplay} variant="outline" className="w-full text-base py-5">
-            🔄 다시 플레이
+            {t.missionSuccess.replay}
           </Button>
           {onLevelSelect ? (
             <Button
@@ -66,7 +69,7 @@ export default function MissionSuccessModal({
               variant="ghost"
               className="w-full text-base py-5"
             >
-              ← 레벨 선택으로
+              {t.missionSuccess.levelSelect}
             </Button>
           ) : null}
         </DialogFooter>

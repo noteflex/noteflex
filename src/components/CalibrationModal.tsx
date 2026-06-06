@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useT } from "@/contexts/LanguageContext";
 import { measureSyncGap, measureSyncGapAverage } from "@/lib/audioVisualSync";
 import {
   calculateTrimmedMean,
@@ -123,6 +124,8 @@ export default function CalibrationModal({
     };
   }, []);
 
+  const t = useT();
+
   if (!isOpen) return null;
 
   return (
@@ -130,7 +133,7 @@ export default function CalibrationModal({
       className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/60"
       role="dialog"
       aria-modal="true"
-      aria-label="오디오 캘리브레이션"
+      aria-label={t.calibration.ariaLabel}
       >
       <div className="bg-background border border-border rounded-2xl shadow-2xl max-w-sm w-full p-6 animate-fade-up">
 
@@ -139,26 +142,26 @@ export default function CalibrationModal({
           <div className="flex flex-col items-center gap-4">
             <span className="text-5xl">🎧</span>
             <h2 className="text-xl font-bold text-foreground text-center">
-              오디오 캘리브레이션
+              {t.calibration.title}
             </h2>
             <p className="text-sm text-muted-foreground text-center leading-relaxed">
-              블루투스·외장 스피커 환경에서 정확한 반응 속도 측정을 위해
-              <br />
-              30초 내 보정이 필요합니다.
+              {t.calibration.description.split("\n").map((line, i) => (
+                <span key={i}>{line}{i === 0 && <br />}</span>
+              ))}
             </p>
             <div className="w-full mt-2 flex flex-col gap-2">
               <button
                 onClick={runSyncMeasure}
                 className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-semibold text-sm active:scale-95 transition-transform"
               >
-                시작 (약 5초)
+                {t.calibration.startButton}
               </button>
               {canSkip && (
                 <button
                   onClick={onSkip}
                   className="w-full py-2 rounded-xl text-muted-foreground text-sm hover:text-foreground transition-colors"
                 >
-                  나중에
+                  {t.calibration.skipButton}
                 </button>
               )}
             </div>
@@ -170,10 +173,10 @@ export default function CalibrationModal({
           <div className="flex flex-col items-center gap-4">
             <span className="text-5xl">📡</span>
             <h2 className="text-xl font-bold text-foreground text-center">
-              sync 측정 중
+              {t.calibration.syncMeasuringTitle}
             </h2>
             <p className="text-sm text-muted-foreground text-center">
-              화면과 오디오 동기 상태를 자동으로 측정합니다.
+              {t.calibration.syncDesc}
             </p>
             <div className="w-full flex gap-2 mt-2">
               {Array.from({ length: SYNC_TRIAL_COUNT }).map((_, i) => (
@@ -195,10 +198,10 @@ export default function CalibrationModal({
         {phase === "env-measure" && (
           <div className="flex flex-col items-center gap-4">
             <h2 className="text-xl font-bold text-foreground text-center">
-              반응 측정
+              {t.calibration.envMeasuringTitle}
             </h2>
             <p className="text-sm text-muted-foreground text-center">
-              소리가 들리는 즉시 아래 버튼을 탭하세요.
+              {t.calibration.envDesc}
             </p>
 
             <div className="w-full flex gap-1.5 mt-1">
@@ -220,13 +223,13 @@ export default function CalibrationModal({
                 onClick={scheduleStimulus}
                 className="mt-4 w-full py-3 rounded-xl bg-primary text-primary-foreground font-semibold text-sm active:scale-95 transition-transform"
               >
-                측정 시작
+                {t.calibration.startMeasureButton}
               </button>
             )}
 
             {envStep === "ready" && (
               <div className="mt-4 w-full py-3 rounded-xl bg-muted text-muted-foreground font-semibold text-sm text-center select-none">
-                준비 중…
+                {t.calibration.ready}
               </div>
             )}
 
@@ -235,13 +238,13 @@ export default function CalibrationModal({
                 onClick={handleTap}
                 className="mt-4 w-full py-4 rounded-xl bg-primary text-primary-foreground font-bold text-lg active:scale-95 transition-transform animate-pulse"
               >
-                지금!
+                {t.calibration.nowButton}
               </button>
             )}
 
             {envStep === "recorded" && (
               <div className="mt-4 w-full py-3 rounded-xl bg-muted text-muted-foreground text-sm text-center">
-                기록됨 ({envTrials[envTrials.length - 1]?.toFixed(0)}ms)
+                {t.calibration.recordedLabel.replace("{ms}", String(envTrials[envTrials.length - 1]?.toFixed(0) ?? ""))}
               </div>
             )}
           </div>
@@ -252,18 +255,18 @@ export default function CalibrationModal({
           <div className="flex flex-col items-center gap-4">
             <span className="text-5xl">✅</span>
             <h2 className="text-xl font-bold text-foreground text-center">
-              캘리브레이션 완료
+              {t.calibration.completeTitle}
             </h2>
             <div className="w-full bg-muted rounded-xl p-4 text-sm space-y-1">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">환경 offset</span>
+                <span className="text-muted-foreground">{t.calibration.envOffsetLabel}</span>
                 <span className="font-semibold tabular-nums">
                   {finalOffset.toFixed(0)} ms
                 </span>
               </div>
               {syncResult && (
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">sync gap</span>
+                  <span className="text-muted-foreground">{t.calibration.syncGapLabel}</span>
                   <span className="font-semibold tabular-nums">
                     {syncResult.averageMs.toFixed(1)} ms
                     {syncResult.outlierCount > 0 && (
@@ -282,7 +285,7 @@ export default function CalibrationModal({
                 }
                 className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-semibold text-sm active:scale-95 transition-transform"
               >
-                완료
+                {t.calibration.confirmButton}
               </button>
               <button
                 onClick={() => {
@@ -295,7 +298,7 @@ export default function CalibrationModal({
                 }}
                 className="w-full py-2 text-muted-foreground text-sm hover:text-foreground transition-colors"
               >
-                재측정
+                {t.calibration.remeasureButton}
               </button>
             </div>
           </div>

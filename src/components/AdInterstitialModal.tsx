@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { AdPlaceholder } from "./AdPlaceholder";
+import { useT } from "@/contexts/LanguageContext";
 
 interface AdInterstitialModalProps {
   open: boolean;
@@ -10,6 +11,7 @@ const AUTO_CLOSE_SEC = 5;
 
 export function AdInterstitialModal({ open, onClose }: AdInterstitialModalProps) {
   const [countdown, setCountdown] = useState(AUTO_CLOSE_SEC);
+  const t = useT();
 
   useEffect(() => {
     if (!open) return;
@@ -34,7 +36,7 @@ export function AdInterstitialModal({ open, onClose }: AdInterstitialModalProps)
     <div
       className="fixed inset-0 z-50 bg-background/90 flex flex-col items-center justify-center gap-4 p-6"
       role="dialog"
-      aria-label="광고"
+      aria-label={t.adInterstitial.ariaLabel}
     >
       <div className="w-full max-w-sm flex flex-col items-center gap-4">
         <AdPlaceholder
@@ -42,13 +44,13 @@ export function AdInterstitialModal({ open, onClose }: AdInterstitialModalProps)
           className="w-full"
         />
         {countdown > 0 ? (
-          <p className="text-xs text-muted-foreground">{countdown}초 후 건너뛸 수 있어요</p>
+          <p className="text-xs text-muted-foreground">{t.adInterstitial.waitingLabel.replace("{countdown}", String(countdown))}</p>
         ) : (
           <button
             onClick={onClose}
             className="text-xs text-muted-foreground underline"
           >
-            건너뛰기
+            {t.adInterstitial.skip}
           </button>
         )}
       </div>

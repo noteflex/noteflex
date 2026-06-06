@@ -141,7 +141,7 @@ export default function AuthCallback() {
         localStorage.removeItem("noteflex_consent");
       }
 
-      // 원본 탭에 인증 완료 신호 전달 (BroadcastChannel + localStorage 이중 채널)
+      // 원본 탭에 인증 완료 신호 전달 (BroadcastChannel + localStorage 이중 채널) — 모든 경로 유지
       localStorage.setItem("noteflex_auth_complete", Date.now().toString());
       if ("BroadcastChannel" in window) {
         const channel = new BroadcastChannel("noteflex_auth");
@@ -149,8 +149,17 @@ export default function AuthCallback() {
         channel.close();
       }
 
-      window.close();
-      setTimeout(() => setCloseFailed(true), 500);
+      const newUser = Date.now() - new Date(session.user.created_at).getTime() < 10 * 60 * 1000;
+      const dest = newUser ? "/welcome" : "/";
+
+      if (window.opener !== null) {
+        // 스크립트로 열린 팝업: close 시도, 실패 시 화면에 버튼 표시
+        window.close();
+        setTimeout(() => setCloseFailed(true), 500);
+      } else {
+        // 전체 리다이렉트(구글 OAuth) 또는 메일 링크 탭: 즉시 이동
+        navigate(dest, { replace: true });
+      }
     };
 
     run();
@@ -160,12 +169,13 @@ export default function AuthCallback() {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-4 px-4" data-testid="restore-complete-screen">
         <div className="text-5xl">🎉</div>
-        <p className="text-lg font-semibold text-foreground">계정이 복구됐어요.</p>
+        <p className="text-lg font-semibold text-foreground">{t.authCallback.restoreCompleteTitle}</p>
         <p className="text-sm text-muted-foreground text-center leading-relaxed">
-          다시 오신 것을 환영합니다.<br />
-          이전 데이터가 그대로 유지됩니다.
+          {t.authCallback.restoreCompleteDesc.split("\n").map((line, i) => (
+            <span key={i}>{line}{i === 0 && <br />}</span>
+          ))}
         </p>
-        <p className="text-xs text-muted-foreground">잠시 후 메인 페이지로 이동합니다...</p>
+        <p className="text-xs text-muted-foreground">{t.authCallback.redirecting}</p>
       </div>
     );
   }
@@ -174,12 +184,13 @@ export default function AuthCallback() {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-4 px-4" data-testid="deletion-complete-screen">
         <div className="text-5xl">👋</div>
-        <p className="text-lg font-semibold text-foreground">탈퇴가 완료됐어요.</p>
+        <p className="text-lg font-semibold text-foreground">{t.authCallback.deletionCompleteTitle}</p>
         <p className="text-sm text-muted-foreground text-center leading-relaxed">
-          그동안 NoteFlex를 이용해 주셔서 감사합니다.<br />
-          30일 내 복구가 가능합니다.
+          {t.authCallback.deletionCompleteDesc.split("\n").map((line, i) => (
+            <span key={i}>{line}{i === 0 && <br />}</span>
+          ))}
         </p>
-        <p className="text-xs text-muted-foreground">잠시 후 메인 페이지로 이동합니다...</p>
+        <p className="text-xs text-muted-foreground">{t.authCallback.redirecting}</p>
       </div>
     );
   }
@@ -188,10 +199,19 @@ export default function AuthCallback() {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-4 px-4">
         <div className="text-5xl">✅</div>
-        <p className="text-lg font-semibold text-foreground">인증이 완료됐어요!</p>
+        <p className="text-lg font-semibold text-foreground">{t.authCallback.authCompleteTitle}</p>
         <p className="text-sm text-muted-foreground text-center leading-relaxed">
-          이 탭을 닫고<br />기존 탭에서 계속 진행해주세요.
+          {t.authCallback.authCompleteDesc.split("\n").map((line, i) => (
+            <span key={i}>{line}{i === 0 && <br />}</span>
+          ))}
         </p>
+        <button
+          type="button"
+          onClick={() => navigate("/", { replace: true })}
+          className="mt-2 px-6 py-2.5 rounded-xl bg-primary text-primary-foreground font-semibold text-sm shadow hover:shadow-md transition-all active:scale-95"
+        >
+          {t.authCallback.homeButton}
+        </button>
       </div>
     );
   }
@@ -238,7 +258,7 @@ export default function AuthCallback() {
 
   return (
     <div className="min-h-screen flex items-center justify-center">
-      <p className="text-muted-foreground text-sm">인증 처리 중...</p>
+      <p className="text-muted-foreground text-sm">{t.authCallback.processing}</p>
     </div>
   );
 }

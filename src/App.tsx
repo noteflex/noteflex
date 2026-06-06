@@ -40,6 +40,7 @@ import ComingSoonGate from "./components/ComingSoonGate.tsx";
 import ResetPasswordPage from "./pages/ResetPasswordPage.tsx";
 import AuthCallback from "./pages/AuthCallback.tsx";
 import ReviewerLogin from "./pages/ReviewerLogin.tsx";
+import WelcomePage from "./pages/WelcomePage.tsx";
 import { ErrorBoundary } from "./components/ErrorBoundary.tsx";
 import { UpdateBanner } from "./components/UpdateBanner.tsx";
 import { HelmetProvider } from "react-helmet-async";
@@ -53,8 +54,10 @@ function AuthBroadcastListener() {
 
   useEffect(() => {
     const handleAuthComplete = async () => {
-      await supabase.auth.refreshSession();
-      navigate("/", { replace: true });
+      // SDK의 내부 BroadcastChannel이 이미 크로스탭 세션을 동기화했으므로 getSession()으로 충분
+      const { data: { session } } = await supabase.auth.getSession();
+      const isNew = session && Date.now() - new Date(session.user.created_at).getTime() < 10 * 60 * 1000;
+      navigate(isNew ? "/welcome" : "/", { replace: true });
     };
 
     let channel: BroadcastChannel | null = null;
@@ -110,9 +113,10 @@ const App = () => (
               <Route path="/about" element={<About />} />
               <Route path="/contact" element={<Contact />} />
 
-              {/* 비밀번호 재설정 / 인증 콜백 — Coming Soon 차단 없음 */}
+              {/* 비밀번호 재설정 / 인증 콜백 / 신규 가입 환영 — Coming Soon 차단 없음 */}
               <Route path="/reset-password" element={<ResetPasswordPage />} />
               <Route path="/auth/callback" element={<AuthCallback />} />
+              <Route path="/welcome" element={<WelcomePage />} />
 
               {/* Paddle 심사관 전용 진입 URL — ComingSoonGate 외부 (가드 X) */}
               <Route path="/reviewer-login" element={<ReviewerLogin />} />
