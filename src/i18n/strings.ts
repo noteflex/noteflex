@@ -1765,7 +1765,7 @@ const ko: Strings = {
     processing: "인증 처리 중...",
   },
   masteryCard: {
-    clearAt100: "100점이면 클리어",
+    clearAt100: "🎯 100점이면 클리어",
   },
 };
 
@@ -2636,7 +2636,7 @@ const en: Strings = {
     processing: "Processing...",
   },
   masteryCard: {
-    clearAt100: "Clear at 100",
+    clearAt100: "🎯 Clear at 100",
   },
 };
 

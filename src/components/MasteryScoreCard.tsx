@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Trophy } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import PremiumBlurCard from "./PremiumBlurCard";
 import {
   calculateAccuracy,
   calculateReactionRatio,
@@ -188,11 +187,11 @@ export default function MasteryScoreCard({
               style={{ width: `${score}%` }}
             />
           </div>
-          <div className="flex items-baseline justify-between gap-1">
-            <span className="text-[11px] text-muted-foreground leading-tight">
+          <div className="flex items-center justify-between gap-1">
+            <span className="text-sm font-semibold text-foreground leading-tight">
               {t.masteryCard.clearAt100}
             </span>
-            <span className="text-xs font-semibold tabular-nums text-foreground leading-tight">
+            <span className="text-xs font-semibold tabular-nums text-foreground leading-tight shrink-0">
               {hasData ? score : 0} / 100
             </span>
           </div>
@@ -235,49 +234,59 @@ export default function MasteryScoreCard({
         </div>
       )}
 
-      {/* ── Layer 2: 4 metrics (blur for free/guest, always shown when expanded) ── */}
+      {/* ── Layer 2: 4 metrics — 이름·달성여부는 전 티어 공개, 수치만 비Pro 블러 ── */}
       {expanded && (
         <div className="mt-3" data-testid="metrics-layer">
-          <PremiumBlurCard
-            tier={blurTier}
-            ctaText={s.upgrade}
-            onUpgrade={handleUpgrade}
-          >
-            <div className="grid grid-cols-2 gap-2 pt-1">
-              <MetricRow
-                label={s.accuracy}
-                value={
-                  completion.sampleInsufficient
-                    ? "—"
-                    : `${Math.round(completion.accuracy.current * 100)}%`
-                }
-                required={`${Math.round(completion.accuracy.required * 100)}%`}
-                satisfied={completion.accuracy.satisfied}
-              />
-              <MetricRow
-                label={s.reaction}
-                value={
-                  completion.avgReactionRatio.current !== null
-                    ? String(completion.avgReactionRatio.current.toFixed(2))
-                    : "—"
-                }
-                required={String(completion.avgReactionRatio.required)}
-                satisfied={completion.avgReactionRatio.satisfied}
-              />
-              <MetricRow
-                label={s.playCount}
-                value={String(completion.playCount.current)}
-                required={String(completion.playCount.required)}
-                satisfied={completion.playCount.satisfied}
-              />
-              <MetricRow
-                label={s.bestStreak}
-                value={String(completion.bestStreak.current)}
-                required={String(completion.bestStreak.required)}
-                satisfied={completion.bestStreak.satisfied}
-              />
+          <div className="grid grid-cols-2 gap-2 pt-1">
+            <MetricRow
+              label={s.accuracy}
+              value={
+                completion.sampleInsufficient
+                  ? "—"
+                  : `${Math.round(completion.accuracy.current * 100)}%`
+              }
+              required={`${Math.round(completion.accuracy.required * 100)}%`}
+              satisfied={completion.accuracy.satisfied}
+              blurred={blurTier !== "premium"}
+            />
+            <MetricRow
+              label={s.reaction}
+              value={
+                completion.avgReactionRatio.current !== null
+                  ? String(completion.avgReactionRatio.current.toFixed(2))
+                  : "—"
+              }
+              required={String(completion.avgReactionRatio.required)}
+              satisfied={completion.avgReactionRatio.satisfied}
+              blurred={blurTier !== "premium"}
+            />
+            <MetricRow
+              label={s.playCount}
+              value={String(completion.playCount.current)}
+              required={String(completion.playCount.required)}
+              satisfied={completion.playCount.satisfied}
+              blurred={blurTier !== "premium"}
+            />
+            <MetricRow
+              label={s.bestStreak}
+              value={String(completion.bestStreak.current)}
+              required={String(completion.bestStreak.required)}
+              satisfied={completion.bestStreak.satisfied}
+              blurred={blurTier !== "premium"}
+            />
+          </div>
+          {blurTier !== "premium" && (
+            <div className="mt-2 flex justify-center">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleUpgrade}
+                data-testid="upgrade-cta"
+              >
+                {s.upgrade}
+              </Button>
             </div>
-          </PremiumBlurCard>
+          )}
         </div>
       )}
     </div>
@@ -285,30 +294,51 @@ export default function MasteryScoreCard({
 }
 
 // ── MetricRow ─────────────────────────────────────────────────
+// 이름·달성여부(✓/–)는 항상 노출. 수치 영역만 blurred=true 시 흐림 처리.
 function MetricRow({
   label,
   value,
   required,
   satisfied,
+  blurred,
 }: {
   label: string;
   value: string;
   required: string;
   satisfied: boolean;
+  blurred: boolean;
 }) {
   return (
     <div
       className="flex flex-col gap-0.5 rounded-lg bg-muted/50 px-2 py-1.5"
       data-testid="metric-row"
     >
-      <span className="text-[10px] text-muted-foreground">{label}</span>
-      <div className="flex items-baseline gap-1">
+      {/* 항목명 + 달성여부 — 전 티어 공개 */}
+      <div className="flex items-center justify-between gap-1">
+        <span className="text-[10px] text-muted-foreground">{label}</span>
         <span
-          className={`text-sm font-semibold ${satisfied ? "text-emerald-600 dark:text-emerald-400" : "text-foreground"}`}
+          className={`text-[11px] font-bold leading-none ${
+            satisfied
+              ? "text-emerald-500 dark:text-emerald-400"
+              : "text-muted-foreground/50"
+          }`}
         >
-          {value}
+          {satisfied ? "✓" : "–"}
         </span>
-        <span className="text-[9px] text-muted-foreground">/{required}</span>
+      </div>
+      {/* 수치 — 비Pro 블러 */}
+      <div
+        className={blurred ? "blur-sm select-none pointer-events-none" : ""}
+        aria-hidden={blurred}
+      >
+        <div className="flex items-baseline gap-1">
+          <span
+            className={`text-sm font-semibold ${satisfied ? "text-emerald-600 dark:text-emerald-400" : "text-foreground"}`}
+          >
+            {value}
+          </span>
+          <span className="text-[9px] text-muted-foreground">/{required}</span>
+        </div>
       </div>
     </div>
   );

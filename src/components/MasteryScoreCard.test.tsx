@@ -17,8 +17,11 @@ vi.mock("react-router-dom", async () => {
 
 vi.mock("@/contexts/LanguageContext", () => ({
   useLang: () => mockUseLang(),
+  useT: () => ({ masteryCard: { clearAt100: "🎯 100점이면 클리어" } }),
 }));
 
+// recent_plays: accuracy·reaction 점수는 최근 7판 윈도우 기반 — 모든 기준 충족값으로 설정
+const PASSING_PLAY = { at: "2026-01-01T00:00:00Z", attempts: 10, correct: 9, reaction_ratio: 0.25 };
 const baseProg: SublevelProgress = {
   level: 1,
   sublevel: 1,
@@ -28,6 +31,7 @@ const baseProg: SublevelProgress = {
   total_correct: 85,
   passed: false,
   avg_reaction_ratio: 0.30,
+  recent_plays: Array(7).fill(PASSING_PLAY), // accuracy 90% > 85%, reaction 0.25 < 0.35
 };
 
 function renderCard(
@@ -62,9 +66,12 @@ describe("computeMasteryScore", () => {
     expect(computeMasteryScore(prog)).toBe(Math.round(25 + 25 + 12.5 + 25));
   });
 
-  it("avg_reaction_ratio undefined → reaction 점수 ≈0", () => {
-    const prog: SublevelProgress = { ...baseProg, avg_reaction_ratio: undefined };
-    expect(computeMasteryScore(prog)).toBe(Math.round(25 + 0.09 + 25 + 25));
+  it("recent_plays reaction_ratio null → reaction 점수 0", () => {
+    const prog: SublevelProgress = {
+      ...baseProg,
+      recent_plays: Array(7).fill({ ...PASSING_PLAY, reaction_ratio: null }),
+    };
+    expect(computeMasteryScore(prog)).toBe(Math.round(25 + 0 + 25 + 25));
   });
 
   it("fast_track=true → 100 강제 (메트릭 무관)", () => {
@@ -108,83 +115,92 @@ describe("MasteryScoreCard — Layer 1 (score + progress bar)", () => {
   });
 });
 
-describe("MasteryScoreCard — default 펼침 + 토글", () => {
+describe("MasteryScoreCard — default 접힘 + 토글", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockUseLang.mockReturnValue({ lang: "ko" });
   });
 
-  it("마운트 시 metrics-layer 이미 노출 (default 펼침)", () => {
+  it("마운트 시 metrics-layer 숨김 (default 접힘)", () => {
     renderCard("free");
-    expect(screen.getByTestId("metrics-layer")).toBeInTheDocument();
-  });
-
-  it("토글 클릭 → metrics-layer 접힘", async () => {
-    renderCard("free");
-    expect(screen.getByTestId("metrics-layer")).toBeInTheDocument();
-    await userEvent.click(screen.getByTestId("expand-toggle"));
     expect(screen.queryByTestId("metrics-layer")).not.toBeInTheDocument();
   });
 
-  it("토글 다시 클릭 → metrics-layer 펼침", async () => {
+  it("토글 클릭 → metrics-layer 펼침", async () => {
     renderCard("free");
-    await userEvent.click(screen.getByTestId("expand-toggle"));
+    expect(screen.queryByTestId("metrics-layer")).not.toBeInTheDocument();
     await userEvent.click(screen.getByTestId("expand-toggle"));
     expect(screen.getByTestId("metrics-layer")).toBeInTheDocument();
   });
 
-  it("progress null 이어도 toggle + metrics-layer 노출", () => {
+  it("토글 두 번 → metrics-layer 다시 접힘", async () => {
+    renderCard("free");
+    await userEvent.click(screen.getByTestId("expand-toggle")); // 펼침
+    expect(screen.getByTestId("metrics-layer")).toBeInTheDocument();
+    await userEvent.click(screen.getByTestId("expand-toggle")); // 접힘
+    expect(screen.queryByTestId("metrics-layer")).not.toBeInTheDocument();
+  });
+
+  it("progress null 이어도 expand-toggle 노출, 클릭 후 metrics-layer 노출", async () => {
     renderCard("free", null);
     expect(screen.getByTestId("expand-toggle")).toBeInTheDocument();
+    await userEvent.click(screen.getByTestId("expand-toggle"));
     expect(screen.getByTestId("metrics-layer")).toBeInTheDocument();
   });
 
-  it("progress null 4지표 0 값 표시", () => {
+  it("progress null 4지표 표시 — accuracy sampleInsufficient → '—', count·streak → '0'", async () => {
     renderCard("pro", null);
+    await userEvent.click(screen.getByTestId("expand-toggle"));
     const rows = screen.getAllByTestId("metric-row");
     expect(rows).toHaveLength(4);
-    // accuracy = 0%, playCount = 0, bestStreak = 0
-    expect(rows[0]).toHaveTextContent("0%");
+    // sampleInsufficient=true → accuracy·reaction은 "—"
+    expect(rows[0]).toHaveTextContent("—");
+    // playCount = 0, bestStreak = 0
     expect(rows[2]).toHaveTextContent("0");
     expect(rows[3]).toHaveTextContent("0");
   });
 });
 
-describe("MasteryScoreCard — tier blur (default 펼침)", () => {
+describe("MasteryScoreCard — tier blur (metrics 펼침 후)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockUseLang.mockReturnValue({ lang: "ko" });
   });
 
-  it("free — 마운트 시 즉시 blur-layer 인지 (클릭 불필요)", () => {
+  it("free — metrics 펼치면 upgrade-cta 노출", async () => {
     renderCard("free");
-    expect(screen.getByTestId("blur-layer")).toBeInTheDocument();
-    expect(screen.getByTestId("upgrade-overlay")).toBeInTheDocument();
+    await userEvent.click(screen.getByTestId("expand-toggle"));
+    expect(screen.getByTestId("upgrade-cta")).toBeInTheDocument();
   });
 
-  it("guest — 마운트 시 즉시 blur-layer 인지", () => {
+  it("guest — metrics 펼치면 upgrade-cta 노출", async () => {
     renderCard("guest");
-    expect(screen.getByTestId("blur-layer")).toBeInTheDocument();
+    await userEvent.click(screen.getByTestId("expand-toggle"));
+    expect(screen.getByTestId("upgrade-cta")).toBeInTheDocument();
   });
 
-  it("free null progress — blur 여전히 표시", () => {
+  it("free null progress — upgrade-cta 표시", async () => {
     renderCard("free", null);
-    expect(screen.getByTestId("blur-layer")).toBeInTheDocument();
+    await userEvent.click(screen.getByTestId("expand-toggle"));
+    expect(screen.getByTestId("upgrade-cta")).toBeInTheDocument();
   });
 
-  it("pro — blur 없음, 4개 metric-row 즉시 노출", () => {
+  it("pro — upgrade-cta 없음, 4개 metric-row 노출", async () => {
     renderCard("pro");
-    expect(screen.queryByTestId("blur-layer")).not.toBeInTheDocument();
+    await userEvent.click(screen.getByTestId("expand-toggle"));
+    expect(screen.queryByTestId("upgrade-cta")).not.toBeInTheDocument();
     expect(screen.getAllByTestId("metric-row")).toHaveLength(4);
   });
 
-  it("premium — blur 없음", () => {
+  it("premium — upgrade-cta 없음", async () => {
     renderCard("premium");
-    expect(screen.queryByTestId("blur-layer")).not.toBeInTheDocument();
+    await userEvent.click(screen.getByTestId("expand-toggle"));
+    expect(screen.queryByTestId("upgrade-cta")).not.toBeInTheDocument();
   });
 
-  it("admin — blur 없음", () => {
+  it("admin — upgrade-cta 없음", async () => {
     renderCard("admin");
-    expect(screen.queryByTestId("blur-layer")).not.toBeInTheDocument();
+    await userEvent.click(screen.getByTestId("expand-toggle"));
+    expect(screen.queryByTestId("upgrade-cta")).not.toBeInTheDocument();
   });
 });
