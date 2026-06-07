@@ -147,17 +147,32 @@ export default function MasteryScoreCard({
       className="rounded-2xl border border-border bg-card/70 p-4 w-full shadow-sm"
       data-testid="mastery-score-card"
     >
-      {/* ── Layer 1: score + progress bar + toggle ── */}
-      <div className="flex items-center justify-between gap-3">
-        <div className="flex flex-col gap-0.5">
-          <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-foreground">
-            <Trophy
-              className="h-4 w-4 text-amber-500 dark:text-amber-400 shrink-0"
-              aria-hidden
-              strokeWidth={2.5}
-            />
-            {label} {s.masteryScore}
-          </span>
+      {/* ── Layer 1: 3행 스택 구조 (전 폭 동일) ── */}
+
+      {/* 행 1: 제목 + 토글 버튼 */}
+      <div className="flex items-center justify-between gap-2">
+        <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-foreground">
+          <Trophy
+            className="h-4 w-4 text-amber-500 dark:text-amber-400 shrink-0"
+            aria-hidden
+            strokeWidth={2.5}
+          />
+          {label} {s.masteryScore}
+        </span>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setExpanded((v) => !v)}
+          aria-expanded={expanded}
+          data-testid="expand-toggle"
+        >
+          {expanded ? s.collapse : s.expand}
+        </Button>
+      </div>
+
+      {/* 행 2: 점수 숫자(shrink-0) + 진행바(flex-1 min-w-0) */}
+      <div className="flex items-center gap-3 mt-2">
+        <div className="flex flex-col gap-0.5 shrink-0">
           <span
             className="text-4xl font-bold tabular-nums text-foreground leading-none"
             data-testid="score-number"
@@ -171,8 +186,8 @@ export default function MasteryScoreCard({
           )}
         </div>
 
-        {/* progress bar — always shown (0% when no data) */}
-        <div className="flex-1 flex flex-col gap-1">
+        {/* 진행바 + 행 3 라벨 */}
+        <div className="flex-1 min-w-0 flex flex-col gap-1">
           <div
             className="w-full bg-muted rounded-full h-2 overflow-hidden"
             role="progressbar"
@@ -187,26 +202,17 @@ export default function MasteryScoreCard({
               style={{ width: `${score}%` }}
             />
           </div>
-          <div className="flex items-center justify-between gap-1">
-            <span className="text-sm font-semibold text-foreground leading-tight">
+
+          {/* 행 3: 클리어 라벨(좌) + 점수 표시(우) — whitespace-nowrap으로 줄바꿈 고정 금지 */}
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-sm font-semibold text-foreground leading-tight whitespace-nowrap">
               {t.masteryCard.clearAt100}
             </span>
-            <span className="text-xs font-semibold tabular-nums text-foreground leading-tight shrink-0">
+            <span className="text-xs font-semibold tabular-nums text-foreground leading-tight whitespace-nowrap shrink-0">
               {hasData ? score : 0} / 100
             </span>
           </div>
         </div>
-
-        {/* toggle — always visible */}
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setExpanded((v) => !v)}
-          aria-expanded={expanded}
-          data-testid="expand-toggle"
-        >
-          {expanded ? s.collapse : s.expand}
-        </Button>
       </div>
 
       {/* ── 표본 안내 — N=7이면 1줄 muted, 그 외엔 amber 박스 2줄 ── */}
