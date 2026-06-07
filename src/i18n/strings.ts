@@ -893,6 +893,9 @@ export interface Strings {
     homeButton: string;
     processing: string;
   };
+  masteryCard: {
+    clearAt100: string; // "100점이면 클리어" / "Clear at 100"
+  };
 }
 
 const ko: Strings = {
@@ -1761,6 +1764,9 @@ const ko: Strings = {
     homeButton: "홈으로 이동",
     processing: "인증 처리 중...",
   },
+  masteryCard: {
+    clearAt100: "100점이면 클리어",
+  },
 };
 
 const en: Strings = {
@@ -2628,6 +2634,9 @@ const en: Strings = {
     authCompleteDesc: "Close this tab and\ncontinue in your original tab.",
     homeButton: "Go to Home",
     processing: "Processing...",
+  },
+  masteryCard: {
+    clearAt100: "Clear at 100",
   },
 };
 

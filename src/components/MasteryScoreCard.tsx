@@ -15,7 +15,7 @@ import {
   type SublevelProgress,
   type SubscriptionTier,
 } from "@/lib/levelSystem";
-import { useLang } from "@/contexts/LanguageContext";
+import { useLang, useT } from "@/contexts/LanguageContext";
 
 // ── Score formula (mirrors SQL get_mastery_score) ─────────────
 // v2 (2026-05-30): accuracy·reaction은 최근 7판 윈도우 기반.
@@ -119,6 +119,7 @@ export default function MasteryScoreCard({
   const [expanded, setExpanded] = useState(false);
   const navigate = useNavigate();
   const { lang } = useLang();
+  const t = useT();
   const s = STRINGS[lang as keyof typeof STRINGS] ?? STRINGS.ko;
 
   const score = computeMasteryScore(progress);
@@ -187,9 +188,14 @@ export default function MasteryScoreCard({
               style={{ width: `${score}%` }}
             />
           </div>
-          <span className="text-[10px] text-muted-foreground text-right">
-            {hasData ? score : 0} / 100
-          </span>
+          <div className="flex items-baseline justify-between gap-1">
+            <span className="text-[11px] text-muted-foreground leading-tight">
+              {t.masteryCard.clearAt100}
+            </span>
+            <span className="text-xs font-semibold tabular-nums text-foreground leading-tight">
+              {hasData ? score : 0} / 100
+            </span>
+          </div>
         </div>
 
         {/* toggle — always visible */}
