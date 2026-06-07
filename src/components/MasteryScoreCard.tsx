@@ -315,12 +315,12 @@ function MetricRow({
     >
       {/* 항목명 + 달성여부 — 전 티어 공개 */}
       <div className="flex items-center justify-between gap-1">
-        <span className="text-[10px] text-muted-foreground">{label}</span>
+        <span className="text-sm font-semibold text-foreground">{label}</span>
         <span
-          className={`text-[11px] font-bold leading-none ${
+          className={`text-lg font-bold leading-none ${
             satisfied
               ? "text-emerald-500 dark:text-emerald-400"
-              : "text-muted-foreground/50"
+              : "text-gray-500 dark:text-gray-400"
           }`}
         >
           {satisfied ? "✓" : "–"}
