@@ -900,6 +900,8 @@ AI·정밀 데이터·Noteflex 기능·음악 교육의 미래.
 | 2026-06-05 | 36 | §1-8 | Sight-Reading vs. Repertoire Practice — How to Divide Your Time (en) ✅ 작성 완료 | sight-reading-vs-repertoire-practice | Sight-Reading Lab | ~980 words | sight-reading practice tips, repertoire vs sight-reading, music practice time split, deliberate practice music, sight-reading improvement, how to practice music | Sloboda et al. 1996 + Nielsen 2001 전통 |
 | 2026-06-06 | 37 | §6-75 | 지휘자·편곡자의 풀스코어 초견 — 한 줄이 아닌 스무 줄을 동시에 읽는 법 (ko) ✅ 작성 완료 | conductor-and-full-score-sight-reading | 악기별 초견 전략 | ~1900자 | 지휘자 초견, 풀스코어 읽기, 오케스트라 총보, 수직 읽기, 다성부 초견, 지휘자 훈련 | Goolsby (1994) 전통 |
 | 2026-06-06 | 37 | §6-75 | The Conductor and the Full Score — Sight-Reading When Every Line Matters (en) ✅ 작성 완료 | conductor-and-full-score-sight-reading | Sight-Reading by Instrument | ~1000 words | conductor sight-reading, full score reading, orchestral score, vertical reading, multi-staff sight-reading, conductor training | Goolsby (1994) 전통 |
+| 2026-06-07 | 38 | §7-84 | 음표별 마스터리 측정 — '느낌'이 아닌 데이터로 초견 진도를 확인하는 법 (ko) ✅ 작성 완료 | note-mastery-measurement | 학습 데이터·과학 | ~2200자 | 음표별 마스터리, 초견 진도 측정, 마스터리 학습 음악, 음악 학습 데이터, 진도 객관화, 초견 약점 분석 | Bloom 1984 + Hallam 2001 전통 |
+| 2026-06-07 | 38 | §7-84 | Measuring Per-Note Mastery — How Data Makes Sight-Reading Progress Visible (en) ✅ 작성 완료 | note-mastery-measurement | Learning Science | ~961 words | per-note mastery, sight-reading progress measurement, mastery learning music, music learning data, note accuracy tracking, mastery criteria music | Bloom 1984 + Hallam 2001 전통 |
 
 ---
 
