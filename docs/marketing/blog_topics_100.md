@@ -459,7 +459,7 @@ grep -A 5 "## 참고 자료\|## References" src/content/blog/ko/2026-05-*.md | t
 | 35일차 (주말) | §4-54 음역대별 인식 | §4-55 인지 부하 | §8-92 Lv5+ 스와이프 |
 | 36일차 | §5-64 입시생 단기 전략 | §6-74 하프·마림바 | — |
 | 37일차 | §6-75 편곡자·지휘자 | §7-83 정확도 vs 속도 | — |
-| 38일차 | §7-84 마스터리 측정 | §7-85 학습 앱의 미래 | — |
+| 38일차 ✅ | §7-84 마스터리 측정 ✅ | §7-85 학습 앱의 미래 ✅ | — |
 | 39일차 | §2-25 셈여림 기호 | §2-26 이음줄·붙임줄 | — |
 | 40일차 | §2-27 페달 기호 | §2-28 옥타브 기호 | — |
 | 41일차 (주말) | §2-29 셋잇단음표·여린박자 | §2-30 악센트·스타카토 | §8-93 0.0001초 정밀도 |
@@ -779,7 +779,7 @@ AI·정밀 데이터·Noteflex 기능·음악 교육의 미래.
 82. 게이미피케이션과 음악 학습
 83. 정확도 vs 반응속도 — 우선순위와 균형 ✅ 작성 완료 (2026-06-02, accuracy-vs-speed-sight-reading)
 84. 음표별 마스터리 측정 — 진도의 객관화
-85. 음악 학습 앱의 미래 — AI와 데이터 기반 개인화
+85. 음악 학습 앱의 미래 — AI와 데이터 기반 개인화 ✅ 작성 완료 (2026-06-08, future-of-music-learning-apps)
 
 **Noteflex 기능 연계** (10편):
 86. Noteflex가 풀려는 문제 — 초견 정체기
@@ -902,6 +902,8 @@ AI·정밀 데이터·Noteflex 기능·음악 교육의 미래.
 | 2026-06-06 | 37 | §6-75 | The Conductor and the Full Score — Sight-Reading When Every Line Matters (en) ✅ 작성 완료 | conductor-and-full-score-sight-reading | Sight-Reading by Instrument | ~1000 words | conductor sight-reading, full score reading, orchestral score, vertical reading, multi-staff sight-reading, conductor training | Goolsby (1994) 전통 |
 | 2026-06-07 | 38 | §7-84 | 음표별 마스터리 측정 — '느낌'이 아닌 데이터로 초견 진도를 확인하는 법 (ko) ✅ 작성 완료 | note-mastery-measurement | 학습 데이터·과학 | ~2200자 | 음표별 마스터리, 초견 진도 측정, 마스터리 학습 음악, 음악 학습 데이터, 진도 객관화, 초견 약점 분석 | Bloom 1984 + Hallam 2001 전통 |
 | 2026-06-07 | 38 | §7-84 | Measuring Per-Note Mastery — How Data Makes Sight-Reading Progress Visible (en) ✅ 작성 완료 | note-mastery-measurement | Learning Science | ~961 words | per-note mastery, sight-reading progress measurement, mastery learning music, music learning data, note accuracy tracking, mastery criteria music | Bloom 1984 + Hallam 2001 전통 |
+| 2026-06-08 | 39 | §7-85 | 음악 학습 앱의 미래 — AI와 데이터 기반 개인화 (ko) ✅ 작성 완료 | future-of-music-learning-apps | 학습 데이터·과학 | ~2200자 | 음악 학습 앱 AI, 지능형 튜터링, 개인화 음악 교육, 지식 추적, AI 음악 교사 | VanLehn (2011) + Corbett & Anderson (1994) — 이미지 2개 (Nattier 1710, Cope 1863) Wikimedia |
+| 2026-06-08 | 39 | §7-85 | The Future of Music Learning Apps — AI and Data-Driven Personalization (en) ✅ 작성 완료 | future-of-music-learning-apps | Learning Science | ~1300 words | music learning app AI, intelligent tutoring system music, personalized music education, knowledge tracing, AI music teacher | VanLehn (2011) + Corbett & Anderson (1994) — 이미지 2개 (Nattier 1710, Cope 1863) Wikimedia |
 
 ---
 

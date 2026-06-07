@@ -523,6 +523,12 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://noteflex.app/blog/ko/future-of-music-learning-apps</loc>
+    <lastmod>2026-06-08</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://noteflex.app/blog/en/musical-staff-principle</loc>
     <lastmod>2026-04-30</lastmod>
     <changefreq>monthly</changefreq>
@@ -981,6 +987,12 @@
   <url>
     <loc>https://noteflex.app/blog/en/note-mastery-measurement</loc>
     <lastmod>2026-06-07</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://noteflex.app/blog/en/future-of-music-learning-apps</loc>
+    <lastmod>2026-06-08</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
