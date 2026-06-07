@@ -107,6 +107,7 @@ export interface DailyReportRollup {
 
   baseline_accuracy: number | null;
   baseline_avg_reaction_ms: number | null;
+  baseline_days?: number | null;
 
   graduated_count: number;
   regressed_count: number;

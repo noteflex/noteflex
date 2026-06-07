@@ -117,7 +117,7 @@ function pickValues(report: DailyReportData):
       streak: report.streak_days ?? 0,
       baselineAccuracy: report.baseline_accuracy,
       baselineAvgMs: report.baseline_avg_reaction_ms,
-      baselineDays: report.baseline_accuracy != null ? 14 : 0,
+      baselineDays: report.baseline_days ?? 0,
     };
   }
   return null;
