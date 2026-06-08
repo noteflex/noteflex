@@ -7,14 +7,16 @@
 
 ---
 
-## 2026-06-07 결제 이중화 — Paddle 데드라인 트리거 (기한: 2026-06-13)
+## 2026-06-08 결제 — Creem 1순위 확정, 통합 대기 중
 
-- [기한 있음 · 6/13] **결제 이중화 Plan B (Creem) 준비** — Paddle KYC 2주+ 무응답, 6/7 X(@PaddleHQ) 공개 멘션으로 에스컬레이션 완료.
-  - **6/7 진행 완료**: Creem 스토어 생성(creem.io/noteflex) + 제품 2개(Premium Monthly $4.99 / Yearly $39.99, tax-inclusive) + Sumsub 신원 검증 통과 + 지급 계좌 제출·스토어 연결 → Creem 팀 리뷰 대기(통상 24~48h, 결과는 contact@로).
-  - **KYC 원인 확정**: 영문 주민등록등본(비표준 번역 양식)이 자동 KYC 분류기에서 인식 실패 — Sumsub에서 동일 문서 반려 후 표준 국문 등본으로 즉시 통과. Paddle에도 국문 등본 재제출 완료(6/7) + X(@PaddleHQ) 공개 멘션 게시 상태.
-  - **Creem 통합 시 의무**: 유저가 제품 내에서 구독을 직접 취소할 수 있어야 함 — Cancel Subscription API 또는 Creem Customer Portal 연결을 통합 스펙에 포함.
-  - **트리거 유지**: 6/13까지 Paddle 무응답/거절 → Creem 통합 착수 (checkout 레이어 교체, 수일 작업). Creem 리뷰가 먼저 승인되고 Paddle 침묵이 이어지면 트리거 앞당김 검토.
-  - **Paddle 승인 시**: Paddle 유지, Creem 계정은 보험으로 보존.
+- **Creem 계정 승인 완료** (2026-06-08, 가입 후 수 시간) — 결제 수취 가능 상태. 6/13 Paddle 데드라인 트리거는 폐기(Creem이 이미 승인됨).
+- **Creem = 결제 1순위 확정** — 수수료 3.9%+$0.40 (Paddle 5%+$0.50 대비 우위) + 한국 로컬 이체 지원. Paddle은 휴면 백업, 추가 조치 없음.
+- [예정 · HN 이후] **Creem 체크아웃 통합** — 작업 범위:
+  - checkout 레이어 교체 (현행 Paddle openCheckout → Creem checkout URL)
+  - webhook → `is_premium` 권한 갱신
+  - Cancel Subscription API 또는 Creem Customer Portal 연결 (취소 흐름 의무)
+  - **타이밍**: HN(수요일) 이후 차분히 진행 — 결제 코드는 HN 주간 급출시 금지.
+- ~~[기한 있음 · 6/13] Paddle 데드라인 트리거~~ → 폐기.
 
 ---
 
