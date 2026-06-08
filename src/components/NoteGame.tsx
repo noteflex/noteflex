@@ -15,6 +15,7 @@ import { useUserEnvOffset } from "@/hooks/useUserEnvOffset";
 import { useDailyLimit } from "@/hooks/useDailyLimit";
 import { useAuth } from "@/contexts/AuthContext";
 import { useT } from "@/contexts/LanguageContext";
+import { format } from "@/i18n/strings";
 import { playNote, playWrong, isSamplerReady, initSound, ensureAudioReady } from "@/lib/sound";
 import { useNoteLogger } from "@/hooks/useNoteLogger";
 import { useSessionRecorder } from "@/hooks/useSessionRecorder";
@@ -832,8 +833,8 @@ export default function NoteGame({
     ? t.game.finalStage.replace("{n}", String(missedNotes.size))
     : `Stage ${currentStageConfig.stage}: ${
         currentStageConfig.batchSize === 1
-          ? t.game.notesSequential.replace("{n}", String(currentStageConfig.notesPerSet))
-          : t.game.notesSimultaneous.replace("{n}", String(currentStageConfig.batchSize))
+          ? format(t.game.notesSequential, { n: String(currentStageConfig.notesPerSet) })
+          : format(t.game.notesSimultaneous, { n: String(currentStageConfig.batchSize) })
       } ${t.game.setProgress
           .replace("{cur}", String(currentSet))
           .replace("{total}", String(currentStageConfig.totalSets))}`;
