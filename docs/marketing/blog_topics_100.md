@@ -904,6 +904,8 @@ AI·정밀 데이터·Noteflex 기능·음악 교육의 미래.
 | 2026-06-07 | 38 | §7-84 | Measuring Per-Note Mastery — How Data Makes Sight-Reading Progress Visible (en) ✅ 작성 완료 | note-mastery-measurement | Learning Science | ~961 words | per-note mastery, sight-reading progress measurement, mastery learning music, music learning data, note accuracy tracking, mastery criteria music | Bloom 1984 + Hallam 2001 전통 |
 | 2026-06-08 | 39 | §7-85 | 음악 학습 앱의 미래 — AI와 데이터 기반 개인화 (ko) ✅ 작성 완료 | future-of-music-learning-apps | 학습 데이터·과학 | ~2200자 | 음악 학습 앱 AI, 지능형 튜터링, 개인화 음악 교육, 지식 추적, AI 음악 교사 | VanLehn (2011) + Corbett & Anderson (1994) — 이미지 2개 (Nattier 1710, Cope 1863) Wikimedia |
 | 2026-06-08 | 39 | §7-85 | The Future of Music Learning Apps — AI and Data-Driven Personalization (en) ✅ 작성 완료 | future-of-music-learning-apps | Learning Science | ~1300 words | music learning app AI, intelligent tutoring system music, personalized music education, knowledge tracing, AI music teacher | VanLehn (2011) + Corbett & Anderson (1994) — 이미지 2개 (Nattier 1710, Cope 1863) Wikimedia |
+| 2026-06-09 | 40 | §2-27 | 페달 기호 — 피아노 악보에서 서스테인·소프트·소스테누토를 읽는 법 (ko) ✅ 작성 완료 | pedal-markings-sheet-music | 음악 이론 & 화성학 | ~2100자 | 피아노 페달 기호, 서스테인 페달 악보, una corda 기호, 소스테누토 페달, 악보 페달 표기 | Repp (1992) — 이미지 2개 (Steinway pedals CC0, Chopin nocturne Op.55 PD) Wikimedia |
+| 2026-06-09 | 40 | §2-27 | Piano Pedal Markings — How to Read Sustain, Soft, and Sostenuto Notation (en) ✅ 작성 완료 | pedal-markings-sheet-music | Theory & Harmony | ~1050 words | piano pedal markings, sustain pedal notation, una corda meaning, sostenuto pedal, Ped asterisk notation | Repp (1992) — 이미지 2개 (Steinway pedals CC0, Chopin nocturne Op.55 PD) Wikimedia |
 
 ---
 
