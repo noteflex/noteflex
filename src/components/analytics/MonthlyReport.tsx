@@ -489,15 +489,16 @@ export default function MonthlyReport() {
   // ms↓ = faster = ▲ + emerald, ms↑ = slower = ▼ + red (일간·주간과 동일 규칙)
   const msDeltaSub = (() => {
     if (isGrace || reactionDeltaMs == null) return { text: "—", tone: "neutral" as const };
-    const n = Math.round(Math.abs(reactionDeltaMs));
-    if (n < 20) return { text: "—", tone: "neutral" as const };
+    const absMs = Math.round(Math.abs(reactionDeltaMs));
+    if (absMs < 20) return { text: "—", tone: "neutral" as const };
+    const n = (Math.abs(reactionDeltaMs) / 1000).toFixed(2);
     if (reactionDeltaMs < 0)
       return {
-        text: t.analytics.monthlyDeltaMsFaster.replace("{n}", String(n)),
+        text: t.analytics.monthlyDeltaMsFaster.replace("{n}", n),
         tone: "up" as const,
       };
     return {
-      text: t.analytics.monthlyDeltaMsSlower.replace("{n}", String(n)),
+      text: t.analytics.monthlyDeltaMsSlower.replace("{n}", n),
       tone: "down" as const,
     };
   })();

@@ -360,10 +360,11 @@ export default function WeeklyReport() {
 
   const msDeltaSub = (() => {
     if (reactionDeltaMs == null) return { text: "—", tone: "neutral" as const };
-    const n = Math.round(Math.abs(reactionDeltaMs));
-    if (n < 20) return { text: "—", tone: "neutral" as const };
-    if (reactionDeltaMs < 0) return { text: t.analytics.weeklyDeltaMsFaster.replace("{n}", String(n)), tone: "up" as const };
-    return { text: t.analytics.weeklyDeltaMsSlower.replace("{n}", String(n)), tone: "neutral" as const };
+    const absMs = Math.round(Math.abs(reactionDeltaMs));
+    if (absMs < 20) return { text: "—", tone: "neutral" as const };
+    const n = (Math.abs(reactionDeltaMs) / 1000).toFixed(2);
+    if (reactionDeltaMs < 0) return { text: t.analytics.weeklyDeltaMsFaster.replace("{n}", n), tone: "up" as const };
+    return { text: t.analytics.weeklyDeltaMsSlower.replace("{n}", n), tone: "neutral" as const };
   })();
 
   const streakText =
