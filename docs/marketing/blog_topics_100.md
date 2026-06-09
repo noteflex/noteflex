@@ -906,6 +906,8 @@ AI·정밀 데이터·Noteflex 기능·음악 교육의 미래.
 | 2026-06-08 | 39 | §7-85 | The Future of Music Learning Apps — AI and Data-Driven Personalization (en) ✅ 작성 완료 | future-of-music-learning-apps | Learning Science | ~1300 words | music learning app AI, intelligent tutoring system music, personalized music education, knowledge tracing, AI music teacher | VanLehn (2011) + Corbett & Anderson (1994) — 이미지 2개 (Nattier 1710, Cope 1863) Wikimedia |
 | 2026-06-09 | 40 | §2-27 | 페달 기호 — 피아노 악보에서 서스테인·소프트·소스테누토를 읽는 법 (ko) ✅ 작성 완료 | pedal-markings-sheet-music | 음악 이론 & 화성학 | ~2100자 | 피아노 페달 기호, 서스테인 페달 악보, una corda 기호, 소스테누토 페달, 악보 페달 표기 | Repp (1992) — 이미지 2개 (Steinway pedals CC0, Chopin nocturne Op.55 PD) Wikimedia |
 | 2026-06-09 | 40 | §2-27 | Piano Pedal Markings — How to Read Sustain, Soft, and Sostenuto Notation (en) ✅ 작성 완료 | pedal-markings-sheet-music | Theory & Harmony | ~1050 words | piano pedal markings, sustain pedal notation, una corda meaning, sostenuto pedal, Ped asterisk notation | Repp (1992) — 이미지 2개 (Steinway pedals CC0, Chopin nocturne Op.55 PD) Wikimedia |
+| 2026-06-10 | 41 | §2-28 | 옥타브 기호 — 8va·8vb·15ma의 뜻과 악보에서 읽는 법 (ko) ✅ 작성 완료 | octave-signs-sheet-music | 음악 이론 & 화성학 | ~2000자 | 옥타브 기호, 8va 기호, 8vb 뜻, 15ma 기호, 악보 표기법, 덧줄 줄이기 | Lehmann & Ericsson (1996) — 이미지 2개 (Met Cristofori 1720 CC0, Wikipedia 8va/15ma LilyPond PD) |
+| 2026-06-10 | 41 | §2-28 | Octave Signs in Sheet Music — How to Read 8va, 8vb, 15ma, and 15mb (en) ✅ 작성 완료 | octave-signs-sheet-music | Theory & Harmony | ~1100 words | 8va meaning, octave signs sheet music, 8vb notation, 15ma music, how to read octave signs, ledger lines piano | Lehmann & Ericsson (1996) — 이미지 2개 (Met Cristofori 1720 CC0, Wikipedia 8va/15ma LilyPond PD) |
 
 ---
 
