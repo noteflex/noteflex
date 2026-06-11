@@ -11,7 +11,7 @@
 
 ### 결제 — Creem 실연동 (2026-06-11)
 - Creem 체크아웃·웹훅 연동, env 교체(VITE_PADDLE_* → Creem 키), 프로덕션 가격 ID 등록, 프리미엄 권한 연결, 기존 Paddle 코드 정리.
-- ⚠️ 결제 미연동인데 "7일 무료 트라이얼 / Start trial" 배너가 노출 중 → 깨진 CTA. 연동 전까지 숨김 또는 연동과 동반.
+- [✅ 확인 2026-06-12] 트라이얼 배너 = AdPlaceholder.tsx의 TRIAL_BANNER_ENABLED=false kill-switch로 렌더 전부 차단됨. 라이브 노출 없음. 잔여(죽은 코드): i18n 카피 strings.ts ko 1237-1239 / en 2108-2110 + 컴포넌트 분기 → Creem 연동 시 trial 정책 결정과 함께 정리. 지금 손대지 않음.
 
 ### 비구독자 게임 접근 — 구현 (2026-06-11)
 - subscriptionTier / 레벨 락 로직 수정: 게스트 Lv1-1만, 가입 무료 Lv1~2 전체 오픈, Lv3+ Premium 락.
@@ -23,7 +23,7 @@
 - [Phase 3] 저장 + 스트릭(= "스트릭 추가"): daily_activity(user_id, local_date, completed) / 로컬 날짜 경계 / 가입자 점수·스트릭·이력 저장 / 비가입 미저장. 이후 상위%·랭크 실측 가능.
 - [열림·진단] 버벅거림: 운영(prod)에서도 발생. PC vs 코드 격리 중. 코드면 지점(시작/카운트다운/문제 전환/카드) 특정 후 최적화.
 - [todo] 공유 헤더 #N(🎼 Noteflex Daily #N).
-- [todo] /daily 404 재확인(HMR/PWA-SW 캐시 추정).
+- [✅ 원인 규명 2026-06-12] /daily 404 = 코드·라우트·DailyPage·vercel rewrite 전부 정상(시크릿 창 정상 렌더 확인). 원인은 PWA SW 수동 갱신 구조: registerType "prompt" + skipWaiting/clientsClaim 미설정 → 새 SW가 waiting에 멈춤. UpdateBanner 클릭 또는 전체 탭 재오픈 전까지 구 SW가 구 번들 서빙 → /daily 라우트 없는 구 코드가 NotFound. 영향 = /daily 추가 이전 방문한 미갱신 기존 사용자 한정(신규·갱신 사용자 정상). 자연 갱신으로 풀리는 자가치유 문제 → 즉시 수정 안 함. 재발 잦아지면 NotFound 마운트 시 waiting SW 1회 updateSW(true) 자동 갱신 도입 재결정(게임 화면 아니라 sync 안전). autoUpdate 전면 전환은 게임 중 reload로 카운트다운 sync 파손 리스크라 보류.
 - [deferred] 등급·상위% 카드 재도입(Phase 3 데이터 + 모수 후).
 - [deferred] 난이도 재밸런스(25문제 중 덧줄+조표 15 하드 편중 → 초심자 진입 약화 가능).
 - [optional] 데스크톱 SNS 공유(X 인텐트 URL / 카톡 Kakao SDK).
