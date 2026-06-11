@@ -16,9 +16,9 @@ import type {
 
 export type CardLocale = "ko" | "en";
 
-// ── 캔버스 (인스타 4:5) ────────────────────────────────────
+// ── 캔버스 — 인스타 친화 폭(1080), 콘텐츠(범례 포함)에 맞춰 세로 1500 ───
 const CARD_W = 1080;
-const CARD_H = 1350;
+const CARD_H = 1500;
 
 // ── 디자인 토큰 (src/index.css :root HSL → hex 환산) ───────
 // --background 48 50% 96% / body { background-color: #faf8f0 }
@@ -158,13 +158,13 @@ export async function renderDailyCard(
     ? `🎼 데일리 챌린지 #${dailyNo}`
     : `🎼 Daily challenge #${dailyNo}`;
   ctx.fillText(titleText, CARD_W / 2, y);
-  y += 56;
+  y += 70;
 
-  // 날짜
-  ctx.fillStyle = MUTED;
-  ctx.font = font(26, 400);
-  ctx.fillText(dateLine, CARD_W / 2, y);
-  y += 90;
+  // 날짜 — 강조(키움 + FG 색, 📅 prefix). 회색 작은 글씨 톤 탈피.
+  ctx.fillStyle = FG;
+  ctx.font = font(36, 600);
+  ctx.fillText(`📅 ${dateLine}`, CARD_W / 2, y);
+  y += 80;
 
   // ── 점수 + 단위 ──────────────────────────────────────────
   const scoreText = result.score.toLocaleString();
@@ -200,17 +200,18 @@ export async function renderDailyCard(
   ctx.fillText(correctText, CARD_W / 2, y);
   y += 70;
 
-  // ── 5×5 그리드 ───────────────────────────────────────────
+  // ── 5×5 그리드 — 정사각 셀, 중앙 정렬, 좌우 여백 충분 ───
   const matrix = buildMatrix(result.results);
-  const LABEL_W = 60;
-  const LABEL_GAP = 24;
-  const GRID_X = PAD_X;
+  const LABEL_W = 50;
+  const LABEL_GAP = 20;
+  const CELL_W = 72;
+  const CELL_H = 72;
+  const CELL_GAP = 12;
+  const ROW_GAP = 12;
+  const GRID_TOTAL_W =
+    LABEL_W + LABEL_GAP + CELL_W * NOTES_PER_TURN + CELL_GAP * (NOTES_PER_TURN - 1);
+  const GRID_X = (CARD_W - GRID_TOTAL_W) / 2;
   const CELLS_AREA_X = GRID_X + LABEL_W + LABEL_GAP;
-  const CELLS_AREA_W = CARD_W - PAD_X * 2 - LABEL_W - LABEL_GAP;
-  const CELL_GAP = 16;
-  const CELL_W = (CELLS_AREA_W - CELL_GAP * (NOTES_PER_TURN - 1)) / NOTES_PER_TURN;
-  const CELL_H = 70;
-  const ROW_GAP = 16;
 
   for (let t = 0; t < TOTAL_TURNS; t++) {
     const rowY = y + t * (CELL_H + ROW_GAP);
@@ -227,7 +228,7 @@ export async function renderDailyCard(
       ctx.fill();
     }
   }
-  y += TOTAL_TURNS * CELL_H + (TOTAL_TURNS - 1) * ROW_GAP + 80;
+  y += TOTAL_TURNS * CELL_H + (TOTAL_TURNS - 1) * ROW_GAP + 70;
 
   // ── 3-stat (🔥 best / 🎯 turns / ❤️ lives) ──────────────
   const statW = (CARD_W - PAD_X * 2) / 3;
@@ -272,12 +273,62 @@ export async function renderDailyCard(
       ? `생명 소진으로 중간 종료 · ${total - result.reached}문제 미도달`
       : `Ended early · ${total - result.reached} not reached`;
     ctx.fillText(msg, CARD_W / 2, y);
+    y += 30;
   }
+  y += 20;
 
-  // ── 하단 브랜딩 (URL 호스트만) ──────────────────────────
-  const url = buildShareUrl().replace(/^https?:\/\//, "");
+  // ── 색 범례 — 셀 색 의미. status 의미는 dailyTypes.ts 기준 ─
+  //   correct_fast(green) = 빠른 정답 / Quick
+  //   correct_slow(amber) = 느린 정답 / Slow
+  //   wrong+timeout(red)  = 오답·시간초과 / Miss
+  //   unreached(gray)     = 생명 소진 미도달 / Skip
+  const legend: Array<{ color: string; label: string }> = isKo
+    ? [
+        { color: CELL.correct_fast, label: "빠름" },
+        { color: CELL.correct_slow, label: "느림" },
+        { color: CELL.wrong, label: "오답" },
+        { color: CELL.unreached, label: "미도달" },
+      ]
+    : [
+        { color: CELL.correct_fast, label: "Quick" },
+        { color: CELL.correct_slow, label: "Slow" },
+        { color: CELL.wrong, label: "Miss" },
+        { color: CELL.unreached, label: "Skip" },
+      ];
+
+  const LEGEND_CHIP = 30;
+  const LEGEND_CHIP_GAP = 12;
+  const LEGEND_FONT_SIZE = 24;
+  const LEGEND_SLOT_W = (CARD_W - PAD_X * 2) / legend.length;
+
+  ctx.font = font(LEGEND_FONT_SIZE, 600);
+  ctx.textBaseline = "middle";
+  for (let i = 0; i < legend.length; i++) {
+    const slotCenterX = PAD_X + LEGEND_SLOT_W * i + LEGEND_SLOT_W / 2;
+    const labelW = ctx.measureText(legend[i].label).width;
+    const groupW = LEGEND_CHIP + LEGEND_CHIP_GAP + labelW;
+    const groupX = slotCenterX - groupW / 2;
+    const rowCenterY = y + LEGEND_CHIP / 2;
+
+    ctx.fillStyle = legend[i].color;
+    roundRect(ctx, groupX, y, LEGEND_CHIP, LEGEND_CHIP, 8);
+    ctx.fill();
+
+    ctx.fillStyle = FG;
+    ctx.textAlign = "left";
+    ctx.fillText(
+      legend[i].label,
+      groupX + LEGEND_CHIP + LEGEND_CHIP_GAP,
+      rowCenterY,
+    );
+  }
+  ctx.textBaseline = "alphabetic";
+  y += LEGEND_CHIP + 60;
+
+  // ── 하단 브랜딩 — 전체 URL ──────────────────────────────
+  const url = buildShareUrl();
   ctx.fillStyle = MUTED;
-  ctx.font = font(24, 600);
+  ctx.font = font(26, 600);
   ctx.textAlign = "center";
   ctx.fillText(url, CARD_W / 2, CARD_H - 80);
 
