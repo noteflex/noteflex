@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import Index from "./pages/Index.tsx";
 import PlayPage from "./pages/PlayPage.tsx";
+import DailyPage from "./daily/DailyPage.tsx";
 import Dashboard from "./pages/Dashboard.tsx";
 import DailyAnalyticsPage from "./components/analytics/DailyAnalyticsPage.tsx";
 import WeeklyAnalyticsPage from "./components/analytics/WeeklyAnalyticsPage.tsx";
@@ -127,6 +128,14 @@ const App = () => (
                 element={
                   <ComingSoonGate>
                     <PlayPage />
+                  </ComingSoonGate>
+                }
+              />
+              <Route
+                path="/daily"
+                element={
+                  <ComingSoonGate>
+                    <DailyPage />
                   </ComingSoonGate>
                 }
               />

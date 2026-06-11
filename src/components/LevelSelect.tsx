@@ -1,6 +1,7 @@
 import { memo, useCallback, useMemo, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { useT } from "@/contexts/LanguageContext";
+import { useLang, useT } from "@/contexts/LanguageContext";
 import { useLevelProgress } from "@/hooks/useLevelProgress";
 import { useDailyLimit } from "@/hooks/useDailyLimit";
 import { getUserTier } from "@/lib/subscriptionTier";
@@ -52,6 +53,8 @@ export default function LevelSelect({
 }: LevelSelectProps) {
   const { user, profile } = useAuth();
   const t = useT();
+  const { lang } = useLang();
+  const navigate = useNavigate();
   const { progress, loading, getProgressFor } = useLevelProgress();
   const dailyLimit = useDailyLimit();
   const tier = getUserTier(user ?? null, profile ?? null);
@@ -233,6 +236,27 @@ export default function LevelSelect({
           sublevel={currentSublevel.sublevel}
         />
       )}
+
+      {/* 데일리 챌린지 진입 카드 — clear 조건표 바로 아래, 레벨 그룹 위 */}
+      <button
+        type="button"
+        onClick={() => navigate("/daily")}
+        aria-label="daily-challenge-enter"
+        className="w-full rounded-2xl border border-amber-300 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30 dark:border-amber-700 p-4 shadow-sm hover:shadow-md hover:border-amber-400 active:scale-[0.98] transition-all flex items-center gap-3 text-left"
+      >
+        <span className="text-2xl" aria-hidden="true">📅</span>
+        <div className="flex-1 min-w-0">
+          <div className="text-sm font-bold text-amber-800 dark:text-amber-200">
+            {lang === "ko" ? "오늘의 챌린지" : "Today's challenge"}
+          </div>
+          <div className="text-[11px] text-amber-700/80 dark:text-amber-300/80">
+            {lang === "ko" ? "단 한 번뿐인 오늘의 도전" : "Your one shot, today only"}
+          </div>
+        </div>
+        <span className="text-amber-700 dark:text-amber-300 text-sm font-semibold">
+          {lang === "ko" ? "시작하기 →" : "Start →"}
+        </span>
+      </button>
 
       {/* 레벨 그룹 */}
       <div className="flex flex-col gap-3 w-full">
