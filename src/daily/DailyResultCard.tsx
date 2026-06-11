@@ -11,6 +11,7 @@ import {
   buildShareText,
   buildShareTitle,
 } from "./dailyShare";
+import { renderDailyCard } from "./dailyCardImage";
 import type { DailyFinalResult, DailyResultStatus } from "./dailyTypes";
 
 // ── 셀 색 (CELL_BG/CELL_RING) — 기존 그대로, 손대지 않음 ──────
@@ -96,49 +97,90 @@ export function DailyResultCard({ result, onExit }: Props) {
     window.setTimeout(() => setToast(null), 2000);
   }, []);
 
-  // ── 공유 핸들러 — 로직 0 변경 ─────────────────────────────────
+  // ── 공유 중 상태 (버튼 중복 클릭 방지) ─────────────────────────
+  const [isSharing, setIsSharing] = useState(false);
+
+  // ── 공유 핸들러 ────────────────────────────────────────────────
+  // 우선순위:
+  //   1) canvas로 카드 PNG 생성 → navigator.share({ files })
+  //   2) navigator.share({ text }) — 기존 텍스트 경로
+  //   3) clipboard.writeText / execCommand("copy") 폴백
+  // AbortError(사용자 취소)는 어느 단계든 조용히 종료. 그 외 실패는 다음 단계로 폴백.
   const handleShare = useCallback(async () => {
-    const text = buildShareText(result, locale);
-    const title = buildShareTitle(locale);
+    if (isSharing) return;
+    setIsSharing(true);
+    try {
+      const title = buildShareTitle(locale);
 
-    const canShare =
-      typeof navigator !== "undefined" &&
-      typeof navigator.share === "function";
-
-    if (canShare) {
+      // 1) 이미지 공유 시도
       try {
-        await navigator.share({ title, text });
-        return;
-      } catch (err) {
-        const name = (err as Error)?.name;
-        if (name === "AbortError") return;
+        const blob = await renderDailyCard(result, locale);
+        const file = new File(
+          [blob],
+          `noteflex-daily-${dailyNo}.png`,
+          { type: "image/png" },
+        );
+        if (
+          typeof navigator !== "undefined" &&
+          typeof navigator.share === "function" &&
+          typeof navigator.canShare === "function" &&
+          navigator.canShare({ files: [file] })
+        ) {
+          try {
+            await navigator.share({ files: [file], title });
+            return;
+          } catch (err) {
+            if ((err as Error)?.name === "AbortError") return;
+            // share 실패 → 텍스트 경로로 폴백
+          }
+        }
+      } catch {
+        // 이미지 생성 실패 → 텍스트 경로로 폴백
       }
-    }
 
-    try {
-      if (navigator.clipboard?.writeText) {
-        await navigator.clipboard.writeText(text);
+      // 2) 텍스트 공유 (기존 경로)
+      const text = buildShareText(result, locale);
+      const canShareText =
+        typeof navigator !== "undefined" &&
+        typeof navigator.share === "function";
+
+      if (canShareText) {
+        try {
+          await navigator.share({ title, text });
+          return;
+        } catch (err) {
+          if ((err as Error)?.name === "AbortError") return;
+        }
+      }
+
+      // 3) 클립보드 폴백
+      try {
+        if (navigator.clipboard?.writeText) {
+          await navigator.clipboard.writeText(text);
+          showToast(isKo ? "복사됐어요" : "Copied to clipboard");
+          return;
+        }
+      } catch {
+        /* fallthrough */
+      }
+
+      try {
+        const ta = document.createElement("textarea");
+        ta.value = text;
+        ta.style.position = "fixed";
+        ta.style.opacity = "0";
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand("copy");
+        document.body.removeChild(ta);
         showToast(isKo ? "복사됐어요" : "Copied to clipboard");
-        return;
+      } catch {
+        showToast(isKo ? "공유 실패" : "Share failed");
       }
-    } catch {
-      /* fallthrough */
+    } finally {
+      setIsSharing(false);
     }
-
-    try {
-      const ta = document.createElement("textarea");
-      ta.value = text;
-      ta.style.position = "fixed";
-      ta.style.opacity = "0";
-      document.body.appendChild(ta);
-      ta.select();
-      document.execCommand("copy");
-      document.body.removeChild(ta);
-      showToast(isKo ? "복사됐어요" : "Copied to clipboard");
-    } catch {
-      showToast(isKo ? "공유 실패" : "Share failed");
-    }
-  }, [isKo, locale, result, showToast]);
+  }, [isSharing, isKo, locale, result, dailyNo, showToast]);
 
   return (
     <div className="flex flex-col items-center gap-5 w-full max-w-xs mx-auto animate-fade-up py-6 px-4">
@@ -216,11 +258,14 @@ export function DailyResultCard({ result, onExit }: Props) {
       <div className="flex gap-3 w-full mt-1">
         <button
           onClick={handleShare}
-          className="flex-1 px-4 py-2.5 rounded-xl bg-primary text-primary-foreground font-semibold text-sm shadow-lg hover:shadow-xl active:scale-95 transition-all flex items-center justify-center gap-2"
+          disabled={isSharing}
+          className="flex-1 px-4 py-2.5 rounded-xl bg-primary text-primary-foreground font-semibold text-sm shadow-lg hover:shadow-xl active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed disabled:active:scale-100"
           aria-label="share-daily-result"
         >
           <ShareIcon />
-          {isKo ? "공유하기" : "Share"}
+          {isSharing
+            ? isKo ? "준비 중..." : "Preparing..."
+            : isKo ? "공유하기" : "Share"}
         </button>
         <button
           onClick={onExit}
