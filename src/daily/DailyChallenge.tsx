@@ -86,13 +86,6 @@ export function DailyChallenge({ onExit, onFinish }: DailyChallengeProps) {
 
   const questionStartRef = useRef<number>(0);
 
-  // 타임아웃 effect 중복 발화 방지. recordResultAndAdvance가 같은 commit에서
-  // 문제 전환 effect(setTimerMs 5000 복구)와 타임아웃 effect(timerMs 0 stale closure)를
-  // 동시에 트리거할 때, 타임아웃이 두 번 처리돼 1회 타임아웃이 오답 2건/2칸 advance로
-  // 누적되는 버그가 있었음. 현재 currentQuestion.index에 대해 처리 완료를 ref로 잠가
-  // 다음 문제로 currentQuestion이 바뀌어야 다시 발화 가능.
-  const timeoutHandledForRef = useRef<number>(-1);
-
   const currentBatch = turns[turnIdx] ?? [];
   const currentQuestion: DailyQuestion | null =
     phase === "playing" && currentBatch[indexInBatch]
@@ -297,11 +290,17 @@ export function DailyChallenge({ onExit, onFinish }: DailyChallengeProps) {
   );
 
   // ── 타이머 만료 ───────────────────────────────────────────────
+  // 중복 발화 방지 메커니즘:
+  //   본문 진입 즉시 setTimerMs(5000)을 호출해 다음 commit의 timerMs를 0이 아닌 값으로 만든다.
+  //   recordResultAndAdvance의 setResults/setTurnIdx/setIndexInBatch와 같은 batch에 묶이므로,
+  //   advance 반영 commit에서 timeout effect가 deps 변경(currentQuestion·recordResultAndAdvance)
+  //   으로 재실행될 때 closure의 timerMs는 5000 → `timerMs > 0` 가드에서 즉시 return.
+  //   문제 전환 effect도 같은 5000 값을 setTimerMs하므로 중복은 무해.
+  //   (이전 99e9354의 index 기반 ref 가드는 advance 후 currentQuestion.index가 바뀌어 무력화됨.)
   useEffect(() => {
     if (phase !== "playing" || !currentQuestion) return;
     if (timerMs > 0) return;
-    if (timeoutHandledForRef.current === currentQuestion.index) return;
-    timeoutHandledForRef.current = currentQuestion.index;
+    setTimerMs(DAILY_TIMER_SECONDS * 1000);
     playWrong();
     fireGlow("incorrect");
     recordResultAndAdvance(
