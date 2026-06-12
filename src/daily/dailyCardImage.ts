@@ -135,7 +135,6 @@ export async function renderDailyCard(
   ctx.textBaseline = "alphabetic";
 
   const isKo = locale === "ko";
-  const dailyNo = dailyNumberFromDateKey(result.dateKey);
   const dateLine = formatDateLine(result.dateKey, locale);
   const total = TOTAL_TURNS * NOTES_PER_TURN;
   const turnsPlayed = Math.min(
@@ -155,8 +154,8 @@ export async function renderDailyCard(
   ctx.font = font(44, 600);
   ctx.textAlign = "center";
   const titleText = isKo
-    ? `🎼 데일리 챌린지 #${dailyNo}`
-    : `🎼 Daily challenge #${dailyNo}`;
+    ? `🎼 데일리 챌린지`
+    : `🎼 Daily challenge`;
   ctx.fillText(titleText, CARD_W / 2, y);
   y += 70;
 

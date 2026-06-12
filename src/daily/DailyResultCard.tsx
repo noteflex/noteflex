@@ -110,7 +110,7 @@ export function DailyResultCard({ result, onExit }: Props) {
     if (isSharing) return;
     setIsSharing(true);
     try {
-      const title = buildShareTitle(locale);
+      const title = buildShareTitle(result, locale);
 
       // 1) 이미지 공유 시도
       try {
@@ -187,7 +187,7 @@ export function DailyResultCard({ result, onExit }: Props) {
       {/* ── 타이틀 + 날짜 강조 (📅 prefix, FG 색, 키움) — 공유 이미지와 정합 ── */}
       <div className="flex flex-col items-center gap-1.5">
         <h2 className="text-[16px] font-medium text-foreground text-center leading-tight">
-          🎼 {isKo ? "데일리 챌린지" : "Daily challenge"} #{dailyNo}
+          🎼 {isKo ? "데일리 챌린지" : "Daily challenge"}
         </h2>
         <span className="text-[14px] font-semibold text-foreground">
           📅 {dateLine}

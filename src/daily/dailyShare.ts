@@ -1,15 +1,13 @@
-// Daily Challenge — 공유 텍스트(캡션) 빌더.
-// 이미지 카드(dailyCardImage)가 시각 결과를 담당 → 캡션은 사람이 SNS에 그대로
-// 올리기 좋은 짧은 멘트만. 5×5 이모지 그리드는 카드 이미지가 대체.
+// Daily Challenge — 공유 페이로드(title·캡션) 빌더.
 //
+// navigator.share 받는 앱마다 처리가 다름:
+//   - title-only 채널(카톡 등): buildShareTitle 한 줄만 노출.
+//   - text 채널(X·문자 등): buildShareText 캡션 본문 노출.
+//   - 이미지 채널(인스타 등): 이미지 카드(dailyCardImage)가 시각 결과 담당.
+// 양쪽 다 의미있게 보이도록 title도 한 줄짜리 멋진 헤더로 작성.
+//
+// 사용자 노출 표면(title·캡션·카드 헤더)에 데일리 일련번호(#N) 노출하지 않음.
 // 스포일러프리 유지: 음표·정답·키 노출 X. 점수·정답 수는 결과 메타 → 허용.
-//
-// 출력 구성:
-//   "🎼 오늘의 Noteflex 데일리 챌린지 #N 클리어!" 헤더
-//   "📅 날짜"
-//   "점수 N점 · 정답 n/총"
-//   빈 줄
-//   훈련 멘트 + 사이트 URL (https://noteflex.app)
 
 import type {
   DailyFinalResult,
@@ -71,6 +69,13 @@ function formatDateHeader(dateKey: string, locale: ShareLocale): string {
   return `${EN_MONTHS[month - 1] ?? ""} ${day}, ${year}`;
 }
 
+/** 짧은 날짜 (월·일만). title·캡션처럼 가독성 우선 채널용. */
+function formatDateShort(dateKey: string, locale: ShareLocale): string {
+  const { month, day } = parseDateKey(dateKey);
+  if (locale === "ko") return `${month}월 ${day}일`;
+  return `${EN_MONTHS[month - 1] ?? ""} ${day}`;
+}
+
 /** 공유에 노출할 사이트 URL. SNS 친화 형태로 루트만 노출(추적 파라미터 X). */
 export function buildShareUrl(): string {
   return "https://noteflex.app";
@@ -90,45 +95,46 @@ function dailyNumberFromDateKey(dateKey: string): number {
 }
 
 /**
- * 공유 캡션 빌드. 이미지 카드와 짝 — 사람이 SNS에 그대로 올릴 수 있는 멘트.
- * 스포일러프리: 음표·정답·키 노출 X. 점수·정답 수는 결과 메타로 허용.
+ * 공유 캡션 — text 채널(X·문자 등). 멋진 완성형 한 덩어리.
  *
  * 예시 (ko):
- *   🎼 오늘의 Noteflex 데일리 챌린지 #12 클리어!
- *   📅 2026년 6월 12일
- *   점수 850점 · 정답 22/25
- *
+ *   🎼 오늘의 Noteflex 데일리 챌린지
+ *   📅 6월 13일 · 3,830점 (정답 24/25)
  *   악보를 음악으로 읽는 훈련, 당신도 도전해보세요 👉 https://noteflex.app
  */
 export function buildShareText(
   result: DailyFinalResult,
   locale: ShareLocale,
 ): string {
-  const date = formatDateHeader(result.dateKey, locale);
-  const dailyNo = dailyNumberFromDateKey(result.dateKey);
+  const date = formatDateShort(result.dateKey, locale);
   const url = buildShareUrl();
   const total = TOTAL_TURNS * NOTES_PER_TURN;
+  const score = result.score.toLocaleString();
 
   if (locale === "ko") {
     return [
-      `🎼 오늘의 Noteflex 데일리 챌린지 #${dailyNo} 클리어!`,
-      `📅 ${date}`,
-      `점수 ${result.score}점 · 정답 ${result.correct}/${total}`,
-      "",
+      `🎼 오늘의 Noteflex 데일리 챌린지`,
+      `📅 ${date} · ${score}점 (정답 ${result.correct}/${total})`,
       `악보를 음악으로 읽는 훈련, 당신도 도전해보세요 👉 ${url}`,
     ].join("\n");
   }
 
   return [
-    `🎼 Cleared today's Noteflex Daily Challenge #${dailyNo}!`,
-    `📅 ${date}`,
-    `Score ${result.score} pts · Correct ${result.correct}/${total}`,
-    "",
+    `🎼 Today's Noteflex Daily Challenge`,
+    `📅 ${date} · ${score} pts (${result.correct}/${total} correct)`,
     `Train to read music fluently — try it 👉 ${url}`,
   ].join("\n");
 }
 
-/** Web Share sheet 제목 (text는 별도 인자). */
-export function buildShareTitle(locale: ShareLocale): string {
-  return locale === "ko" ? "Noteflex 데일리" : "Noteflex Daily";
+/**
+ * 공유 제목 — title-only 채널(카톡 등) 한 줄.
+ * 짧은 날짜 + #번호 없음. 카톡 메시지로 자연스러운 길이.
+ */
+export function buildShareTitle(
+  result: DailyFinalResult,
+  locale: ShareLocale,
+): string {
+  const date = formatDateShort(result.dateKey, locale);
+  if (locale === "ko") return `🎼 오늘의 Noteflex 데일리 챌린지 · ${date}`;
+  return `🎼 Today's Noteflex Daily · ${date}`;
 }
