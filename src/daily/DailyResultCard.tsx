@@ -184,13 +184,13 @@ export function DailyResultCard({ result, onExit }: Props) {
 
   return (
     <div className="flex flex-col items-center gap-5 w-full max-w-xs mx-auto animate-fade-up py-6 px-4">
-      {/* ── 타이틀 ── */}
-      <div className="flex flex-col items-center gap-1">
+      {/* ── 타이틀 + 날짜 강조 (📅 prefix, FG 색, 키움) — 공유 이미지와 정합 ── */}
+      <div className="flex flex-col items-center gap-1.5">
         <h2 className="text-[16px] font-medium text-foreground text-center leading-tight">
           🎼 {isKo ? "데일리 챌린지" : "Daily challenge"} #{dailyNo}
         </h2>
-        <span className="text-[12px] text-muted-foreground">
-          {dateLine}
+        <span className="text-[14px] font-semibold text-foreground">
+          📅 {dateLine}
         </span>
       </div>
 
@@ -254,6 +254,9 @@ export function DailyResultCard({ result, onExit }: Props) {
         </p>
       )}
 
+      {/* ── 색 범례 — 그리드 셀 색 의미. 공유 이미지(canvas) 범례와 라벨·색 1:1 ── */}
+      <ColorLegend isKo={isKo} />
+
       {/* ── 액션 버튼 ── */}
       <div className="flex gap-3 w-full mt-1">
         <button
@@ -286,6 +289,47 @@ export function DailyResultCard({ result, onExit }: Props) {
           {toast}
         </div>
       )}
+    </div>
+  );
+}
+
+// ── 색 범례 — 셀 색 의미 ───────────────────────────────────────
+// status 의미는 dailyTypes.ts 기준:
+//   correct_fast(emerald) = 빠른 정답
+//   correct_slow(amber)   = 느린 정답
+//   wrong+timeout(red)    = 오답·시간초과
+//   unreached(gray)       = 생명 소진 미도달
+// 라벨은 공유 이미지(dailyCardImage) 범례와 1:1.
+function ColorLegend({ isKo }: { isKo: boolean }) {
+  const items: Array<{ chip: string; label: string }> = isKo
+    ? [
+        { chip: "bg-emerald-500", label: "빠름" },
+        { chip: "bg-amber-400", label: "느림" },
+        { chip: "bg-red-500", label: "오답" },
+        { chip: "bg-gray-300 dark:bg-gray-600", label: "미도달" },
+      ]
+    : [
+        { chip: "bg-emerald-500", label: "Quick" },
+        { chip: "bg-amber-400", label: "Slow" },
+        { chip: "bg-red-500", label: "Miss" },
+        { chip: "bg-gray-300 dark:bg-gray-600", label: "Skip" },
+      ];
+  return (
+    <div className="grid grid-cols-4 gap-2 w-full">
+      {items.map((it, i) => (
+        <div
+          key={i}
+          className="flex items-center justify-center gap-1.5"
+        >
+          <span
+            aria-hidden="true"
+            className={`inline-block w-3.5 h-3.5 rounded ${it.chip}`}
+          />
+          <span className="text-[12px] font-semibold text-foreground">
+            {it.label}
+          </span>
+        </div>
+      ))}
     </div>
   );
 }

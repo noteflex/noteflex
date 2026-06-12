@@ -86,6 +86,13 @@ export function DailyChallenge({ onExit, onFinish }: DailyChallengeProps) {
 
   const questionStartRef = useRef<number>(0);
 
+  // 타임아웃 effect 중복 발화 방지. recordResultAndAdvance가 같은 commit에서
+  // 문제 전환 effect(setTimerMs 5000 복구)와 타임아웃 effect(timerMs 0 stale closure)를
+  // 동시에 트리거할 때, 타임아웃이 두 번 처리돼 1회 타임아웃이 오답 2건/2칸 advance로
+  // 누적되는 버그가 있었음. 현재 currentQuestion.index에 대해 처리 완료를 ref로 잠가
+  // 다음 문제로 currentQuestion이 바뀌어야 다시 발화 가능.
+  const timeoutHandledForRef = useRef<number>(-1);
+
   const currentBatch = turns[turnIdx] ?? [];
   const currentQuestion: DailyQuestion | null =
     phase === "playing" && currentBatch[indexInBatch]
@@ -293,6 +300,8 @@ export function DailyChallenge({ onExit, onFinish }: DailyChallengeProps) {
   useEffect(() => {
     if (phase !== "playing" || !currentQuestion) return;
     if (timerMs > 0) return;
+    if (timeoutHandledForRef.current === currentQuestion.index) return;
+    timeoutHandledForRef.current = currentQuestion.index;
     playWrong();
     fireGlow("incorrect");
     recordResultAndAdvance(
