@@ -420,21 +420,22 @@ export function useSessionRecorder() {
             duration_seconds: durationSeconds,
           });
 
-          // ── 스트릭 갱신 (부가, 실패해도 게임 흐름 무영향) ─────────
-          // 사용자 로컬 자정 기준 날짜를 서버로 전달. record_practice_day는
-          // 동일 날짜 재호출 시 no-op이므로 멱등.
+          // ── 스트릭 갱신 (부가, fire-and-forget) ─────────────────
+          // RPC 네트워크 지연이 결과 표시·다음 화면 전환을 늦추지 않도록 비블락.
+          // DailyChallenge.finalizeIfNeeded와 동일 패턴. 실패해도 게임 흐름 무영향.
+          // record_practice_day는 동일 날짜 재호출 시 no-op이라 멱등.
           const localDate = getLocalDateKey();
-          const { error: streakErr } = await supabase.rpc(
-            "record_practice_day",
-            { p_local_date: localDate },
-          );
-          if (streakErr) {
-            logger.warn("record_practice_day RPC 실패 (스트릭 미갱신)", {
-              cause: streakErr.message,
-              user_id: user.id,
-              local_date: localDate,
+          void supabase
+            .rpc("record_practice_day", { p_local_date: localDate })
+            .then(({ error: streakErr }) => {
+              if (streakErr) {
+                logger.warn("record_practice_day RPC 실패 (일반 게임)", {
+                  cause: streakErr.message,
+                  user_id: user.id,
+                  local_date: localDate,
+                });
+              }
             });
-          }
         }
 
         stateRef.current = null;
