@@ -22,6 +22,7 @@ import { useRef, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { getUserEnvOffset, clampReactionMs } from "@/lib/userEnvironmentOffset";
+import { getLocalDateKey } from "@/lib/localDate";
 import { logger } from "@/lib/sentry";
 
 // ═══════════════════════════════════════════════════════════════
@@ -418,6 +419,22 @@ export function useSessionRecorder() {
             session_type: state.sessionType ?? "regular",
             duration_seconds: durationSeconds,
           });
+
+          // ── 스트릭 갱신 (부가, 실패해도 게임 흐름 무영향) ─────────
+          // 사용자 로컬 자정 기준 날짜를 서버로 전달. record_practice_day는
+          // 동일 날짜 재호출 시 no-op이므로 멱등.
+          const localDate = getLocalDateKey();
+          const { error: streakErr } = await supabase.rpc(
+            "record_practice_day",
+            { p_local_date: localDate },
+          );
+          if (streakErr) {
+            logger.warn("record_practice_day RPC 실패 (스트릭 미갱신)", {
+              cause: streakErr.message,
+              user_id: user.id,
+              local_date: localDate,
+            });
+          }
         }
 
         stateRef.current = null;

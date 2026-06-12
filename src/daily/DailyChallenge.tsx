@@ -7,7 +7,10 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { LogOut } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLang } from "@/contexts/LanguageContext";
+import { supabase } from "@/integrations/supabase/client";
 import { playNote, playWrong, ensureAudioReady } from "@/lib/sound";
+import { getLocalDateKey } from "@/lib/localDate";
+import { logger } from "@/lib/sentry";
 import { DailyStaff, type DailyBatchNote } from "./DailyStaff";
 import { DailyButtons } from "./DailyButtons";
 import { DailyEdgeGlow } from "./DailyEdgeGlow";
@@ -52,7 +55,8 @@ export function DailyChallenge({ onExit, onFinish }: DailyChallengeProps) {
 
   // admin 테스트 모드 — 생명 소진 우회로 25문제 끝까지 진행. 점수·결과 로직은 그대로.
   // 비admin·프로덕션엔 활성화되지 않음 (profile.role === "admin" 게이트).
-  const { profile } = useAuth();
+  // user는 스트릭 갱신 RPC 호출 가드용.
+  const { profile, user } = useAuth();
   const isTestMode = profile?.role === "admin";
 
   // i18n — 인게임 카피만 분기 (게임 로직 0 영향).
@@ -211,9 +215,28 @@ export function DailyChallenge({ onExit, onFinish }: DailyChallengeProps) {
       setFinalResult(result);
       setPhase("ended");
       onFinish?.(result);
+
+      // ── 스트릭 갱신 (부가, fire-and-forget) ──────────────────────
+      // 데일리는 user_sessions에 기록 안 함(분석 격리). 스트릭만 별도 RPC로 +1.
+      // 비로그인은 RPC가 auth.uid() 체크 후 no-op. user 가드는 무의미 호출 절약 목적.
+      if (user) {
+        const localDate = getLocalDateKey();
+        void supabase
+          .rpc("record_practice_day", { p_local_date: localDate })
+          .then(({ error }) => {
+            if (error) {
+              logger.warn("record_practice_day RPC 실패 (데일리)", {
+                cause: error.message,
+                user_id: user.id,
+                local_date: localDate,
+              });
+            }
+          });
+      }
+
       return true;
     },
-    [allQuestions, dateKey, onFinish],
+    [allQuestions, dateKey, onFinish, user],
   );
 
   // ── 정답/오답/타임아웃 공통: 한 문제 결과를 적용하고 다음 위치로 ──
