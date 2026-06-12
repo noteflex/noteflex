@@ -1,6 +1,7 @@
 # Blog Image Policy (D+A Unified)
 
 > 2026-05-15 정합 적용됨 — 메모리 #13 갱신 완료.
+> **2026-06-13 갱신**: 검수 0 전제 정책 재설계로 학술 인용 전면 금지 → `## References` / `## 참고 문헌` 섹션 작성 안 함. 본 문서 내 References 관련 구문은 폐기. 본문 끝 H2 마커는 `## 이미지 출처`(ko)/`## Image Sources`(en) 2종만 사용 — BlogPostCTA 자동 삽입 앵커.
 
 ## Two Classes
 
@@ -25,19 +26,19 @@
   - `coverImageLicense` — Public Domain · CC0 · CC BY · CC BY-SA · CC BY 3.0 등
   - `coverImageCredit` — creator + repository
 - All URLs HTTP 200 verified before commit
-- Image Sources section separated from References (academic citations)
 - First body image (if present) NOT in Hook section (Scene/Insight only)
 - KO and EN siblings carry identical cover/body image set
 
 ## Section Conventions
 
-```markdown
-## 참고 자료 / ## References
-(academic citations only — Hallam 1997, Cepeda 2006, etc.)
+학술 인용 전면 금지(2026-06-13 정책 재설계)로 `## References` / `## 참고 문헌` 섹션은 작성하지 않는다. 본문 끝 H2는 이미지 출처 1종만.
 
+```markdown
 ## 이미지 출처 / ## Image Sources
 (image credit entries — 1 entry for PRACTICAL_GUIDE, 1–2 for HISTORY_THEORY)
 ```
+
+`BlogPostCTA`는 이 H2 위치를 splitter 앵커로 사용한다. H2가 없으면 CTA가 글 맨 끝으로 떨어지는 회귀 → 누락 금지.
 
 ## Forbidden Sources
 
