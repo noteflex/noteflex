@@ -179,10 +179,10 @@ describe("LevelSelect - Guest 구독 게이트", () => {
 });
 
 // ─────────────────────────────────────────────────────────
-describe("LevelSelect - Free 구독 게이트", () => {
+describe("LevelSelect - Free 구독 게이트 (2026-06-13: Lv1~2 전체 + Lv3 Sub1)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    // Free user with Lv 1-1 passed → Lv 1-2 available
+    // Free user with Lv 1-1 passed → Lv 1-2 unlock (free는 Lv1~2 전체 + Lv3 Sub1 접근)
     const progress = [makeProgress({ level: 1, sublevel: 1, passed: true, play_count: 5 })];
     mockUseAuth.mockReturnValue({
       user: { id: "u1" },
@@ -196,67 +196,69 @@ describe("LevelSelect - Free 구독 게이트", () => {
     expect(screen.getByLabelText("Lv 1-1 Passed (replay available)")).toBeInTheDocument();
   });
 
-  it("Lv 1-2: 구독 잠금 (free → Sub2 Premium 전용)", () => {
+  it("Lv 1-2: 구독 OK + 1-1 통과 후 진입 가능 (새 정책: Sub2도 free)", () => {
     renderLevelSelect();
-    expect(screen.getByLabelText("Lv 1-2 Pro only")).toBeInTheDocument();
+    expect(screen.getByLabelText("Lv 1-2 Select")).toBeInTheDocument();
   });
 
-  it("Lv 1-3: 구독 잠금 (free → Sub3 Premium 전용)", () => {
+  it("Lv 1-3: 구독 OK + 진도 잠금 (1-2 미통과)", () => {
     renderLevelSelect();
-    expect(screen.getByLabelText("Lv 1-3 Pro only")).toBeInTheDocument();
+    expect(screen.getByLabelText("Lv 1-3 Locked")).toBeInTheDocument();
   });
 
-  it("Lv 2-1: 구독 OK + 진도 잠금 (1-1 통과 확인 후 2-1 접근 가능, 진행 X)", () => {
+  it("Lv 2-1: 구독 OK + 진도 잠금 (1-3 미통과, 표준 순차)", () => {
     renderLevelSelect();
-    // Lv 2-1 → free에서 canAccessSublevel=true, getProgressGatePrev("free", 2, 1) = Lv1-1 (passed)
-    // 따라서 선택 가능 (진행 없음 → 'Select' 라벨)
-    expect(screen.getByLabelText("Lv 2-1 Select")).toBeInTheDocument();
+    // getProgressGatePrev("free", 2, 1) = {level:1, sublevel:3} → 1-3 미통과 → 잠금
+    expect(screen.getByLabelText("Lv 2-1 Locked")).toBeInTheDocument();
   });
 
-  it("Lv 3-1: 구독 OK + 진도 잠금 (2-1 미통과)", () => {
+  it("Lv 3-1: 구독 OK + 진도 잠금 (2-3 미통과)", () => {
     renderLevelSelect();
-    // getProgressGatePrev("free", 3, 1) = {level:2, sublevel:1} → 2-1 미통과 → 잠금
+    // getProgressGatePrev("free", 3, 1) = {level:2, sublevel:3} → 2-3 미통과 → 잠금
     expect(screen.getByLabelText("Lv 3-1 Locked")).toBeInTheDocument();
   });
 
-  it("Lv 3-2: 구독 잠금 (free → Sub2 Premium 전용)", () => {
+  it("Lv 3-2: 구독 잠금 (Sub2 부터 Premium 전용)", () => {
     renderLevelSelect();
     expect(screen.getByLabelText("Lv 3-2 Pro only")).toBeInTheDocument();
   });
 
-  it("Lv 5-1: 구독 OK + 진도 잠금 (4-1 미통과)", () => {
+  it("Lv 4-1: 구독 잠금 (Lv4 이상 Premium 전용)", () => {
     renderLevelSelect();
-    // canAccessSublevel("free", 5, 1) = true (5/9 결정: Lv1~5 Sub1 접근 가능)
-    // getProgressGatePrev("free", 5, 1) = {level:4, sublevel:1} → 4-1 미통과 → 잠금
-    expect(screen.getByLabelText("Lv 5-1 Locked")).toBeInTheDocument();
+    expect(screen.getByLabelText("Lv 4-1 Pro only")).toBeInTheDocument();
   });
 
-  it("Lv 6-1: 구독 잠금 (free → Lv6 Premium 전용)", () => {
+  it("Lv 5-1: 구독 잠금 (Lv5 Premium 전용)", () => {
+    renderLevelSelect();
+    expect(screen.getByLabelText("Lv 5-1 Pro only")).toBeInTheDocument();
+  });
+
+  it("Lv 6-1: 구독 잠금 (Lv6 Premium 전용)", () => {
     renderLevelSelect();
     expect(screen.getByLabelText("Lv 6-1 Pro only")).toBeInTheDocument();
   });
 
-  it("Lv 2-1 클릭 → onSelectSublevel(2, 1) 호출 (1-1 통과 후 접근 가능)", async () => {
+  it("Lv 1-2 클릭 → onSelectSublevel(1, 2) 호출 (1-1 통과 후 접근 가능)", async () => {
     const onSelectSublevel = vi.fn();
     renderLevelSelect({ onSelectSublevel });
 
-    await userEvent.click(screen.getByLabelText("Lv 2-1 Select"));
+    await userEvent.click(screen.getByLabelText("Lv 1-2 Select"));
 
-    expect(onSelectSublevel).toHaveBeenCalledWith(2, 1);
+    expect(onSelectSublevel).toHaveBeenCalledWith(1, 2);
   });
 
-  it("Lv 1-2 클릭 → UpgradeModal 열림 (Sub2 구독 잠금)", async () => {
+  it("Lv 3-2 클릭 → UpgradeModal 열림 (Sub2 구독 잠금)", async () => {
     renderLevelSelect();
 
-    await userEvent.click(screen.getByLabelText("Lv 1-2 Pro only"));
+    await userEvent.click(screen.getByLabelText("Lv 3-2 Pro only"));
 
     expect(screen.getByText(/Unlock All Levels with Pro/)).toBeInTheDocument();
   });
 
-  it("Lv 3-2 클릭 → UpgradeModal 열림", async () => {
+  it("Lv 4-1 클릭 → UpgradeModal 열림 (Lv4+ 구독 잠금)", async () => {
     renderLevelSelect();
 
-    await userEvent.click(screen.getByLabelText("Lv 3-2 Pro only"));
+    await userEvent.click(screen.getByLabelText("Lv 4-1 Pro only"));
 
     expect(screen.getByText(/Unlock All Levels with Pro/)).toBeInTheDocument();
   });
@@ -309,8 +311,10 @@ describe("LevelSelect - 진행 중 셀", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     const progress = [
-      // 1-1 passed → getProgressGatePrev("free", 2, 1) = {level:1, sublevel:1} → unlocks 2-1
+      // 새 정책(2026-06-13): 2-1 진입 = 1-3 통과 선행. Lv1 전체 통과 후 2-1 in progress 시나리오.
       makeProgress({ level: 1, sublevel: 1, passed: true, play_count: 10 }),
+      makeProgress({ level: 1, sublevel: 2 as Sublevel, passed: true, play_count: 10 }),
+      makeProgress({ level: 1, sublevel: 3 as Sublevel, passed: true, play_count: 10 }),
       // 2-1 in progress: 2/4 criteria met (play_count=5 ❌, best_streak=3 ❌, accuracy 90% ✅, reaction 미기록 ✅)
       makeProgress({
         level: 2, sublevel: 1 as Sublevel,

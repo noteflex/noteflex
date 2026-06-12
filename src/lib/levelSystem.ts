@@ -22,10 +22,12 @@
  *   - 누적 정답률 ≥ 85%
  *   - sublevel 평균 반응속도 ≤ 타이머 × 35% (기록 없으면 통과 처리)
  *
- * 구독 게이트 (2026-05-09 결정):
+ * 구독 게이트 (2026-06-13 결정):
  *   - guest:  Lv 1-1만 (1단계, 3회/일)
- *   - free:   Lv 1~5 Sub1 순차 (5단계, 7회/일)
+ *   - free:   Lv 1~2 전체(6단계) + Lv 3 Sub1 = 7단계 (7회/일)
  *   - pro:    전체 21단계 순차 (무제한)
+ *
+ * 옛 정책(2026-05-09 ~ 2026-06-12): free = Lv1~5 Sub1만 → 폐기.
  */
 
 // ─────────────────────────────────────────────
@@ -333,8 +335,8 @@ export function canAccessSublevel(
   if (tier === "pro") return true;
   // Guest (미가입): Lv 1-1만 (2026-05-09)
   if (tier === "guest") return level === 1 && sublevel === 1;
-  // Free: Lv 1~5 Sub1만 (2026-05-09)
-  if (tier === "free") return level <= 5 && sublevel === 1;
+  // Free (2026-06-13): Lv 1~2 전체 + Lv 3 Sub1까지. Lv 3 Sub2+ · Lv 4+ 는 Premium.
+  if (tier === "free") return level <= 2 || (level === 3 && sublevel === 1);
   return false;
 }
 
@@ -345,7 +347,8 @@ export function canAccessSublevel(
  * LevelSelect 의 "이전 단계 통과 여부" 체크에 사용.
  *
  *   - guest:  Lv 1-1 만 접근, 선행 없음 → null
- *   - free:   Lv(n)-Sub1 의 선행 = Lv(n-1)-Sub1 (Sub2·Sub3 는 subscription gate 에서 차단)
+ *   - free:   표준 21단계 순서(2026-06-13). Lv 1~2 전체 + Lv 3 Sub1 까지 자연 연결.
+ *             Lv 3 Sub2+ 는 canAccessSublevel 에서 차단되어 본 함수 호출 도달 X.
  *   - pro:    표준 21단계 순서 (getPreviousSublevel 과 동일)
  */
 export function getProgressGatePrev(
@@ -354,10 +357,6 @@ export function getProgressGatePrev(
   sublevel: Sublevel
 ): { level: number; sublevel: Sublevel } | null {
   if (tier === "guest") return null;
-  if (tier === "free") {
-    if (level === 1) return null;
-    return { level: level - 1, sublevel: 1 };
-  }
   return getPreviousSublevel(level, sublevel);
 }
 

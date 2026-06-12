@@ -42,7 +42,7 @@ const CONTENT = {
     yrBadge: "Save 33%",
     yrDesc: "1년 약속, 33% 절약",
     freeFeatures: [
-      "Level 1~5 서브레벨 1 순차 해금",
+      "레벨 1~2 전체 + 레벨 3 첫 단계 무료",
       "7회/일 세션 한도",
       "기록 대시보드",
       "기본 연습 통계",
@@ -116,7 +116,7 @@ const CONTENT = {
     yrBadge: "Save 33%",
     yrDesc: "One year. 33% off. Done.",
     freeFeatures: [
-      "Level 1–5 Sub1 sequential unlock",
+      "Levels 1–2 full + Level 3 Sub1 free",
       "7 sessions/day limit",
       "Performance dashboard",
       "Basic practice stats",

@@ -16,9 +16,12 @@ import { onAdGameEnd } from "@/lib/adInterstitial";
 import { getSlot } from "@/lib/adsense";
 import {
   type Sublevel,
+  canAccessSublevel,
   getNextSublevel,
   getPreviousSublevel,
 } from "@/lib/levelSystem";
+import { getUserTier } from "@/lib/subscriptionTier";
+import UpgradeModal from "@/components/UpgradeModal";
 import { GameOverDialog } from "@/components/GameOverDialog";
 import { SublevelPassedDialog } from "@/components/SublevelPassedDialog";
 import { GameErrorBoundary } from "@/components/GameErrorBoundary";
@@ -27,7 +30,7 @@ import { trackEvent } from "@/lib/analytics";
 type PlayScreen = "levelSelect" | "game";
 
 export default function PlayPage() {
-  const { user, loading: authLoading } = useAuth();
+  const { user, profile, loading: authLoading } = useAuth();
   const t = useT();
   const { lang } = useLang();
   const navigate = useNavigate();
@@ -36,6 +39,8 @@ export default function PlayPage() {
   const [selectedLevel, setSelectedLevel] = useState(1);
   const [selectedSublevel, setSelectedSublevel] = useState<Sublevel>(1);
   const [showAuth, setShowAuth] = useState(false);
+  // "다음 단계로" 클릭이 Premium 잠금 단계로 가는 경우 노출
+  const [upgradeModalOpen, setUpgradeModalOpen] = useState(false);
 
   const [gameOverOpen, setGameOverOpen] = useState(false);
   const [passedDialogOpen, setPassedDialogOpen] = useState(false);
@@ -120,12 +125,20 @@ export default function PlayPage() {
   const handleGoToNextSublevel = () => {
     if (!lastResult) return;
     const next = getNextSublevel(lastResult.level, lastResult.sublevel);
-    if (next) {
-      setSelectedLevel(next.level);
-      setSelectedSublevel(next.sublevel);
-      setReplayCounter((c) => c + 1);
-    }
     setPassedDialogOpen(false);
+    if (!next) return;
+
+    // 다음 단계가 현재 tier로 접근 불가(예: Free의 Lv 3 Sub2)면 NoteGame 마운트 금지.
+    // PassedDialog → "다음 단계" 경로로 LevelSelect의 subscription 잠금을 우회하는 회귀 차단.
+    const tier = getUserTier(user ?? null, profile ?? null);
+    if (!canAccessSublevel(tier, next.level, next.sublevel)) {
+      setUpgradeModalOpen(true);
+      return;
+    }
+
+    setSelectedLevel(next.level);
+    setSelectedSublevel(next.sublevel);
+    setReplayCounter((c) => c + 1);
   };
 
   const handleBackToLevelSelect = () => {
@@ -261,6 +274,13 @@ export default function PlayPage() {
       <AdInterstitialModal
         open={interstitialOpen}
         onClose={handleInterstitialClose}
+      />
+      <UpgradeModal
+        open={upgradeModalOpen}
+        onClose={() => {
+          setUpgradeModalOpen(false);
+          setScreen("levelSelect");
+        }}
       />
     </GameErrorBoundary>
   );

@@ -257,7 +257,7 @@ describe("getCompletion - UI 진행률", () => {
   });
 });
 
-describe("canAccessSublevel - 구독 게이트 (2026-05-09 결정)", () => {
+describe("canAccessSublevel - 구독 게이트 (2026-06-13 결정)", () => {
   describe("guest (미가입)", () => {
     it("Lv 1-1만 접근 가능", () => {
       expect(canAccessSublevel("guest", 1, 1)).toBe(true);
@@ -276,24 +276,27 @@ describe("canAccessSublevel - 구독 게이트 (2026-05-09 결정)", () => {
   });
 
   describe("free (일반 가입)", () => {
-    it("Lv 1~5 Sub1 접근 가능", () => {
+    it("Lv 1~2 전체 (6단계) + Lv 3 Sub1 접근 가능", () => {
+      // Lv 1 전체
       expect(canAccessSublevel("free", 1, 1)).toBe(true);
+      expect(canAccessSublevel("free", 1, 2)).toBe(true);
+      expect(canAccessSublevel("free", 1, 3)).toBe(true);
+      // Lv 2 전체
       expect(canAccessSublevel("free", 2, 1)).toBe(true);
+      expect(canAccessSublevel("free", 2, 2)).toBe(true);
+      expect(canAccessSublevel("free", 2, 3)).toBe(true);
+      // Lv 3 Sub1
       expect(canAccessSublevel("free", 3, 1)).toBe(true);
-      expect(canAccessSublevel("free", 4, 1)).toBe(true);
-      expect(canAccessSublevel("free", 5, 1)).toBe(true);
     });
 
-    it("Sub2·Sub3는 모든 레벨에서 잠금 (Premium 전용)", () => {
-      expect(canAccessSublevel("free", 1, 2)).toBe(false);
-      expect(canAccessSublevel("free", 1, 3)).toBe(false);
-      expect(canAccessSublevel("free", 2, 2)).toBe(false);
-      expect(canAccessSublevel("free", 2, 3)).toBe(false);
+    it("Lv 3 Sub2·Sub3는 잠금 (Premium 전용)", () => {
       expect(canAccessSublevel("free", 3, 2)).toBe(false);
       expect(canAccessSublevel("free", 3, 3)).toBe(false);
     });
 
-    it("Lv 6·7는 접근 불가 (Premium 전용)", () => {
+    it("Lv 4 이상 전체 잠금 (Premium 전용)", () => {
+      expect(canAccessSublevel("free", 4, 1)).toBe(false);
+      expect(canAccessSublevel("free", 5, 1)).toBe(false);
       expect(canAccessSublevel("free", 6, 1)).toBe(false);
       expect(canAccessSublevel("free", 7, 1)).toBe(false);
       expect(canAccessSublevel("free", 7, 3)).toBe(false);
@@ -318,21 +321,25 @@ describe("getProgressGatePrev - tier 인식 진도 게이트", () => {
     });
   });
 
-  describe("free", () => {
+  describe("free (2026-06-13: 표준 21단계 순서로 위임)", () => {
     it("Lv 1-1 선행 없음 → null", () => {
       expect(getProgressGatePrev("free", 1, 1)).toBeNull();
     });
 
-    it("Lv 2-1 선행 = Lv 1-1", () => {
-      expect(getProgressGatePrev("free", 2, 1)).toEqual({ level: 1, sublevel: 1 });
+    it("Lv 1-2 선행 = Lv 1-1 (Sub 내 순차)", () => {
+      expect(getProgressGatePrev("free", 1, 2)).toEqual({ level: 1, sublevel: 1 });
     });
 
-    it("Lv 3-1 선행 = Lv 2-1", () => {
-      expect(getProgressGatePrev("free", 3, 1)).toEqual({ level: 2, sublevel: 1 });
+    it("Lv 2-1 선행 = Lv 1-3 (레벨 경계)", () => {
+      expect(getProgressGatePrev("free", 2, 1)).toEqual({ level: 1, sublevel: 3 });
     });
 
-    it("Lv 5-1 선행 = Lv 4-1", () => {
-      expect(getProgressGatePrev("free", 5, 1)).toEqual({ level: 4, sublevel: 1 });
+    it("Lv 2-3 선행 = Lv 2-2", () => {
+      expect(getProgressGatePrev("free", 2, 3)).toEqual({ level: 2, sublevel: 2 });
+    });
+
+    it("Lv 3-1 선행 = Lv 2-3 (Free 최대 도달 직전)", () => {
+      expect(getProgressGatePrev("free", 3, 1)).toEqual({ level: 2, sublevel: 3 });
     });
   });
 
