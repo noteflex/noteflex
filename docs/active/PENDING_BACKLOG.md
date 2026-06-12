@@ -20,9 +20,10 @@
 - 구독 만료 시 Lv3+ 재락 정합 검증(티어 전환 로직).
 
 ### 데일리 챌린지 — 미결 (2026-06-11)
-- [Phase 3] 저장 + 스트릭(= "스트릭 추가"): daily_activity(user_id, local_date, completed) / 로컬 날짜 경계 / 가입자 점수·스트릭·이력 저장 / 비가입 미저장. 이후 상위%·랭크 실측 가능.
+- [✅ 2026-06-12] 데일리 결과 카드 이미지 공유 구현(canvas+navigator.share files+텍스트 폴백), 디자인(날짜·범례·그리드·캡션), title/캡션 채널별 정비, #번호 제거.
+- [✅ 2026-06-12] 시간초과 오답 2배 처리 버그 수정(effect 중복 발화).
+- [최우선·다음] 데일리 Phase 3 저장+스트릭 — 공유(입구)는 갖췄으나 리텐션(본체) 부재. 들어온 사용자를 다음날 재방문시키는 스트릭이 핵심. daily_activity(user_id, local_date, completed) / 로컬 날짜 경계 / 가입자 점수·스트릭·이력 저장 / 비가입 미저장. 이후 상위%·랭크 실측 가능.
 - [열림·진단] 버벅거림: 운영(prod)에서도 발생. PC vs 코드 격리 중. 코드면 지점(시작/카운트다운/문제 전환/카드) 특정 후 최적화.
-- [todo] 공유 헤더 #N(🎼 Noteflex Daily #N).
 - [✅ 원인 규명 2026-06-12] /daily 404 = 코드·라우트·DailyPage·vercel rewrite 전부 정상(시크릿 창 정상 렌더 확인). 원인은 PWA SW 수동 갱신 구조: registerType "prompt" + skipWaiting/clientsClaim 미설정 → 새 SW가 waiting에 멈춤. UpdateBanner 클릭 또는 전체 탭 재오픈 전까지 구 SW가 구 번들 서빙 → /daily 라우트 없는 구 코드가 NotFound. 영향 = /daily 추가 이전 방문한 미갱신 기존 사용자 한정(신규·갱신 사용자 정상). 자연 갱신으로 풀리는 자가치유 문제 → 즉시 수정 안 함. 재발 잦아지면 NotFound 마운트 시 waiting SW 1회 updateSW(true) 자동 갱신 도입 재결정(게임 화면 아니라 sync 안전). autoUpdate 전면 전환은 게임 중 reload로 카운트다운 sync 파손 리스크라 보류.
 - [deferred] 등급·상위% 카드 재도입(Phase 3 데이터 + 모수 후).
 - [deferred] 난이도 재밸런스(25문제 중 덧줄+조표 15 하드 편중 → 초심자 진입 약화 가능).
