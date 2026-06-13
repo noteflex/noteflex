@@ -73,6 +73,15 @@ serve(async (req) => {
     }
 
     // 3. Creem billing portal 발급
+    // 공식 문서가 응답 필드명을 명시하지 않아 응답 전체를 로깅하고 가능한 필드를 순회 시도.
+    // 알려진 후보 경로: portal_url / url / customer_portal_link / data.portal_url / data.url.
+    const customerId = profile.paddle_customer_id;
+    const reqBody = { customer_id: customerId };
+    console.log(
+      `[creem-portal] Creem 요청. user=${user.id} cust=${customerId} body=`,
+      reqBody,
+    );
+
     const creemResponse = await fetch(
       `${creemApiBase()}/customers/billing`,
       {
@@ -81,28 +90,59 @@ serve(async (req) => {
           "x-api-key": CREEM_API_KEY,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ customer_id: profile.paddle_customer_id }),
+        body: JSON.stringify(reqBody),
       },
     );
 
+    const rawText = await creemResponse.text();
+    console.log(
+      `[creem-portal] Creem 응답. status=${creemResponse.status} body=`,
+      rawText,
+    );
+
     if (!creemResponse.ok) {
-      const errText = await creemResponse.text();
       console.error(
         "[creem-portal] Creem API 오류:",
         creemResponse.status,
-        errText,
+        rawText,
       );
-      return json({ error: "Creem API error", details: errText }, 502);
+      return json({ error: "Creem API error", details: rawText }, 502);
     }
 
-    const data = await creemResponse.json();
-    const portalUrl = data?.portal_url;
-    if (!portalUrl || typeof portalUrl !== "string") {
-      console.error("[creem-portal] portal_url 응답 없음:", data);
-      return json({ error: "Invalid Creem response" }, 502);
+    let data: Record<string, unknown> = {};
+    try {
+      data = JSON.parse(rawText) as Record<string, unknown>;
+    } catch (parseErr) {
+      console.error("[creem-portal] 응답 JSON 파싱 실패:", parseErr, rawText);
+      return json({ error: "Invalid Creem JSON" }, 502);
     }
 
-    console.log(`[creem-portal] portal URL 생성. user=${user.id}`);
+    // 후보 필드 순회 — 첫 매칭 사용.
+    const dataNested = (data.data ?? null) as Record<string, unknown> | null;
+    const candidates: unknown[] = [
+      data.portal_url,
+      data.url,
+      data.customer_portal_link,
+      data.billing_portal_url,
+      dataNested?.portal_url,
+      dataNested?.url,
+      dataNested?.customer_portal_link,
+    ];
+    const portalUrl = candidates.find(
+      (v): v is string => typeof v === "string" && v.length > 0,
+    );
+
+    if (!portalUrl) {
+      console.error(
+        "[creem-portal] portal URL 후보 모두 누락. 응답 키:",
+        Object.keys(data),
+        " 전체:",
+        data,
+      );
+      return json({ error: "Invalid Creem response", details: data }, 502);
+    }
+
+    console.log(`[creem-portal] portal URL 생성. user=${user.id} url=${portalUrl}`);
     return json({ portalUrl });
   } catch (err) {
     console.error("[creem-portal] 처리 중 오류:", err);

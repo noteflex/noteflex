@@ -79,8 +79,106 @@ async function verifyCreemSignature(
 }
 
 // ═══════════════════════════════════════════════════════════════
-// 헬퍼
+// 헬퍼 — Creem 페이로드 방어적 파싱
 // ═══════════════════════════════════════════════════════════════
+// 실제 Creem 페이로드 검증 결과:
+//   subscription.* 의 object:
+//     customer: 객체 {id:"cust_...", email, metadata:{user_id}}   ← 문자열 아님!
+//     product: 객체 {id:"prod_..."} 또는 items: [{product_id, price_id}]
+//     current_period_start_date / current_period_end_date         ← _date 접미사!
+//     metadata: {user_id}
+//   checkout.completed 의 object:
+//     customer: 객체 {id, email, metadata}
+//     order: {customer:"cust_..."(문자열), product:"prod_..."(문자열)}
+//     subscription: {id, status, current_period_start_date, ...}
+//
+// 따라서 다음 헬퍼들이 케이스를 모두 흡수하도록 방어적으로 작성.
+
+function asString(v: unknown): string | null {
+  return typeof v === "string" && v.length > 0 ? v : null;
+}
+
+function asObject(v: unknown): Record<string, unknown> | null {
+  return v && typeof v === "object" && !Array.isArray(v)
+    ? (v as Record<string, unknown>)
+    : null;
+}
+
+/** customer 가 객체면 .id, 문자열이면 그대로, 둘 다 없으면 obj.customer_id 폴백. */
+function extractCustomerId(obj: Record<string, unknown>): string | null {
+  const customer = obj.customer;
+  const obj2 = asObject(customer);
+  if (obj2) {
+    const id = asString(obj2.id);
+    if (id) return id;
+  }
+  const direct = asString(customer);
+  if (direct) return direct;
+  return asString(obj.customer_id);
+}
+
+/** product 가 객체면 .id, items[0].product_id, 또는 obj.product_id 폴백. */
+function extractProductId(obj: Record<string, unknown>): string | null {
+  const product = obj.product;
+  const productObj = asObject(product);
+  if (productObj) {
+    const id = asString(productObj.id);
+    if (id) return id;
+  }
+  const directProduct = asString(product);
+  if (directProduct) return directProduct;
+
+  const items = Array.isArray(obj.items) ? obj.items : null;
+  if (items && items.length > 0) {
+    const first = asObject(items[0]);
+    if (first) {
+      const pid = asString(first.product_id) ?? asString(asObject(first.product)?.id);
+      if (pid) return pid;
+    }
+  }
+  return asString(obj.product_id);
+}
+
+/** items[0].price_id 우선, 없으면 product_id 로 폴백(별도 price 개념 없는 경우). */
+function extractPriceId(obj: Record<string, unknown>): string | null {
+  const items = Array.isArray(obj.items) ? obj.items : null;
+  if (items && items.length > 0) {
+    const first = asObject(items[0]);
+    if (first) {
+      const pid = asString(first.price_id);
+      if (pid) return pid;
+    }
+  }
+  return extractProductId(obj);
+}
+
+/** Creem 은 current_period_start_date / current_period_end_date (_date 접미사). 폴백으로 _date 없는 형태도 시도. */
+function extractPeriod(obj: Record<string, unknown>): {
+  start: string | null;
+  end: string | null;
+} {
+  return {
+    start:
+      asString(obj.current_period_start_date) ??
+      asString(obj.current_period_start),
+    end:
+      asString(obj.current_period_end_date) ??
+      asString(obj.current_period_end),
+  };
+}
+
+/** metadata.user_id 추출. object.metadata 와 object.customer.metadata 둘 다 확인. */
+function extractMetadataUserId(obj: Record<string, unknown>): string | null {
+  const direct = asObject(obj.metadata);
+  const fromDirect = direct ? asString(direct.user_id) : null;
+  if (fromDirect) return fromDirect;
+  const customerObj = asObject(obj.customer);
+  const fromCustomer = customerObj
+    ? asString(asObject(customerObj.metadata)?.user_id)
+    : null;
+  if (fromCustomer) return fromCustomer;
+  return null;
+}
 
 function planLabelForProduct(productId: string | null | undefined): string {
   if (productId && productId === CREEM_PRODUCT_ID_MONTHLY) return "premium_monthly";
@@ -89,16 +187,15 @@ function planLabelForProduct(productId: string | null | undefined): string {
 }
 
 /**
- * 유저 식별. metadata.user_id 우선, 없으면 customer_id 로 profiles 매핑.
- * (구독 갱신·취소 등 metadata 가 누락된 페이로드 대비)
+ * 유저 식별. metadata.user_id 우선(direct + customer 안 둘 다 시도),
+ * 없으면 customer id 로 profiles.paddle_customer_id 매핑.
  */
-async function findUserIdByMetadataOrCustomer(
-  metadata: Record<string, unknown> | undefined,
-  customerId: string | null | undefined,
+async function findUserIdForObject(
+  obj: Record<string, unknown>,
 ): Promise<string | null> {
-  const metaUid =
-    typeof metadata?.user_id === "string" ? (metadata.user_id as string) : null;
+  const metaUid = extractMetadataUserId(obj);
   if (metaUid) return metaUid;
+  const customerId = extractCustomerId(obj);
   if (!customerId) return null;
 
   const { data, error } = await supabase
@@ -117,18 +214,6 @@ async function findUserIdByMetadataOrCustomer(
 // subscription.* 공통 UPSERT
 // ═══════════════════════════════════════════════════════════════
 
-interface SubscriptionObject {
-  id: string;
-  status: string;
-  customer_id: string;
-  product_id: string;
-  current_period_start?: string;
-  current_period_end?: string;
-  canceled_at?: string | null;
-  expired_at?: string | null;
-  metadata?: Record<string, unknown>;
-}
-
 interface UpsertOverrides {
   status?: string;
   cancel_at_period_end?: boolean;
@@ -137,33 +222,44 @@ interface UpsertOverrides {
 
 async function upsertSubscription(
   eventType: string,
-  obj: SubscriptionObject,
+  obj: Record<string, unknown>,
   overrides: UpsertOverrides = {},
 ): Promise<void> {
-  const userId = await findUserIdByMetadataOrCustomer(
-    obj.metadata,
-    obj.customer_id,
-  );
+  const userId = await findUserIdForObject(obj);
+  const subId = asString(obj.id);
+  const customerId = extractCustomerId(obj);
+  const productId = extractProductId(obj);
+  const priceId = extractPriceId(obj);
+  const status = asString(obj.status) ?? "unknown";
+  const { start, end } = extractPeriod(obj);
+  const canceledAt = asString(obj.canceled_at);
+
   if (!userId) {
     console.error(
-      `[creem-webhook] ${eventType} user_id 매핑 실패. sub=${obj.id} cust=${obj.customer_id}`,
+      `[creem-webhook] ${eventType} user_id 매핑 실패. sub=${subId} cust=${customerId}`,
     );
+    return;
+  }
+  if (!subId) {
+    console.error(`[creem-webhook] ${eventType} subscription id 없음. obj=`, obj);
     return;
   }
 
   const row = {
     user_id: userId,
-    paddle_customer_id: obj.customer_id,            // = Creem customer id
-    paddle_subscription_id: obj.id,                 // = Creem subscription id
-    paddle_price_id: obj.product_id,                // = Creem product id
-    status: overrides.status ?? obj.status,
-    plan: planLabelForProduct(obj.product_id),
-    current_period_start: obj.current_period_start ?? null,
-    current_period_end: obj.current_period_end ?? null,
+    paddle_customer_id: customerId,                   // = Creem customer id
+    paddle_subscription_id: subId,                    // = Creem subscription id
+    paddle_price_id: priceId,                         // = Creem price id (없으면 product id 폴백)
+    status: overrides.status ?? status,
+    plan: planLabelForProduct(productId),
+    current_period_start: start,                       // 트리거가 premium_until 에 사용
+    current_period_end: end,                           // 트리거가 premium_until 에 사용
     cancel_at_period_end: overrides.cancel_at_period_end ?? false,
-    canceled_at: overrides.canceled_at ?? obj.canceled_at ?? null,
+    canceled_at: overrides.canceled_at ?? canceledAt ?? null,
     updated_at: new Date().toISOString(),
   };
+
+  console.log(`[creem-webhook] ${eventType} UPSERT row:`, row);
 
   const { error } = await supabase
     .from("subscriptions")
@@ -177,47 +273,48 @@ async function upsertSubscription(
   }
 
   // profiles.paddle_customer_id 동기화 (customer portal 호출에 필요)
-  const { error: profileError } = await supabase
-    .from("profiles")
-    .update({
-      paddle_customer_id: obj.customer_id,
-      updated_at: new Date().toISOString(),
-    })
-    .eq("id", userId);
-  if (profileError) {
-    console.error(
-      "[creem-webhook] profile customer_id 동기화 실패(비치명적):",
-      profileError,
-    );
+  if (customerId) {
+    const { error: profileError } = await supabase
+      .from("profiles")
+      .update({
+        paddle_customer_id: customerId,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", userId);
+    if (profileError) {
+      console.error(
+        "[creem-webhook] profile customer_id 동기화 실패(비치명적):",
+        profileError,
+      );
+    }
   }
 
   console.log(
-    `[creem-webhook] ${eventType} 처리 완료. user=${userId} status=${row.status}`,
+    `[creem-webhook] ${eventType} 처리 완료. user=${userId} status=${row.status} period_end=${end}`,
   );
 }
 
 // ═══════════════════════════════════════════════════════════════
 // checkout.completed — 최초 결제 시 customer id 연결
 // ═══════════════════════════════════════════════════════════════
-// subscription.active 이 함께 와서 UPSERT 처리하므로 여기선 profiles 동기화만.
+// 페이로드의 nested subscription 객체가 있으면 그것도 UPSERT 처리하여 첫 이벤트에
+// subscriptions row 가 정확히 생성되도록 한다(subscription.active 이벤트와 멱등).
 
-interface CheckoutObject {
-  id?: string;
-  customer?: { id?: string; email?: string };
-  product_id?: string;
-  metadata?: Record<string, unknown>;
-}
-
-async function handleCheckoutCompleted(obj: CheckoutObject): Promise<void> {
-  const customerId = obj.customer?.id ?? null;
-  const userId = await findUserIdByMetadataOrCustomer(obj.metadata, customerId);
+async function handleCheckoutCompleted(
+  obj: Record<string, unknown>,
+): Promise<void> {
+  const userId = await findUserIdForObject(obj);
+  const customerId = extractCustomerId(obj);
   if (!userId || !customerId) {
     console.error("[creem-webhook] checkout.completed 매핑 실패", {
-      checkout: obj.id,
+      checkout: asString(obj.id),
       cust: customerId,
+      obj,
     });
     return;
   }
+
+  // profiles.paddle_customer_id 연결
   const { error } = await supabase
     .from("profiles")
     .update({
@@ -227,11 +324,28 @@ async function handleCheckoutCompleted(obj: CheckoutObject): Promise<void> {
     .eq("id", userId);
   if (error) {
     console.error("[creem-webhook] checkout.completed profile 업데이트 실패:", error);
-    return;
+  } else {
+    console.log(
+      `[creem-webhook] checkout.completed profile 연결. user=${userId} cust=${customerId}`,
+    );
   }
-  console.log(
-    `[creem-webhook] checkout.completed 처리. user=${userId} cust=${customerId}`,
-  );
+
+  // nested subscription 객체가 있으면 함께 UPSERT — 첫 이벤트로 subscriptions row 확정.
+  const subObj = asObject(obj.subscription);
+  if (subObj) {
+    // checkout.completed 의 nested subscription 에 customer 객체가 빠져 있을 수 있어
+    // top-level customer 와 metadata 를 보강 후 위임.
+    const merged: Record<string, unknown> = { ...subObj };
+    if (!merged.customer && obj.customer) merged.customer = obj.customer;
+    if (!merged.metadata && obj.metadata) merged.metadata = obj.metadata;
+    // order 에서 product 문자열 보강 (subscription 내 product 누락 케이스)
+    const order = asObject(obj.order);
+    if (!merged.product && order) {
+      const orderProduct = asString(order.product);
+      if (orderProduct) merged.product = orderProduct;
+    }
+    await upsertSubscription("checkout.completed", merged);
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -240,20 +354,15 @@ async function handleCheckoutCompleted(obj: CheckoutObject): Promise<void> {
 // 페이로드에 subscription_id 없음 → customer_id 로 매핑.
 // 트리거 우회로 profiles 직접 UPDATE (paddle-webhook chargeback 패턴 동일).
 
-interface RefundDisputeObject {
-  id?: string;
-  customer_id?: string;
-  transaction_id?: string;
-}
-
 async function handleRefundOrDispute(
   eventType: string,
-  obj: RefundDisputeObject,
+  obj: Record<string, unknown>,
 ): Promise<void> {
-  const customerId = obj.customer_id;
+  const customerId = extractCustomerId(obj);
   if (!customerId) {
-    console.error(`[creem-webhook] ${eventType} customer_id 없음`, {
-      event: obj.id,
+    console.error(`[creem-webhook] ${eventType} customer 매핑 실패`, {
+      event: asString(obj.id),
+      obj,
     });
     return;
   }
@@ -345,49 +454,43 @@ serve(async (req) => {
   try {
     switch (eventType) {
       case "checkout.completed":
-        await handleCheckoutCompleted(obj as CheckoutObject);
+        await handleCheckoutCompleted(obj);
         break;
 
       case "subscription.active":
       case "subscription.paid":
       case "subscription.trialing":
       case "subscription.update":
-        await upsertSubscription(eventType, obj as unknown as SubscriptionObject);
+        await upsertSubscription(eventType, obj);
         break;
 
       case "subscription.scheduled_cancel":
         // 기간 내 접근 유지 — status='active' + cancel_at_period_end=true.
         // 트리거는 status in (active, trialing) 일 때 is_premium 유지.
-        await upsertSubscription(eventType, obj as unknown as SubscriptionObject, {
+        await upsertSubscription(eventType, obj, {
           status: "active",
           cancel_at_period_end: true,
         });
         break;
 
       case "subscription.canceled":
-        await upsertSubscription(eventType, obj as unknown as SubscriptionObject, {
+        await upsertSubscription(eventType, obj, {
           status: "canceled",
-          canceled_at:
-            (obj as { canceled_at?: string }).canceled_at ??
-            new Date().toISOString(),
+          canceled_at: asString(obj.canceled_at) ?? new Date().toISOString(),
         });
         break;
 
       case "subscription.past_due":
-        await upsertSubscription(eventType, obj as unknown as SubscriptionObject, {
-          status: "past_due",
-        });
+        await upsertSubscription(eventType, obj, { status: "past_due" });
         break;
 
       case "subscription.expired":
-        await upsertSubscription(eventType, obj as unknown as SubscriptionObject, {
-          status: "expired",
-        });
+        await upsertSubscription(eventType, obj, { status: "expired" });
         break;
 
       case "refund.created":
       case "dispute.created":
-        await handleRefundOrDispute(eventType, obj as RefundDisputeObject);
+        await handleRefundOrDispute(eventType, obj);
         break;
 
       default:
