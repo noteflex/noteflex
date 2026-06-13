@@ -2,7 +2,7 @@
 //
 // 도트(3상태):
 //   - 완료(done)         → 화사 오렌지(#FB923C) 채움 + 또렷 🔥 18px
-//   - 오늘 미완(isToday)  → 오렌지 테두리 2px, 빈 원 (🔥 없음 — 완료와 명확히 구분)
+//   - 오늘 미완(isToday)  → 오렌지 테두리 2px + 옅은 🔥(opacity 0.5) — 완료는 배경 채움+또렷 🔥, 오늘은 테두리만+옅은 🔥로 구분
 //   - 그 외 미완(과거·미래) → 연회색 빈 원 (isFuture 는 살짝 opacity 낮춤)
 
 import { useLang, useT } from "@/contexts/LanguageContext";
@@ -84,8 +84,17 @@ function DayDot({ day, label }: { day: StreakWeekDay; label: string }) {
       </span>
     );
   } else if (day.isToday) {
-    // 오늘 미완: 오렌지 테두리 빈 원 (🔥 없음)
+    // 오늘 미완: 오렌지 테두리 + 옅은 🔥
     circleStyle = { ...circleStyle, borderColor: FLAME_ORANGE };
+    inner = (
+      <span
+        aria-hidden="true"
+        className="leading-none"
+        style={{ fontSize: 18, opacity: 0.5 }}
+      >
+        🔥
+      </span>
+    );
   } else {
     // 그 외 미완 (과거 미완 / 미래): 연회색 빈 원
     circleClass += day.isFuture
