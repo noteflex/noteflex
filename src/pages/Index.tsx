@@ -8,6 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useT, useLang } from "@/contexts/LanguageContext";
 import { GAME_ENABLED } from "@/lib/featureFlags";
 import UserMenu from "@/components/UserMenu";
+import StreakBadge from "@/components/StreakBadge";
 import Seo from "@/components/Seo";
 
 function ComingSoonNotice() {
@@ -71,7 +72,12 @@ export default function Index() {
   };
 
   const pageHeaderRight = !showGameUI ? null
-    : user ? <UserMenu />
+    : user ? (
+      <div className="flex items-center gap-2">
+        <StreakBadge />
+        <UserMenu />
+      </div>
+    )
     : !authLoading ? (
       <button
         onClick={() => setShowAuth(true)}

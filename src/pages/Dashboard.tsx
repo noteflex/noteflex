@@ -15,7 +15,9 @@ import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 
 import { useUserStats } from "@/hooks/useUserStats";
+import { useStreak } from "@/hooks/useStreak";
 import { useMyStats } from "@/hooks/useMyStats";
+import StreakWidget from "@/components/StreakWidget";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { WeakSlowNotesCards } from "@/components/dashboard/WeakSlowNotesCards";
@@ -474,6 +476,8 @@ function aggregateSessions(sessions: SessionRow[]): SessionAgg {
 export default function Dashboard() {
   const { user, profile, loading: authLoading } = useAuth();
   const stats = useUserStats(user);
+  // 스트릭 단일 source = user_streaks (Step 2). stats.currentStreak (profiles)는 미사용.
+  const streak = useStreak();
   const myStats = useMyStats(user);
   const t = useT();
   const { lang } = useLang();
@@ -614,7 +618,10 @@ export default function Dashboard() {
   const hasSessionToday = sessionsTyped.some(
     (s) => isoFromIsoOrTimestamp(s.started_at) === todayIso(),
   );
-  const practicedToday = isToday(stats.lastPracticeDate) || hasSessionToday;
+  // 오늘 활동 = (user_streaks 로컬 오늘) OR (UTC profiles 오늘) OR (user_sessions 오늘).
+  // user_streaks 는 데일리·일반 게임 모두 반영하므로 데일리만 한 날도 정확히 잡힘.
+  const practicedToday =
+    streak.todayDone || isToday(stats.lastPracticeDate) || hasSessionToday;
 
   const todaySessions = sessionsTyped.filter(
     (s) => isoFromIsoOrTimestamp(s.started_at) === todayIso(),
@@ -735,21 +742,24 @@ export default function Dashboard() {
             {/* 상태 2: 오늘 활동 없음 — notice */}
             {!practicedToday && (
               <EmptyTodayNotice
-                currentStreak={stats.currentStreak}
+                currentStreak={streak.currentStreak}
                 onStart={handleStart}
               />
             )}
+
+            {/* 스트릭 위젯 (🔥 N일 연속 + 7도트 + 최장) — Step 2 */}
+            <StreakWidget />
 
             {/* KPI 4 카드 — 스트릭·정답률·속도·오늘 XP */}
             <section className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <StatTile
                 icon="🔥"
                 label={t.dashboard.currentStreak}
-                value={formatI18n(t.dashboard.streakValueDays, { n: String(stats.currentStreak) })}
+                value={formatI18n(t.dashboard.streakValueDays, { n: String(streak.currentStreak) })}
                 subtext={
                   practicedToday
                     ? t.dashboard.streakTodayDone
-                    : stats.currentStreak > 0
+                    : streak.currentStreak > 0
                       ? t.dashboard.streakTodayContinues
                       : t.dashboard.streakStartFresh   // 상태 2 스트릭 끊김
                 }

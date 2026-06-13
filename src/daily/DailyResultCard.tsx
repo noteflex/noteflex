@@ -3,7 +3,9 @@
 // 닫기 정책: 버튼만 (backdrop·ESC 닫기 미구현 — 결과 모달 규칙).
 
 import { useCallback, useMemo, useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 import { useLang } from "@/contexts/LanguageContext";
+import { useStreak } from "@/hooks/useStreak";
 import { NOTES_PER_TURN, TOTAL_TURNS } from "./dailyGenerator";
 import {
   type ShareLocale,
@@ -79,7 +81,9 @@ interface Props {
 }
 
 export function DailyResultCard({ result, onExit }: Props) {
+  const { user } = useAuth();
   const { lang } = useLang();
+  const streak = useStreak();
   const locale: ShareLocale = lang === "ko" ? "ko" : "en";
   const isKo = locale === "ko";
 
@@ -206,6 +210,31 @@ export function DailyResultCard({ result, onExit }: Props) {
           {isKo ? "정답" : "Correct"} {result.correct}/{total}
         </span>
       </div>
+
+      {/* ── 스트릭 배지 (Step 2) — 로그인 + currentStreak > 0 일 때만 ── */}
+      {user && !streak.loading && streak.currentStreak > 0 && (
+        <div
+          className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1 text-[13px] font-semibold"
+          aria-label={
+            isKo
+              ? `스트릭 ${streak.currentStreak}일 연속`
+              : `${streak.currentStreak}-day streak`
+          }
+        >
+          <span
+            aria-hidden="true"
+            style={streak.todayDone ? { color: "#BA7517" } : undefined}
+            className={streak.todayDone ? "" : "text-muted-foreground opacity-60"}
+          >
+            🔥
+          </span>
+          <span className={streak.todayDone ? "text-foreground" : "text-muted-foreground"}>
+            {isKo
+              ? `${streak.currentStreak}일 연속`
+              : `${streak.currentStreak}-day streak`}
+          </span>
+        </div>
+      )}
 
       {/* ── 5×5 그리드 — T1~T5 라벨만, 우측 카테고리 라벨 제거 ── */}
       <div className="w-full flex flex-col gap-1.5">
