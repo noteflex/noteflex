@@ -637,6 +637,14 @@ export interface Strings {
     proLockSuffix: string;
     proLockBody: string;
     proLockCta: string;
+    pastReportProLockBody: string;
+    // 기간 셀렉터
+    selectorPrev: string;
+    selectorNext: string;
+    selectorHistoryTitle: string;
+    selectorHistoryEmpty: string;
+    selectorLoading: string;
+    selectorLoadMore: string;
     // DailyReport 상태
     graceTitle: string;
     graceBody: string;
@@ -1537,6 +1545,13 @@ const ko: Strings = {
     proLockSuffix: "— Pro 전용",
     proLockBody: "주간·월간 보고서는 Pro 구독자에게 제공됩니다.",
     proLockCta: "Pro 플랜 보기 →",
+    pastReportProLockBody: "지난 보고서는 Pro 구독자에게 제공됩니다.",
+    selectorPrev: "이전 기간",
+    selectorNext: "다음 기간",
+    selectorHistoryTitle: "지난 기간",
+    selectorHistoryEmpty: "지난 기록이 없어요.",
+    selectorLoading: "불러오는 중…",
+    selectorLoadMore: "더 보기",
     graceTitle: "아직 오늘의 기록이 없어요",
     graceBody: "게임을 시작해 보세요! 한 세션이면 충분합니다.",
     graceCta: "게임 시작",
@@ -2411,6 +2426,13 @@ const en: Strings = {
     proLockSuffix: "— Premium Only",
     proLockBody: "Weekly and monthly reports are available on the Premium plan.",
     proLockCta: "View Premium Plan →",
+    pastReportProLockBody: "Past reports are available on the Premium plan.",
+    selectorPrev: "Previous",
+    selectorNext: "Next",
+    selectorHistoryTitle: "Past periods",
+    selectorHistoryEmpty: "No past reports yet.",
+    selectorLoading: "Loading…",
+    selectorLoadMore: "Load more",
     graceTitle: "No records yet today",
     graceBody: "Start a game — one session is all it takes.",
     graceCta: "Start Playing",

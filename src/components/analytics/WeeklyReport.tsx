@@ -302,7 +302,12 @@ function GraceBar({ activeDays }: { activeDays: number }) {
 
 // ── Main component ─────────────────────────────────────────────────────────
 
-export default function WeeklyReport() {
+interface WeeklyReportProps {
+  /** ISO 월요일 (YYYY-MM-DD). 미지정 시 직전 완료 주. */
+  weekStart?: string;
+}
+
+export default function WeeklyReport({ weekStart }: WeeklyReportProps = {}) {
   const t = useT();
   const { lang } = useLang();
   const {
@@ -324,7 +329,7 @@ export default function WeeklyReport() {
     todayIndex,
     weekDays,
     todayStr,
-  } = useWeeklyReport();
+  } = useWeeklyReport(weekStart);
 
   const dayLabels =
     lang === "ko"

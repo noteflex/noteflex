@@ -192,6 +192,23 @@ export const CALENDAR_DARK_THRESHOLD = 100;    // was 50 — 1 substantial sessi
 export const WEEKLY_VOLUME_MEDIUM_THRESHOLD = 200;  // was 50
 export const WEEKLY_VOLUME_HIGH_THRESHOLD = 600;    // was 150
 
+// list_report_periods RPC 응답 — 기간 셀렉터의 드롭다운 목록
+export interface ReportPeriodEntry {
+  period_start: string;
+  period_end: string;
+  sessions_count: number;
+  total_attempts: number;
+  overall_accuracy: number | null;
+}
+
+export interface ListReportPeriodsResponse {
+  period_type: "day" | "week" | "month";
+  limit: number;
+  offset: number;
+  total: number;
+  periods: ReportPeriodEntry[];
+}
+
 // 공용 — UI에서 다루기 편한 정규화 약점 항목
 export interface WeakNoteForChip {
   note_key: string;

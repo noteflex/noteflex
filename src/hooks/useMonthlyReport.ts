@@ -14,15 +14,12 @@ import {
   WEAK_NOTE_GREEN_THRESHOLD,
   CALENDAR_MEDIUM_THRESHOLD,
   CALENDAR_DARK_THRESHOLD,
-  WEEKLY_VOLUME_MEDIUM_THRESHOLD,
-  WEEKLY_VOLUME_HIGH_THRESHOLD,
 } from "@/types/analytics";
 
 function toIsoDate(d: Date): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
 
-// Parse YYYY-MM-DD as local date (never UTC) to avoid timezone shift.
 function parseLocalDate(dateStr: string): Date {
   const [y, m, d] = dateStr.split("-").map(Number);
   return new Date(y, m - 1, d);
@@ -34,20 +31,43 @@ function addDays(dateStr: string, n: number): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
 
-function monthStartOf(d: Date): string {
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-01`;
-}
-
-function prevMonthStartOf(d: Date): string {
-  const m = d.getMonth();
-  if (m === 0) return `${d.getFullYear() - 1}-12-01`;
-  return `${d.getFullYear()}-${String(m).padStart(2, "0")}-01`;
-}
-
 function daysInMonthOf(yearMonthDay: string): number {
   const y = parseInt(yearMonthDay.slice(0, 4));
   const m = parseInt(yearMonthDay.slice(5, 7));
   return new Date(y, m, 0).getDate();
+}
+
+function kstTodayIso(): string {
+  const KST_OFFSET_MS = 9 * 60 * 60 * 1000;
+  const kst = new Date(Date.now() + KST_OFFSET_MS);
+  return `${kst.getUTCFullYear()}-${String(kst.getUTCMonth() + 1).padStart(2, "0")}-${String(kst.getUTCDate()).padStart(2, "0")}`;
+}
+
+/** KST 오늘 기준 직전 완료 월의 (year, month). */
+function latestCompletedMonth(): { year: number; month: number } {
+  const today = kstTodayIso();
+  const [y, m] = today.split("-").map(Number);
+  return m === 1 ? { year: y - 1, month: 12 } : { year: y, month: m - 1 };
+}
+
+function makeMonthStart(year: number, month: number): string {
+  return `${year}-${String(month).padStart(2, "0")}-01`;
+}
+
+function prevMonth(year: number, month: number): { year: number; month: number } {
+  return month === 1 ? { year: year - 1, month: 12 } : { year, month: month - 1 };
+}
+
+interface MonthlyRpcResponse {
+  status?: "no_data";
+  source: "rollup";
+  weeks?: unknown[];
+  [key: string]: unknown;
+}
+
+function rpcToPeriodRollup(res: MonthlyRpcResponse | null): PeriodRollup | null {
+  if (!res || res.status === "no_data") return null;
+  return res as unknown as PeriodRollup;
 }
 
 export interface CalendarDay {
@@ -69,6 +89,7 @@ export interface UseMonthlyReportResult {
   monthStart: string;
   loading: boolean;
   error: string | null;
+  isProLocked: boolean;
   refresh: () => Promise<void>;
   headlineKind: MonthlyHeadlineKind;
   headlineDeltaPp: number;
@@ -87,54 +108,66 @@ export interface UseMonthlyReportResult {
   todayStr: string;
 }
 
-export function useMonthlyReport(): UseMonthlyReportResult {
+export interface UseMonthlyReportParams {
+  year?: number;
+  month?: number;
+}
+
+/**
+ * 월간 보고서 (Pro 전용 RPC 호출).
+ * - 입력 미지정 시 = 직전 완료 월 (KST).
+ * - current/prev = get_monthly_report(year, month) RPC.
+ * - dayRows·weekRows = user_analytics_rollup 보조 SELECT.
+ *   사유: get_monthly_report RPC가 일별 row·주별 weak_notes_top을 반환하지 않음
+ *   (calendarDays·persistentWeakNotes·longestStreak 계산용). 본인 row 한정 RLS로 보호.
+ */
+export function useMonthlyReport(params?: UseMonthlyReportParams): UseMonthlyReportResult {
+  const target = useMemo(() => {
+    if (params?.year != null && params?.month != null) {
+      return { year: params.year, month: params.month };
+    }
+    return latestCompletedMonth();
+  }, [params?.year, params?.month]);
+
+  const monthStart = useMemo(() => makeMonthStart(target.year, target.month), [target]);
+
   const [current, setCurrent] = useState<PeriodRollup | null>(null);
   const [prev, setPrev] = useState<PeriodRollup | null>(null);
   const [dayRows, setDayRows] = useState<DayRollupRow[]>([]);
   const [weekRows, setWeekRows] = useState<PeriodRollup[]>([]);
-  const [monthStart, setMonthStart] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isProLocked, setIsProLocked] = useState(false);
 
   const fetchAll = useCallback(async () => {
     setLoading(true);
     setError(null);
+    setIsProLocked(false);
     try {
       const { data: { session } } = await supabase.auth.getSession();
       const userId = session?.user?.id;
       if (!userId) throw new Error("인증 필요");
 
-      const now = new Date();
-      const mStart = monthStartOf(now);
-      const mPrev = prevMonthStartOf(now);
-      const dim = daysInMonthOf(mStart);
-      const mEnd = addDays(mStart, dim - 1);
-      const weekQueryStart = addDays(mStart, -6); // weeks that may partially overlap month start
+      const dim = daysInMonthOf(monthStart);
+      const mEnd = addDays(monthStart, dim - 1);
+      const weekQueryStart = addDays(monthStart, -6);
+      const prevTarget = prevMonth(target.year, target.month);
 
-      const currRes = await supabase
-        .from("user_analytics_rollup")
-        .select("*")
-        .eq("user_id", userId)
-        .eq("period_type", "month")
-        .eq("period_start", mStart)
-        .maybeSingle();
-
-      if (currRes.error) throw currRes.error;
-
-      const [prevRes, dayRes, weekRes] = await Promise.all([
-        supabase
-          .from("user_analytics_rollup")
-          .select("*")
-          .eq("user_id", userId)
-          .eq("period_type", "month")
-          .eq("period_start", mPrev)
-          .maybeSingle(),
+      const [currRes, prevRes, dayRes, weekRes] = await Promise.all([
+        supabase.rpc("get_monthly_report", {
+          p_year: target.year,
+          p_month: target.month,
+        }),
+        supabase.rpc("get_monthly_report", {
+          p_year: prevTarget.year,
+          p_month: prevTarget.month,
+        }),
         supabase
           .from("user_analytics_rollup")
           .select("*")
           .eq("user_id", userId)
           .eq("period_type", "day")
-          .gte("period_start", mStart)
+          .gte("period_start", monthStart)
           .lte("period_start", mEnd),
         supabase
           .from("user_analytics_rollup")
@@ -146,8 +179,20 @@ export function useMonthlyReport(): UseMonthlyReportResult {
           .order("period_start", { ascending: true }),
       ]);
 
+      if (currRes.error) {
+        if (currRes.error.message === "pro_required") {
+          setIsProLocked(true);
+          setCurrent(null);
+          setPrev(null);
+          setDayRows([]);
+          setWeekRows([]);
+          return;
+        }
+        throw currRes.error;
+      }
+
       if (prevRes.error) {
-        console.warn("[useMonthlyReport] prev-month query error (non-fatal):", prevRes.error);
+        console.warn("[useMonthlyReport] prev-month RPC error (non-fatal):", prevRes.error);
       }
       if (dayRes.error) {
         console.warn("[useMonthlyReport] day-rows query error (non-fatal):", dayRes.error);
@@ -156,18 +201,21 @@ export function useMonthlyReport(): UseMonthlyReportResult {
         console.warn("[useMonthlyReport] week-rows query error (non-fatal):", weekRes.error);
       }
 
-      setMonthStart(mStart);
-      setCurrent((currRes.data ?? null) as PeriodRollup | null);
-      setPrev(prevRes.error ? null : (prevRes.data ?? null) as PeriodRollup | null);
-      setDayRows(dayRes.error ? [] : (dayRes.data ?? []) as DayRollupRow[]);
-      setWeekRows(weekRes.error ? [] : (weekRes.data ?? []) as PeriodRollup[]);
+      setCurrent(rpcToPeriodRollup(currRes.data as MonthlyRpcResponse | null));
+      setPrev(
+        prevRes.error
+          ? null
+          : rpcToPeriodRollup(prevRes.data as MonthlyRpcResponse | null),
+      );
+      setDayRows(dayRes.error ? [] : ((dayRes.data ?? []) as DayRollupRow[]));
+      setWeekRows(weekRes.error ? [] : ((weekRes.data ?? []) as PeriodRollup[]));
     } catch (e: unknown) {
       console.error("[useMonthlyReport] fatal error:", e);
       setError(e instanceof Error ? e.message : "보고서 로드 실패");
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [monthStart, target]);
 
   useEffect(() => {
     void fetchAll();
@@ -307,8 +355,6 @@ export function useMonthlyReport(): UseMonthlyReportResult {
     });
   }, [dayRows, monthStart, daysInMonth]);
 
-  // Mon-first offset: 0=Mon, 1=Tue, ..., 6=Sun
-  // (getDay()+6)%7 converts JS Sunday=0 to Mon-first 0-6.
   const monthFirstDayOffset = useMemo(() => {
     if (!monthStart) return 0;
     const [y, m] = monthStart.split("-").map(Number);
@@ -336,6 +382,7 @@ export function useMonthlyReport(): UseMonthlyReportResult {
     monthStart,
     loading,
     error,
+    isProLocked,
     refresh: fetchAll,
     headlineKind,
     headlineDeltaPp,

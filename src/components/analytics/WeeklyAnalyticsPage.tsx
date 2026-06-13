@@ -1,3 +1,4 @@
+import { useMemo, useState } from "react";
 import { Navigate, Link, useNavigate } from "react-router-dom";
 import { ChevronLeft, ChevronRight, Lock } from "lucide-react";
 import Header from "@/components/Header";
@@ -7,8 +8,33 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useT } from "@/contexts/LanguageContext";
 import { getUserTier } from "@/lib/subscriptionTier";
 import WeeklyReport from "./WeeklyReport";
+import PeriodSelector from "./PeriodSelector";
 
-/* ── 뒤로 가는 카드 (보조, 연함) ── */
+function kstTodayIso(): string {
+  const KST_OFFSET_MS = 9 * 60 * 60 * 1000;
+  const kst = new Date(Date.now() + KST_OFFSET_MS);
+  return `${kst.getUTCFullYear()}-${String(kst.getUTCMonth() + 1).padStart(2, "0")}-${String(kst.getUTCDate()).padStart(2, "0")}`;
+}
+
+function parseIso(iso: string): Date {
+  const [y, m, d] = iso.split("-").map(Number);
+  return new Date(y, m - 1, d);
+}
+
+function addDays(iso: string, n: number): string {
+  const d = parseIso(iso);
+  d.setDate(d.getDate() + n);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
+function latestCompletedWeekStart(): string {
+  const today = kstTodayIso();
+  const d = parseIso(today);
+  const isoDow = d.getDay() === 0 ? 7 : d.getDay();
+  const mondayThis = addDays(today, -(isoDow - 1));
+  return addDays(mondayThis, -7);
+}
+
 function BackReportCard({ to, label }: { to: string; label: string }) {
   return (
     <Link
@@ -21,7 +47,6 @@ function BackReportCard({ to, label }: { to: string; label: string }) {
   );
 }
 
-/* ── 앞으로 가는 카드 (전진, 강조) ── */
 function ForwardReportCard({
   to,
   eyebrow,
@@ -51,7 +76,6 @@ function ForwardReportCard({
   );
 }
 
-/* ── Free/Guest 잠금 화면 ── */
 function ProLockScreen({ reportLabel }: { reportLabel: string }) {
   const navigate = useNavigate();
   const t = useT();
@@ -74,6 +98,10 @@ function ProLockScreen({ reportLabel }: { reportLabel: string }) {
 export default function WeeklyAnalyticsPage() {
   const { user, profile, loading: authLoading } = useAuth();
   const t = useT();
+  const navigate = useNavigate();
+
+  const initialWeekStart = useMemo(() => latestCompletedWeekStart(), []);
+  const [selectedWeekStart, setSelectedWeekStart] = useState<string>(initialWeekStart);
 
   if (authLoading) {
     return (
@@ -99,12 +127,18 @@ export default function WeeklyAnalyticsPage() {
           <p className="text-xs text-muted-foreground">{t.analytics.weeklySubtitle}</p>
         </div>
 
-        {/* 뒤로 — 항상 노출 */}
         <BackReportCard to="/analytics/daily" label={t.analytics.backToDaily} />
 
         {isPro ? (
           <>
-            <WeeklyReport />
+            <PeriodSelector
+              periodType="week"
+              value={selectedWeekStart}
+              onChange={setSelectedWeekStart}
+              isPro={isPro}
+              onProLockHit={() => navigate("/dashboard?upgrade=1")}
+            />
+            <WeeklyReport weekStart={selectedWeekStart} />
             <ForwardReportCard
               to="/analytics/monthly"
               eyebrow={t.analytics.nextReport}

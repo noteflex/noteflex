@@ -3,34 +3,63 @@ import { supabase } from "@/integrations/supabase/client";
 import type { PeriodRollup, DayRollupRow, WeakNoteRollup } from "@/types/analytics";
 import { WEAK_NOTE_GREEN_THRESHOLD, type WeeklyHeadlineKind } from "@/types/analytics";
 
-function isoWeekStart(d: Date): string {
-  const day = d.getDay();
-  const diff = day === 0 ? -6 : 1 - day;
-  const mon = new Date(d);
-  mon.setDate(d.getDate() + diff);
-  return `${mon.getFullYear()}-${String(mon.getMonth() + 1).padStart(2, "0")}-${String(mon.getDate()).padStart(2, "0")}`;
+function parseIso(iso: string): Date {
+  const [y, m, d] = iso.split("-").map(Number);
+  return new Date(y, m - 1, d);
 }
 
-function addDays(dateStr: string, n: number): string {
-  const d = new Date(dateStr + "T12:00:00Z");
-  d.setUTCDate(d.getUTCDate() + n);
-  return d.toISOString().slice(0, 10);
-}
-
-function toIsoDate(d: Date): string {
+function toIso(d: Date): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
 
+function addDays(iso: string, n: number): string {
+  const d = parseIso(iso);
+  d.setDate(d.getDate() + n);
+  return toIso(d);
+}
+
+function kstTodayIso(): string {
+  const KST_OFFSET_MS = 9 * 60 * 60 * 1000;
+  const kst = new Date(Date.now() + KST_OFFSET_MS);
+  return `${kst.getUTCFullYear()}-${String(kst.getUTCMonth() + 1).padStart(2, "0")}-${String(kst.getUTCDate()).padStart(2, "0")}`;
+}
+
+/** KST 오늘 기준 직전 완료 주(지난주 월요일). cron이 채우는 가장 최근 주. */
+function latestCompletedWeekStart(): string {
+  const today = kstTodayIso();
+  const d = parseIso(today);
+  const isoDow = d.getDay() === 0 ? 7 : d.getDay();
+  const mondayThis = addDays(today, -(isoDow - 1));
+  return addDays(mondayThis, -7);
+}
+
+interface WeeklyRpcResponse {
+  status?: "no_data";
+  source: "rollup";
+  days?: Array<{
+    date: string;
+    accuracy: number | null;
+    avg_ms: number | null;
+    attempts: number;
+    sessions: number;
+  }>;
+  [key: string]: unknown;
+}
+
+function rpcToPeriodRollup(res: WeeklyRpcResponse | null): PeriodRollup | null {
+  if (!res || res.status === "no_data") return null;
+  return res as unknown as PeriodRollup;
+}
+
 export interface UseWeeklyReportResult {
-  // raw
   current: PeriodRollup | null;
   prev: PeriodRollup | null;
   dailyRows: DayRollupRow[];
   weekStart: string;
   loading: boolean;
   error: string | null;
+  isProLocked: boolean;
   refresh: () => Promise<void>;
-  // derived
   headlineKind: WeeklyHeadlineKind;
   headlineDeltaPp: number;
   accuracyDeltaPp: number | null;
@@ -45,47 +74,43 @@ export interface UseWeeklyReportResult {
   todayStr: string;
 }
 
-export function useWeeklyReport(): UseWeeklyReportResult {
+/**
+ * 주간 보고서 (Pro 전용 RPC 호출).
+ * - weekStartParam 미지정 시 = 직전 완료 주(지난주 월요일).
+ * - prev = weekStart - 7일 (non-fatal).
+ * - dailyRows = user_analytics_rollup 직접 SELECT (period_type='day').
+ *   사유: get_weekly_report RPC가 일별 per_note를 반환하지 않음 → FocusNotes의
+ *   "missed of N days" 라벨 계산을 위해 일간 row만 보조 조회. 일간 row는
+ *   기존에도 일간 페이지에서 노출되며, 본인 SELECT RLS로 보호됨.
+ */
+export function useWeeklyReport(weekStartParam?: string): UseWeeklyReportResult {
   const [current, setCurrent] = useState<PeriodRollup | null>(null);
   const [prev, setPrev] = useState<PeriodRollup | null>(null);
   const [dailyRows, setDailyRows] = useState<DayRollupRow[]>([]);
-  const [weekStart, setWeekStart] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isProLocked, setIsProLocked] = useState(false);
+
+  const weekStart = useMemo(
+    () => weekStartParam ?? latestCompletedWeekStart(),
+    [weekStartParam],
+  );
 
   const fetchAll = useCallback(async () => {
     setLoading(true);
     setError(null);
+    setIsProLocked(false);
     try {
       const { data: { session } } = await supabase.auth.getSession();
       const userId = session?.user?.id;
       if (!userId) throw new Error("인증 필요");
 
-      const now = new Date();
-      const thisWeek = isoWeekStart(now);
-      const prevWeekDate = new Date(now);
-      prevWeekDate.setDate(now.getDate() - 7);
-      const lastWeek = isoWeekStart(prevWeekDate);
-      const weekDaysForQuery = Array.from({ length: 7 }, (_, i) => addDays(thisWeek, i));
+      const prevWeek = addDays(weekStart, -7);
+      const weekDaysForQuery = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
 
-      const currRes = await supabase
-        .from("user_analytics_rollup")
-        .select("*")
-        .eq("user_id", userId)
-        .eq("period_type", "week")
-        .eq("period_start", thisWeek)
-        .maybeSingle();
-
-      if (currRes.error) throw currRes.error;
-
-      const [prevRes, dailyRes] = await Promise.all([
-        supabase
-          .from("user_analytics_rollup")
-          .select("*")
-          .eq("user_id", userId)
-          .eq("period_type", "week")
-          .eq("period_start", lastWeek)
-          .maybeSingle(),
+      const [currRes, prevRes, dailyRes] = await Promise.all([
+        supabase.rpc("get_weekly_report", { p_week_start: weekStart }),
+        supabase.rpc("get_weekly_report", { p_week_start: prevWeek }),
         supabase
           .from("user_analytics_rollup")
           .select("*")
@@ -94,24 +119,38 @@ export function useWeeklyReport(): UseWeeklyReportResult {
           .in("period_start", weekDaysForQuery),
       ]);
 
+      if (currRes.error) {
+        if (currRes.error.message === "pro_required") {
+          setIsProLocked(true);
+          setCurrent(null);
+          setPrev(null);
+          setDailyRows([]);
+          return;
+        }
+        throw currRes.error;
+      }
+
       if (prevRes.error) {
-        console.warn("[useWeeklyReport] prev-week query error (non-fatal):", prevRes.error);
+        console.warn("[useWeeklyReport] prev-week RPC error (non-fatal):", prevRes.error);
       }
       if (dailyRes.error) {
         console.warn("[useWeeklyReport] daily-rows query error (non-fatal):", dailyRes.error);
       }
 
-      setWeekStart(thisWeek);
-      setCurrent((currRes.data ?? null) as PeriodRollup | null);
-      setPrev(prevRes.error ? null : (prevRes.data ?? null) as PeriodRollup | null);
-      setDailyRows(dailyRes.error ? [] : (dailyRes.data ?? []) as DayRollupRow[]);
+      setCurrent(rpcToPeriodRollup(currRes.data as WeeklyRpcResponse | null));
+      setPrev(
+        prevRes.error
+          ? null
+          : rpcToPeriodRollup(prevRes.data as WeeklyRpcResponse | null),
+      );
+      setDailyRows(dailyRes.error ? [] : ((dailyRes.data ?? []) as DayRollupRow[]));
     } catch (e: unknown) {
       console.error("[useWeeklyReport] fatal error:", e);
       setError(e instanceof Error ? e.message : "보고서 로드 실패");
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [weekStart]);
 
   useEffect(() => {
     void fetchAll();
@@ -119,7 +158,7 @@ export function useWeeklyReport(): UseWeeklyReportResult {
 
   // ── Derived values ─────────────────────────────────────────────────────────
 
-  const todayStr = useMemo(() => toIsoDate(new Date()), []);
+  const todayStr = useMemo(() => kstTodayIso(), []);
 
   const weekDays = useMemo(
     () => (weekStart ? Array.from({ length: 7 }, (_, i) => addDays(weekStart, i)) : []),
@@ -142,8 +181,6 @@ export function useWeeklyReport(): UseWeeklyReportResult {
     [dailyRows, todayStr],
   );
 
-  // Longest consecutive active-day run from weekStart to today (inclusive).
-  // Future days are excluded.
   const streakDays = useMemo(() => {
     const cap = todayIndex >= 0 ? todayIndex : weekDays.length - 1;
     let max = 0;
@@ -158,7 +195,6 @@ export function useWeeklyReport(): UseWeeklyReportResult {
     return max;
   }, [activeDayIndices, todayIndex, weekDays.length]);
 
-  // Accuracy < WEAK_NOTE_GREEN_THRESHOLD, sorted weakest-first (highest error_rate first)
   const focusNotes = useMemo(() => {
     const raw = (current?.weak_notes_top as WeakNoteRollup[] | null) ?? [];
     return raw
@@ -179,7 +215,6 @@ export function useWeeklyReport(): UseWeeklyReportResult {
     return current.avg_reaction_ms - prev.avg_reaction_ms;
   }, [current, prev]);
 
-  // Headline: based on week-over-week accuracy delta (single source of truth)
   const headlineKind = useMemo<WeeklyHeadlineKind>(() => {
     if (!current || current.total_attempts === 0) return "nodata";
     if (accuracyDeltaPp == null) return "grace";
@@ -200,6 +235,7 @@ export function useWeeklyReport(): UseWeeklyReportResult {
     weekStart,
     loading,
     error,
+    isProLocked,
     refresh: fetchAll,
     headlineKind,
     headlineDeltaPp,

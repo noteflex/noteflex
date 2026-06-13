@@ -425,7 +425,13 @@ function EncouragingCard({ message }: { message: string }) {
 
 // ── Main component ─────────────────────────────────────────────────────────
 
-export default function MonthlyReport() {
+interface MonthlyReportProps {
+  /** 1..12 + 4-digit year. 미지정 시 직전 완료 월. */
+  year?: number;
+  month?: number;
+}
+
+export default function MonthlyReport({ year, month }: MonthlyReportProps = {}) {
   const t = useT();
   const { lang } = useLang();
   const {
@@ -448,7 +454,7 @@ export default function MonthlyReport() {
     monthStart,
     isGrace,
     todayStr,
-  } = useMonthlyReport();
+  } = useMonthlyReport({ year, month });
 
   const headlineMain = (() => {
     const n = headlineDeltaPp;

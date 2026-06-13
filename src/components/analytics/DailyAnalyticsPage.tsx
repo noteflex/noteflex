@@ -1,13 +1,25 @@
-import { Navigate, Link } from "react-router-dom";
-import { ChevronRight } from "lucide-react";
+import { useMemo, useState } from "react";
+import { Navigate, Link, useNavigate } from "react-router-dom";
+import { ChevronRight, Lock } from "lucide-react";
 import Header from "@/components/Header";
 import UserMenu from "@/components/UserMenu";
+import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useT } from "@/contexts/LanguageContext";
-import { format as formatI18n } from "@/i18n/strings";
-import { useDailyReport } from "@/hooks/useAnalytics";
-import { isNoData, normalizeWeakNotes } from "@/types/analytics";
+import { getUserTier } from "@/lib/subscriptionTier";
 import DailyReport from "./DailyReport";
+import PeriodSelector from "./PeriodSelector";
+
+function kstTodayIso(): string {
+  const KST_OFFSET_MS = 9 * 60 * 60 * 1000;
+  const kst = new Date(Date.now() + KST_OFFSET_MS);
+  return `${kst.getUTCFullYear()}-${String(kst.getUTCMonth() + 1).padStart(2, "0")}-${String(kst.getUTCDate()).padStart(2, "0")}`;
+}
+
+function isoToDate(iso: string): Date {
+  const [y, m, d] = iso.split("-").map(Number);
+  return new Date(y, m - 1, d);
+}
 
 function ForwardReportCard({
   to,
@@ -38,20 +50,28 @@ function ForwardReportCard({
   );
 }
 
-export default function DailyAnalyticsPage() {
-  const { user, loading: authLoading } = useAuth();
-  const t = useT();
-  // 캐시 재사용 — DailyReport 내부와 동일 키, 네트워크 중복 요청 없음
-  const { data } = useDailyReport();
-  const weakNotes = data && !isNoData(data) ? normalizeWeakNotes(data, 1) : [];
-  const topWeak = weakNotes[0];
+function PastReportLock({ body, ctaLabel }: { body: string; ctaLabel: string }) {
+  const navigate = useNavigate();
+  return (
+    <div className="flex flex-col items-center justify-center py-16 text-center">
+      <div className="inline-flex h-14 w-14 items-center justify-center rounded-full bg-muted mb-4">
+        <Lock className="h-7 w-7 text-muted-foreground" aria-hidden />
+      </div>
+      <p className="text-sm text-muted-foreground max-w-xs">{body}</p>
+      <Button className="mt-6" onClick={() => navigate("/dashboard?upgrade=1")}>
+        {ctaLabel}
+      </Button>
+    </div>
+  );
+}
 
-  const weeklyDescription = topWeak
-    ? formatI18n(t.analytics.toWeeklyHook, {
-        clef: topWeak.clef === "bass" ? t.analytics.clefBass : t.analytics.clefTreble,
-        note: `${topWeak.note_key}${topWeak.octave}`,
-      })
-    : t.analytics.toWeeklyDesc;
+export default function DailyAnalyticsPage() {
+  const { user, profile, loading: authLoading } = useAuth();
+  const t = useT();
+  const navigate = useNavigate();
+
+  const today = useMemo(() => kstTodayIso(), []);
+  const [selectedDate, setSelectedDate] = useState<string>(today);
 
   if (authLoading) {
     return (
@@ -63,6 +83,14 @@ export default function DailyAnalyticsPage() {
 
   if (!user) return <Navigate to="/" replace />;
 
+  const isAdmin = profile?.role === "admin";
+  const tier = getUserTier(user ?? null, profile ?? null);
+  const isPro = isAdmin || tier === "pro";
+
+  const isPast = selectedDate < today;
+  const showPastLock = !isPro && isPast;
+  const dateProp = selectedDate === today ? undefined : isoToDate(selectedDate);
+
   return (
     <div className="min-h-screen bg-background">
       <Header right={<UserMenu />} headerClassName="bg-card/50" />
@@ -73,14 +101,28 @@ export default function DailyAnalyticsPage() {
           <p className="text-xs text-muted-foreground">{t.analytics.dailySubtitle}</p>
         </div>
 
-        <DailyReport />
+        <PeriodSelector
+          periodType="day"
+          value={selectedDate}
+          onChange={setSelectedDate}
+          isPro={isPro}
+          onProLockHit={() => navigate("/dashboard?upgrade=1")}
+        />
 
-        {/* Free 포함 전체에게 노출 — 눌러서 주간 잠금 화면이 업셀 동선 */}
+        {showPastLock ? (
+          <PastReportLock
+            body={t.analytics.pastReportProLockBody}
+            ctaLabel={t.analytics.proLockCta}
+          />
+        ) : (
+          <DailyReport date={dateProp} />
+        )}
+
         <ForwardReportCard
           to="/analytics/weekly"
           eyebrow={t.analytics.nextReport}
           label={t.analytics.toWeeklyLabel}
-          description={weeklyDescription}
+          description={t.analytics.toWeeklyDesc}
         />
       </main>
     </div>
