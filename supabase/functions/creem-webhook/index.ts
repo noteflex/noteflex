@@ -465,20 +465,46 @@ serve(async (req) => {
         break;
 
       case "subscription.scheduled_cancel":
-        // 기간 내 접근 유지 — status='active' + cancel_at_period_end=true.
-        // 트리거는 status in (active, trialing) 일 때 is_premium 유지.
-        await upsertSubscription(eventType, obj, {
-          status: "active",
-          cancel_at_period_end: true,
-        });
-        break;
+      case "subscription.canceled": {
+        // 사용자 보호 — 결제한 기간 유지:
+        //   current_period_end 가 미래(now 이후) → 기간말 취소로 간주.
+        //     status='active' 유지 + cancel_at_period_end=true + canceled_at 기록.
+        //     트리거가 active 라 is_premium=true 유지, premium_until=current_period_end.
+        //     기간 만료는 별도 subscription.expired 또는 cron(expire_premium_users)이 회수.
+        //   그 외 (현재/과거 종료, period 누락) → 즉시 취소.
+        //     status='canceled' → 트리거가 is_premium=false.
+        //
+        // 사유:
+        //   SKILL.md 상 canceled='Subscription terminated', scheduled_cancel='Cancellation queued
+        //   for period end' 로 의미가 분리되어 있으나, 실측에서 기간말 취소도 canceled 로
+        //   발화되는 케이스 확인됨. current_period_end 페이로드를 진실로 삼아 둘 다 안전 처리.
+        const { end } = extractPeriod(obj);
+        const endsInFuture = end
+          ? new Date(end).getTime() > Date.now()
+          : false;
+        const canceledAt = asString(obj.canceled_at) ?? new Date().toISOString();
 
-      case "subscription.canceled":
-        await upsertSubscription(eventType, obj, {
-          status: "canceled",
-          canceled_at: asString(obj.canceled_at) ?? new Date().toISOString(),
-        });
+        if (endsInFuture) {
+          console.log(
+            `[creem-webhook] ${eventType} 기간말 취소로 간주(end=${end}). is_premium 유지.`,
+          );
+          await upsertSubscription(eventType, obj, {
+            status: "active",
+            cancel_at_period_end: true,
+            canceled_at: canceledAt,
+          });
+        } else {
+          console.log(
+            `[creem-webhook] ${eventType} 즉시 취소로 간주(end=${end}). premium 회수.`,
+          );
+          await upsertSubscription(eventType, obj, {
+            status: "canceled",
+            cancel_at_period_end: false,
+            canceled_at: canceledAt,
+          });
+        }
         break;
+      }
 
       case "subscription.past_due":
         await upsertSubscription(eventType, obj, { status: "past_due" });
