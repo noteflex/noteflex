@@ -4,7 +4,8 @@
 
 import { useCallback, useMemo, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useLang } from "@/contexts/LanguageContext";
+import { useLang, useT } from "@/contexts/LanguageContext";
+import { format as formatI18n } from "@/i18n/strings";
 import { useStreak } from "@/hooks/useStreak";
 import { NOTES_PER_TURN, TOTAL_TURNS } from "./dailyGenerator";
 import {
@@ -83,6 +84,7 @@ interface Props {
 export function DailyResultCard({ result, onExit }: Props) {
   const { user } = useAuth();
   const { lang } = useLang();
+  const t = useT();
   const streak = useStreak();
   const locale: ShareLocale = lang === "ko" ? "ko" : "en";
   const isKo = locale === "ko";
@@ -211,27 +213,15 @@ export function DailyResultCard({ result, onExit }: Props) {
         </span>
       </div>
 
-      {/* ── 스트릭 배지 (Step 2) — 로그인 + currentStreak > 0 일 때만 ── */}
+      {/* ── 스트릭 배지 (Step 2) — 로그인 + currentStreak > 0 일 때만.
+          색·카피 톤 = StreakWidget·StreakBadge 와 통일(화사 오렌지 #FB923C, day 단수 형용사). ── */}
       {user && !streak.loading && streak.currentStreak > 0 && (
         <div
           className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1 text-[13px] font-semibold"
-          aria-label={
-            isKo
-              ? `스트릭 ${streak.currentStreak}일 연속`
-              : `${streak.currentStreak}-day streak`
-          }
+          style={streak.todayDone ? { color: "#FB923C" } : undefined}
         >
-          <span
-            aria-hidden="true"
-            style={streak.todayDone ? { color: "#BA7517" } : undefined}
-            className={streak.todayDone ? "" : "text-muted-foreground opacity-60"}
-          >
-            🔥
-          </span>
           <span className={streak.todayDone ? "text-foreground" : "text-muted-foreground"}>
-            {isKo
-              ? `${streak.currentStreak}일 연속`
-              : `${streak.currentStreak}-day streak`}
+            {formatI18n(t.dashboard.streakLineLong, { n: String(streak.currentStreak) })}
           </span>
         </div>
       )}

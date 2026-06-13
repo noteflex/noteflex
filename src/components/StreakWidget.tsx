@@ -1,17 +1,19 @@
 // 대시보드 스트릭 카드 — 🔥 N일 연속 + 주간 7도트(월~일) + 최장 기록.
 //
-// 도트:
-//   - 완료(done)        → amber 채움 + 🔥
-//   - 오늘 미완(isToday) → amber 테두리 빈 원
-//   - 그 외 미완         → 회색 빈 원 (미래 포함, isFuture 는 더 옅게)
+// 도트(3상태):
+//   - 완료(done)         → 화사 오렌지(#FB923C) 채움 + 또렷 🔥 18px
+//   - 오늘 미완(isToday)  → 오렌지 테두리 2px, 빈 원 (🔥 없음 — 완료와 명확히 구분)
+//   - 그 외 미완(과거·미래) → 연회색 빈 원 (isFuture 는 살짝 opacity 낮춤)
 
-import { useLang } from "@/contexts/LanguageContext";
+import { useLang, useT } from "@/contexts/LanguageContext";
+import { format as formatI18n } from "@/i18n/strings";
 import { useStreak, type StreakWeekDay } from "@/hooks/useStreak";
 
-const FLAME_AMBER = "#BA7517";
-const DOT_PX = 34;
+const FLAME_ORANGE = "#FB923C"; // amber-400/orange-400 — 화사
+const DOT_PX = 38;
 
 export default function StreakWidget() {
+  const t = useT();
   const { lang } = useLang();
   const { loading, currentStreak, longestStreak, todayDone, week } = useStreak();
   const isKo = lang === "ko";
@@ -43,25 +45,14 @@ export default function StreakWidget() {
   return (
     <div className="rounded-2xl border border-border bg-card/60 p-4 shadow-sm">
       <div className="flex items-end justify-between mb-3">
-        <div className="flex items-center gap-1.5">
-          <span
-            aria-hidden="true"
-            className="text-xl"
-            style={todayDone ? { color: FLAME_AMBER } : undefined}
-          >
-            🔥
-          </span>
-          <span className="text-xl font-bold text-foreground tabular-nums">
-            {currentStreak}
-          </span>
-          <span className="text-sm text-muted-foreground">
-            {isKo ? "일 연속" : "day streak"}
-          </span>
+        <div
+          className="flex items-center gap-1.5 text-lg font-bold text-foreground"
+          style={todayDone ? { color: FLAME_ORANGE } : undefined}
+        >
+          {formatI18n(t.dashboard.streakLineLong, { n: String(currentStreak) })}
         </div>
         <span className="text-xs text-muted-foreground">
-          {isKo
-            ? `최장 ${longestStreak}일`
-            : `Best ${longestStreak}d`}
+          {formatI18n(t.dashboard.streakBestLine, { n: String(longestStreak) })}
         </span>
       </div>
 
@@ -75,31 +66,31 @@ export default function StreakWidget() {
 }
 
 function DayDot({ day, label }: { day: StreakWeekDay; label: string }) {
-  // 셀 클래스 결정
+  // 3상태 분기 — 완료 / 오늘 미완 / 그 외 미완
   let circleClass = "border-2 ";
   let circleStyle: React.CSSProperties = { width: DOT_PX, height: DOT_PX };
   let inner: React.ReactNode = null;
 
   if (day.done) {
-    // 완료
+    // 완료: 화사 오렌지 채움 + 또렷 🔥 18px
     circleStyle = {
       ...circleStyle,
-      backgroundColor: "#FEF3C7", // amber-100
-      borderColor: FLAME_AMBER,
+      backgroundColor: FLAME_ORANGE,
+      borderColor: FLAME_ORANGE,
     };
     inner = (
-      <span aria-hidden="true" className="text-xs" style={{ color: FLAME_AMBER }}>
+      <span aria-hidden="true" className="leading-none" style={{ fontSize: 18 }}>
         🔥
       </span>
     );
   } else if (day.isToday) {
-    // 오늘 미완
-    circleStyle = { ...circleStyle, borderColor: FLAME_AMBER };
+    // 오늘 미완: 오렌지 테두리 빈 원 (🔥 없음)
+    circleStyle = { ...circleStyle, borderColor: FLAME_ORANGE };
   } else {
-    // 그 외 미완 (미래 포함)
+    // 그 외 미완 (과거 미완 / 미래): 연회색 빈 원
     circleClass += day.isFuture
-      ? "border-border/50 opacity-60 "
-      : "border-border ";
+      ? "border-border/40 bg-muted/30 opacity-70 "
+      : "border-border bg-muted/30 ";
   }
 
   return (

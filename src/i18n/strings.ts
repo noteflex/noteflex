@@ -471,6 +471,10 @@ export interface Strings {
     leagueAfterFirst: string;
     longestStreak: string;
     bestRecord: string;
+    // 스트릭 표시 (Step 2 UI)
+    streakLineLong: string;    // 형용사 수식, day 단수: "🔥 {n} day streak" / "🔥 {n}일 연속"
+    streakLineShort: string;   // 헤더 배지 짧은 형태 (단/복수): "🔥 {n} day" / "🔥 {n} days" / "🔥 {n}일"
+    streakBestLine: string;    // 독립 명사 (단/복수): "Best {n} day" / "Best {n} days" / "최장 {n}일"
     // Tabs
     tabRhythm: string;
     tabDiagnosis: string;
@@ -1392,6 +1396,9 @@ const ko: Strings = {
     leagueWeekly: "주간 {xp} XP",
     leagueAfterFirst: "첫 연습 후 배정",
     longestStreak: "최장 스트릭",
+    streakLineLong: "🔥 {n}일 연속",
+    streakLineShort: "🔥 {n}일",
+    streakBestLine: "최장 {n}일",
     bestRecord: "내 최고 기록",
     tabRhythm: "학습 리듬",
     tabDiagnosis: "실력 진단",
@@ -2263,6 +2270,9 @@ const en: Strings = {
     leagueWeekly: "Weekly {xp} XP",
     leagueAfterFirst: "Assigned after first practice",
     longestStreak: "Longest Streak",
+    streakLineLong: "🔥 {n} day streak",
+    streakLineShort: "🔥 {n} {n:day:days}",
+    streakBestLine: "Best {n} {n:day:days}",
     bestRecord: "Personal best",
     tabRhythm: "Rhythm",
     tabDiagnosis: "Diagnosis",
