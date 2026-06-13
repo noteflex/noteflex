@@ -5,7 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useLang } from "@/contexts/LanguageContext";
 import { getUserTier } from "@/lib/subscriptionTier";
 import { PaymentErrorBoundary } from "@/components/PaymentErrorBoundary";
-import { openCheckout, PADDLE_PRICES, getPaddleLocale } from "@/lib/paddle";
+import { startCreemCheckout } from "@/lib/creem";
 import { logger } from "@/lib/sentry";
 import Seo from "@/components/Seo";
 import {
@@ -19,7 +19,9 @@ import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { trackEvent } from "@/lib/analytics";
 
-// 가오픈(5/31) — Paddle 심사 통과 후 PAYMENT_LOCKED=false로 전환, 다이얼로그 분기 제거.
+// 가오픈(5/31) — 결제 1순위 = Creem (Paddle은 휴면 백업).
+// PAYMENT_LOCKED=true → monthly·yearly 클릭 시 waitlist 다이얼로그.
+// sandbox 검증 후 false 전환.
 const PAYMENT_LOCKED = true;
 
 // ── 다국어 콘텐츠 (ja·zh = en fallback, Phase 3에서 정식 번역 예정) ──────
@@ -93,7 +95,7 @@ const CONTENT = {
         a: "결제 후 14일 이내 요청 시 전액 환불해 드립니다. 자세한 내용은 환불 정책 페이지를 확인해 주세요.",
       },
     ],
-    securedBy: "결제는 Paddle이 안전하게 처리합니다",
+    securedBy: "결제는 Creem이 안전하게 처리합니다",
     refundPolicy: "환불 정책",
     cancelNote: "언제든 취소 가능 · 자동 갱신 · 이메일 영수증",
     backHome: "← 홈으로",
@@ -166,7 +168,7 @@ const CONTENT = {
         a: "You may request a full refund within 14 days of purchase. See the Refund Policy page for details.",
       },
     ],
-    securedBy: "Payments secured by Paddle",
+    securedBy: "Payments secured by Creem",
     refundPolicy: "Refund Policy",
     cancelNote: "Cancel anytime · Auto-renews · Email receipt",
     backHome: "← Home",
@@ -244,19 +246,8 @@ export default function Pricing() {
       navigate("/");
       return;
     }
-    // Free 가입자 → Paddle Checkout 호출
+    // Free 가입자 → Creem Checkout 호출 (server-side product_id 매핑).
     if (plan === "monthly" || plan === "yearly") {
-      const priceId = PADDLE_PRICES[plan];
-      if (!priceId) {
-        logger.error("Paddle Price ID 누락", new Error("Missing price ID"), {
-          description: "환경변수에 Price ID 누락",
-          cause: `VITE_PADDLE_PRICE_${plan.toUpperCase()} 누락`,
-          impact: "결제 진행 불가",
-          action: "Vercel 환경변수 영역 확인 필요",
-          metadata: { plan },
-        });
-        return;
-      }
       if (!user?.email) {
         logger.warn("결제 불가 — 이메일 정보 없음", {
           user_id: user?.id,
@@ -268,22 +259,18 @@ export default function Pricing() {
       try {
         setIsCheckoutLoading(true);
         logger.info("결제 시작", {
-          description: `Paddle Checkout 호출 (${plan})`,
+          description: `Creem checkout 호출 (${plan})`,
           user_id: user.id,
           plan,
         });
-        await openCheckout({
-          plan,
-          userEmail: user.email,
-          userId: user.id,
-          locale: getPaddleLocale(lang),
-        });
+        // 성공 시 함수 안에서 window.location.href = checkoutUrl 으로 redirect.
+        // 실패는 함수 안에서 logger.error 로 처리하므로 호출처 try/catch 는 네트워크 예외만 잡음.
+        await startCreemCheckout(plan);
       } catch (err) {
         logger.error("결제 진행 실패", err, {
-          description: "openCheckout 호출 실패",
+          description: "startCreemCheckout 호출 실패",
           cause: err instanceof Error ? err.message : String(err),
           impact: "사용자가 결제 진행 불가",
-          action: "Paddle SDK 로드 확인, Price ID 유효성 확인",
           metadata: { plan, user_id: user.id },
         });
       } finally {

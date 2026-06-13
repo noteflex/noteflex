@@ -15,27 +15,39 @@ export default function CheckoutSuccess() {
   const { lang } = useLang();
 
   useEffect(() => {
+    // Creem 은 success_url 에 별도 query param 을 강제하지 않음.
+    // request_id·session_id 등 가능한 식별자를 best-effort 로 수집(없으면 unknown).
     const transactionId =
-      searchParams.get("transaction_id") || searchParams.get("_ptxn") || "unknown";
+      searchParams.get("request_id") ||
+      searchParams.get("session_id") ||
+      searchParams.get("checkout_id") ||
+      searchParams.get("transaction_id") ||
+      "unknown";
 
     logger.info("결제 완료 — Success 페이지 진입", {
-      description: "Paddle Checkout 완료 후 redirect 도착",
+      description: "Creem Checkout 완료 후 redirect 도착",
       user_id: user?.id ?? "(no_user)",
       transaction_id: transactionId,
     });
 
     trackEvent("subscribe", { transaction_id: transactionId });
 
-    const refreshTimer = setTimeout(() => {
+    // webhook 이 비동기로 subscriptions UPSERT → 트리거가 profiles.is_premium 갱신.
+    // 첫 도착 시점엔 아직 반영 전일 수 있어 2초·5초 두 번 재조회.
+    const refreshTimer1 = setTimeout(() => {
       refreshProfile?.();
     }, 2000);
+    const refreshTimer2 = setTimeout(() => {
+      refreshProfile?.();
+    }, 5000);
 
     const navTimer = setTimeout(() => {
       navigate("/");
-    }, 5000);
+    }, 8000);
 
     return () => {
-      clearTimeout(refreshTimer);
+      clearTimeout(refreshTimer1);
+      clearTimeout(refreshTimer2);
       clearTimeout(navTimer);
     };
   }, [navigate, refreshProfile, searchParams, user?.id]);

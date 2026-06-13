@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { logger } from "@/lib/sentry";
+import { openCreemPortal } from "@/lib/creem";
 
 const LOCALE_OPTIONS: { value: Lang; key: "ko" | "en" }[] = [
   { value: "ko", key: "ko" },
@@ -47,69 +48,23 @@ export default function ProfilePage() {
   const [isLoadingPortal, setIsLoadingPortal] = useState(false);
 
   const handleManageSubscription = useCallback(async () => {
-    console.log("[ManageSubscription] 시작. user:", user);
-
-    if (!user) {
-      console.log("[ManageSubscription] user 없음. return.");
-      return;
-    }
-
+    if (!user) return;
     try {
       setIsLoadingPortal(true);
-      console.log("[ManageSubscription] loading=true");
-
-      const { data: { session } } = await supabase.auth.getSession();
-      console.log("[ManageSubscription] session:", session?.access_token ? "있음" : "없음");
-
-      if (!session?.access_token) {
-        console.log("[ManageSubscription] session 토큰 없음. return.");
-        logger.warn("구독 관리 — 세션 토큰 누락", { user_id: user.id });
-        return;
-      }
-
-      const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/paddle-customer-portal`;
-      console.log("[ManageSubscription] env URL:", import.meta.env.VITE_SUPABASE_URL);
-      console.log("[ManageSubscription] fetch URL:", url);
-
       logger.info("구독 관리 portal 요청 시작", {
-        description: "Paddle customer portal URL 생성",
+        description: "Creem customer portal URL 생성",
         user_id: user.id,
       });
-
-      const response = await fetch(url, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-          "Content-Type": "application/json",
-        },
-      });
-      console.log("[ManageSubscription] response status:", response.status);
-
-      if (!response.ok) {
-        const err = await response.json();
-        console.error("[ManageSubscription] 응답 실패:", err);
-        logger.error("구독 관리 portal 생성 실패", new Error(err.error), {
-          description: "Edge Function 호출 실패",
-          cause: err.error,
-          impact: "사용자가 구독 관리 페이지 접근 불가",
-          metadata: { status: response.status, user_id: user.id },
-        });
-        return;
-      }
-
-      const result = await response.json();
-      console.log("[ManageSubscription] portalUrl:", result.portalUrl);
-      window.location.href = result.portalUrl;
+      // openCreemPortal 내부에서 fetch·logger·window.location.href 처리.
+      await openCreemPortal();
     } catch (err) {
-      console.error("[ManageSubscription] 예외:", err);
       logger.error("구독 관리 처리 실패", err, {
-        description: "Paddle portal redirect 처리 중 예외",
+        description: "Creem portal redirect 처리 중 예외",
         cause: err instanceof Error ? err.message : String(err),
         metadata: { user_id: user.id },
       });
     } finally {
       setIsLoadingPortal(false);
-      console.log("[ManageSubscription] 종료. loading=false");
     }
   }, [user]);
 
