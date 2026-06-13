@@ -12,9 +12,12 @@
 - [✅ 2026-06-13] 데일리 공유 카드 — 이미지(canvas PNG) + title + 캡션 채널별 정비, #번호 전면 제거, 시간초과 오답 2배 버그 수정. f867a28 / 99e9354 / 후속.
 - [✅ 2026-06-13] 스트릭 Step 1 백엔드 — `record_practice_day(p_local_date)` RPC 신설(7cdb3be), 일반게임(useSessionRecorder)·데일리(DailyChallenge) 완료 시 호출, fire-and-forget 통일(beb8a5f). 로컬 자정 기준. 마이그레이션 Supabase apply + push 완료. **Step 2 UI 대기**.
 - [✅ 2026-06-13] 블로그 정책 검수 0 재설계 — 학술·논문 인용 금지, 토픽 화이트리스트(위키 수준 확정 음악 기초 사실만), 빈도 주 1~2회. 작성/정책 프롬프트 작성. 5786f67.
+- [✅ 2026-06-13] **레벨 접근 범위 수정** — Free = Lv1~2 전체 + Lv3 sub1 순차 unlock, Lv3 sub2+·Lv4+ Premium. canAccessSublevel 1줄 교체 + getProgressGatePrev 표준 순차 위임 + PlayPage "다음 단계로" 회귀 가드 + Pricing·strings 카피 4곳 + 테스트 갱신. d1be6c3.
+- [✅ 2026-06-13] **스트릭 Step 2 완성** — source 단일화(useStreak/user_streaks, profiles 미사용), daily_activity 테이블 신설 + record_practice_day v2가 함께 INSERT, UI 3군데(헤더 StreakBadge·대시보드 StreakWidget·DailyResultCard 배지), 도트 화사 오렌지/카피 단수·복수 정정. 479a557 / 9a92156 / fc01808. Supabase apply + push 완료.
 - [신규·후속] **블로그 공개 라우트 SSG prerender** — GEO(AI 인용)용. 검색은 구글봇 JS 렌더링 대응되나 AI 크롤러 본문 미인식. GEO 본격화 시 진행.
 - [신규·후속] **블로그 기존 글 인용 일괄 제거** — 검수 0 정책 소급, 한가할 때.
-- [다음] **레벨 접근 범위 수정**(착수), **스트릭 Step 2 UI**(헤더 메인·대시보드·데일리 결과 화면).
+- [신규·후속] **admin StreakAdjustDialog server 확인** — `callAdminAction({action_type:"adjust_streak", current_streak, ...})` RPC가 user_streaks를 갱신하는지 대시보드 확인. profiles만 갱신하면 admin 수동 조정이 새 UI(useStreak/user_streaks)에 반영 안 됨 → server-side 보강 필요.
+- [신규·후속] **기존 테스트 사전 실패 정리** — 진짜 회귀 묻지 않게 별도 라운드: ① levelSystem.test.ts의 calculateAccuracy/checkPassed/getCompletion (recent_plays 윈도우 도입 후 누적 기반 옛 테스트 stale) ② LevelSelect.test.tsx의 subscription 잠금 라벨/UpgradeModal 통합(i18n mock `aria.proOnly` 누락 의심) ③ Dashboard.test.tsx 2건.
 
 ---
 

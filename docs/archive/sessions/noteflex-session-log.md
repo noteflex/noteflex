@@ -11,11 +11,17 @@
 - 데일리 시간초과 오답 2배 버그 수정 (99e9354 + 후속).
 - 스트릭 Step 1 백엔드: `record_practice_day(p_local_date)` RPC 신설 (7cdb3be), 일반게임(useSessionRecorder)·데일리(DailyChallenge) 완료 시 호출, 호출 방식 fire-and-forget 통일 (beb8a5f). 로컬 자정 기준. 마이그레이션 Supabase apply + push 완료.
 - 블로그 정책 검수 0 전제 재설계: 학술·논문 인용 금지, 토픽 화이트리스트(위키 수준 확정 음악 기초 사실만), 빈도 주 1~2회. 작성 프롬프트 + 정책 문서 수정 프롬프트 작성.
+- 레벨 접근 범위 수정 (d1be6c3): Free = Lv1~2 전체 서브레벨 + Lv3 sub1까지 순차 unlock, Lv3 sub2+·Lv4+ = Premium 전용 (기존 Lv1~5 sub1만에서 변경). canAccessSublevel 1줄 교체 + getProgressGatePrev 표준 순차 위임. PlayPage handleGoToNextSublevel 회귀 가드(Lv3-1 통과 후 "다음 단계로" → Lv3-2 무단진입 차단 → UpgradeModal). Pricing·strings 카피 4곳. 테스트 갱신.
+- 스트릭 Step 2 (479a557): source 단일화 — UI가 profiles 대신 user_streaks를 읽도록 useStreak 훅 신설. daily_activity 테이블 신설(user_id, local_date PK), record_practice_day v2가 user_streaks 갱신과 함께 INSERT. UI 3군데 — 헤더 StreakBadge(메인 화면만, 오늘완료 amber/미완 회색), 대시보드 StreakWidget(🔥N일 + 주간 7도트 + 최장), DailyResultCard 배지.
+- 스트릭 UI 다듬기 (9a92156 + 옅은불꽃 fc01808): 주간 도트 화사 오렌지(#FB923C) 채움 + 또렷 🔥, 오늘 미완 칸 amber 테두리 + 옅은 🔥(opacity 0.5). 카피 단수/복수 — "{n} day streak"(수식 단수) / "Best {n} days"(독립 복수), ko "🔥 {n}일 연속"/"최장 {n}일".
 
 ### 학습/결정
 - navigator.share 앱별 title/text 처리 제각각. 이미지 중심 앱(카톡·인스타)=title만, 텍스트 중심(X·문자)=캡션. 이미지 자체 완결(점수·날짜·URL 내장) + 캡션 병행.
 - 블로그 = GEO/권위 자산이지 시드 채널 아님. 검수 0이라 인용 금지가 안전(틀린 인용 리스크 제거).
 - 블로그 prerender 진단: Vite React SPA 클라이언트 렌더링 → view-source의 `#root` 빈 채. 구글봇은 JS 렌더링하므로 검색 색인은 됨(신생 도메인이라 느림, GSC "접수중"). AI 크롤러는 JS 미실행으로 본문 미인식 → GEO 0. 결론: 검색은 시간 대기, 공개 라우트 SSG prerender는 GEO 본격화 시 별도(사실추적 프롬프트 보류).
+- 스트릭 source 불일치: record_practice_day=user_streaks 갱신 vs UI=profiles 읽음 → user_streaks 단일화. profiles.last_practice_date는 UTC라 로컬 자정과 어긋남, user_streaks(로컬)가 정확.
+- 주간 7도트는 일별 이력 필요 → daily_activity 신설(분석용 user_stats_daily와 분리, 데일리 격리 유지). 도입 후부터 쌓임(과거 소급 X).
+- 레벨 게이트는 canAccessSublevel 단일 함수지만 PlayPage "다음 단계로"가 우회 경로라 별도 가드 필수.
 
 ### 다음
 - 레벨 접근 범위 수정 (착수).
