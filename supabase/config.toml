@@ -407,3 +407,6 @@ verify_jwt = false
 
 [functions.paddle-customer-portal]
 verify_jwt = false
+
+[functions.creem-webhook]
+verify_jwt = false
