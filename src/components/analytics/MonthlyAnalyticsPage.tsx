@@ -26,13 +26,13 @@ function makeMonthStart(year: number, month: number): string {
   return `${year}-${String(month).padStart(2, "0")}-01`;
 }
 
-function BackReportCard({ to, label }: { to: string; label: string }) {
+function NavPillBack({ to, label }: { to: string; label: string }) {
   return (
     <Link
       to={to}
-      className="inline-flex items-center gap-1.5 rounded-lg border border-dashed border-border/60 px-3 py-2 text-xs text-muted-foreground hover:text-foreground hover:border-border transition-colors group"
+      className="inline-flex items-center gap-1.5 h-9 px-4 rounded-full bg-muted text-foreground text-sm font-medium hover:bg-muted/70 transition-colors"
     >
-      <ChevronLeft className="h-3.5 w-3.5 shrink-0 group-hover:-translate-x-0.5 transition-transform" />
+      <ChevronLeft className="h-4 w-4" />
       {label}
     </Link>
   );
@@ -60,7 +60,6 @@ function ProLockScreen({ reportLabel }: { reportLabel: string }) {
 export default function MonthlyAnalyticsPage() {
   const { user, profile, loading: authLoading } = useAuth();
   const t = useT();
-  const navigate = useNavigate();
 
   const initialTarget = useMemo(() => latestCompletedMonth(), []);
   const [target, setTarget] = useState<{ year: number; month: number }>(initialTarget);
@@ -99,8 +98,6 @@ export default function MonthlyAnalyticsPage() {
           <p className="text-xs text-muted-foreground">{t.analytics.monthlySubtitle}</p>
         </div>
 
-        <BackReportCard to="/analytics/weekly" label={t.analytics.backToWeekly} />
-
         {isPro ? (
           <>
             <PeriodSelector
@@ -108,12 +105,19 @@ export default function MonthlyAnalyticsPage() {
               value={monthStartIso}
               onChange={handleSelectorChange}
               isPro={isPro}
-              onProLockHit={() => navigate("/dashboard?upgrade=1")}
             />
             <MonthlyReport year={target.year} month={target.month} />
+            <div className="flex items-center justify-start pt-1">
+              <NavPillBack to="/analytics/weekly" label={t.analytics.backToWeekly} />
+            </div>
           </>
         ) : (
-          <ProLockScreen reportLabel={t.analytics.monthlyTitle} />
+          <>
+            <ProLockScreen reportLabel={t.analytics.monthlyTitle} />
+            <div className="flex items-center justify-start pt-1">
+              <NavPillBack to="/analytics/weekly" label={t.analytics.backToWeekly} />
+            </div>
+          </>
         )}
       </main>
     </div>

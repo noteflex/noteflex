@@ -35,43 +35,26 @@ function latestCompletedWeekStart(): string {
   return addDays(mondayThis, -7);
 }
 
-function BackReportCard({ to, label }: { to: string; label: string }) {
+function NavPillBack({ to, label }: { to: string; label: string }) {
   return (
     <Link
       to={to}
-      className="inline-flex items-center gap-1.5 rounded-lg border border-dashed border-border/60 px-3 py-2 text-xs text-muted-foreground hover:text-foreground hover:border-border transition-colors group"
+      className="inline-flex items-center gap-1.5 h-9 px-4 rounded-full bg-muted text-foreground text-sm font-medium hover:bg-muted/70 transition-colors"
     >
-      <ChevronLeft className="h-3.5 w-3.5 shrink-0 group-hover:-translate-x-0.5 transition-transform" />
+      <ChevronLeft className="h-4 w-4" />
       {label}
     </Link>
   );
 }
 
-function ForwardReportCard({
-  to,
-  eyebrow,
-  label,
-  description,
-}: {
-  to: string;
-  eyebrow: string;
-  label: string;
-  description: string;
-}) {
+function NavPillForward({ to, label }: { to: string; label: string }) {
   return (
-    <Link to={to} className="block group">
-      <div className="rounded-xl border border-border bg-card px-5 py-4 flex items-center justify-between gap-4 hover:border-primary/50 hover:bg-primary/5 transition-colors">
-        <div className="min-w-0">
-          <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
-            {eyebrow}
-          </p>
-          <p className="mt-1 text-sm font-semibold text-foreground">{label}</p>
-          <p className="mt-0.5 text-xs text-muted-foreground leading-relaxed">{description}</p>
-        </div>
-        <div className="shrink-0 flex h-8 w-8 items-center justify-center rounded-full bg-muted group-hover:bg-primary/10 transition-colors">
-          <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
-        </div>
-      </div>
+    <Link
+      to={to}
+      className="inline-flex items-center gap-1.5 h-9 px-4 rounded-full bg-primary/10 text-primary text-sm font-semibold hover:bg-primary/20 transition-colors"
+    >
+      {label}
+      <ChevronRight className="h-4 w-4" />
     </Link>
   );
 }
@@ -98,7 +81,6 @@ function ProLockScreen({ reportLabel }: { reportLabel: string }) {
 export default function WeeklyAnalyticsPage() {
   const { user, profile, loading: authLoading } = useAuth();
   const t = useT();
-  const navigate = useNavigate();
 
   const initialWeekStart = useMemo(() => latestCompletedWeekStart(), []);
   const [selectedWeekStart, setSelectedWeekStart] = useState<string>(initialWeekStart);
@@ -127,8 +109,6 @@ export default function WeeklyAnalyticsPage() {
           <p className="text-xs text-muted-foreground">{t.analytics.weeklySubtitle}</p>
         </div>
 
-        <BackReportCard to="/analytics/daily" label={t.analytics.backToDaily} />
-
         {isPro ? (
           <>
             <PeriodSelector
@@ -136,18 +116,20 @@ export default function WeeklyAnalyticsPage() {
               value={selectedWeekStart}
               onChange={setSelectedWeekStart}
               isPro={isPro}
-              onProLockHit={() => navigate("/dashboard?upgrade=1")}
             />
             <WeeklyReport weekStart={selectedWeekStart} />
-            <ForwardReportCard
-              to="/analytics/monthly"
-              eyebrow={t.analytics.nextReport}
-              label={t.analytics.toMonthlyLabel}
-              description={t.analytics.toMonthlyDesc}
-            />
+            <div className="flex items-center justify-between pt-1">
+              <NavPillBack to="/analytics/daily" label={t.analytics.backToDaily} />
+              <NavPillForward to="/analytics/monthly" label={t.analytics.toMonthlyLabel} />
+            </div>
           </>
         ) : (
-          <ProLockScreen reportLabel={t.analytics.weeklyTitle} />
+          <>
+            <ProLockScreen reportLabel={t.analytics.weeklyTitle} />
+            <div className="flex items-center justify-start pt-1">
+              <NavPillBack to="/analytics/daily" label={t.analytics.backToDaily} />
+            </div>
+          </>
         )}
       </main>
     </div>

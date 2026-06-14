@@ -3,7 +3,6 @@ import { Navigate, Link, useNavigate } from "react-router-dom";
 import { ChevronRight, Lock } from "lucide-react";
 import Header from "@/components/Header";
 import UserMenu from "@/components/UserMenu";
-import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useT } from "@/contexts/LanguageContext";
 import { getUserTier } from "@/lib/subscriptionTier";
@@ -21,54 +20,40 @@ function isoToDate(iso: string): Date {
   return new Date(y, m - 1, d);
 }
 
-function ForwardReportCard({
-  to,
-  eyebrow,
-  label,
-  description,
-}: {
-  to: string;
-  eyebrow: string;
-  label: string;
-  description: string;
-}) {
+function PastReportLockHint({ body, ctaLabel }: { body: string; ctaLabel: string }) {
+  const navigate = useNavigate();
   return (
-    <Link to={to} className="block group">
-      <div className="rounded-xl border border-border bg-card px-5 py-4 flex items-center justify-between gap-4 hover:border-primary/50 hover:bg-primary/5 transition-colors">
-        <div className="min-w-0">
-          <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
-            {eyebrow}
-          </p>
-          <p className="mt-1 text-sm font-semibold text-foreground">{label}</p>
-          <p className="mt-0.5 text-xs text-muted-foreground leading-relaxed">{description}</p>
-        </div>
-        <div className="shrink-0 flex h-8 w-8 items-center justify-center rounded-full bg-muted group-hover:bg-primary/10 transition-colors">
-          <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
-        </div>
+    <div className="flex items-center gap-3 rounded-2xl border border-primary/20 bg-primary/5 px-4 py-3">
+      <div className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 shrink-0">
+        <Lock className="h-4 w-4 text-primary" aria-hidden />
       </div>
-    </Link>
+      <p className="flex-1 text-xs text-foreground leading-snug">{body}</p>
+      <button
+        type="button"
+        onClick={() => navigate("/dashboard?upgrade=1")}
+        className="shrink-0 inline-flex items-center h-8 px-3 rounded-full bg-primary text-primary-foreground text-xs font-semibold hover:bg-primary/90 transition-colors"
+      >
+        {ctaLabel}
+      </button>
+    </div>
   );
 }
 
-function PastReportLock({ body, ctaLabel }: { body: string; ctaLabel: string }) {
-  const navigate = useNavigate();
+function NavPillForward({ to, label }: { to: string; label: string }) {
   return (
-    <div className="flex flex-col items-center justify-center py-16 text-center">
-      <div className="inline-flex h-14 w-14 items-center justify-center rounded-full bg-muted mb-4">
-        <Lock className="h-7 w-7 text-muted-foreground" aria-hidden />
-      </div>
-      <p className="text-sm text-muted-foreground max-w-xs">{body}</p>
-      <Button className="mt-6" onClick={() => navigate("/dashboard?upgrade=1")}>
-        {ctaLabel}
-      </Button>
-    </div>
+    <Link
+      to={to}
+      className="inline-flex items-center gap-1.5 h-9 px-4 rounded-full bg-primary/10 text-primary text-sm font-semibold hover:bg-primary/20 transition-colors"
+    >
+      {label}
+      <ChevronRight className="h-4 w-4" />
+    </Link>
   );
 }
 
 export default function DailyAnalyticsPage() {
   const { user, profile, loading: authLoading } = useAuth();
   const t = useT();
-  const navigate = useNavigate();
 
   const today = useMemo(() => kstTodayIso(), []);
   const [selectedDate, setSelectedDate] = useState<string>(today);
@@ -87,8 +72,6 @@ export default function DailyAnalyticsPage() {
   const tier = getUserTier(user ?? null, profile ?? null);
   const isPro = isAdmin || tier === "pro";
 
-  const isPast = selectedDate < today;
-  const showPastLock = !isPro && isPast;
   const dateProp = selectedDate === today ? undefined : isoToDate(selectedDate);
 
   return (
@@ -106,24 +89,20 @@ export default function DailyAnalyticsPage() {
           value={selectedDate}
           onChange={setSelectedDate}
           isPro={isPro}
-          onProLockHit={() => navigate("/dashboard?upgrade=1")}
         />
 
-        {showPastLock ? (
-          <PastReportLock
+        {!isPro && (
+          <PastReportLockHint
             body={t.analytics.pastReportProLockBody}
             ctaLabel={t.analytics.proLockCta}
           />
-        ) : (
-          <DailyReport date={dateProp} />
         )}
 
-        <ForwardReportCard
-          to="/analytics/weekly"
-          eyebrow={t.analytics.nextReport}
-          label={t.analytics.toWeeklyLabel}
-          description={t.analytics.toWeeklyDesc}
-        />
+        <DailyReport date={dateProp} />
+
+        <div className="flex items-center justify-end pt-1">
+          <NavPillForward to="/analytics/weekly" label={t.analytics.toWeeklyLabel} />
+        </div>
       </main>
     </div>
   );

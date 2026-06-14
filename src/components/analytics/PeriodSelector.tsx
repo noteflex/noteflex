@@ -11,7 +11,6 @@ interface PeriodSelectorProps {
   value: string;
   onChange: (periodStart: string) => void;
   isPro: boolean;
-  onProLockHit?: () => void;
 }
 
 const MONTHS_EN = [
@@ -50,7 +49,6 @@ function kstTodayIso(): string {
   return `${kst.getUTCFullYear()}-${String(kst.getUTCMonth() + 1).padStart(2, "0")}-${String(kst.getUTCDate()).padStart(2, "0")}`;
 }
 
-/** 입력 KST 오늘 → 직전 완료 주 월요일 (ISO 주). */
 function latestCompletedWeekStart(today: string): string {
   const d = parseIso(today);
   const isoDow = d.getDay() === 0 ? 7 : d.getDay();
@@ -58,7 +56,6 @@ function latestCompletedWeekStart(today: string): string {
   return addDays(mondayThis, -7);
 }
 
-/** 입력 KST 오늘 → 직전 완료 월 1일. */
 function latestCompletedMonthStart(today: string): string {
   const [y, m] = today.split("-").map(Number);
   return `${m === 1 ? y - 1 : y}-${String(m === 1 ? 12 : m - 1).padStart(2, "0")}-01`;
@@ -99,7 +96,6 @@ export default function PeriodSelector({
   value,
   onChange,
   isPro,
-  onProLockHit,
 }: PeriodSelectorProps) {
   const t = useT();
   const { lang } = useLang();
@@ -121,27 +117,21 @@ export default function PeriodSelector({
 
   const canPrev = isPro;
   const canNext = isPro && value < upperBound;
+  const canOpenDropdown = isPro;
 
   const handlePrev = useCallback(() => {
-    if (!isPro) {
-      onProLockHit?.();
-      return;
-    }
+    if (!canPrev) return;
     if (periodType === "day") onChange(addDays(value, -1));
     else if (periodType === "week") onChange(addDays(value, -7));
     else onChange(addMonths(value, -1));
-  }, [isPro, onProLockHit, periodType, value, onChange]);
+  }, [canPrev, periodType, value, onChange]);
 
   const handleNext = useCallback(() => {
-    if (!isPro) {
-      onProLockHit?.();
-      return;
-    }
-    if (value >= upperBound) return;
+    if (!canNext) return;
     if (periodType === "day") onChange(addDays(value, 1));
     else if (periodType === "week") onChange(addDays(value, 7));
     else onChange(addMonths(value, 1));
-  }, [isPro, onProLockHit, value, upperBound, periodType, onChange]);
+  }, [canNext, value, periodType, onChange]);
 
   const fetchPeriods = useCallback(
     async (nextOffset: number, append: boolean) => {
@@ -175,15 +165,12 @@ export default function PeriodSelector({
   );
 
   const handleToggleDropdown = useCallback(() => {
-    if (!isPro) {
-      onProLockHit?.();
-      return;
-    }
+    if (!canOpenDropdown) return;
     if (!open) {
       void fetchPeriods(0, false);
     }
     setOpen((prev) => !prev);
-  }, [isPro, onProLockHit, open, fetchPeriods]);
+  }, [canOpenDropdown, open, fetchPeriods]);
 
   const handleLoadMore = useCallback(() => {
     void fetchPeriods(offset + 30, true);
@@ -202,73 +189,73 @@ export default function PeriodSelector({
 
   const label = formatLabel(periodType, value, lang, today);
 
-  const baseBtn =
-    "inline-flex items-center justify-center rounded-md border border-border bg-card text-foreground transition-colors";
-  const enabledBtn = "hover:bg-muted";
-  const disabledBtn = "opacity-40 cursor-not-allowed";
+  const arrowBase =
+    "inline-flex items-center justify-center h-9 w-9 rounded-full bg-muted text-muted-foreground transition-colors";
+  const arrowEnabled = "hover:bg-primary/10 hover:text-primary";
+  const arrowDisabled = "opacity-40 cursor-not-allowed";
+
+  const chipBase =
+    "inline-flex items-center gap-1.5 h-9 px-5 rounded-full text-sm font-semibold shadow-sm transition-colors";
+  const chipEnabled = "bg-primary text-primary-foreground hover:bg-primary/90";
+  const chipLocked = "bg-primary/15 text-primary cursor-not-allowed";
 
   return (
-    <div ref={containerRef} className="relative flex items-center gap-2">
+    <div ref={containerRef} className="relative flex items-center justify-center gap-3">
       <button
         type="button"
         onClick={handlePrev}
-        disabled={!canPrev && isPro}
+        disabled={!canPrev}
         aria-label={t.analytics.selectorPrev}
-        className={`${baseBtn} h-8 w-8 ${canPrev ? enabledBtn : disabledBtn}`}
+        className={`${arrowBase} ${canPrev ? arrowEnabled : arrowDisabled}`}
       >
-        {isPro ? (
-          <ChevronLeft className="h-4 w-4" />
-        ) : (
-          <Lock className="h-3.5 w-3.5 text-muted-foreground" aria-hidden />
-        )}
+        <ChevronLeft className="h-4 w-4" />
       </button>
 
       <button
         type="button"
         onClick={handleToggleDropdown}
-        className={`${baseBtn} flex-1 h-8 px-3 gap-1.5 text-sm font-medium ${enabledBtn}`}
+        disabled={!canOpenDropdown}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        className={`${chipBase} ${canOpenDropdown ? chipEnabled : chipLocked}`}
       >
-        <span className="truncate">{label}</span>
-        {isPro ? (
-          <ChevronDown className={`h-4 w-4 shrink-0 transition-transform ${open ? "rotate-180" : ""}`} />
+        <span className="whitespace-nowrap">{label}</span>
+        {canOpenDropdown ? (
+          <ChevronDown className={`h-4 w-4 transition-transform ${open ? "rotate-180" : ""}`} />
         ) : (
-          <Lock className="h-3.5 w-3.5 shrink-0 text-muted-foreground" aria-hidden />
+          <Lock className="h-3.5 w-3.5" aria-hidden />
         )}
       </button>
 
       <button
         type="button"
         onClick={handleNext}
-        disabled={!canNext && isPro}
+        disabled={!canNext}
         aria-label={t.analytics.selectorNext}
-        className={`${baseBtn} h-8 w-8 ${canNext ? enabledBtn : disabledBtn}`}
+        className={`${arrowBase} ${canNext ? arrowEnabled : arrowDisabled}`}
       >
-        {isPro ? (
-          <ChevronRight className="h-4 w-4" />
-        ) : (
-          <Lock className="h-3.5 w-3.5 text-muted-foreground" aria-hidden />
-        )}
+        <ChevronRight className="h-4 w-4" />
       </button>
 
-      {open && isPro && (
+      {open && canOpenDropdown && (
         <div
           role="listbox"
-          className="absolute z-30 top-full mt-1 left-0 right-0 rounded-md border border-border bg-card shadow-lg overflow-hidden"
+          className="absolute z-30 top-full mt-2 left-1/2 -translate-x-1/2 w-72 max-w-[90vw] rounded-2xl border border-border bg-card shadow-xl overflow-hidden"
         >
-          <p className="px-3 py-2 text-[10px] font-medium uppercase tracking-wide text-muted-foreground border-b border-border">
+          <p className="px-4 py-2.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground border-b border-border bg-muted/30">
             {t.analytics.selectorHistoryTitle}
           </p>
           <div className="max-h-72 overflow-y-auto">
             {loading && periods.length === 0 ? (
-              <p className="px-3 py-6 text-xs text-muted-foreground text-center">
+              <p className="px-4 py-8 text-xs text-muted-foreground text-center">
                 {t.analytics.selectorLoading}
               </p>
             ) : periods.length === 0 ? (
-              <p className="px-3 py-6 text-xs text-muted-foreground text-center">
+              <p className="px-4 py-8 text-xs text-muted-foreground text-center">
                 {t.analytics.selectorHistoryEmpty}
               </p>
             ) : (
-              <ul>
+              <ul className="py-1">
                 {periods.map((p) => {
                   const isSelected = p.period_start === value;
                   const itemLabel = formatLabel(periodType, p.period_start, lang, today);
@@ -281,11 +268,13 @@ export default function PeriodSelector({
                           onChange(p.period_start);
                           setOpen(false);
                         }}
-                        className={`w-full flex items-center justify-between gap-3 px-3 py-2 text-left text-xs hover:bg-muted transition-colors ${
-                          isSelected ? "bg-primary/10 text-primary" : "text-foreground"
+                        className={`w-full flex items-center justify-between gap-3 px-4 py-2 text-left text-xs transition-colors ${
+                          isSelected
+                            ? "bg-primary/10 text-primary font-semibold"
+                            : "text-foreground hover:bg-muted/60"
                         }`}
                       >
-                        <span className="font-medium truncate">{itemLabel}</span>
+                        <span className="truncate">{itemLabel}</span>
                         <span className="text-[11px] text-muted-foreground tabular-nums shrink-0">
                           {accPct} · {p.sessions_count}
                         </span>
@@ -301,7 +290,7 @@ export default function PeriodSelector({
               type="button"
               onClick={handleLoadMore}
               disabled={loading}
-              className="w-full px-3 py-2 text-xs text-primary border-t border-border hover:bg-muted disabled:opacity-50"
+              className="w-full px-4 py-2 text-xs font-medium text-primary border-t border-border hover:bg-primary/5 disabled:opacity-50 transition-colors"
             >
               {loading ? t.analytics.selectorLoading : t.analytics.selectorLoadMore}
             </button>
