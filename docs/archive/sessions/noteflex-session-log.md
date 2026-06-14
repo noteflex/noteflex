@@ -6,25 +6,25 @@
 
 ## 2026-06-14
 
-### 결제: Paddle → Creem 전환 (Test Mode 검증 완료)
-- 결제 provider를 Paddle에서 Creem으로 교체(병행 아님, Paddle 휴면). 기존 subscriptions 테이블·sync_premium_status 트리거·expire cron 재사용(paddle_* 컬럼에 Creem 값 매핑: customer_id=cust_, subscription_id=sub_, price_id=product_id). Premium 권위 source=profiles.is_premium.
-- Edge Function 3개 신규: creem-checkout / creem-webhook(creem-signature HMAC 검증) / creem-customer-portal.
-- secret(Test): CREEM_API_KEY, CREEM_WEBHOOK_SECRET, CREEM_PRODUCT_ID_MONTHLY/YEARLY.
-- 클라: src/lib/creem.ts, Pricing.tsx·ProfilePage.tsx·CheckoutSuccess.tsx 교체. paddle.ts·paddle-* 함수 잔존(정리 PENDING).
-- 디버깅 4건 해결: webhook 401(--no-verify-jwt + config.toml) / premium_until null(Creem 실제 페이로드 필드명 방어 파싱, customer·product 객체형·_date 접미사) / 취소 시 즉시 회수→기간말 취소로 정정(current_period_end 미래면 status=active + cancel_at_period_end=true 유지) / portal redirect(customer_portal_link 필드).
-- 검증: Test 카드 4242 결제→is_premium 활성, 기간말 취소→만료일까지 유지, portal redirect 정상.
-- 커밋: d0ec6a2, cfd3e84, c9b53ec, 037c69e, d3521e8. 라이브 전환 PENDING.
+### 결제: Paddle → Creem 전환 + 라이브 전환 완료
+- provider를 Paddle에서 Creem으로 교체(Paddle 휴면). subscriptions·sync_premium_status 트리거·expire cron 재사용(paddle_* 컬럼에 Creem 값 매핑: customer_id=cust_, subscription_id=sub_, price_id=product_id). Premium 권위 source=profiles.is_premium.
+- Edge Function 3개: creem-checkout / creem-webhook(creem-signature HMAC 검증) / creem-customer-portal.
+- Test Mode 디버깅 4건: webhook 401(--no-verify-jwt + config.toml) / premium_until null(Creem 페이로드 필드명 방어 파싱) / 취소 시 즉시 회수→기간말 취소로 정정(current_period_end 미래면 status=active + cancel_at_period_end=true) / portal redirect(customer_portal_link).
+- 라이브 전환 완료: Live 상품 2개(monthly prod_7DZuT8doea5sgIEgWABuys / yearly prod_6KVISEXWb7hs2JxWgFYIW9), Live API 키, Live webhook(13 이벤트 구독), Supabase secret 4개 교체, PAYMENT_LOCKED=false.
+- 라이브 검증 3경로 통과: 결제→is_premium 활성(+Creem First Sale 메일) / 기간말 취소→만료일까지 유지 / 환불→is_premium 즉시 회수.
+- refund 핸들러 보강: 기존엔 profiles.is_premium만 회수하고 subscriptions row가 status=active로 stale 남아, 트리거 재발동 시 is_premium 부활 위험이 있었음. refund.created·dispute.created 시 subscriptions.status='refunded' + current_period_end=now() + canceled_at=now()로 UPDATE하고, is_premium 회수는 on_subscription_change 트리거에 일임(단일 경로). 대상 구독 미식별 시 profiles 직접 회수 폴백. 스키마 검증(canceled_at 컬럼 존재, 트리거 AFTER INSERT OR UPDATE로 무조건 발화)으로 재결제 없이 코드 리뷰 갈음.
+- 커밋: d0ec6a2, cfd3e84, c9b53ec, 037c69e, d3521e8(Creem) / ed2ab2d(잠금 해제) / 4f1031e(refund 보강).
 
 ### 보고서: 과거 보고서 다시 보기
 - 백엔드(20260613_report_history_rpc, apply 완료): is_pro() 헬퍼, get_daily/weekly/monthly_report 과거 기간 Pro 가드, list_report_periods 신규. 거부=pro_required(42501→403).
 - 프론트: PeriodSelector 신규(rose pill 칩 + 원형 화살표 + 드롭다운). useWeekly/MonthlyReport를 직접 SELECT에서 RPC 호출로 통일. 디폴트=직전 완료 기간(기존 "이번주" SELECT는 rollup 미존재라 항상 no_data였던 버그도 해소).
-- 잠금 동작 수정: 셀렉터 lock 클릭 시 대시보드 이탈(navigate) 제거→페이지 유지 + 인라인 안내, CTA 버튼 클릭 시에만 업그레이드 이동.
-- 종류 이동 pill: 큰 카드 제거→좌/우 소프트 rose pill 항상 노출(Free 잠금 상태도 좌·우 모두). 일간=우 주간 / 주간=좌 일간·우 월간 / 월간=좌 주간. 이동은 자유, 도착 페이지가 게이팅.
-- 디자인 위계 통일: 셀렉터 칩(진한 rose) > 이동 pill(소프트 rose) > 본문. CTA=진한 rose.
+- 잠금 동작 수정: 셀렉터 lock 클릭 시 대시보드 이탈(navigate) 제거→페이지 유지 + 인라인 안내, CTA 클릭 시에만 업그레이드 이동.
+- 종류 이동 pill: 큰 카드 제거→좌/우 소프트 rose pill 항상 노출(Free 잠금도 좌·우 모두). 일간=우 주간 / 주간=좌 일간·우 월간 / 월간=좌 주간. 이동 자유, 도착 페이지가 게이팅.
+- 디자인 위계: 셀렉터 칩(진한 rose) > 이동 pill(소프트 rose) > 본문. CTA=진한 rose.
 - 커밋: 11f3642, 5b62f14, 6ba7542.
 
 ### 운영
-- admin@noteflex.app = Free 계정으로 유지(원복 안 함, 테스트/Free 체험 겸용).
+- admin@noteflex.app = Free 유지(원복 안 함, 테스트/Free 체험 겸용).
 
 ---
 

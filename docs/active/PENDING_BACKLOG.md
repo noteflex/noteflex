@@ -7,16 +7,20 @@
 
 ---
 
-## 2026-06-14 결정·미결 묶음 (결제 Creem 검증·과거 보고서)
+## 2026-06-14 결정·미결 묶음 (Creem 라이브 전환·refund 보강·과거 보고서)
 
-- [✅ 2026-06-14] **결제 Paddle → Creem 전환 (Test Mode 검증 완료)** — provider 교체(병행 아님, Paddle 휴면). 기존 subscriptions/sync_premium_status/expire cron 재사용(paddle_* 컬럼에 Creem 값 매핑: customer_id=cust_, subscription_id=sub_, price_id=product_id). Premium 권위 source=profiles.is_premium. Edge Function 3개 신규(creem-checkout / creem-webhook[creem-signature HMAC] / creem-customer-portal). secret(Test): CREEM_API_KEY·CREEM_WEBHOOK_SECRET·CREEM_PRODUCT_ID_MONTHLY/YEARLY. 클라: src/lib/creem.ts + Pricing·ProfilePage·CheckoutSuccess 교체. 디버깅 4건(webhook 401 → --no-verify-jwt + config.toml / premium_until null → 페이로드 필드명 방어 파싱[customer·product 객체형·_date 접미사] / 취소 즉시 회수 → 기간말 취소[current_period_end 미래면 status=active + cancel_at_period_end=true] / portal redirect → customer_portal_link 필드) 모두 해결. Test 카드 4242 결제→is_premium 활성, 기간말 취소→만료일까지 유지, portal redirect 정상. d0ec6a2 / cfd3e84 / c9b53ec / 037c69e / d3521e8. **라이브 전환 PENDING**.
+- [✅ 2026-06-14] **결제 Creem 라이브 전환 완료** — Live 상품 2개(monthly `prod_7DZuT8doea5sgIEgWABuys` / yearly `prod_6KVISEXWb7hs2JxWgFYIW9`), Live API 키, Live webhook(13 이벤트 구독), Supabase secret 4개 교체, PAYMENT_LOCKED=false. 라이브 검증 3경로 통과(결제→is_premium 활성 + Creem First Sale 메일 / 기간말 취소→만료일까지 유지 / 환불→is_premium 즉시 회수). ed2ab2d.
+- [✅ 2026-06-14] **refund 핸들러 stale 해소** — 기존엔 profiles.is_premium만 회수하고 subscriptions row가 status=active로 남아 트리거 재발동 시 is_premium 부활 위험. refund.created·dispute.created 시 subscriptions.status='refunded' + current_period_end=now() + canceled_at=now() UPDATE, is_premium 회수는 on_subscription_change 트리거 단일 경로 위임. 대상 구독 미식별 시 profiles 직접 회수 폴백. 스키마 검증(canceled_at 컬럼·트리거 AFTER INSERT OR UPDATE)으로 재결제 없이 코드 리뷰 갈음. 4f1031e.
+- [✅ 2026-06-14] **결제 Paddle → Creem 전환 (Test Mode 검증)** — provider 교체(Paddle 휴면). subscriptions/sync_premium_status/expire cron 재사용(paddle_* 컬럼에 Creem 값 매핑: customer_id=cust_, subscription_id=sub_, price_id=product_id). Edge Function 3개(creem-checkout / creem-webhook[creem-signature HMAC] / creem-customer-portal). Test secret 4개. 클라: src/lib/creem.ts + Pricing·ProfilePage·CheckoutSuccess 교체. 디버깅 4건(webhook 401 / premium_until null / 즉시 회수→기간말 취소 / portal redirect) 해결. Test 카드 4242 검증 통과. d0ec6a2 / cfd3e84 / c9b53ec / 037c69e / d3521e8.
 - [✅ 2026-06-14] **과거 보고서 RPC 게이팅** — 20260613_report_history_rpc(apply 완료): is_pro() 헬퍼 + get_daily/weekly/monthly_report 과거 기간 Pro 가드 + list_report_periods 신규. 거부=pro_required(42501→403).
-- [✅ 2026-06-14] **PeriodSelector·이동 pill·잠금 동작** — PeriodSelector 신규(rose pill 칩 + 원형 화살표 + 드롭다운). useWeekly/MonthlyReport를 직접 SELECT에서 RPC 호출로 통일. 디폴트=직전 완료 기간(기존 "이번주" SELECT가 rollup 미존재라 항상 no_data였던 잠재 버그 해소). 셀렉터 lock 클릭 시 navigate 제거 → 페이지 유지 + 인라인 안내, CTA 버튼 클릭 시에만 업그레이드 이동. 종류 이동 pill 좌/우 항상 노출(Free 잠금 상태도 포함), 디자인 위계 통일(칩=진한 rose, 이동 pill=소프트 rose, CTA=진한 rose). 11f3642 / 5b62f14 / 6ba7542.
-- [✅ 2026-06-14] **운영** — admin@noteflex.app = Free 계정으로 유지(원복 안 함, 테스트/Free 체험 겸용).
-- [신규·후속] **결제 라이브 전환** — Live 상품 2개 재등록 → live ID, Live 키(creem_), secret 전부 교체, Live webhook 등록, PAYMENT_LOCKED=false 배포. test/live 완전 분리라 전부 재발급.
+- [✅ 2026-06-14] **PeriodSelector·이동 pill·잠금 동작** — PeriodSelector 신규(rose pill 칩 + 원형 화살표 + 드롭다운). useWeekly/MonthlyReport를 직접 SELECT에서 RPC 호출로 통일. 디폴트=직전 완료 기간(기존 "이번주" SELECT가 rollup 미존재라 항상 no_data였던 잠재 버그 해소). 셀렉터 lock 클릭 시 navigate 제거 → 페이지 유지 + 인라인 안내, CTA 클릭 시에만 업그레이드 이동. 종류 이동 pill 좌/우 항상 노출(Free 잠금도 포함), 디자인 위계 통일(칩=진한 rose, 이동 pill=소프트 rose, CTA=진한 rose). 11f3642 / 5b62f14 / 6ba7542.
+- [✅ 2026-06-14] **운영 — admin@noteflex.app = Free 유지** (원복 안 함, 테스트/Free 체험 겸용).
+- [신규·후속·결제] **webhook product_id 흔들림** — checkout.completed는 product_id(`prod_`), subscription 이벤트는 price_id(`pprice_`)를 paddle_price_id에 넣어 이벤트마다 값이 오감. plan 역판별 시 깨질 소지. extractProductId가 이벤트 무관하게 항상 product_id를 넣도록 통일 필요.
+- [신규·후속·결제] **subscriptions.status 도메인 정식화** — CHECK 제약 없는 상태에서 'refunded' 값 신규 도입. status enum/도메인('active'·'trialing'·'past_due'·'canceled'·'expired'·'refunded'·'inactive') CHECK 제약 추가 검토.
+- [신규·후속·결제] **payout 계좌 설정** — 실수익 정산 전 1회 작업.
 - [신규·후속] **paddle·reviewer 잔재 정리** — paddle.ts·paddle-* Edge Function·reviewer role 제거.
 - [신규·후속] **보고서 본문 메트릭 카드 화사화** — 셀렉터·이동 pill 톤과 통일. 별도 라운드.
-- [신규·후속·보안] **user_analytics_rollup RLS 좁히기 검토** — 보조 SELECT(WeeklyReport.missedDays, MonthlyReport.persistentWeakNotes)가 본인 row 전부 허용이라 비Pro 우회 여지. is_pro 기준 좁히기(예: `period_type='day' OR public.is_pro()`) 또는 RPC 응답에 필요 필드 포함시켜 보조 SELECT 제거.
+- [신규·후속·보안] **user_analytics_rollup RLS 좁히기** — 보조 SELECT(WeeklyReport.missedDays, MonthlyReport.persistentWeakNotes)가 본인 row 전부 허용이라 비Pro 우회 여지. is_pro 기준 좁히기(예: `period_type='day' OR public.is_pro()`) 또는 RPC 응답에 필요 필드 포함시켜 보조 SELECT 제거.
 - [신규·후속] **주/월 디폴트 정책 확정** — "직전 완료 기간"(현 구현, cron 정합) vs "이번주 진행중 라이브"(cron 미채움 → 별도 실시간 집계 필요) 중 제품 의도 결정.
 
 ---
