@@ -78,6 +78,7 @@
 | 2026-05-24 | 65 | 65 | 130 | §6-70 관악기 초견 (ko+en) 추가, 이미지: Wikimedia+LoC |
 | 2026-05-25 | 66 | 66 | 132 | §3-R1 리듬 초견 전략 (ko+en) 추가 |
 | 2026-06-13 | 81 | 81 | 162 | §2-? 음정(intervals) 정의·도수·질 (ko+en) 추가. 검수 0 정책(2026-06-13) 적용 — 학술 인용 없음, 토픽 화이트리스트 부합. |
+| 2026-06-14 | 82 | 82 | 164 | 빠르기말(tempo markings) Allegro·Andante·Adagio 의미와 BPM 범위 (ko+en) 추가. 검수 0 정책 — 학술 인용 없음, 화이트리스트(기호·악상) 부합. |
 
 ### 카테고리별 분포 (EN 기준, 2026-05-16 신규 6편 추가 후)
 | 카테고리 | 글 수 |
@@ -158,6 +159,7 @@
 | 2026-05-24 | §6-70 관악기 초견 (ko+en) | (펜딩) |
 | 2026-05-25 | §3-R1 리듬 초견 전략 (ko+en) | (펜딩) |
 | 2026-06-13 | 음정 — 도수·질, 완전/장/단/증/감 (ko+en, slug `music-intervals-explained`). 이미지: Wikimedia Commons (BWV1001 + Mozart Piano Concerto No.23 자필). curl HTTP 200 PASS. 학술 인용 없음(2026-06-13 검수 0 정책). | (펜딩) |
+| 2026-06-14 | 빠르기말 — Allegro·Andante·Adagio 의미와 BPM 범위 (ko+en, slug `tempo-markings-explained`). 이미지: Wikimedia Commons (Mozart Prague Symphony K.504 자필 + Chopin Polonaise Op.53). curl HTTP 200 PASS. 학술 인용 없음(검수 0 정책). | (펜딩) |
 
 ## 2026-05-16~18 신규 9편 사용 이미지·인용 목록
 
