@@ -7,6 +7,20 @@
 
 ---
 
+## 2026-06-14 결정·미결 묶음 (결제 Creem 검증·과거 보고서)
+
+- [✅ 2026-06-14] **결제 Paddle → Creem 전환 (Test Mode 검증 완료)** — provider 교체(병행 아님, Paddle 휴면). 기존 subscriptions/sync_premium_status/expire cron 재사용(paddle_* 컬럼에 Creem 값 매핑: customer_id=cust_, subscription_id=sub_, price_id=product_id). Premium 권위 source=profiles.is_premium. Edge Function 3개 신규(creem-checkout / creem-webhook[creem-signature HMAC] / creem-customer-portal). secret(Test): CREEM_API_KEY·CREEM_WEBHOOK_SECRET·CREEM_PRODUCT_ID_MONTHLY/YEARLY. 클라: src/lib/creem.ts + Pricing·ProfilePage·CheckoutSuccess 교체. 디버깅 4건(webhook 401 → --no-verify-jwt + config.toml / premium_until null → 페이로드 필드명 방어 파싱[customer·product 객체형·_date 접미사] / 취소 즉시 회수 → 기간말 취소[current_period_end 미래면 status=active + cancel_at_period_end=true] / portal redirect → customer_portal_link 필드) 모두 해결. Test 카드 4242 결제→is_premium 활성, 기간말 취소→만료일까지 유지, portal redirect 정상. d0ec6a2 / cfd3e84 / c9b53ec / 037c69e / d3521e8. **라이브 전환 PENDING**.
+- [✅ 2026-06-14] **과거 보고서 RPC 게이팅** — 20260613_report_history_rpc(apply 완료): is_pro() 헬퍼 + get_daily/weekly/monthly_report 과거 기간 Pro 가드 + list_report_periods 신규. 거부=pro_required(42501→403).
+- [✅ 2026-06-14] **PeriodSelector·이동 pill·잠금 동작** — PeriodSelector 신규(rose pill 칩 + 원형 화살표 + 드롭다운). useWeekly/MonthlyReport를 직접 SELECT에서 RPC 호출로 통일. 디폴트=직전 완료 기간(기존 "이번주" SELECT가 rollup 미존재라 항상 no_data였던 잠재 버그 해소). 셀렉터 lock 클릭 시 navigate 제거 → 페이지 유지 + 인라인 안내, CTA 버튼 클릭 시에만 업그레이드 이동. 종류 이동 pill 좌/우 항상 노출(Free 잠금 상태도 포함), 디자인 위계 통일(칩=진한 rose, 이동 pill=소프트 rose, CTA=진한 rose). 11f3642 / 5b62f14 / 6ba7542.
+- [✅ 2026-06-14] **운영** — admin@noteflex.app = Free 계정으로 유지(원복 안 함, 테스트/Free 체험 겸용).
+- [신규·후속] **결제 라이브 전환** — Live 상품 2개 재등록 → live ID, Live 키(creem_), secret 전부 교체, Live webhook 등록, PAYMENT_LOCKED=false 배포. test/live 완전 분리라 전부 재발급.
+- [신규·후속] **paddle·reviewer 잔재 정리** — paddle.ts·paddle-* Edge Function·reviewer role 제거.
+- [신규·후속] **보고서 본문 메트릭 카드 화사화** — 셀렉터·이동 pill 톤과 통일. 별도 라운드.
+- [신규·후속·보안] **user_analytics_rollup RLS 좁히기 검토** — 보조 SELECT(WeeklyReport.missedDays, MonthlyReport.persistentWeakNotes)가 본인 row 전부 허용이라 비Pro 우회 여지. is_pro 기준 좁히기(예: `period_type='day' OR public.is_pro()`) 또는 RPC 응답에 필요 필드 포함시켜 보조 SELECT 제거.
+- [신규·후속] **주/월 디폴트 정책 확정** — "직전 완료 기간"(현 구현, cron 정합) vs "이번주 진행중 라이브"(cron 미채움 → 별도 실시간 집계 필요) 중 제품 의도 결정.
+
+---
+
 ## 2026-06-13 결정·미결 묶음 (스트릭·블로그 정책·prerender)
 
 - [✅ 2026-06-13] 데일리 공유 카드 — 이미지(canvas PNG) + title + 캡션 채널별 정비, #번호 전면 제거, 시간초과 오답 2배 버그 수정. f867a28 / 99e9354 / 후속.

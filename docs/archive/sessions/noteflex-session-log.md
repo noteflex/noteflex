@@ -4,6 +4,30 @@
 
 ---
 
+## 2026-06-14
+
+### 결제: Paddle → Creem 전환 (Test Mode 검증 완료)
+- 결제 provider를 Paddle에서 Creem으로 교체(병행 아님, Paddle 휴면). 기존 subscriptions 테이블·sync_premium_status 트리거·expire cron 재사용(paddle_* 컬럼에 Creem 값 매핑: customer_id=cust_, subscription_id=sub_, price_id=product_id). Premium 권위 source=profiles.is_premium.
+- Edge Function 3개 신규: creem-checkout / creem-webhook(creem-signature HMAC 검증) / creem-customer-portal.
+- secret(Test): CREEM_API_KEY, CREEM_WEBHOOK_SECRET, CREEM_PRODUCT_ID_MONTHLY/YEARLY.
+- 클라: src/lib/creem.ts, Pricing.tsx·ProfilePage.tsx·CheckoutSuccess.tsx 교체. paddle.ts·paddle-* 함수 잔존(정리 PENDING).
+- 디버깅 4건 해결: webhook 401(--no-verify-jwt + config.toml) / premium_until null(Creem 실제 페이로드 필드명 방어 파싱, customer·product 객체형·_date 접미사) / 취소 시 즉시 회수→기간말 취소로 정정(current_period_end 미래면 status=active + cancel_at_period_end=true 유지) / portal redirect(customer_portal_link 필드).
+- 검증: Test 카드 4242 결제→is_premium 활성, 기간말 취소→만료일까지 유지, portal redirect 정상.
+- 커밋: d0ec6a2, cfd3e84, c9b53ec, 037c69e, d3521e8. 라이브 전환 PENDING.
+
+### 보고서: 과거 보고서 다시 보기
+- 백엔드(20260613_report_history_rpc, apply 완료): is_pro() 헬퍼, get_daily/weekly/monthly_report 과거 기간 Pro 가드, list_report_periods 신규. 거부=pro_required(42501→403).
+- 프론트: PeriodSelector 신규(rose pill 칩 + 원형 화살표 + 드롭다운). useWeekly/MonthlyReport를 직접 SELECT에서 RPC 호출로 통일. 디폴트=직전 완료 기간(기존 "이번주" SELECT는 rollup 미존재라 항상 no_data였던 버그도 해소).
+- 잠금 동작 수정: 셀렉터 lock 클릭 시 대시보드 이탈(navigate) 제거→페이지 유지 + 인라인 안내, CTA 버튼 클릭 시에만 업그레이드 이동.
+- 종류 이동 pill: 큰 카드 제거→좌/우 소프트 rose pill 항상 노출(Free 잠금 상태도 좌·우 모두). 일간=우 주간 / 주간=좌 일간·우 월간 / 월간=좌 주간. 이동은 자유, 도착 페이지가 게이팅.
+- 디자인 위계 통일: 셀렉터 칩(진한 rose) > 이동 pill(소프트 rose) > 본문. CTA=진한 rose.
+- 커밋: 11f3642, 5b62f14, 6ba7542.
+
+### 운영
+- admin@noteflex.app = Free 계정으로 유지(원복 안 함, 테스트/Free 체험 겸용).
+
+---
+
 ## 2026-06-13 — 데일리 공유 완성 + 스트릭 Step 1 + 블로그 정책·prerender 진단
 
 ### 완료
