@@ -30,7 +30,7 @@ function NavPillBack({ to, label }: { to: string; label: string }) {
   return (
     <Link
       to={to}
-      className="inline-flex items-center gap-1.5 h-9 px-4 rounded-full bg-muted text-foreground text-sm font-medium hover:bg-muted/70 transition-colors"
+      className="inline-flex items-center gap-1.5 h-9 px-4 rounded-full bg-primary/10 text-primary text-sm font-semibold hover:bg-primary/20 transition-colors"
     >
       <ChevronLeft className="h-4 w-4" />
       {label}
