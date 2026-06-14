@@ -22,7 +22,7 @@ import { trackEvent } from "@/lib/analytics";
 // 가오픈(5/31) — 결제 1순위 = Creem (Paddle은 휴면 백업).
 // PAYMENT_LOCKED=true → monthly·yearly 클릭 시 waitlist 다이얼로그.
 // sandbox 검증 후 false 전환.
-const PAYMENT_LOCKED = true;
+const PAYMENT_LOCKED = false;
 
 // ── 다국어 콘텐츠 (ja·zh = en fallback, Phase 3에서 정식 번역 예정) ──────
 const CONTENT = {
