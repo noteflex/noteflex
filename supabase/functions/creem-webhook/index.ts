@@ -351,8 +351,18 @@ async function handleCheckoutCompleted(
 // ═══════════════════════════════════════════════════════════════
 // refund.created / dispute.created — 즉시 premium 회수
 // ═══════════════════════════════════════════════════════════════
-// 페이로드에 subscription_id 없음 → customer_id 로 매핑.
-// 트리거 우회로 profiles 직접 UPDATE (paddle-webhook chargeback 패턴 동일).
+// 1순위: 대상 subscriptions row 를 status='refunded' + current_period_end=now()
+//   로 UPDATE → 트리거 sync_premium_status 가 profiles.is_premium=false,
+//   premium_until=null 동기화. 트리거는 status in ('active','trialing') 만
+//   premium 으로 보므로 'refunded' 는 자동 비활성.
+//   이렇게 두면 stale subscriptions row(status='active' + 미래 period_end) 가
+//   남지 않아, 이후 다른 트리거 재발동 시 is_premium 이 부활할 위험을 차단.
+// 2순위(폴백): subscription_id 페이로드 없고 customer_id 로도 active/trialing
+//   구독을 못 찾으면, 기존 chargeback 패턴 그대로 profiles 직접 회수.
+//
+// 페이로드 식별자: refund/dispute object 는 통상 subscription_id 없이 customer_id
+//   + transaction_id 만 옴(파일 머리 주석 참조). 그러나 일부 케이스 대비 방어적으로
+//   obj.subscription_id, obj.subscription.id 도 시도.
 
 async function handleRefundOrDispute(
   eventType: string,
@@ -381,6 +391,65 @@ async function handleRefundOrDispute(
     return;
   }
 
+  // 1) 대상 subscription_id 식별 — 페이로드 직접 우선, 없으면 customer 의
+  //    active/trialing 구독 1건(최근 갱신 순) 조회.
+  const directSubId =
+    asString(obj.subscription_id) ?? asString(asObject(obj.subscription)?.id);
+
+  let targetSubId: string | null = directSubId;
+  if (!targetSubId) {
+    const { data: subRow, error: sErr } = await supabase
+      .from("subscriptions")
+      .select("paddle_subscription_id")
+      .eq("user_id", profile.id)
+      .in("status", ["active", "trialing"])
+      .order("updated_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (sErr) {
+      console.error(
+        `[creem-webhook] ${eventType} subscriptions 조회 실패:`,
+        sErr,
+        { user_id: profile.id, cust: customerId },
+      );
+    }
+    targetSubId = subRow?.paddle_subscription_id ?? null;
+  }
+
+  // 2) subscription row UPDATE — 트리거가 profiles 동기화.
+  if (targetSubId) {
+    const nowIso = new Date().toISOString();
+    const { error: subUpErr } = await supabase
+      .from("subscriptions")
+      .update({
+        status: "refunded",
+        current_period_end: nowIso,
+        cancel_at_period_end: false,
+        canceled_at: nowIso,
+        updated_at: nowIso,
+      })
+      .eq("paddle_subscription_id", targetSubId);
+    if (subUpErr) {
+      console.error(
+        `[creem-webhook] ${eventType} subscriptions UPDATE 실패:`,
+        subUpErr,
+        { sub: targetSubId },
+      );
+      // 폴백으로 진행 (return 안 함).
+    } else {
+      console.log(
+        `[creem-webhook] ${eventType} subscriptions UPDATE 완료. user=${profile.id} sub=${targetSubId} status=refunded. 트리거가 profiles 동기화.`,
+      );
+      return;
+    }
+  } else {
+    console.warn(
+      `[creem-webhook] ${eventType} 대상 subscription 식별 실패 → profiles 직접 회수 폴백`,
+      { user_id: profile.id, cust: customerId },
+    );
+  }
+
+  // 3) 폴백: profiles 직접 회수 (기존 chargeback 패턴).
   const { error: upErr } = await supabase
     .from("profiles")
     .update({
@@ -395,7 +464,7 @@ async function handleRefundOrDispute(
   }
 
   console.log(
-    `[creem-webhook] ${eventType} 처리 완료. user=${profile.id} premium 즉시 회수`,
+    `[creem-webhook] ${eventType} 처리 완료(폴백). user=${profile.id} profiles 직접 회수`,
   );
 }
 
