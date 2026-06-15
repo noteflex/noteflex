@@ -4,6 +4,36 @@
 
 ---
 
+## 2026-06-16
+
+### 보안: user_analytics_rollup SELECT RLS Pro 게이트
+- 기존 SELECT 정책 = 본인 row 전부 허용(`auth.uid() = user_id`). 비Pro 가 RPC 우회로 직접 SQL 을 던지면 자기 주간/월간 rollup 을 가져갈 수 있음 → Pro 콘텐츠 우회 노출.
+- 새 단일 정책 USING: `(auth.uid() = user_id AND (period_type = 'day' OR public.is_pro())) OR public.is_admin()`. 일간은 본인이면 항상 허용(Free 정책 유지), 주간/월간은 본인+is_pro, admin 은 전체.
+- 헬퍼 `is_pro()`(20260613_report_history_rpc)·`is_admin()`(20260510_rls_audit) 모두 기존 정의 재사용. INSERT/UPDATE/DELETE 정책 무변경.
+- 검증 정정: 지시문은 RPC 가 SECURITY DEFINER 가정이었으나 실제 `get_weekly_report`·`get_monthly_report` 는 SECURITY INVOKER. INVOKER 이므로 본 RLS 좁히기가 실효 게이트가 됨. RPC 본문이 is_pro 가드 통과한 호출자만 SELECT 까지 도달 → 새 USING 통과.
+- 마이그레이션 `20260615_rollup_rls_pro_gate.sql` apply + push 완료. 849ee17.
+
+### 블로그: 제목 중복 제거 (렌더 레벨)
+- 페이지 상단에 frontmatter title 이 큰 제목으로 렌더되는데 본문 첫 줄 `# title` 헤딩도 같이 들어 제목 두 번 노출.
+- 콘텐츠 `.md` 164 편 무수정. `markdownLoader.loadBlogPost` 가 본문 반환 직전 `stripDuplicateTitleHeading` 한 번 통과 — 첫 비어있지 않은 줄이 마크다운 헤딩(`#+`)이고 정규화(앞 `#`·`*`·`_` 강조 제거 + 공백 collapse + trim) 텍스트가 title 동일 정규화와 일치하면 그 한 줄만 splice. 불일치 또는 헤딩 아니면 보존(오제거 방지).
+- 샘플 7편 dry-run: 6/14·6/13·6/10 ko/en 중복 4건 제거 / 6/8 본문 단락 시작·4/30 옛 글 보존 3건 / 오제거 0. 6480372.
+
+### 블로그: 본문 prerender SSG — 로컬 생성·커밋 방식 전환
+- 목적: 공개 블로그 라우트를 GEO/AI 크롤러용으로 본문까지 정적 HTML 산출(SPA 클라 렌더 view-source 빈 #root 회귀 해소).
+- 1편 검증 → 전체 164편 확장 → Vercel 빌드에서 libnss3.so 부재로 3회 실패:
+  1. puppeteer ^23 번들 chromium → Vercel Linux 시스템 공유 라이브러리 부재로 launch 실패.
+  2. `@sparticuz/chromium` ^131 + puppeteer-core ^23 + `process.env.VERCEL` 분기 도입 → 동일 libnss3 에러.
+  3. 최종 결정: Vercel 빌드에서 브라우저 launch 자체를 포기. 로컬에서 puppeteer 로 산출한 `prerendered/blog/{lang}/{slug}.html` 164편을 레포에 커밋. Vercel 빌드는 `cp -R prerendered/blog/. dist/blog/` 만 수행.
+- 워크플로(글 추가/수정 시): `.md` 작성 → `npm run build && npm run prerender:blog` (로컬, ~5분, vite preview + puppeteer) → `git add prerendered/blog` → 커밋·push → Vercel 자동 재빌드(15초, puppeteer 호출 0).
+- 산출 HTML 안에 트래킹 호출이 남지 않게 가드: 새 헬퍼 `IS_PRERENDER = window.__PRERENDER__` (런타임 플래그) — puppeteer 가 `page.evaluateOnNewDocument` 로 주입. `main.tsx` 의 init* 호출, `AdBanner` 의 `pushAd()`, `AnalyticsTracker` 의 `trackPageView` 모두 분기 차단. 일반 SPA 사용자에겐 undefined → false → 영향 0. `import.meta.env.VITE_PRERENDER` 빌드타임 inline 은 단일 빌드 산출물을 두 용도로 못 써서 런타임 flag 로 대체.
+- 라이브 curl 로 `#root` 본문 반영 확인. 빌드 시간 5분 → 15초. 커밋: df3d7d2(인프라) / bc083f4(전체 확장+build 통합) / d803595(블로그 잠금 가드) / 0f3b08d(@sparticuz 분기) / a53ca5c(최종 전환).
+
+### 교훈
+- Vercel 빌드 컨테이너의 headless chromium 은 libnss3 등 시스템 라이브러리 부재로 사실상 불가. `@sparticuz/chromium` 도 함수 런타임용이지 빌드 단계에선 동일 증상. 빌드에서 브라우저 띄우는 prerender 는 처음부터 채택 안 하는 게 정답이고, 로컬 생성 + 산출물 커밋이 가장 단순·안정.
+- RLS 좁히기 전 RPC SECURITY 모드(INVOKER vs DEFINER) 확정이 필수. DEFINER 면 RLS 우회라 게이트 의미가 약해지는데, 우리 케이스는 INVOKER 라 본 변경이 실효.
+
+---
+
 ## 2026-06-14
 
 ### 결제: Paddle → Creem 전환 + 라이브 전환 완료

@@ -7,6 +7,21 @@
 
 ---
 
+## 2026-06-16 결정·미결 묶음 (RLS Pro 게이트·블로그 prerender 전환)
+
+- [✅ 2026-06-16] **user_analytics_rollup SELECT RLS Pro 게이트** — 기존 `auth.uid()=user_id` 단일 정책으로 본인 row 전부 허용 → 비Pro 가 직접 SQL 로 자기 주간/월간 rollup 우회 노출. 새 USING `(auth.uid()=user_id AND (period_type='day' OR public.is_pro())) OR public.is_admin()` 로 좁힘(day=본인 항상, week/month=본인+is_pro, admin=전체). 마이그레이션 `20260615_rollup_rls_pro_gate.sql` apply+push 완료. RPC(SECURITY INVOKER)는 is_pro 가드 통과 후 도달이라 정상 경로 무영향. 849ee17.
+- [✅ 2026-06-16] **블로그 본문 prerender — 로컬 생성·커밋 방식** — puppeteer SSG 도입(`scripts/prerender-blog.ts`) 후 Vercel 빌드에서 libnss3.so 부재로 3회 실패(puppeteer 번들 → @sparticuz/chromium 모두). 최종 "로컬 prerender → `prerendered/blog/` 레포 커밋 → Vercel 빌드는 `cp -R prerendered/blog/. dist/blog/`" 방식 전환. 라이브 curl 로 #root 본문 반영 확인, 빌드 5분→15초. 새 흐름: `.md` 작성/수정 → `npm run build && npm run prerender:blog` (로컬, ~5분) → `git add prerendered/blog` → 커밋·push. df3d7d2 / bc083f4 / d803595 / 0f3b08d / a53ca5c.
+- [✅ 2026-06-16] **블로그 제목 중복 제거** — frontmatter title 이 페이지 상단에 큰 제목으로 렌더되는데 본문 첫 줄 `# title` 헤딩도 같이 들어 제목 두 번 노출. `markdownLoader.loadBlogPost` 가 본문 첫 비어있지 않은 줄이 헤딩이고 정규화 후 title 과 일치하면 그 한 줄만 제거. 콘텐츠 `.md` 164편 무수정. dry-run 으로 중복 케이스 4건 제거 / 단락 시작 글 3건 보존 / 오제거 0. 6480372.
+- [신규·후속·prerender] **prerender HTML 메타 중복 정리** — `og:title` 등이 두 번 등장(`injectMeta` 정규식 교체 1개 + react-helmet-async hydration 마커 `data-rh="true"` 1개). 검색봇이 둘 중 하나만 인식하지만 중복은 사실. prerender 시점에 `data-rh` 태그를 우선 제거하거나 `injectMeta` 비활성 방향.
+- [신규·후속·블로그] **관련글 사이드바 언어 매칭** — en 페이지에 ko 관련글이 노출되는 사례 보고됨. 의도 여부 확인 후 같은 lang 글만 매칭하거나 lang 토글 노출로 보강.
+- [신규·후속·prerender] **puppeteer/puppeteer-core/@sparticuz/chromium devDep 정리** — Vercel 빌드 자체에선 호출 0 이지만 `npm install` 에서 chromium 다운로드 발생(시간·캐시 누수). 로컬 prerender 유지 전제로 `optionalDependencies` 분리 또는 npm `--omit=optional` 검토.
+- [신규·후속·prerender] **prebuild hook — prerendered/blog 최신성 체크** — 글 추가 후 `prerender:blog` 재실행 누락 시 새 글이 SPA 폴백으로만 서빙. `prebuild` 스크립트가 `src/content/blog/*` 와 `prerendered/blog/*` 의 mtime 비교해서 stale 글 있으면 경고/실패.
+- [신규·후속·보안] **vite.config define 하드코딩 제거** — `VITE_SUPABASE_URL`/`VITE_SUPABASE_ANON_KEY` 가 `vite.config.ts` 의 `define` 으로 inline 되어 env 회전 무력화. `.env.production` 분리 + ANON_KEY 회전 + define 제거. (2026-06-15 보안 점검 §2 후속.)
+- [신규·후속·SEO] **정적 페이지 prerender 확장** — `/about`·`/faq`·`/pricing` 등 공개 라우트도 본문 prerender 대상에 포함 검토. 동적 라우트(`/auth/callback`·`/checkout/*`·`/dashboard`·`/admin/*`)는 영구 제외.
+- [신규·후속·위생] **untracked 쓰레기 파일 정리** — 레포 루트의 `0`·`main`·`docs.zip` 등 의도치 않은 untracked. 내용 확인 후 삭제 또는 정식 위치로 이동.
+
+---
+
 ## 2026-06-14 결정·미결 묶음 (Creem 라이브 전환·refund 보강·과거 보고서)
 
 - [✅ 2026-06-14] **결제 Creem 라이브 전환 완료** — Live 상품 2개(monthly `prod_7DZuT8doea5sgIEgWABuys` / yearly `prod_6KVISEXWb7hs2JxWgFYIW9`), Live API 키, Live webhook(13 이벤트 구독), Supabase secret 4개 교체, PAYMENT_LOCKED=false. 라이브 검증 3경로 통과(결제→is_premium 활성 + Creem First Sale 메일 / 기간말 취소→만료일까지 유지 / 환불→is_premium 즉시 회수). ed2ab2d.

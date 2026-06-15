@@ -9,6 +9,18 @@
 
 ## 정책 결정
 
+### 새 글 prerender 워크플로 (2026-06-16 도입)
+- **방식**: 로컬 puppeteer 본문 SSG 산출 → `prerendered/blog/{lang}/{slug}.html` 레포 커밋 → Vercel 빌드는 `cp -R prerendered/blog/. dist/blog/` 만 수행.
+- **사유**: Vercel 빌드 컨테이너에서 puppeteer 번들 / @sparticuz/chromium 모두 libnss3.so 부재로 launch 불가. 로컬에서 산출하고 결과만 커밋하는 게 가장 단순·안정.
+- **흐름**:
+  1. `.md` 작성/수정 (ko + en)
+  2. `npm run build` (vite 산출, ~15초)
+  3. `npm run prerender:blog` (puppeteer 로컬 실행, ~5분, prerendered/blog 갱신)
+  4. `git add prerendered/blog/{lang}/{slug}.html` + 작성한 `.md` + sitemap + BLOG_LOG
+  5. 커밋·push → Vercel 자동 재빌드(15초, puppeteer 호출 0)
+- **검증 체크**: 새 글의 `dist/blog/{lang}/{slug}.html` 가 #root 안에 본문 텍스트 포함 + `og:title`·canonical·hreflang 주입 + `adsbygoogle.push`/`Sentry.init`/`gtag('config')` 호출 0.
+- **누락 방지(예정)**: prebuild hook 에서 `src/content/blog/*` 와 `prerendered/blog/*` mtime 비교해 stale 경고(PENDING).
+
 ### 글 상세 hero 영역 제거 (2026-05-16)
 - **결정**: BlogPost.tsx의 CategoryCover variant='hero' 제거
 - **이유**: 카테고리는 글 제목 위 라벨에 이미 적용됨 → hero 중복·빈 공간
