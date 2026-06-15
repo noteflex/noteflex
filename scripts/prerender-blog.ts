@@ -25,7 +25,42 @@
 import fs from "node:fs";
 import path from "node:path";
 import { preview } from "vite";
-import puppeteer from "puppeteer";
+import type { Browser } from "puppeteer-core";
+
+/**
+ * 환경 분기 launcher.
+ *
+ * - 로컬(macOS 등): `puppeteer` 풀 패키지 + 번들 chromium 사용. 개발자 검증 흐름 유지.
+ * - Vercel(VERCEL 환경변수 존재): puppeteer 번들 chromium 은 Vercel Linux 의 시스템
+ *   공유 라이브러리(libnss3 등) 부재로 실행 불가 → `@sparticuz/chromium` 의 정적 링크
+ *   바이너리 + `puppeteer-core` 조합.
+ *
+ * dynamic import 인 이유: 한쪽 분기에서만 필요한 패키지를 top-level import 하면 다른
+ * 환경에서 모듈 자체 로드 단계가 깨질 위험 → 분기 실행 시점에만 동적으로 로드.
+ *
+ * 호환:
+ *   puppeteer ^23           = Chrome for Testing 131 번들
+ *   puppeteer-core ^23      = 동일 protocol API
+ *   @sparticuz/chromium ^131 = Chromium 131 (puppeteer ^23 페어)
+ */
+async function launchBrowser(): Promise<Browser> {
+  if (process.env.VERCEL) {
+    const [{ default: chromium }, puppeteerCore] = await Promise.all([
+      import("@sparticuz/chromium"),
+      import("puppeteer-core"),
+    ]);
+    return (await puppeteerCore.default.launch({
+      args: chromium.args,
+      executablePath: await chromium.executablePath(),
+      headless: chromium.headless,
+    })) as unknown as Browser;
+  }
+  const { default: puppeteer } = await import("puppeteer");
+  return (await puppeteer.launch({
+    headless: true,
+    args: ["--no-sandbox", "--disable-setuid-sandbox"],
+  })) as unknown as Browser;
+}
 
 const BASE_URL = "https://noteflex.app";
 const DEFAULT_OG_IMAGE = `${BASE_URL}/og-image.png`;
@@ -197,10 +232,10 @@ async function main() {
     `http://127.0.0.1:${PREVIEW_PORT}`;
   console.log(`[prerender-blog] vite preview ready at ${baseUrl}`);
 
-  const browser = await puppeteer.launch({
-    headless: true,
-    args: ["--no-sandbox", "--disable-setuid-sandbox"],
-  });
+  const browser = await launchBrowser();
+  console.log(
+    `[prerender-blog] browser launched (${process.env.VERCEL ? "vercel/@sparticuz" : "local/puppeteer"})`,
+  );
 
   let done = 0;
   let failed = 0;
