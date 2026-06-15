@@ -4,6 +4,7 @@ import { isAdsEnabled, pushAd, getPublisherId } from "@/lib/adsense";
 import { getUserTier } from "@/lib/subscriptionTier";
 import { AdPlaceholder, type AdPlaceholderVariant } from "./AdPlaceholder";
 import { useT } from "@/contexts/LanguageContext";
+import { IS_PRERENDER } from "@/lib/prerender";
 
 interface AdBannerProps {
   slot: string;
@@ -32,6 +33,7 @@ export function AdBanner({
   const showPlaceholder = !adsEnabled && !isPro;
 
   useEffect(() => {
+    if (IS_PRERENDER) return;
     if (!showReal || pushed.current) return;
     pushed.current = true;
     pushAd();
