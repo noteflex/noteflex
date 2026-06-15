@@ -160,6 +160,7 @@
 | 2026-05-25 | §3-R1 리듬 초견 전략 (ko+en) | (펜딩) |
 | 2026-06-13 | 음정 — 도수·질, 완전/장/단/증/감 (ko+en, slug `music-intervals-explained`). 이미지: Wikimedia Commons (BWV1001 + Mozart Piano Concerto No.23 자필). curl HTTP 200 PASS. 학술 인용 없음(2026-06-13 검수 0 정책). | (펜딩) |
 | 2026-06-14 | 빠르기말 — Allegro·Andante·Adagio 의미와 BPM 범위 (ko+en, slug `tempo-markings-explained`). 이미지: Wikimedia Commons (Mozart Prague Symphony K.504 자필 + Chopin Polonaise Op.53). curl HTTP 200 PASS. 학술 인용 없음(검수 0 정책). | (펜딩) |
+| 2026-06-16 | prerender 방식 전환 — Vercel 빌드에서 puppeteer/@sparticuz chromium 모두 libnss3.so 부재로 launch 실패 → 로컬 생성·git 커밋 방식으로 전환. 산출 디렉토리 `prerendered/blog/{lang}/{slug}.html`(git 추적). Vercel 빌드는 `cp -R prerendered/blog/. dist/blog/`로 서빙만, 브라우저 launch 0. 새 흐름: 글 작성·수정 → `npm run build && npm run prerender:blog`(로컬, ~5분) → `git add prerendered/blog` → 커밋·push. | (펜딩) |
 
 ## 2026-05-16~18 신규 9편 사용 이미지·인용 목록
 

@@ -1,12 +1,20 @@
 // ═══════════════════════════════════════════════════════════════
-// scripts/prerender-blog.ts
+// scripts/prerender-blog.ts  (로컬 전용)
 // ═══════════════════════════════════════════════════════════════
 // 블로그 본문 SSG — puppeteer 로 vite preview 산출물(dist/) 위에서 각 글을
 // 실제 렌더해 #root 가 본문으로 채워진 정적 HTML 스냅샷을
-// dist/blog/{lang}/{slug}.html 에 저장.
+// prerendered/blog/{lang}/{slug}.html 에 저장.
 //
-// 기존 OG 메타 주입(scripts/prerender-blog-og.ts)과 호환: og 메타·canonical 은
-// 같은 injectMeta 후처리를 한 번 더 통과시켜 동일하게 박힌다.
+// Vercel 빌드는 puppeteer/chromium 의 libnss3 등 시스템 공유 라이브러리 부재로
+// 브라우저 launch 가 실패한다(@sparticuz/chromium 으로도 동일 증상). 그래서
+// prerender 산출물 자체를 레포에 커밋하는 방식으로 전환 — 이 스크립트는
+// 개발자 로컬에서만 실행되고, 결과 prerendered/blog/* 가 git 추적된다.
+// vite build 흐름은 그 디렉토리를 dist/blog 로 복사할 뿐(브라우저 미사용).
+//
+// 워크플로:
+//   1. .md 작성·수정
+//   2. npm run build && npm run prerender:blog    (로컬, ~5분)
+//   3. git add prerendered/blog && commit && push (Vercel 재빌드)
 //
 // 모드:
 //   SLUG=<lang>/<slug>  지정 → 1편만 (검증 단계).
@@ -17,9 +25,6 @@
 //   IS_PRERENDER 헬퍼가 Sentry/Analytics/AdSense/SW init 과 AdBanner pushAd·
 //   AnalyticsTracker trackPageView 호출을 모두 차단 → 산출 HTML 에 트래킹
 //   호출이 남지 않는다.
-//
-// Vercel 빌드: 기본 npm run build 에는 미포함(이번 라운드 무영향). 검증 통과
-//   후 build 흐름에 통합 결정.
 // ═══════════════════════════════════════════════════════════════
 
 import fs from "node:fs";
@@ -254,7 +259,7 @@ async function main() {
           .catch(() => undefined);
         const html = await page.content();
         const withMeta = injectMeta(html, post);
-        const outDir = path.join("dist/blog", post.lang);
+        const outDir = path.join("prerendered/blog", post.lang);
         fs.mkdirSync(outDir, { recursive: true });
         fs.writeFileSync(
           path.join(outDir, `${post.slug}.html`),
