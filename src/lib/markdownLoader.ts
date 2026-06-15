@@ -141,6 +141,44 @@ export function listBlogPosts(lang?: "ko" | "en"): BlogPostMeta[] {
 }
 
 /**
+ * 헤딩 텍스트 정규화 — 앞 `#` 기호·강조 마커(`*`, `_`)·여분 공백 제거 후 trim.
+ * frontmatter title 과 본문 첫 헤딩 비교에 사용.
+ */
+function normalizeHeadingText(s: string): string {
+  return s
+    .replace(/^#+\s*/, "")
+    .replace(/[*_]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+/**
+ * 본문 첫 비어있지 않은 줄이 마크다운 헤딩(`#`, `##`, ...)이고 그 텍스트가
+ * frontmatter title 과 같으면 그 한 줄만 제거. 페이지 상단에 title 이 큰 제목
+ * 으로 이미 렌더되는데 본문 첫 줄에도 같은 제목이 들어 있어 두 번 보이는 회귀
+ * 방지.
+ *
+ * 불일치 또는 헤딩 아님 → content 그대로(오제거 방지).
+ */
+function stripDuplicateTitleHeading(content: string, title: string | undefined): string {
+  if (!title) return content;
+  const lines = content.split(/\r?\n/);
+  let firstIdx = -1;
+  for (let i = 0; i < lines.length; i++) {
+    if (lines[i].trim().length > 0) {
+      firstIdx = i;
+      break;
+    }
+  }
+  if (firstIdx < 0) return content;
+  const firstLine = lines[firstIdx];
+  if (!/^#+\s/.test(firstLine)) return content;
+  if (normalizeHeadingText(firstLine) !== normalizeHeadingText(title)) return content;
+  lines.splice(firstIdx, 1);
+  return lines.join("\n");
+}
+
+/**
  * 글 로드 — slug는 `"lang/cleanSlug"` 형식.
  * 1) combinedSlug(깨끗한 슬러그) 매칭 우선
  * 2) 옛 URL 호환: fileSlug(날짜 prefix 포함) 매칭 fallback
@@ -159,7 +197,8 @@ export async function loadBlogPost(slug: string): Promise<BlogPost | null> {
   if (!entry) return null;
   // 본문은 eager에 이미 있으니 동기 파싱
   const parsed = parseFrontmatter(entry.raw);
-  return { slug: entry.combinedSlug, meta: parsed.meta, content: parsed.content };
+  const content = stripDuplicateTitleHeading(parsed.content, parsed.meta.title);
+  return { slug: entry.combinedSlug, meta: parsed.meta, content };
 }
 
 /**
