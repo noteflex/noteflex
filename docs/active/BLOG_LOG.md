@@ -91,6 +91,7 @@
 | 2026-05-25 | 66 | 66 | 132 | §3-R1 리듬 초견 전략 (ko+en) 추가 |
 | 2026-06-13 | 81 | 81 | 162 | §2-? 음정(intervals) 정의·도수·질 (ko+en) 추가. 검수 0 정책(2026-06-13) 적용 — 학술 인용 없음, 토픽 화이트리스트 부합. |
 | 2026-06-14 | 82 | 82 | 164 | 빠르기말(tempo markings) Allegro·Andante·Adagio 의미와 BPM 범위 (ko+en) 추가. 검수 0 정책 — 학술 인용 없음, 화이트리스트(기호·악상) 부합. |
+| 2026-06-16 | 83 | 83 | 166 | 장음계와 단음계(major and minor scales) — W-W-H-W-W-W-H 패턴·자연/화성/가락단음계·평행조/나란한조 (ko+en) 추가. 화이트리스트(음계) 부합, 학술 인용 없음. |
 
 ### 카테고리별 분포 (EN 기준, 2026-05-16 신규 6편 추가 후)
 | 카테고리 | 글 수 |
@@ -172,6 +173,7 @@
 | 2026-05-25 | §3-R1 리듬 초견 전략 (ko+en) | (펜딩) |
 | 2026-06-13 | 음정 — 도수·질, 완전/장/단/증/감 (ko+en, slug `music-intervals-explained`). 이미지: Wikimedia Commons (BWV1001 + Mozart Piano Concerto No.23 자필). curl HTTP 200 PASS. 학술 인용 없음(2026-06-13 검수 0 정책). | (펜딩) |
 | 2026-06-14 | 빠르기말 — Allegro·Andante·Adagio 의미와 BPM 범위 (ko+en, slug `tempo-markings-explained`). 이미지: Wikimedia Commons (Mozart Prague Symphony K.504 자필 + Chopin Polonaise Op.53). curl HTTP 200 PASS. 학술 인용 없음(검수 0 정책). | (펜딩) |
+| 2026-06-16 | 장음계와 단음계 — W-W-H-W-W-W-H 패턴·세 단음계 형태·평행조/나란한조 (ko+en, slug `major-and-minor-scales`). 이미지: Wikimedia Commons (BnF 원본 Bach Goldberg Aria 1741 + Chopin Prelude Op.28 No.7). curl HTTP 200 PASS. 학술 인용 없음(검수 0 정책). | (펜딩) |
 | 2026-06-16 | prerender 방식 전환 — Vercel 빌드에서 puppeteer/@sparticuz chromium 모두 libnss3.so 부재로 launch 실패 → 로컬 생성·git 커밋 방식으로 전환. 산출 디렉토리 `prerendered/blog/{lang}/{slug}.html`(git 추적). Vercel 빌드는 `cp -R prerendered/blog/. dist/blog/`로 서빙만, 브라우저 launch 0. 새 흐름: 글 작성·수정 → `npm run build && npm run prerender:blog`(로컬, ~5분) → `git add prerendered/blog` → 커밋·push. | (펜딩) |
 
 ## 2026-05-16~18 신규 9편 사용 이미지·인용 목록
