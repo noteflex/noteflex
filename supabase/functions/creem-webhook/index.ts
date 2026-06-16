@@ -139,19 +139,6 @@ function extractProductId(obj: Record<string, unknown>): string | null {
   return asString(obj.product_id);
 }
 
-/** items[0].price_id 우선, 없으면 product_id 로 폴백(별도 price 개념 없는 경우). */
-function extractPriceId(obj: Record<string, unknown>): string | null {
-  const items = Array.isArray(obj.items) ? obj.items : null;
-  if (items && items.length > 0) {
-    const first = asObject(items[0]);
-    if (first) {
-      const pid = asString(first.price_id);
-      if (pid) return pid;
-    }
-  }
-  return extractProductId(obj);
-}
-
 /** Creem 은 current_period_start_date / current_period_end_date (_date 접미사). 폴백으로 _date 없는 형태도 시도. */
 function extractPeriod(obj: Record<string, unknown>): {
   start: string | null;
@@ -229,7 +216,6 @@ async function upsertSubscription(
   const subId = asString(obj.id);
   const customerId = extractCustomerId(obj);
   const productId = extractProductId(obj);
-  const priceId = extractPriceId(obj);
   const status = asString(obj.status) ?? "unknown";
   const { start, end } = extractPeriod(obj);
   const canceledAt = asString(obj.canceled_at);
@@ -249,7 +235,7 @@ async function upsertSubscription(
     user_id: userId,
     paddle_customer_id: customerId,                   // = Creem customer id
     paddle_subscription_id: subId,                    // = Creem subscription id
-    paddle_price_id: priceId,                         // = Creem price id (없으면 product id 폴백)
+    paddle_price_id: productId,                       // = Creem product id (prod_*) — 이벤트 무관 canonical 통일
     status: overrides.status ?? status,
     plan: planLabelForProduct(productId),
     current_period_start: start,                       // 트리거가 premium_until 에 사용
