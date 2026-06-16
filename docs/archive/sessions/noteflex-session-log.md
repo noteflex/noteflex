@@ -6,6 +6,13 @@
 
 ## 2026-06-17
 
+### 결제: Creem webhook `paddle_price_id` 추출 통일
+- 증상: `checkout.completed`는 `order.product`(`prod_*`), `subscription.*`는 `items[0].price_id`(`pprice_*`)를 `paddle_price_id` 컬럼에 기록 → 이벤트마다 값이 흔들림. plan 역판별을 이 컬럼으로 시도하면 깨질 소지.
+- 수정: `creem-webhook/index.ts`에서 `extractPriceId` 헬퍼 삭제 후 `upsertSubscription`이 `paddle_price_id`도 `extractProductId(obj)` 결과(`prod_*`)로 저장. plan 판별(`planLabelForProduct`)은 이미 product_id 기준이라 동일 키 정합 자동 확정.
+- 페이로드 가용성: `subscription.*`은 root `product:{id}` 또는 `items[0].product_id`로 항상 prod_ 직접 추출. `checkout.completed`는 `order.product` 문자열 보강 경로 그대로. 외부 매핑/Creem API 조회 불필요.
+- 검증: Test Mode 발화 권한·라이브 재결제 비용 제약으로 6/14 refund 보강과 동일하게 **코드 경로 리뷰로 갈음**. 모든 이벤트별 `extractProductId` 분기·overrides가 식별자 컬럼을 덮어쓰지 않음·`sync_premium_status` 트리거가 `paddle_price_id`를 읽지 않음 확인. is_premium 권한 경로 무영향.
+- 배포(`supabase functions deploy creem-webhook`)는 주인님 직접.
+
 ### 보안: 개인 분석 read RLS user_id 필터 audit (closed)
 - §6 🔴 중대·Opus 항목 정리. 클라이언트 read 20개 경로 전수 점검: `usePeriodReport`/`useDailyIntervals`/`useWeeklyReport` daily rows/`useMonthlyReport` day·week rows/`useMyStats` 3쿼리/`useUserStats`/`useStreak` 2쿼리/`useUserMastery`/`useMasteryDetails`/`useUserWeakScores`/`useLevelProgress`/`NextStepCard`(`user_note_status`)/`fetchUserNoteLogs`.
 - 결과: 전부 `.eq("user_id", userId)` 명시 필터 보유, 잔존 0. `get_daily/weekly/monthly_report` RPC 3종은 own-only. `/admin/*` 의도인 `useAdminUserDetail`은 미수정.
