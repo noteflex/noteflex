@@ -28,6 +28,11 @@
 - "RLS 단독 의존 회피" 패턴이 분석 hook 신규 작성 시 표준이 되어 6/4 이후 회귀 없이 유지된 상태 확인. 신규 hook도 같은 패턴 강제.
 - `vite.config` `define`은 빌드 시점 inline → env 회전 무력화 함정. Vite는 `import.meta.env.VITE_*`를 기본 빌드 시점 inline 처리하므로 define로 덮는 건 안티패턴.
 
+### 배포·운영 검증
+- `supabase functions deploy creem-webhook` 배포 완료. 라이브 이벤트 검증은 실구독 발생 시 다음 Creem 이벤트로 이연(현재 실구독 0).
+- vite.config define 제거 후 Vercel 라이브 검증 완료(로그인·대시보드·블로그 정상) → Vercel env 에 `VITE_SUPABASE_URL`·`VITE_SUPABASE_ANON_KEY` 두 키 존재 확정.
+- ANON_KEY 회전·`.env.production` 분리 보류 결정 — anon 키는 설계상 공개라 회전으로 얻는 보안 이득 없음(권한 경계는 RLS). 추후 RLS 점검 우선.
+
 ---
 
 ## 2026-06-16

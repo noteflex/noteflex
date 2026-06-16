@@ -17,6 +17,7 @@
 - [신규·후속·prerender] **puppeteer/puppeteer-core/@sparticuz/chromium devDep 정리** — Vercel 빌드 자체에선 호출 0 이지만 `npm install` 에서 chromium 다운로드 발생(시간·캐시 누수). 로컬 prerender 유지 전제로 `optionalDependencies` 분리 또는 npm `--omit=optional` 검토.
 - [신규·후속·prerender] **prebuild hook — prerendered/blog 최신성 체크** — 글 추가 후 `prerender:blog` 재실행 누락 시 새 글이 SPA 폴백으로만 서빙. `prebuild` 스크립트가 `src/content/blog/*` 와 `prerendered/blog/*` 의 mtime 비교해서 stale 글 있으면 경고/실패.
 - [✅ 2026-06-17] **vite.config define 하드코딩 제거 (코드 부분)** — `vite.config.ts` 의 `import.meta.env.VITE_SUPABASE_URL`·`VITE_SUPABASE_ANON_KEY` define 두 줄 제거. 소비처 3곳(`src/integrations/supabase/client.ts`·`src/lib/adminActions.ts`·`src/lib/creem.ts`)은 이미 `import.meta.env`로 읽고 있어 코드 추가 변경 없음. `client.ts`는 누락 시 throw 유지. `npm run build` 통과(env에서 인계받음). **후속(주인님)**: Supabase Dashboard에서 ANON_KEY 회전 + Vercel env(`VITE_SUPABASE_URL`·`VITE_SUPABASE_ANON_KEY`) 설정 + `.env.production` 분리.
+  - 운영(2026-06-17): define 제거 후 Vercel 라이브 검증 완료(로그인·대시보드·블로그 정상) → Vercel env 에 두 키 존재 확정. ANON_KEY 회전·`.env.production` 분리는 미실행 — anon 키는 설계상 공개라 회전 보안 이득 없음(보호는 RLS), 보류 결정.
 - [신규·후속·SEO] **정적 페이지 prerender 확장** — `/about`·`/faq`·`/pricing` 등 공개 라우트도 본문 prerender 대상에 포함 검토. 동적 라우트(`/auth/callback`·`/checkout/*`·`/dashboard`·`/admin/*`)는 영구 제외.
 - [신규·후속·위생] **untracked 쓰레기 파일 정리** — 레포 루트의 `0`·`main`·`docs.zip` 등 의도치 않은 untracked. 내용 확인 후 삭제 또는 정식 위치로 이동.
 
@@ -31,6 +32,7 @@
 - [✅ 2026-06-14] **PeriodSelector·이동 pill·잠금 동작** — PeriodSelector 신규(rose pill 칩 + 원형 화살표 + 드롭다운). useWeekly/MonthlyReport를 직접 SELECT에서 RPC 호출로 통일. 디폴트=직전 완료 기간(기존 "이번주" SELECT가 rollup 미존재라 항상 no_data였던 잠재 버그 해소). 셀렉터 lock 클릭 시 navigate 제거 → 페이지 유지 + 인라인 안내, CTA 클릭 시에만 업그레이드 이동. 종류 이동 pill 좌/우 항상 노출(Free 잠금도 포함), 디자인 위계 통일(칩=진한 rose, 이동 pill=소프트 rose, CTA=진한 rose). 11f3642 / 5b62f14 / 6ba7542.
 - [✅ 2026-06-14] **운영 — admin@noteflex.app = Free 유지** (원복 안 함, 테스트/Free 체험 겸용).
 - [✅ 2026-06-17] **webhook product_id 흔들림 통일** — `creem-webhook/index.ts`에서 `extractPriceId` 헬퍼 제거 후 `upsertSubscription`이 `paddle_price_id` 컬럼에도 `extractProductId(obj)` 결과(`prod_*`)를 저장하도록 통일. checkout/subscription 이벤트 무관 동일 canonical 값. plan 판별(`planLabelForProduct`)은 이미 product_id 기준이라 코드 변경 불필요(추출·판별 양쪽 동일 키 정합 확정). 검증: Test Mode 발화 권한·라이브 재결제 비용 제약으로 6/14 refund 보강과 동일 패턴 — 재결제 없이 코드 경로 리뷰. 각 이벤트별 `extractProductId` 분기·overrides 미접촉·트리거(`sync_premium_status`)는 `paddle_price_id` 미참조 확인. 배포(`supabase functions deploy creem-webhook`)는 주인님 직접.
+  - 운영(2026-06-17): `supabase functions deploy creem-webhook` 배포 완료. 라이브 이벤트 검증은 실구독 발생 시 다음 Creem 이벤트로 이연(현재 실구독 0).
 - [신규·후속·결제] **subscriptions.status 도메인 정식화** — CHECK 제약 없는 상태에서 'refunded' 값 신규 도입. status enum/도메인('active'·'trialing'·'past_due'·'canceled'·'expired'·'refunded'·'inactive') CHECK 제약 추가 검토.
 - [신규·후속·결제] **payout 계좌 설정** — 실수익 정산 전 1회 작업.
 - [신규·후속] **paddle·reviewer 잔재 정리** — paddle.ts·paddle-* Edge Function·reviewer role 제거.
