@@ -4,6 +4,25 @@
 
 ---
 
+## 2026-06-17
+
+### 보안: 개인 분석 read RLS user_id 필터 audit (closed)
+- §6 🔴 중대·Opus 항목 정리. 클라이언트 read 20개 경로 전수 점검: `usePeriodReport`/`useDailyIntervals`/`useWeeklyReport` daily rows/`useMonthlyReport` day·week rows/`useMyStats` 3쿼리/`useUserStats`/`useStreak` 2쿼리/`useUserMastery`/`useMasteryDetails`/`useUserWeakScores`/`useLevelProgress`/`NextStepCard`(`user_note_status`)/`fetchUserNoteLogs`.
+- 결과: 전부 `.eq("user_id", userId)` 명시 필터 보유, 잔존 0. `get_daily/weekly/monthly_report` RPC 3종은 own-only. `/admin/*` 의도인 `useAdminUserDetail`은 미수정.
+- 6/4 `useWeeklyReport` 수정 이후 후속 hook들이 같은 패턴으로 일관 유지된 상태. 코드 변경 없음.
+
+### 보안: vite.config define 하드코딩 제거 (코드 부분)
+- `vite.config.ts` 의 `define` 에서 `import.meta.env.VITE_SUPABASE_URL`·`VITE_SUPABASE_ANON_KEY` 두 줄 제거. 다른 define 항목은 없었음(블록 전체 사라짐).
+- 소비처 3곳(`src/integrations/supabase/client.ts`·`src/lib/adminActions.ts`·`src/lib/creem.ts`) 모두 이미 `import.meta.env`로 읽고 있어 코드 추가 변경 없음. `client.ts`는 두 값 누락 시 throw 유지.
+- 검증: `npm run build` 통과(10.68s), `.env`의 두 키가 Vite 기본 env 인계받음 확인.
+- **후속(주인님)**: Supabase Dashboard에서 ANON_KEY 회전 + Vercel env(`VITE_SUPABASE_URL`·`VITE_SUPABASE_ANON_KEY`) 설정 + `.env.production` 분리. 이번 코드 작업은 회전 가능화 전제 정리만.
+
+### 교훈
+- "RLS 단독 의존 회피" 패턴이 분석 hook 신규 작성 시 표준이 되어 6/4 이후 회귀 없이 유지된 상태 확인. 신규 hook도 같은 패턴 강제.
+- `vite.config` `define`은 빌드 시점 inline → env 회전 무력화 함정. Vite는 `import.meta.env.VITE_*`를 기본 빌드 시점 inline 처리하므로 define로 덮는 건 안티패턴.
+
+---
+
 ## 2026-06-16
 
 ### 보안: user_analytics_rollup SELECT RLS Pro 게이트
