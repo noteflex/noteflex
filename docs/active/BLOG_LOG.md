@@ -93,6 +93,7 @@
 | 2026-06-14 | 82 | 82 | 164 | 빠르기말(tempo markings) Allegro·Andante·Adagio 의미와 BPM 범위 (ko+en) 추가. 검수 0 정책 — 학술 인용 없음, 화이트리스트(기호·악상) 부합. |
 | 2026-06-16 | 83 | 83 | 166 | 장음계와 단음계(major and minor scales) — W-W-H-W-W-W-H 패턴·자연/화성/가락단음계·평행조/나란한조 (ko+en) 추가. 화이트리스트(음계) 부합, 학술 인용 없음. |
 | 2026-06-17 | 84 | 84 | 168 | 이음줄과 붙임줄(slur vs tie) — 같은 곡선 모양·다른 지시(표현 vs 길이), 음높이로 한 번에 구분 (ko+en) 추가. 화이트리스트(기호 정의·규칙) 부합, 학술 인용 없음. 이미지 출처 IMSLP 크레딧으로 회전(Wikimedia 3편 연속 후). |
+| 2026-06-18 | 85 | 85 | 170 | 반복 기호(repeat signs) — Da Capo·Dal Segno·Coda·Fine + 도돌이표·1·2번 괄호 일곱 가지 정의·결합 규칙(D.C./D.S. al Fine/Coda 4종) (ko+en) 추가. 화이트리스트(기호 정의·규칙) 부합, 학술 인용 없음. 이미지 출처 BnF Gallica + Wikimedia(diagram) 혼합 회전(IMSLP에서 전환). |
 
 ### 카테고리별 분포 (EN 기준, 2026-05-16 신규 6편 추가 후)
 | 카테고리 | 글 수 |
@@ -177,6 +178,7 @@
 | 2026-06-16 | 장음계와 단음계 — W-W-H-W-W-W-H 패턴·세 단음계 형태·평행조/나란한조 (ko+en, slug `major-and-minor-scales`). 이미지: Wikimedia Commons (BnF 원본 Bach Goldberg Aria 1741 + Chopin Prelude Op.28 No.7). curl HTTP 200 PASS. 학술 인용 없음(검수 0 정책). | (펜딩) |
 | 2026-06-16 | prerender 방식 전환 — Vercel 빌드에서 puppeteer/@sparticuz chromium 모두 libnss3.so 부재로 launch 실패 → 로컬 생성·git 커밋 방식으로 전환. 산출 디렉토리 `prerendered/blog/{lang}/{slug}.html`(git 추적). Vercel 빌드는 `cp -R prerendered/blog/. dist/blog/`로 서빙만, 브라우저 launch 0. 새 흐름: 글 작성·수정 → `npm run build && npm run prerender:blog`(로컬, ~5분) → `git add prerendered/blog` → 커밋·push. | (펜딩) |
 | 2026-06-17 | 이음줄과 붙임줄 — 같은 곡선 모양·반대 지시(이음줄=표현·한 호흡/한 활/레가토, 붙임줄=길이 합산·마디선 넘김), 음높이로 한 번에 구분 (ko+en, slug `slur-vs-tie`). 이미지: IMSLP 크레딧 2점 (Anna Magdalena Bach 필사본 첼로 모음곡 1번 BWV 1007 + Klindworth-Scharwenka 편집 Chopin 야상곡 Op.9 No.2). curl HTTP 200 PASS. 출처 회전(Wikimedia 3편 연속 후 IMSLP). prerender ko·en 2편 생성, 키워드 grep 통과(이음줄 32·붙임줄 33 / Slur 16·Tie 10). 학술 인용 없음(검수 0 정책). 화이트리스트(기호 정의·규칙) 부합. | (펜딩) |
+| 2026-06-18 | 반복 기호 — Da Capo·Dal Segno·Coda·Fine + 도돌이표·1·2번 괄호 일곱 가지, 결합 규칙 4종(D.C./D.S. al Fine/Coda), 페이지 끝 표지 읽는 3단계 (ko+en, slug `repeat-signs-explained`). 이미지: BnF Gallica 자필 베토벤 미뉴엣 Hess 88/33 + Wikimedia diagram (D.C. al Fine 표기 예시). curl HTTP 200 PASS. 출처 회전(IMSLP → BnF + Wikimedia 혼합). prerender ko·en 2편 생성, 키워드 grep 통과(반복 13·도돌이 14·Coda 22·Fine 39·세뇨 12·미뉴엣 11 / Repeat 10·Da Capo 10·Dal Segno 10·Coda 22·Fine 34·Beethoven 8·minuet 13). 학술 인용 없음(검수 0 정책). 화이트리스트(기호 정의·규칙) 부합. | (펜딩) |
 
 ## 2026-05-16~18 신규 9편 사용 이미지·인용 목록
 
