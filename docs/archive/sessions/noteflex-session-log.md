@@ -4,6 +4,44 @@
 
 ---
 
+## 2026-06-19
+
+### 광고: Google Ads 첫 캠페인 운영 시작
+- "Noteflex-검색테스트" 캠페인 라이브 — 검색·클릭수 최대화·CPC 상한 없음·AI Max off.
+- 타겟: 미국·영국·캐나다·호주 / 영어. 일 예산 ₩7,000. 종료일 6/25. 수동결제 ₩50,000 선충전.
+- 영어 phrase-match 키워드 5개, 헤드라인 5·설명 2.
+- Day1~2 지표: 노출 280→378, 클릭 6→8, CTR ~2.1%, 지출 ~₩1,809(검색 ₩1,293 + 파트너 ₩516). 신규 캠페인 램프업 단계라 일 예산 미소진은 정상 범위.
+- 현재 상태: 일시중지 없이 계속 운영. 6/25 종료 시점에 GA4·Google Ads 같이 열어 퍼널 진단 예정(아래 GA4 복구 항목과 연동).
+
+### 분석: GA4 수집 장애 진단·수정 (오늘의 핵심)
+- 증상: Vercel은 방문자 집계되는데 GA4 활성사용자·이벤트가 7일 내내 0.
+- 진단 경로: GA4 실시간 0 확인 → 라이브 소스에 gtag·측정 ID 없음 → Vercel env(`VITE_GA_MEASUREMENT_ID=G-HHXHDJ6HF3`) 정상 → 코드(`src/lib/analytics.ts`)도 정상 → `main.tsx`에 `initAnalytics()` 호출 있음 → `dataLayer`엔 이벤트 쌓이나 `/g/collect` 전송 0 → `window.gtag.toString()` 결과 커스텀 함수가 표준 스니펫과 다름.
+- 근본 원인: `window.gtag`가 `(...args) => dataLayer.push(args)`(배열 래핑)으로 정의돼, google `gtag.js`가 `dataLayer` 큐를 인식 못 함. 표준은 `arguments` 객체를 push해야 함.
+- 수정: `analytics.ts`의 gtag를 일반 함수 선언 + `dataLayer.push(arguments)` 표준 형태로 교체. 5f69c35.
+- 검증: 배포 후 `collect?v=2&tid=G-HHXHDJ6HF3` 204 발화 확인, GA4 실시간 활성사용자 1 표시 → 수집 복구 확정.
+- 주의: 본 수정 배포 이전 모든 사용자 GA4 데이터는 0(복구 불가). 측정은 이 시점부터 유효.
+
+### 사용자: 첫 가입자·첫 플레이 발생
+- 첫 회원가입 1명(영어권 추정·gmail). 어드민 DB 기준 — 단, GA4 수집 장애로 유입경로·퍼널은 미측정.
+- 해당 사용자: 가입 후 7판 플레이(무료 한도 소진), 정확도 96.8~100%, 두 차례 나눠 접속(소규모 재방문), 반응속도 1468ms→1133ms 개선. 이탈이 아닌 한도 소진.
+- 판단: n=1이라 결론 불가. 재방문·결제 여부는 더 관찰 필요. 무료 프리미엄 제공·매일 연락 등 개입은 데이터 오염·조급함 이유로 하지 않기로 함.
+
+### 랜딩: 히어로 개편 (영어 카피·게임 플레이 영상)
+- 문제: 첫 화면이 "무슨 서비스인지" 3초 전달 실패. 모바일(방문 64%)에서 히어로가 비어 푸터가 첫 화면 노출.
+- 게임 플레이 영상 제작: 11초 화면녹화에서 게임 영역만 크롭·웹 최적화 — `src/assets/hero/hero.mp4` 164KB / `hero.webm` 205KB / 포스터 `crop_check.png` 232KB(886×1180 portrait).
+- 영어 카피 교체: 헤드라인 "Read music faster." / 서브 "A game that trains your sight-reading. 5 minutes a day." / 버튼 아래 "Free to start. No card needed."
+- 구조 변경: `<video autoPlay loop muted playsInline preload="metadata" poster aria-hidden>`(webm 1순위 + mp4 2순위, `aspect-ratio: 886/1180`, `max-w-[240px] sm:max-w-[300px] md:max-w-[340px]`) 삽입. 모바일 폰트(h1 `text-4xl` → `text-3xl`, 서브 `text-lg` → `text-base`)·세로 간격(`mt-6/10`·`py-8` → `mt-3/6`·`py-6`) 축소로 영상 공간 확보 + 푸터 first-fold 밖으로 밀어냄.
+- i18n: `Strings.hero.ctaHint?: string` 옵셔널 신설, `en.hero`만 갱신. `ko.hero`·다른 섹션·라우팅·게임 로직·`Seo`·`ComingSoonNotice` 무변경.
+- 빌드: `npm run build` 통과 — `hero.mp4` 164KB·`hero.webm` 205KB·`crop_check.png` 232KB emit 확인. a2eea5a.
+- 미수행(주인님): push → Vercel 재배포 → 모바일 첫 화면(푸터 미노출)·iOS Safari 자동재생 수동검증.
+
+### 교훈
+- `window.gtag` 정의 형태(`arguments` vs 배열 래핑)는 외형이 비슷해도 `gtag.js` 큐 인식 여부를 가른다. `dataLayer`가 차오르는데 `/g/collect`가 안 나가면 스니펫 형태(함수 선언 vs 화살표 + spread)가 1차 의심 지점.
+- 운영 측정 부재 상태에서 광고 캠페인을 돌리면 데이터가 통째 손실됨. 광고·랜딩 변경 전에 측정 라이브 확인이 선행 조건. 7일 손실 재발 방지 → 다음 측정 추가 시 `/g/collect` 발화 확인을 체크리스트화.
+- n=1 단계에선 개입 금지 원칙. 무료 프리미엄 제공 같은 개입은 매개변수가 너무 많아 향후 코호트 분석을 망치고, 솔로 운영자 조급함의 원인.
+
+---
+
 ## 2026-06-17
 
 ### 결제: Creem webhook `paddle_price_id` 추출 통일

@@ -7,6 +7,19 @@
 
 ---
 
+## 2026-06-19 결정·미결 묶음 (광고 첫 캠페인·GA4 수집 복구·랜딩 히어로·첫 가입자)
+
+- [✅ 2026-06-19] **GA4 수집 장애 진단·수정 (오늘의 핵심)** — 7일간 GA4 활성사용자·이벤트 0인데 Vercel은 방문자 집계 정상. 진단: 실시간 0 → 라이브 소스에 gtag·측정 ID 없음 → Vercel env(`VITE_GA_MEASUREMENT_ID=G-HHXHDJ6HF3`) 정상 → `src/lib/analytics.ts` 정상 → `main.tsx` `initAnalytics()` 호출 정상 → `dataLayer`엔 이벤트 쌓이나 `/g/collect` 전송 안 됨 → `window.gtag.toString()` 결과 커스텀 함수가 표준 스니펫과 다름. 근본 원인: `window.gtag`가 `(...args) => dataLayer.push(args)`(배열 래핑)으로 정의돼 `gtag.js`가 `dataLayer` 큐를 인식 못 함(표준은 `arguments`를 push). 수정: 일반 함수 선언 + `dataLayer.push(arguments)` 표준 형태로 교체. 검증: 배포 후 `collect?v=2&tid=G-HHXHDJ6HF3` 204 발화 + GA4 실시간 활성사용자 1 표시 → 수집 복구 확정. 주의: 본 수정 배포 이전 모든 GA4 데이터는 0(복구 불가). 측정은 이 시점부터 유효. 5f69c35.
+- [✅ 2026-06-19] **랜딩 히어로 개편 (영어 카피·게임 플레이 영상)** — 첫 화면이 "무슨 서비스인지" 3초 전달 실패, 모바일(방문 64%)에서 히어로가 비어 푸터가 첫 화면 노출. 11초 화면녹화에서 게임 영역만 크롭한 웹 최적화 영상(`src/assets/hero/hero.mp4` 164KB / `hero.webm` 205KB / 포스터 `crop_check.png` 886×1180) 추가, 영어 카피 교체("Read music faster." / "A game that trains your sight-reading. 5 minutes a day." / 버튼 아래 "Free to start. No card needed."), `<video autoPlay loop muted playsInline preload="metadata" poster aria-hidden>`(webm 1순위·mp4 2순위, aspect-ratio 886/1180) 삽입, 모바일 폰트·세로 간격 축소. `Strings.hero.ctaHint?` 옵셔널 신설로 `en.hero`만 갱신, `ko.hero`·다른 섹션·라우팅·게임 로직 무변경. a2eea5a.
+- [검증 대기 · 2026-06-19] **랜딩 히어로 배포 후 모바일·iOS 수동검증 (a2eea5a, push 후)** — push → Vercel 재배포 후 ① iPhone Safari(또는 DevTools 375×667 / 393×852) 첫 화면에 헤드라인·서브·영상·버튼·힌트 모두 노출 & 푸터 미노출 ② iOS 실기기 영상 자동재생·인라인·무음·무한반복 ③ 데스크톱(≥768px) 영상 크기 균형 ④ 한국어 전환 시 영문 힌트 미노출(옵셔널 분기) ⑤ Fast 3G에서 헤드라인이 영상 다운로드 전 즉시 노출(`preload="metadata"` 효과).
+- [신규·후속·분석] **GA4 핵심 이벤트 4개 계측 점검·추가** — 현재 `page_view`·`login` 수신 확인. `play_start`·서브레벨 통과·`paywall_view`·결제(`checkout`) 클릭 4개가 라이브에 들어가는지 점검, 누락 시 발화 추가. 이 4개 없으면 퍼널 진단 불가 — 측정 복구 다음 우선순위.
+- [신규·후속·랜딩] **한국어 히어로 카피 교체 검토** — 이번 라운드는 영어만 교체. 영문 효과(전환·이탈 지표) 확인 후 `ko.hero`도 동일 방향(기능 직설형)으로 교체 검토. 트리거 = 영문 히어로 배포 후 모바일 첫 화면 이탈률 변화 측정.
+- [운영 · 2026-06-25 체크포인트] **Google Ads 첫 캠페인 운영** — "Noteflex-검색테스트"(검색·클릭수 최대화·CPC 상한 없음·AI Max off / 미국·영국·캐나다·호주·영어 / 일 예산 ₩7,000 / 종료일 6/25 / 수동결제 ₩50,000 선충전 / phrase-match 5·헤드라인 5·설명 2). Day1~2: 노출 280→378, 클릭 6→8, CTR ~2.1%, 지출 ~₩1,809(검색 ₩1,293 + 파트너 ₩516) — 신규 캠페인 램프업 단계라 일 예산 미소진 정상. 현재 일시중지 없이 계속 운영. 종료일에 GA4 + Google Ads 같이 열어 퍼널 4분기(저클릭 / 클릭후이탈 / 플레이후미결제 / 저수요) 어디서 끊기는지 진단. 이후 한 번에 한 변수만 바꿔 재테스트. **총 한도 사전 설정**: 3~4주·20~30만원 내 신호 없으면 채널 전환.
+- [원칙 재확인 · 2026-06-19] **측정 살았으니 "랜딩 변경 → GA4 전후 전환율 비교" 사이클로 운영** — 가설은 데이터로 검증. n=1 단계에서 개입 금지(아래 첫 가입자 항목 참고).
+- [관찰 · 2026-06-19] **첫 가입자·첫 플레이 발생** — 첫 회원가입 1명(영어권 추정·gmail) 어드민 DB 기준. GA4 수집 장애로 유입경로·퍼널 미측정. 가입 후 7판 플레이(무료 한도 소진), 정확도 96.8~100%, 두 차례 나눠 접속(소규모 재방문), 반응속도 1468ms→1133ms 개선 — 이탈이 아닌 한도 소진. n=1이라 결론 불가. 재방문·결제 여부는 관찰만 — 무료 프리미엄 제공·매일 연락 등 개입은 데이터 오염·조급함 이유로 보류.
+
+---
+
 ## 2026-06-16 결정·미결 묶음 (RLS Pro 게이트·블로그 prerender 전환)
 
 - [✅ 2026-06-16] **user_analytics_rollup SELECT RLS Pro 게이트** — 기존 `auth.uid()=user_id` 단일 정책으로 본인 row 전부 허용 → 비Pro 가 직접 SQL 로 자기 주간/월간 rollup 우회 노출. 새 USING `(auth.uid()=user_id AND (period_type='day' OR public.is_pro())) OR public.is_admin()` 로 좁힘(day=본인 항상, week/month=본인+is_pro, admin=전체). 마이그레이션 `20260615_rollup_rls_pro_gate.sql` apply+push 완료. RPC(SECURITY INVOKER)는 is_pro 가드 통과 후 도달이라 정상 경로 무영향. 849ee17.
