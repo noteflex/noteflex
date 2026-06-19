@@ -22,7 +22,6 @@ export interface Strings {
     setProgress: string;
     questionOfTotal: string;
     question: string;
-    listenAgain: string;
     answerHint: string;
     showAnswerDev: string;
     answerAlert: string;
@@ -929,7 +928,6 @@ const ko: Strings = {
     setProgress: "({cur}/{total} 세트)",
     questionOfTotal: "{a}/{b}번째 음표의 이름은?",
     question: "{a}번째 음표의 이름은?",
-    listenAgain: "🔊 다시 듣기",
     answerHint: "💡 정답: {ans}",
     showAnswerDev: "💡 정답 보기 (DEV)",
     answerAlert: "정답: {ans}",
@@ -1811,7 +1809,6 @@ const en: Strings = {
     setProgress: "({cur}/{total} sets)",
     questionOfTotal: "What is note {a} of {b}?",
     question: "What is note {a}?",
-    listenAgain: "🔊 Listen again",
     answerHint: "💡 Answer: {ans}",
     showAnswerDev: "💡 Show answer (DEV)",
     answerAlert: "Answer: {ans}",

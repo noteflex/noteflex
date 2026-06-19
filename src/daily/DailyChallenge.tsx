@@ -337,16 +337,6 @@ export function DailyChallenge({ onExit, onFinish }: DailyChallengeProps) {
     );
   }, [timerMs, phase, currentQuestion, fireGlow, recordResultAndAdvance]);
 
-  // ── 다시 듣기 ─────────────────────────────────────────────────
-  const replayCurrent = useCallback(() => {
-    if (phase !== "playing" || !currentQuestion) return;
-    try {
-      playNote(soundKeyOf(currentQuestion));
-    } catch {
-      /* noop */
-    }
-  }, [phase, currentQuestion]);
-
   // ── 표시용 파생값 ─────────────────────────────────────────────
   const reachedCount = results.length;
   const displayQuestionNo = Math.min(reachedCount + 1, TOTAL_QUESTIONS);
@@ -473,14 +463,6 @@ export function DailyChallenge({ onExit, onFinish }: DailyChallengeProps) {
           />
         </div>
       </div>
-
-      <button
-        onClick={replayCurrent}
-        disabled={phase !== "playing" || !currentQuestion}
-        className="mt-2 text-sm text-muted-foreground hover:text-foreground transition-colors duration-150 active:scale-95 disabled:opacity-40"
-      >
-        🔊 다시 듣기
-      </button>
     </div>
   );
 }

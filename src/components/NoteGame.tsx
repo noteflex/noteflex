@@ -1828,14 +1828,6 @@ export default function NoteGame({
 
       </div>
 
-      <button
-        onClick={() => { if (currentTarget) playNote(getSoundKey(currentTarget)); }}
-        disabled={phase !== "playing" || isPaused}
-        className="mt-2 text-sm text-muted-foreground hover:text-foreground transition-colors duration-150 active:scale-95 disabled:opacity-40"
-      >
-        {t.game.listenAgain}
-      </button>
-
       <PauseDialog
         open={isPaused}
         onResume={() => setIsPaused(false)}
