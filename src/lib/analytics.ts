@@ -30,9 +30,11 @@ export function initAnalytics(): void {
   const id = getMeasurementId();
 
   window.dataLayer = window.dataLayer || [];
-  window.gtag = function gtag(...args: GtagArgs) {
-    window.dataLayer.push(args);
-  };
+  function gtag(...args: GtagArgs) {
+    // 표준 스니펫: arguments 객체를 그대로 push (배열 래핑 금지) — google gtag.js 가 큐를 인식.
+    window.dataLayer.push(arguments as unknown as GtagArgs);
+  }
+  window.gtag = gtag;
   window.gtag("js", new Date());
   // send_page_view: false — SPA 라우트 추적을 직접 제어 (AnalyticsTracker)
   // 초기 페이지뷰는 AnalyticsTracker 가 마운트되며 useLocation 첫 effect 에서 전송.
