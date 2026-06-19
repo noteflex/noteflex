@@ -10,6 +10,9 @@ import { GAME_ENABLED } from "@/lib/featureFlags";
 import UserMenu from "@/components/UserMenu";
 import StreakBadge from "@/components/StreakBadge";
 import Seo from "@/components/Seo";
+import heroMp4 from "@/assets/hero/hero.mp4";
+import heroWebm from "@/assets/hero/hero.webm";
+import heroPoster from "@/assets/hero/crop_check.png";
 
 function ComingSoonNotice() {
   const t = useT();
@@ -110,29 +113,53 @@ export default function Index() {
       )}
 
       <main
-        className="safe-area-page flex-1 flex flex-col items-center justify-center px-4 py-8"
+        className="safe-area-page flex-1 flex flex-col items-center justify-center px-4 py-6 sm:py-8"
       >
         <h1
-          className="text-4xl sm:text-5xl md:text-6xl font-semibold text-foreground text-center tracking-tight leading-tight whitespace-pre-line animate-fade-up"
+          className="text-3xl sm:text-5xl md:text-6xl font-semibold text-foreground text-center tracking-tight leading-tight whitespace-pre-line animate-fade-up"
         >
           {t.hero.title}
         </h1>
         <p
-          className="text-lg sm:text-xl font-normal text-muted-foreground text-center mt-6 animate-fade-up"
+          className="text-base sm:text-xl font-normal text-muted-foreground text-center mt-3 sm:mt-6 max-w-md animate-fade-up"
           style={{ animationDelay: "0.2s" }}
         >
           {t.hero.subtitle}
         </p>
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          preload="metadata"
+          poster={heroPoster}
+          aria-hidden="true"
+          className="mt-5 sm:mt-8 w-full max-w-[240px] sm:max-w-[300px] md:max-w-[340px] rounded-2xl shadow-md animate-fade-up"
+          style={{ animationDelay: "0.3s", aspectRatio: "886 / 1180" }}
+        >
+          <source src={heroWebm} type="video/webm" />
+          <source src={heroMp4} type="video/mp4" />
+        </video>
         {showGameUI ? (
-          <button
-            onClick={handleStart}
-            className="mt-10 px-10 py-4 rounded-full bg-primary text-primary-foreground font-medium text-lg shadow hover:shadow-md hover:scale-[1.02] transition-all duration-150 active:scale-[0.98] animate-fade-up"
-            style={{ animationDelay: "0.4s" }}
-          >
-            {t.game.start}
-          </button>
+          <>
+            <button
+              onClick={handleStart}
+              className="mt-6 sm:mt-8 px-10 py-3.5 rounded-full bg-primary text-primary-foreground font-medium text-lg shadow hover:shadow-md hover:scale-[1.02] transition-all duration-150 active:scale-[0.98] animate-fade-up"
+              style={{ animationDelay: "0.4s" }}
+            >
+              {t.game.start}
+            </button>
+            {t.hero.ctaHint && (
+              <p
+                className="text-xs text-muted-foreground text-center mt-2 animate-fade-up"
+                style={{ animationDelay: "0.5s" }}
+              >
+                {t.hero.ctaHint}
+              </p>
+            )}
+          </>
         ) : (
-          <div className="mt-12 animate-fade-up" style={{ animationDelay: "0.4s" }}>
+          <div className="mt-8 animate-fade-up" style={{ animationDelay: "0.4s" }}>
             <ComingSoonNotice />
           </div>
         )}

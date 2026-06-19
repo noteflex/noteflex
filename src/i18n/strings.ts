@@ -7,6 +7,7 @@ export interface Strings {
   hero: {
     title: string;
     subtitle: string;
+    ctaHint?: string;
   };
   game: {
     start: string;
@@ -1793,8 +1794,9 @@ const ko: Strings = {
 
 const en: Strings = {
   hero: {
-    title: "See it.\nPlay it.",
-    subtitle: "Sight-reading, gamified.",
+    title: "Read music faster.",
+    subtitle: "A game that trains your sight-reading. 5 minutes a day.",
+    ctaHint: "Free to start. No card needed.",
   },
   game: {
     start: "Play",
