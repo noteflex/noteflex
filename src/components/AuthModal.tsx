@@ -181,6 +181,27 @@ export default function AuthModal({ onClose }: AuthModalProps) {
     }
     setLoading(true);
     try {
+      // 사전 라우팅: 로그인 폼은 shouldCreateUser:false 로 호출하므로,
+      // 미가입 이메일이 그대로 들어가면 Supabase가 "Signups not allowed for otp"를 던지고
+      // 매직링크가 안 나감(=가입 경로 구멍). 가입 분기로 보내려면 TOS 동의가 필수라
+      // 여기선 가입 안내 + CTA만 노출(신규 생성은 handleSignupSubmit 단독 책임 유지).
+      const result = await checkEmailExists(email);
+      const status = result.accountStatus ?? ((result.exists && result.confirmed) ? "active" : "new");
+
+      if (status === "new") {
+        setEmailError(tA.loginEmailNotFound);
+        return;
+      }
+      if (status === "deleted_recoverable") {
+        setRecoveryDaysLeft(result.recoveryDaysLeft ?? 30);
+        setStep(3);
+        return;
+      }
+      if (status === "deleted_expired") {
+        setEmailError(tA.signupEmailHardDeleted);
+        return;
+      }
+
       const { error } = await supabase.auth.signInWithOtp({
         email,
         options: {
@@ -196,16 +217,26 @@ export default function AuthModal({ onClose }: AuthModalProps) {
       setStep(2);
       startCooldown();
     } catch (err: any) {
-      logger.error("Magic Link 영역 미설정 (로그인)", err, {
-        description: "로그인 영역에서 signInWithOtp 실패",
-        cause: err?.message ?? String(err),
-        impact: "사용자 영역 이메일 미설정 — 인증 영역 차단",
-        action: "Supabase Auth 설정 확인, 이메일 도메인 확인",
-        metadata: {
-          auth_action: "signin",
+      // 사전 체크 통과 후에도 'Signups not allowed for otp'이 나오면 race(직전 hard_delete) 또는
+      // Supabase 설정 불일치 — 사용자엔 가입 안내, Sentry는 warn 강등(알려진 UX 상태).
+      const isOtpDisabled = /Signups?\s+not\s+allowed/i.test(err?.message ?? "");
+      if (isOtpDisabled) {
+        logger.warn("Magic Link OTP 비활성 (로그인) — 가입 안내로 라우팅", {
+          description: "사전 체크 통과 후 race 또는 Supabase 설정 불일치",
           email_domain: email.split("@")[1],
-        },
-      });
+        });
+      } else {
+        logger.error("Magic Link 영역 미설정 (로그인)", err, {
+          description: "로그인 영역에서 signInWithOtp 실패",
+          cause: err?.message ?? String(err),
+          impact: "사용자 영역 이메일 미설정 — 인증 영역 차단",
+          action: "Supabase Auth 설정 확인, 이메일 도메인 확인",
+          metadata: {
+            auth_action: "signin",
+            email_domain: email.split("@")[1],
+          },
+        });
+      }
       setEmailError(tA.loginEmailNotFound);
     } finally {
       setLoading(false);

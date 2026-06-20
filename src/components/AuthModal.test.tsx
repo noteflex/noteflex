@@ -330,6 +330,11 @@ describe("로그인 모드 (매직링크)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockSignInWithOtp.mockResolvedValue({ error: null });
+    mockCheckEmailExists.mockResolvedValue({
+      accountStatus: "active",
+      exists: true,
+      confirmed: true,
+    });
   });
 
   it("로그인 제출 시 shouldCreateUser=false + emailRedirectTo 포함", async () => {
@@ -364,6 +369,35 @@ describe("로그인 모드 (매직링크)", () => {
     await user.type(screen.getByPlaceholderText(/이메일을 입력/), "nouser@example.com");
     await user.click(screen.getByRole("button", { name: "이메일로 로그인" }));
     await waitFor(() => expect(screen.getByTestId("login-email-error")).toBeInTheDocument());
+  });
+
+  it("미가입 이메일은 사전 차단(signInWithOtp 미호출) + login-email-error 표시", async () => {
+    mockCheckEmailExists.mockResolvedValueOnce({
+      accountStatus: "new",
+      exists: false,
+      confirmed: false,
+    });
+    const user = userEvent.setup({ delay: null });
+    render(<AuthModal onClose={vi.fn()} />);
+    await user.type(screen.getByPlaceholderText(/이메일을 입력/), "newuser@example.com");
+    await user.click(screen.getByRole("button", { name: "이메일로 로그인" }));
+    await waitFor(() => expect(screen.getByTestId("login-email-error")).toBeInTheDocument());
+    expect(mockSignInWithOtp).not.toHaveBeenCalled();
+  });
+
+  it("탈퇴 30일 이내 이메일은 복구 패널로 라우팅(signInWithOtp 미호출)", async () => {
+    mockCheckEmailExists.mockResolvedValueOnce({
+      accountStatus: "deleted_recoverable",
+      recoveryDaysLeft: 12,
+      exists: true,
+      confirmed: true,
+    });
+    const user = userEvent.setup({ delay: null });
+    render(<AuthModal onClose={vi.fn()} />);
+    await user.type(screen.getByPlaceholderText(/이메일을 입력/), "deleted@example.com");
+    await user.click(screen.getByRole("button", { name: "이메일로 로그인" }));
+    await waitFor(() => expect(screen.getByTestId("recovery-panel")).toBeInTheDocument());
+    expect(mockSignInWithOtp).not.toHaveBeenCalled();
   });
 });
 
