@@ -32,6 +32,28 @@ export default function CheckoutSuccess() {
 
     trackEvent("subscribe", { transaction_id: transactionId });
 
+    // GA4 권장 이벤트 purchase — Ads ROAS·매출 추적용.
+    // 새로고침 중복 방지: sessionStorage 1회 가드(transaction_id 기준).
+    // value 는 Pricing.handleCta 가 stash 한 plan 으로 산정(없으면 미포함).
+    const purchaseGuardKey = `purchase_fired_${transactionId}`;
+    let alreadyFired = false;
+    try { alreadyFired = sessionStorage.getItem(purchaseGuardKey) === "1"; } catch { /* private mode */ }
+    if (!alreadyFired) {
+      let plan: string | null = null;
+      try { plan = sessionStorage.getItem("checkout_plan"); } catch { /* private mode */ }
+      const value = plan === "yearly" ? 39.99 : plan === "monthly" ? 4.99 : undefined;
+      trackEvent("purchase", {
+        transaction_id: transactionId,
+        value,
+        currency: "USD",
+        plan: plan ?? undefined,
+      });
+      try {
+        sessionStorage.setItem(purchaseGuardKey, "1");
+        sessionStorage.removeItem("checkout_plan");
+      } catch { /* private mode */ }
+    }
+
     // webhook 이 비동기로 subscriptions UPSERT → 트리거가 profiles.is_premium 갱신.
     // 첫 도착 시점엔 아직 반영 전일 수 있어 2초·5초 두 번 재조회.
     const refreshTimer1 = setTimeout(() => {

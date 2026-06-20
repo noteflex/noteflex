@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Dialog,
@@ -8,6 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useT } from "@/contexts/LanguageContext";
+import { trackEvent } from "@/lib/analytics";
 
 interface UpgradeModalProps {
   open: boolean;
@@ -17,6 +19,10 @@ interface UpgradeModalProps {
 export default function UpgradeModal({ open, onClose }: UpgradeModalProps) {
   const navigate = useNavigate();
   const t = useT();
+
+  useEffect(() => {
+    if (open) trackEvent("paywall_view", { source: "upgrade_modal" });
+  }, [open]);
 
   const handlePricing = () => {
     // onClose 영역 먼저 완료 — Dashboard.setSearchParams 영역 기록한 부분 기록한 부분

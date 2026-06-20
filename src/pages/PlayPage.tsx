@@ -168,7 +168,7 @@ export default function PlayPage() {
     setSelectedSublevel(sublevel);
     setReplayCounter(0);
     setScreen("game");
-    trackEvent("game_start", { level, sublevel });
+    trackEvent("play_start", { level, sublevel });
   };
 
   const handleGoMain = () => navigate("/");

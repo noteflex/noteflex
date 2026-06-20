@@ -263,6 +263,10 @@ export default function Pricing() {
           user_id: user.id,
           plan,
         });
+        // GA4 funnel: 결제 시작 시점. CheckoutSuccess 가 동일 plan 으로 purchase value 산정하도록 stash.
+        const value = plan === "monthly" ? 4.99 : 39.99;
+        trackEvent("begin_checkout", { plan, value, currency: "USD" });
+        try { sessionStorage.setItem("checkout_plan", plan); } catch { /* private mode */ }
         // 성공 시 함수 안에서 window.location.href = checkoutUrl 으로 redirect.
         // 실패는 함수 안에서 logger.error 로 처리하므로 호출처 try/catch 는 네트워크 예외만 잡음.
         await startCreemCheckout(plan);

@@ -2,6 +2,8 @@
 // VITE_GA_MEASUREMENT_ID 미설정 시 모든 함수가 silent skip — dev/local·테스트 안전.
 // 라우트 추적: src/components/AnalyticsTracker.tsx 가 useLocation 으로 호출.
 
+import { IS_PRERENDER } from "@/lib/prerender";
+
 type GtagArgs =
   | ["js", Date]
   | ["config", string, Record<string, unknown>?]
@@ -48,6 +50,7 @@ export function initAnalytics(): void {
 }
 
 export function trackPageView(path: string): void {
+  if (IS_PRERENDER) return;
   if (!isAnalyticsEnabled() || typeof window.gtag !== "function") return;
   window.gtag("event", "page_view", {
     page_path: path,
@@ -62,6 +65,7 @@ export function trackEvent(
   name: string,
   params?: Record<string, string | number | boolean | undefined>,
 ): void {
+  if (IS_PRERENDER) return;
   if (!isAnalyticsEnabled() || typeof window.gtag !== "function") return;
   window.gtag("event", name, params ?? {});
 }

@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Dialog,
@@ -9,6 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useLang } from "@/contexts/LanguageContext";
 import { getStrings, format } from "@/i18n/strings";
+import { trackEvent } from "@/lib/analytics";
 
 interface DailyLimitModalProps {
   open: boolean;
@@ -44,6 +46,10 @@ export default function DailyLimitModal({
   const { lang } = useLang();
   const s = getStrings(lang).dailyLimit;
   const tierStrings = tier === "guest" ? s.guest : s.free;
+
+  useEffect(() => {
+    if (open) trackEvent("paywall_view", { source: "daily_limit", tier });
+  }, [open, tier]);
 
   const handleCta = () => {
     if (tier === "guest") {
