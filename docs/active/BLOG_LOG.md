@@ -94,6 +94,7 @@
 | 2026-06-16 | 83 | 83 | 166 | 장음계와 단음계(major and minor scales) — W-W-H-W-W-W-H 패턴·자연/화성/가락단음계·평행조/나란한조 (ko+en) 추가. 화이트리스트(음계) 부합, 학술 인용 없음. |
 | 2026-06-17 | 84 | 84 | 168 | 이음줄과 붙임줄(slur vs tie) — 같은 곡선 모양·다른 지시(표현 vs 길이), 음높이로 한 번에 구분 (ko+en) 추가. 화이트리스트(기호 정의·규칙) 부합, 학술 인용 없음. 이미지 출처 IMSLP 크레딧으로 회전(Wikimedia 3편 연속 후). |
 | 2026-06-18 | 85 | 85 | 170 | 반복 기호(repeat signs) — Da Capo·Dal Segno·Coda·Fine + 도돌이표·1·2번 괄호 일곱 가지 정의·결합 규칙(D.C./D.S. al Fine/Coda 4종) (ko+en) 추가. 화이트리스트(기호 정의·규칙) 부합, 학술 인용 없음. 이미지 출처 BnF Gallica + Wikimedia(diagram) 혼합 회전(IMSLP에서 전환). |
+| 2026-06-20 | 86 | 86 | 172 | 셈여림(dynamics) — pp부터 fff까지 일곱 표준 단계 + 크레셴도·디크레셴도 헤어핀(<·>) + 순간 강세(sf·sfz·fp·rf)·차이코프스키 6번 pppppp 사례까지 음량 표기 전체 (ko+en) 추가. 화이트리스트(기호 정의·규칙) 부합, 학술 인용 없음. 이미지 출처 Wikimedia Commons 2종(Beethoven Sym.5 1807 자필 + jobu0101 다이내믹 차트). BlogPostCTA 마커("## 이미지 출처"/"## Image Sources") 정확 일치, prerendered ko·en 2편 생성·#root 본문·핵심 키워드 확인. |
 
 ### 카테고리별 분포 (EN 기준, 2026-05-16 신규 6편 추가 후)
 | 카테고리 | 글 수 |
