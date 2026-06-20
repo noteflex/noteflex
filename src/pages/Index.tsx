@@ -121,7 +121,7 @@ export default function Index() {
           {t.hero.title}
         </h1>
         <p
-          className="text-base sm:text-xl font-normal text-muted-foreground text-center mt-3 sm:mt-6 max-w-md animate-fade-up"
+          className="text-base sm:text-xl font-normal text-muted-foreground text-center mt-3 sm:mt-6 max-w-md whitespace-pre-line animate-fade-up"
           style={{ animationDelay: "0.2s" }}
         >
           {t.hero.subtitle}

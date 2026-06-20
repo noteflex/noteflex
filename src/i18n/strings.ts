@@ -1793,7 +1793,7 @@ const ko: Strings = {
 const en: Strings = {
   hero: {
     title: "Read music faster.",
-    subtitle: "A game that trains your sight-reading. 5 minutes a day.",
+    subtitle: "A game that trains your sight-reading.\n5 minutes a day.",
     ctaHint: "Free to start. No card needed.",
   },
   game: {
