@@ -12,7 +12,7 @@ import StreakBadge from "@/components/StreakBadge";
 import Seo from "@/components/Seo";
 import heroMp4 from "@/assets/hero/hero.mp4";
 import heroWebm from "@/assets/hero/hero.webm";
-import heroPoster from "@/assets/hero/crop_check.png";
+import heroPoster from "@/assets/hero/hero-poster.png";
 
 function ComingSoonNotice() {
   const t = useT();
