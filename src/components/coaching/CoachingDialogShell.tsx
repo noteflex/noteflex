@@ -118,25 +118,30 @@ export default function CoachingDialogShell({
           {coachingMessage}
         </p>
 
-        {/* 4. 보조 stats 3-col */}
-        <div className="grid grid-cols-3 gap-2 border-y border-border py-3 text-center">
-          <SubStat
-            label={t.gameDialogs.statAttempts}
-            value={String(totalAttempts)}
-          />
-          <SubStat
-            label={t.gameDialogs.statBestStreak}
-            value={String(bestStreak)}
-          />
-          <SubStat
-            label={t.gameDialogs.statAvgReaction}
-            value={
-              avgReactionRatio !== undefined
-                ? `${(avgReactionRatio * 100).toFixed(0)}%`
-                : "—"
-            }
-          />
-        </div>
+        {/* 4. 보조 stats — AvgReaction 은 산출 불가(게스트: recorder bails) 시 셀 자체를 숨김.
+             "—" 노출 금지(빈 대시 = 거짓 신호). 그땐 2-col 로 좁힘. */}
+        {(() => {
+          const showAvg = avgReactionRatio !== undefined;
+          const cols = showAvg ? "grid-cols-3" : "grid-cols-2";
+          return (
+            <div className={`grid ${cols} gap-2 border-y border-border py-3 text-center`}>
+              <SubStat
+                label={t.gameDialogs.statAttempts}
+                value={String(totalAttempts)}
+              />
+              <SubStat
+                label={t.gameDialogs.statBestStreak}
+                value={String(bestStreak)}
+              />
+              {showAvg && (
+                <SubStat
+                  label={t.gameDialogs.statAvgReaction}
+                  value={`${(avgReactionRatio! * 100).toFixed(0)}%`}
+                />
+              )}
+            </div>
+          );
+        })()}
 
         {/* 5. 음표별 분석 — signed-in + 데이터 충분 시 그리드, 부족 시 empty state */}
         <NoteAnalysisSection />

@@ -405,12 +405,10 @@ export interface Strings {
     vsAvgUp: string;             // "+{n}%p vs 평균" / "+{n}%p vs avg"
     vsAvgDown: string;           // "-{n}%p vs 평균" / "-{n}%p vs avg"
     vsAvgFlat: string;           // "평소 수준 vs 평균" / "On par with avg"
-    noteAnalysisTitle: string;   // "음표별 분석 · 최근 30회" / "Note analysis · Recent 30"
+    noteAnalysisTitle: string;   // "음표별 정확도 · 최근 30회" / "Note breakdown · Recent 30"
     noteAnalysisEmpty: string;   // "수치가 부족합니다. ..." / "Not enough data yet. ..."
-    // 6/01 비가입자 teaser (NoteAnalysisSection이 guest일 때 노출)
-    guestTeaserTitle: string;    // "음표별 분석" / "Note breakdown"
-    guestTeaserPrompt: string;   // "음표별 분석을 보려면 로그인하세요" / "Sign up to see note breakdown"
-    guestTeaserCta: string;      // "5초만에 시작" / "Sign up — 5 seconds"
+    // 2026-06-22 게스트 블러 티저 — 가입 버튼·prompt 제거, 잠금 시각화만 (가입 CTA 는 nudge 박스 단일)
+    guestTeaserTitle: string;    // "음표별 정확도" / "Note breakdown"
     // SublevelPassedDialog — fast track
     fastTrackBadge: string;
     fastTrackAutoAdvance: string; // "{n}초 후 자동 진입" / "Auto-advance in {n}s"
@@ -1345,11 +1343,9 @@ const ko: Strings = {
     vsAvgUp: "+{n}%p vs 평균",
     vsAvgDown: "-{n}%p vs 평균",
     vsAvgFlat: "평소 수준 vs 평균",
-    noteAnalysisTitle: "음표별 분석 · 최근 30회",
-    noteAnalysisEmpty: "수치가 부족합니다. 더 진행하면 음표별 분석을 보여드려요.",
-    guestTeaserTitle: "음표별 분석",
-    guestTeaserPrompt: "음표별 분석을 보려면 로그인하세요",
-    guestTeaserCta: "5초만에 시작",
+    noteAnalysisTitle: "음표별 정확도 · 최근 30회",
+    noteAnalysisEmpty: "수치가 부족합니다. 더 진행하면 음표별 정확도를 보여드려요.",
+    guestTeaserTitle: "음표별 정확도",
     fastTrackBadge: "🚀 패스트트랙",
     fastTrackAutoAdvance: "{n}초 후 자동 진입",
     fastTrackGoNow: "지금 바로 다음 단계",
@@ -1368,7 +1364,7 @@ const ko: Strings = {
     pauseExit: "레벨 선택으로",
     exitLabel: "나가기",
     guestSignupNudgeTitle: "잘했어요",
-    guestSignupNudgeBody: "진도 저장 + 하루 7세션. 무료예요.",
+    guestSignupNudgeBody: "가입하면 음표별 정확도가 열리고 진도가 저장돼요. 무료예요.",
     guestSignupNudgeCta: "무료로 가입하기",
   },
   accidentalTutorial: {
@@ -2227,11 +2223,9 @@ const en: Strings = {
     vsAvgUp: "+{n}%p vs avg",
     vsAvgDown: "-{n}%p vs avg",
     vsAvgFlat: "On par with avg",
-    noteAnalysisTitle: "Note analysis · Recent 30",
-    noteAnalysisEmpty: "Not enough data yet. Keep playing to see note-level analysis.",
+    noteAnalysisTitle: "Note breakdown · Recent 30",
+    noteAnalysisEmpty: "Not enough data yet. Keep playing to see your note breakdown.",
     guestTeaserTitle: "Note breakdown",
-    guestTeaserPrompt: "Sign up to see note breakdown",
-    guestTeaserCta: "Sign up — 5 seconds",
     fastTrackBadge: "🚀 Fast Track",
     fastTrackAutoAdvance: "Auto-advance in {n}s",
     fastTrackGoNow: "Next stage now",
@@ -2250,7 +2244,7 @@ const en: Strings = {
     pauseExit: "Exit to levels",
     exitLabel: "Exit",
     guestSignupNudgeTitle: "Nice work",
-    guestSignupNudgeBody: "Save your progress. 7 sessions a day. Free.",
+    guestSignupNudgeBody: "Sign up to unlock note breakdown and save your progress. Free.",
     guestSignupNudgeCta: "Sign up free",
   },
   accidentalTutorial: {
