@@ -5,6 +5,17 @@
 //   - profiles.current_streak/longest_streak/last_practice_date 는 옛 시스템 잔재 — 본 훅 미사용.
 //   - 주간 7도트 = daily_activity 의 월~일 7일 매핑.
 //   - 비로그인 / 미로드 시 빈 상태(현재 0일, week 전부 미완) 반환.
+//
+// 읽기 시점 staleness 보정:
+//   record_practice_day 는 플레이 시점에만 호출되므로, 사용자가 며칠 안 들어오면
+//   user_streaks.current_streak 은 옛 값(예: 5)인 채 그대로 남는다. 본 훅이 읽을 때
+//   last_practice_date 가 어제 이전이면 끊김으로 판정해 표시 currentStreak=0 + broken=true 노출.
+//   - last_practice_date == today      → 오늘 완료(살아있음)
+//   - last_practice_date == yesterday  → 아직 오늘 미완(살아있음)
+//   - 그 외(어제 이전)                  → 끊김(currentStreak=0, broken=true)
+//   - last_practice_date == NULL       → 신규(currentStreak=0, broken=false)
+//
+//   로컬 날짜 키는 getLocalDateKey() — 쓰기 경로(useSessionRecorder·DailyChallenge)와 동일.
 
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -24,11 +35,14 @@ export interface StreakWeekDay {
 
 export interface StreakState {
   loading: boolean;
+  /** staleness 보정 적용값 — 끊김 시 0. raw DB 값이 아님. */
   currentStreak: number;
   longestStreak: number;
   lastPracticeDate: string | null;
   /** 로컬 오늘 = user_streaks.last_practice_date */
   todayDone: boolean;
+  /** last_practice_date 가 어제 이전 → 끊김. StreakBadge 가 0·꺼진 불꽃 분기에 사용. */
+  broken: boolean;
   /** 월~일 7일 (월요일 시작) */
   week: StreakWeekDay[];
   refresh: () => Promise<void>;
@@ -124,14 +138,22 @@ export function useStreak(): StreakState {
     void fetchAll();
   }, [fetchAll]);
 
-  const todayDone = lastPracticeDate === getLocalDateKey();
+  const todayKey = getLocalDateKey();
+  const yesterdayDate = new Date();
+  yesterdayDate.setDate(yesterdayDate.getDate() - 1);
+  const yesterdayKey = getLocalDateKey(yesterdayDate);
+
+  const todayDone = lastPracticeDate === todayKey;
+  const broken = !!lastPracticeDate && lastPracticeDate < yesterdayKey;
+  const effectiveCurrentStreak = broken ? 0 : currentStreak;
 
   return {
     loading,
-    currentStreak,
+    currentStreak: effectiveCurrentStreak,
     longestStreak,
     lastPracticeDate,
     todayDone,
+    broken,
     week,
     refresh: fetchAll,
   };
