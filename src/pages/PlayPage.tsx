@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
 import UserMenu from "@/components/UserMenu";
@@ -45,6 +45,12 @@ export default function PlayPage() {
 
   const [gameOverOpen, setGameOverOpen] = useState(false);
   const [passedDialogOpen, setPassedDialogOpen] = useState(false);
+
+  // §광고-유입 (2026-06-22): 게스트 1-1 직행은 /play 세션당 1회만 발화.
+  //   "나가기 → 레벨선택" 으로 screen 만 game→levelSelect 로 돌아온 경우 다시 autoEnter 가
+  //   걸리면 게임으로 즉시 튕겨 무한 바운스. screen 전환을 넘어 유지되는 PlayPage 레벨 ref
+  //   로 1회 소비 추적. 랜딩에서 Play 를 다시 눌러 /play 가 새로 마운트되면 자연 리셋.
+  const guestAutoEntryConsumedRef = useRef(false);
   const [replayCounter, setReplayCounter] = useState(0);
   const [interstitialOpen, setInterstitialOpen] = useState(false);
   const [lastResult, setLastResult] = useState<{
@@ -165,6 +171,9 @@ export default function PlayPage() {
   };
 
   const handleSelectSublevel = (level: number, sublevel: Sublevel) => {
+    // 게스트가 어떤 경로로든 게임에 진입하면 autoEnter 1회 소비 처리 — 이후 levelSelect 로
+    // 돌아왔을 때 다시 직행되지 않도록.
+    if (!user) guestAutoEntryConsumedRef.current = true;
     setSelectedLevel(level);
     setSelectedSublevel(sublevel);
     setReplayCounter(0);
@@ -247,8 +256,10 @@ export default function PlayPage() {
         <div className="safe-area-page flex-1 flex flex-col items-center px-4 overflow-y-auto">
           {/* §광고-유입 (2026-06-21): 비로그인 게스트는 LevelSelect 건너뛰고 Lv1-1 직행.
               LevelSelect.autoEnterSublevel 가 내부 handleSelect 를 1회 호출하여
-              일일한도 게이트(GUEST_LIMIT=3) + play_start 발화를 그대로 재사용. */}
-          {!authLoading && !user ? (
+              일일한도 게이트(GUEST_LIMIT=3) + play_start 발화를 그대로 재사용.
+              2026-06-22: guestAutoEntryConsumedRef 로 /play 세션당 1회 제한
+              ("나가기 → 레벨선택" 으로 돌아온 경우 무한 바운스 차단). */}
+          {!authLoading && !user && !guestAutoEntryConsumedRef.current ? (
             <LevelSelect
               autoEnterSublevel={{ level: 1, sublevel: 1 }}
               onSelectSublevel={handleSelectSublevel}
