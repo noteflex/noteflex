@@ -48,6 +48,8 @@ export interface CoachingDialogShellProps {
   avgReactionRatio?: number;
   /** Footer CTA 버튼 슬롯. */
   footer: ReactNode;
+  /** Footer 직전에 렌더되는 추가 슬롯 (예: 게스트 가입 nudge 배너). */
+  nudge?: ReactNode;
 }
 
 export default function CoachingDialogShell({
@@ -62,6 +64,7 @@ export default function CoachingDialogShell({
   bestStreak,
   avgReactionRatio,
   footer,
+  nudge,
 }: CoachingDialogShellProps) {
   const t = useT();
 
@@ -137,6 +140,9 @@ export default function CoachingDialogShell({
 
         {/* 5. 음표별 분석 — signed-in + 데이터 충분 시 그리드, 부족 시 empty state */}
         <NoteAnalysisSection />
+
+        {/* 5.5 nudge 슬롯 — 게스트 가입 nudge 등 (지정 시에만 렌더) */}
+        {nudge}
 
         {/* 6. Footer (CTA 버튼) */}
         <DialogFooter className="flex flex-col gap-2 sm:flex-row sm:justify-between">

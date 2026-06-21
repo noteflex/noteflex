@@ -1,4 +1,4 @@
-import { memo, useCallback, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLang, useT } from "@/contexts/LanguageContext";
@@ -15,6 +15,7 @@ import {
   type Sublevel,
   type SublevelProgress,
 } from "@/lib/levelSystem";
+import { ensureAudioReady } from "@/lib/sound";
 import UpgradeModal from "./UpgradeModal";
 import DailyLimitModal from "./DailyLimitModal";
 import LockedByProgressDialog from "./LockedByProgressDialog";
@@ -29,6 +30,14 @@ const LEVEL_META = ["🌱", "⭐", "⭐⭐", "⭐⭐⭐", "🔥", "💎", "👑"
 interface LevelSelectProps {
   onSelectSublevel: (level: number, sublevel: Sublevel) => void;
   onLoginRequest?: () => void;
+  /**
+   * 지정 시 LevelSelect 그리드를 그리지 않고 마운트 직후 1회 handleSelect 호출.
+   * (게스트 1-1 직행에 사용 — 일일한도/접근가능 게이트 + play_start 발화 경로 그대로 재사용.)
+   * DailyLimitModal close 핸들러도 페이지 진입점 책임이므로 onAutoEnterAbort 로 위임.
+   */
+  autoEnterSublevel?: { level: number; sublevel: Sublevel };
+  /** autoEnterSublevel 모드에서 DailyLimitModal close 시 호출. 미지정이면 모달만 닫힘. */
+  onAutoEnterAbort?: () => void;
 }
 
 // ── Cell 상태 ─────────────────────────────────────────────────
@@ -50,6 +59,8 @@ interface CellState {
 export default function LevelSelect({
   onSelectSublevel,
   onLoginRequest,
+  autoEnterSublevel,
+  onAutoEnterAbort,
 }: LevelSelectProps) {
   const { user, profile } = useAuth();
   const t = useT();
@@ -202,6 +213,28 @@ export default function LevelSelect({
     onSelectSublevel(level, sub);
   }, [onSelectSublevel]);
 
+  // §광고-유입 (2026-06-21): 게스트 1-1 직행.
+  //   autoEnterSublevel 지정 + loading·dailyLimit.isLoading 해소 후 1회 handleSelect 호출.
+  //   handleSelect 가 일일한도 게이트와 onSelectSublevel(play_start 경로)를 모두 책임.
+  //
+  //   추가 — 오디오 준비 await:
+  //     수동 진입은 LevelSelect 셀 클릭과 NoteGame 마운트 사이에 1~5초 간격이 있어 sampler
+  //     로딩이 끝난 뒤 첫 음이 트리거되지만, 직행은 마운트 직후 NoteGame 으로 넘어가
+  //     handleCountdownComplete 가 sampler 로딩 중인 sampler 에 닿아 release 미발화(드론)
+  //     현상이 관측됐다. ensureAudioReady 를 await 한 뒤 handleSelect 를 호출해 수동 진입과
+  //     동일한 "오디오 준비 완료 후 첫 음" 순서를 보장. (엔벨로프/게임 로직 무변경.)
+  const autoEnterFiredRef = useRef(false);
+  useEffect(() => {
+    if (!autoEnterSublevel) return;
+    if (autoEnterFiredRef.current) return;
+    if (loading || dailyLimit.isLoading) return;
+    autoEnterFiredRef.current = true;
+    const { level, sublevel } = autoEnterSublevel;
+    ensureAudioReady()
+      .catch(() => {/* 실패해도 진행 — NoteGame.handleCountdownComplete 가 한번 더 가드 */})
+      .finally(() => handleSelect(level, sublevel));
+  }, [autoEnterSublevel, loading, dailyLimit.isLoading, handleSelect]);
+
   // 진도 잠금 CTA "Lv X-Y로 이동" 클릭 시 동작.
   // 1) 해당 셀 위치로 스크롤 (smooth)
   // 2) 1.5s 동안 ring 하이라이트
@@ -214,6 +247,28 @@ export default function LevelSelect({
     setHighlightedKey(key);
     setTimeout(() => setHighlightedKey(null), 1500);
   }, []);
+
+  // ── Auto-enter 분기 — 그리드 미렌더, 모달만 활성 ──────────────
+  // 게스트 1-1 직행 경로 (광고 유입 깔때기). handleSelect 가 일일한도 게이트 통과 후
+  // onSelectSublevel 을 즉시 호출하므로 사실상 화면은 한 프레임도 안 보이고 game 으로 전환.
+  // 일일한도 초과 시에만 DailyLimitModal 이 잔존.
+  if (autoEnterSublevel) {
+    return (
+      <>
+        {dailyLimitOpen && (
+          <DailyLimitModal
+            open={true}
+            tier={user ? "free" : "guest"}
+            timeUntilResetMs={dailyLimit.timeUntilResetMs}
+            onClose={() => {
+              setDailyLimitOpen(false);
+              onAutoEnterAbort?.();
+            }}
+          />
+        )}
+      </>
+    );
+  }
 
   // ── Render ──────────────────────────────────────────────────
   return (

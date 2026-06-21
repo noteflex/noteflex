@@ -431,6 +431,9 @@ export interface Strings {
     pauseResume: string;
     pauseExit: string;
     exitLabel: string;
+    // 게스트 무료 가입 nudge (1-1 완료 화면)
+    guestSignupNudgeBody: string;  // "무료로 가입하면 Lv1–2 전체와 하루 7세션이 열려요" / "Sign up free to unlock Lv1–2 and 7 daily sessions."
+    guestSignupNudgeCta: string;   // "무료로 가입" / "Sign up free"
   };
   accidentalTutorial: {
     title: string;
@@ -1365,6 +1368,8 @@ const ko: Strings = {
     pauseResume: "계속하기",
     pauseExit: "레벨 선택으로",
     exitLabel: "나가기",
+    guestSignupNudgeBody: "무료로 가입하면 Lv1–2 전체와 하루 7세션이 열려요",
+    guestSignupNudgeCta: "무료로 가입",
   },
   accidentalTutorial: {
     title: "새로운 조작법 안내",
@@ -2246,6 +2251,8 @@ const en: Strings = {
     pauseResume: "Resume",
     pauseExit: "Exit to levels",
     exitLabel: "Exit",
+    guestSignupNudgeBody: "Sign up free to unlock Lv1–2 and 7 daily sessions.",
+    guestSignupNudgeCta: "Sign up free",
   },
   accidentalTutorial: {
     title: "New controls",

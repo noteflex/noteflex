@@ -39,6 +39,7 @@ export default function PlayPage() {
   const [selectedLevel, setSelectedLevel] = useState(1);
   const [selectedSublevel, setSelectedSublevel] = useState<Sublevel>(1);
   const [showAuth, setShowAuth] = useState(false);
+  const [authInitialMode, setAuthInitialMode] = useState<"login" | "signup">("login");
   // "다음 단계로" 클릭이 Premium 잠금 단계로 가는 경우 노출
   const [upgradeModalOpen, setUpgradeModalOpen] = useState(false);
 
@@ -174,6 +175,48 @@ export default function PlayPage() {
   const handleGoMain = () => navigate("/");
   const handleNextLevel = () => setScreen("levelSelect");
 
+  // §광고-유입 (2026-06-21): 게스트 1-1 완료 후 무료가입 nudge.
+  //   결제(paywall) 유도 아님 — 무료 가입 권유. UpgradeModal/paywall_view 와 혼동 금지.
+  //   view 이벤트는 다이얼로그가 처음 열릴 때 1회만 발화.
+  const isGuestOneOne =
+    !user &&
+    !!lastResult &&
+    lastResult.level === 1 &&
+    lastResult.sublevel === 1;
+  const nudgeVisible =
+    isGuestOneOne && (gameOverOpen || passedDialogOpen);
+
+  useEffect(() => {
+    if (nudgeVisible) {
+      trackEvent("guest_signup_nudge_view", { level: 1, sublevel: 1 });
+    }
+  }, [nudgeVisible]);
+
+  const handleNudgeCta = () => {
+    trackEvent("guest_signup_nudge_click", { level: 1, sublevel: 1 });
+    setAuthInitialMode("signup");
+    setShowAuth(true);
+  };
+
+  const guestNudge = nudgeVisible ? (
+    <div
+      className="rounded-xl border border-primary/30 bg-primary/5 p-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between"
+      data-testid="guest-signup-nudge"
+    >
+      <p className="text-[13px] text-foreground leading-snug">
+        {t.gameDialogs.guestSignupNudgeBody}
+      </p>
+      <button
+        type="button"
+        onClick={handleNudgeCta}
+        className="shrink-0 px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-semibold hover:bg-primary/90 transition-colors"
+        data-testid="guest-signup-nudge-cta"
+      >
+        {t.gameDialogs.guestSignupNudgeCta}
+      </button>
+    </div>
+  ) : null;
+
   const seoBlock = (
     <Seo
       title={t.pageMeta.play.title}
@@ -193,26 +236,40 @@ export default function PlayPage() {
             : user ? <UserMenu />
             : !authLoading ? (
               <button
-                onClick={() => setShowAuth(true)}
+                onClick={() => { setAuthInitialMode("login"); setShowAuth(true); }}
                 className="text-xs px-4 py-1.5 rounded-lg bg-primary text-primary-foreground font-semibold hover:bg-primary/90 transition-colors"
               >
                 {t.header.signIn}
               </button>
             ) : null
         } />
-        {showAuth && <AuthModal onClose={() => setShowAuth(false)} />}
+        {showAuth && <AuthModal initialMode={authInitialMode} onClose={() => setShowAuth(false)} />}
         <div className="safe-area-page flex-1 flex flex-col items-center px-4 overflow-y-auto">
-          <LevelSelect
-            onSelectSublevel={handleSelectSublevel}
-            onLoginRequest={() => setShowAuth(true)}
-          />
-          <div className="w-full max-w-lg px-4 pb-6">
-            <AdBanner
-              slot={getSlot("PLAY_BOTTOM")}
-              format="horizontal"
-              placeholderVariant="horizontal-random"
+          {/* §광고-유입 (2026-06-21): 비로그인 게스트는 LevelSelect 건너뛰고 Lv1-1 직행.
+              LevelSelect.autoEnterSublevel 가 내부 handleSelect 를 1회 호출하여
+              일일한도 게이트(GUEST_LIMIT=3) + play_start 발화를 그대로 재사용. */}
+          {!authLoading && !user ? (
+            <LevelSelect
+              autoEnterSublevel={{ level: 1, sublevel: 1 }}
+              onSelectSublevel={handleSelectSublevel}
+              onLoginRequest={() => { setAuthInitialMode("login"); setShowAuth(true); }}
+              onAutoEnterAbort={() => navigate("/")}
             />
-          </div>
+          ) : (
+            <>
+              <LevelSelect
+                onSelectSublevel={handleSelectSublevel}
+                onLoginRequest={() => { setAuthInitialMode("login"); setShowAuth(true); }}
+              />
+              <div className="w-full max-w-lg px-4 pb-6">
+                <AdBanner
+                  slot={getSlot("PLAY_BOTTOM")}
+                  format="horizontal"
+                  placeholderVariant="horizontal-random"
+                />
+              </div>
+            </>
+          )}
         </div>
       </div>
     );
@@ -222,7 +279,7 @@ export default function PlayPage() {
   return (
     <GameErrorBoundary>
       {seoBlock}
-      {showAuth && <AuthModal onClose={() => setShowAuth(false)} />}
+      {showAuth && <AuthModal initialMode={authInitialMode} onClose={() => setShowAuth(false)} />}
       <div
         className="safe-area-page min-h-[100dvh] overflow-y-auto flex flex-col items-center justify-center py-4 px-4"
         style={{ background: "radial-gradient(circle at top, #ffffff 0%, #f8f5e4 100%)" }}
@@ -252,6 +309,7 @@ export default function PlayPage() {
             onReplay={handleReplaySameSublevel}
             onGoToPreviousSublevel={handleGoToPreviousSublevel}
             onClose={handleDialogDismiss}
+            nudge={guestNudge}
           />
           <SublevelPassedDialog
             open={passedDialogOpen}
@@ -268,6 +326,7 @@ export default function PlayPage() {
             onGoToNextSublevel={handleGoToNextSublevel}
             onBackToSelect={handleBackToLevelSelect}
             onClose={handleDialogDismiss}
+            nudge={guestNudge}
           />
         </>
       )}

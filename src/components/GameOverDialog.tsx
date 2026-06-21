@@ -1,3 +1,4 @@
+import { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { formatSublevel, getPreviousSublevel } from "@/lib/levelSystem";
 import { generateCoachingComment } from "@/lib/aiCoaching";
@@ -19,6 +20,8 @@ interface GameOverDialogProps {
   onReplay: () => void;
   onGoToPreviousSublevel: () => void;
   onClose: () => void;
+  /** Footer 직전 nudge 슬롯 (게스트 가입 안내 등). */
+  nudge?: ReactNode;
 }
 
 export function GameOverDialog({
@@ -33,6 +36,7 @@ export function GameOverDialog({
   onReplay,
   onGoToPreviousSublevel,
   onClose,
+  nudge,
 }: GameOverDialogProps) {
   const { lang } = useLang();
   const t = useT();
@@ -80,6 +84,7 @@ export function GameOverDialog({
       totalAttempts={totalAttempts}
       bestStreak={bestStreak}
       avgReactionRatio={avgReactionRatio}
+      nudge={nudge}
       footer={
         <>
           {hasPrevious && prevLabel && (

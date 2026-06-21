@@ -11,11 +11,13 @@ const EMAIL_AUTH_ENABLED = true;
 
 // ─── Types ────────────────────────────────────────────────────────────────
 
+type Mode = "login" | "signup";
+
 interface AuthModalProps {
   onClose: () => void;
+  /** 진입 모드. 미지정 시 "login". */
+  initialMode?: Mode;
 }
-
-type Mode = "login" | "signup";
 
 // ─── Sub-components ───────────────────────────────────────────────────────
 
@@ -42,11 +44,11 @@ function Divider({ orLabel }: { orLabel: string }) {
 
 // ─── Component ───────────────────────────────────────────────────────────
 
-export default function AuthModal({ onClose }: AuthModalProps) {
+export default function AuthModal({ onClose, initialMode = "login" }: AuthModalProps) {
   const t = useT();
   const tA = t.authModal;
   const navigate = useNavigate();
-  const [mode, setMode] = useState<Mode>("login");
+  const [mode, setMode] = useState<Mode>(initialMode);
   const [step, setStep] = useState(1); // 1: 이메일 폼, 2: 매직링크 전송 완료, 3: 복구 패널, 4: Paddle 심사관 액세스
 
   const [loading, setLoading] = useState(false);

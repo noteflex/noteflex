@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { ReactNode, useEffect, useRef, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -32,6 +32,8 @@ interface SublevelPassedDialogProps {
   onGoToNextSublevel: () => void;
   onBackToSelect: () => void;
   onClose: () => void;
+  /** Footer 직전 nudge 슬롯 (게스트 가입 안내 등). fastTrack 분기에서는 무시. */
+  nudge?: ReactNode;
 }
 
 const AUTO_ADVANCE_SECONDS = 5;
@@ -51,6 +53,7 @@ export function SublevelPassedDialog({
   onGoToNextSublevel,
   onBackToSelect,
   onClose,
+  nudge,
 }: SublevelPassedDialogProps) {
   const { lang } = useLang();
   const t = useT();
@@ -186,6 +189,7 @@ export function SublevelPassedDialog({
       totalAttempts={totalAttempts}
       bestStreak={bestStreak}
       avgReactionRatio={avgReactionRatio}
+      nudge={nudge}
       footer={
         <>
           <Button

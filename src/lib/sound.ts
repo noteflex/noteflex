@@ -5,6 +5,16 @@ let synth: Tone.PolySynth | null = null;
 let gainNode: Tone.Gain | null = null;
 let initialized = false;
 let _samplerReady = false;
+/**
+ * §광고-유입 (2026-06-21): initSound 동시 호출 직렬화.
+ *   기존 `initialized` 플래그는 sampler.onload(또는 10s 타임아웃) 후에야 true → 그 전에 들어온
+ *   동시 호출(landing handleStart + PlayPage useEffect + ensureAudioReady prefetch + NoteGame mount)
+ *   모두가 본문을 통째로 재실행해 limiter/EQ/gainNode/synth/sampler 글로벌이 N벌 만들어지고
+ *   `sampler` 전역이 마지막 인스턴스로 덮어쓰임 → 첫 playNote 가 아직 로딩 중인 sampler 에 닿아
+ *   release 가 스케줄되어도 source 가 그 시점에 미시작 → 드론(release 미발화) 현상.
+ *   Promise singleton 으로 단일 init 보장. 엔벨로프/sustain/calibration 무변경.
+ */
+let initPromise: Promise<void> | null = null;
 /** 첫 sampler 실패 시 1회만 warn (콘솔 노이즈 회피). page reload 시 모듈 재초기화 → 다시 sample 시도. */
 let _samplerWarnLogged = false;
 
@@ -41,7 +51,19 @@ export async function ensureAudioReady(): Promise<void> {
   }
 }
 
-export async function initSound(): Promise<void> {
+export function initSound(): Promise<void> {
+  if (initPromise) return initPromise;
+  initPromise = (async () => {
+    await doInitSound();
+  })().catch((err) => {
+    // 실패 시 다음 호출에서 재시도 가능하도록 promise 캐시 해제.
+    initPromise = null;
+    throw err;
+  });
+  return initPromise;
+}
+
+async function doInitSound(): Promise<void> {
   if (initialized) return;
   await Tone.start();
 
