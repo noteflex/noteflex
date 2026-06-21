@@ -916,7 +916,7 @@ export interface Strings {
 const ko: Strings = {
   hero: {
     title: "보는 즉시,\n음악이 되다.",
-    subtitle: "초견 훈련을 게임처럼.",
+    subtitle: "악보 읽기를 게임처럼.",
   },
   game: {
     start: "Play",
