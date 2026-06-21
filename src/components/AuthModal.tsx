@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
-import { checkEmailExists } from "@/lib/profile";
+import { checkEmailExists, detectLocale } from "@/lib/profile";
 import { logger } from "@/lib/sentry";
 import { useT } from "@/contexts/LanguageContext";
 import { format as fmt } from "@/i18n/strings";
@@ -152,6 +152,7 @@ export default function AuthModal({ onClose }: AuthModalProps) {
           tos_agreed_at: now,
           privacy_agreed_at: now,
           marketing_agreed_at: marketingAgreed ? now : null,
+          locale: detectLocale(),
         }));
       }
       const { error } = await supabase.auth.signInWithOAuth({
@@ -281,6 +282,7 @@ export default function AuthModal({ onClose }: AuthModalProps) {
             tos_agreed_at: now,
             privacy_agreed_at: now,
             marketing_agreed_at: marketingAgreed ? now : null,
+            locale: detectLocale(),
           },
         },
       });
@@ -372,6 +374,7 @@ export default function AuthModal({ onClose }: AuthModalProps) {
         tos_agreed_at: now,
         privacy_agreed_at: now,
         marketing_agreed_at: marketingAgreed ? now : null,
+        locale: detectLocale(),
       }));
       const { error: otpError } = await supabase.auth.signInWithOtp({
         email,

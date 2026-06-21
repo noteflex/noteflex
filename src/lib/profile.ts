@@ -5,9 +5,10 @@ import { logger } from "@/lib/sentry";
 // 국가/언어 자동 감지
 // ═════════════════════════════════════════════════════════════
 
-/** 브라우저 언어에서 언어 코드 추출 (예: "ko-KR" → "ko") */
+/** 브라우저 언어에서 언어 코드 추출 (예: "ko-KR" → "ko"). 감지 실패 시 'en' 폴백 — 영어권 광고/분석 라벨 정확도 우선. */
 export function detectLocale(): string {
-  const lang = navigator.language || "ko";
+  if (typeof navigator === "undefined") return "en";
+  const lang = navigator.language || "en";
   return lang.split("-")[0].toLowerCase();
 }
 
