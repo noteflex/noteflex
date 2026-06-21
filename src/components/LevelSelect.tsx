@@ -31,6 +31,13 @@ interface LevelSelectProps {
   onSelectSublevel: (level: number, sublevel: Sublevel) => void;
   onLoginRequest?: () => void;
   /**
+   * 게스트 무료가입 유도 콜백. 지정 시:
+   *   - Pro 잠금셀(lockReason==="subscription") 클릭 → UpgradeModal(결제) 대신 호출.
+   *   - DailyLimitModal 게스트 CTA → 호출 (기본 navigate("/signup") 404 회피).
+   * 로그인 사용자에는 영향 X — 잠금셀은 그대로 UpgradeModal.
+   */
+  onGuestSignupRequest?: () => void;
+  /**
    * 지정 시 LevelSelect 그리드를 그리지 않고 마운트 직후 1회 handleSelect 호출.
    * (게스트 1-1 직행에 사용 — 일일한도/접근가능 게이트 + play_start 발화 경로 그대로 재사용.)
    * DailyLimitModal close 핸들러도 페이지 진입점 책임이므로 onAutoEnterAbort 로 위임.
@@ -59,6 +66,7 @@ interface CellState {
 export default function LevelSelect({
   onSelectSublevel,
   onLoginRequest,
+  onGuestSignupRequest,
   autoEnterSublevel,
   onAutoEnterAbort,
 }: LevelSelectProps) {
@@ -173,6 +181,12 @@ export default function LevelSelect({
   const getProgressForRef = useRef(getProgressFor);
   getProgressForRef.current = getProgressFor;
 
+  // 2026-06-22 게스트 가입 유도 — handleSelect 안에서 안정 reference 로 읽기.
+  const isGuestRef = useRef<boolean>(!user);
+  isGuestRef.current = !user;
+  const onGuestSignupRequestRef = useRef<typeof onGuestSignupRequest>(onGuestSignupRequest);
+  onGuestSignupRequestRef.current = onGuestSignupRequest;
+
   const handleSelect = useCallback((level: number, sub: Sublevel) => {
     const state = cellStatesRef.current.get(`${level}-${sub}`);
     if (!state) return;
@@ -183,6 +197,12 @@ export default function LevelSelect({
     //   3) 일일 한도
     //   4) 진입
     if (state.lockReason === "subscription") {
+      // 2026-06-22 게스트 분기 — 결제 모달 대신 무료가입 모달.
+      // 로그인 Free 사용자(Pro 잠금 셀 탭)는 기존 UpgradeModal 경로 그대로.
+      if (isGuestRef.current && onGuestSignupRequestRef.current) {
+        onGuestSignupRequestRef.current();
+        return;
+      }
       setUpgradeOpen(true);
       return;
     }
@@ -260,6 +280,7 @@ export default function LevelSelect({
             open={true}
             tier={user ? "free" : "guest"}
             timeUntilResetMs={dailyLimit.timeUntilResetMs}
+            onSignUpClick={onGuestSignupRequest}
             onClose={() => {
               setDailyLimitOpen(false);
               onAutoEnterAbort?.();
@@ -386,6 +407,7 @@ export default function LevelSelect({
           open={true}
           tier={user ? "free" : "guest"}
           timeUntilResetMs={dailyLimit.timeUntilResetMs}
+          onSignUpClick={onGuestSignupRequest}
           onClose={() => setDailyLimitOpen(false)}
         />
       )}

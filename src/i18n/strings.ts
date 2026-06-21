@@ -431,9 +431,10 @@ export interface Strings {
     pauseResume: string;
     pauseExit: string;
     exitLabel: string;
-    // 게스트 무료 가입 nudge (1-1 완료 화면)
-    guestSignupNudgeBody: string;  // "무료로 가입하면 Lv1–2 전체와 하루 7세션이 열려요" / "Sign up free to unlock Lv1–2 and 7 daily sessions."
-    guestSignupNudgeCta: string;   // "무료로 가입" / "Sign up free"
+    // 게스트 무료 가입 nudge (1-1 완료 화면) — 2026-06-22 정직화: 특정셀 unlock 약속 금지.
+    guestSignupNudgeTitle: string; // "잘했어요" / "Nice work"
+    guestSignupNudgeBody: string;  // "진도 저장 + 하루 7세션. 무료예요." / "Save your progress. 7 sessions a day. Free."
+    guestSignupNudgeCta: string;   // "무료로 가입하기" / "Sign up free"
   };
   accidentalTutorial: {
     title: string;
@@ -1258,11 +1259,9 @@ const ko: Strings = {
   },
   dailyLimit: {
     guest: {
-      title: "오늘은 여기까지.",
+      title: "오늘은 여기까지",
       values: [
-        "매일 7회 무료 세션",
-        "Lv1~Lv5 단계 이용 가능",
-        "분석 보고서로 약점 진단",
+        "무료 가입하면 하루 7세션으로 이어갈 수 있어요",
       ],
       cta: "무료로 가입하기",
       close: "닫기",
@@ -1368,8 +1367,9 @@ const ko: Strings = {
     pauseResume: "계속하기",
     pauseExit: "레벨 선택으로",
     exitLabel: "나가기",
-    guestSignupNudgeBody: "무료로 가입하면 Lv1–2 전체와 하루 7세션이 열려요",
-    guestSignupNudgeCta: "무료로 가입",
+    guestSignupNudgeTitle: "잘했어요",
+    guestSignupNudgeBody: "진도 저장 + 하루 7세션. 무료예요.",
+    guestSignupNudgeCta: "무료로 가입하기",
   },
   accidentalTutorial: {
     title: "새로운 조작법 안내",
@@ -2141,13 +2141,11 @@ const en: Strings = {
   },
   dailyLimit: {
     guest: {
-      title: "That's it for today.",
+      title: "That's it for today",
       values: [
-        "7 free sessions per day",
-        "Access Lv1 through Lv5",
-        "Spot your weak notes with data analysis",
+        "Sign up free for 7 sessions a day",
       ],
-      cta: "Sign up — free",
+      cta: "Sign up free",
       close: "Close",
     },
     free: {
@@ -2251,7 +2249,8 @@ const en: Strings = {
     pauseResume: "Resume",
     pauseExit: "Exit to levels",
     exitLabel: "Exit",
-    guestSignupNudgeBody: "Sign up free to unlock Lv1–2 and 7 daily sessions.",
+    guestSignupNudgeTitle: "Nice work",
+    guestSignupNudgeBody: "Save your progress. 7 sessions a day. Free.",
     guestSignupNudgeCta: "Sign up free",
   },
   accidentalTutorial: {

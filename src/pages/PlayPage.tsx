@@ -201,10 +201,16 @@ export default function PlayPage() {
     }
   }, [nudgeVisible]);
 
-  const handleNudgeCta = () => {
-    trackEvent("guest_signup_nudge_click", { level: 1, sublevel: 1 });
+  // 게스트 가입 유도 단일 진입점 — nudge·잠금셀·DailyLimitModal 가 공통 사용.
+  // 새 모달 상태를 만들지 않고 기존 showAuth + authInitialMode 메커니즘 재사용.
+  const openGuestSignup = () => {
     setAuthInitialMode("signup");
     setShowAuth(true);
+  };
+
+  const handleNudgeCta = () => {
+    trackEvent("guest_signup_nudge_click", { level: 1, sublevel: 1 });
+    openGuestSignup();
   };
 
   const guestNudge = nudgeVisible ? (
@@ -212,9 +218,14 @@ export default function PlayPage() {
       className="rounded-xl border border-primary/30 bg-primary/5 p-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between"
       data-testid="guest-signup-nudge"
     >
-      <p className="text-[13px] text-foreground leading-snug">
-        {t.gameDialogs.guestSignupNudgeBody}
-      </p>
+      <div className="flex flex-col gap-0.5">
+        <p className="text-[13px] font-semibold text-foreground leading-snug">
+          {t.gameDialogs.guestSignupNudgeTitle}
+        </p>
+        <p className="text-[12px] text-muted-foreground leading-snug">
+          {t.gameDialogs.guestSignupNudgeBody}
+        </p>
+      </div>
       <button
         type="button"
         onClick={handleNudgeCta}
@@ -264,6 +275,7 @@ export default function PlayPage() {
               autoEnterSublevel={{ level: 1, sublevel: 1 }}
               onSelectSublevel={handleSelectSublevel}
               onLoginRequest={() => { setAuthInitialMode("login"); setShowAuth(true); }}
+              onGuestSignupRequest={openGuestSignup}
               onAutoEnterAbort={() => navigate("/")}
             />
           ) : (
@@ -271,6 +283,7 @@ export default function PlayPage() {
               <LevelSelect
                 onSelectSublevel={handleSelectSublevel}
                 onLoginRequest={() => { setAuthInitialMode("login"); setShowAuth(true); }}
+                onGuestSignupRequest={openGuestSignup}
               />
               <div className="w-full max-w-lg px-4 pb-6">
                 <AdBanner
