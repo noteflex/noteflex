@@ -56,7 +56,7 @@ describe("SUBLEVEL_CONFIGS", () => {
 
 describe("PASS_CRITERIA", () => {
   it("통과 조건 상수값", () => {
-    expect(PASS_CRITERIA.MIN_PLAY_COUNT).toBe(10);
+    expect(PASS_CRITERIA.MIN_PLAY_COUNT).toBe(5);
     expect(PASS_CRITERIA.MIN_BEST_STREAK).toBe(5);
     expect(PASS_CRITERIA.MIN_ACCURACY).toBe(0.85);
     expect(PASS_CRITERIA.MIN_AVG_REACTION_RATIO).toBe(0.35);

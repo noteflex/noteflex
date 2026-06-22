@@ -17,7 +17,7 @@
  *   [Lv 5~7] 서브레벨 3: 60노트 / 3 stages (batchSize 3·5·7)
  *
  * 단계 통과 조건 (4개 모두 충족):
- *   - 플레이 횟수 ≥ 10회
+ *   - 플레이 횟수 ≥ 5회
  *   - 한 게임에서 연속 정답 ≥ 5개 (한 번이라도)
  *   - 누적 정답률 ≥ 85%
  *   - sublevel 평균 반응속도 ≤ 타이머 × 35% (기록 없으면 통과 처리)
@@ -180,7 +180,7 @@ export const LV5_SUBLEVEL_STAGES: Record<Sublevel, readonly GameStageConfig[]> =
 };
 
 export const PASS_CRITERIA = {
-  MIN_PLAY_COUNT: 10,
+  MIN_PLAY_COUNT: 5,
   MIN_BEST_STREAK: 5,
   MIN_ACCURACY: 0.85,
   /** sublevel 평균 반응속도 ≤ 타이머 × 이 비율 */

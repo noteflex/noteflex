@@ -43,7 +43,7 @@ Noteflex's pass criteria for each sublevel make that position visible. A stage i
 - **🎯 Accuracy**: 85% or above across all attempts in the sublevel
 - **⚡ Response speed**: Average reaction time within 35% of the timer limit
 - **🔥 Best streak**: At least 5 consecutive correct responses in a single session
-- **📊 Session count**: At least 10 completed sessions
+- **📊 Session count**: At least 5 completed sessions
 
 All four must be satisfied. If any falls short, the stage continues. Because the criteria are explicit, a learner always knows the answer to "where am I now" in concrete numbers, not in vague impressions.
 
