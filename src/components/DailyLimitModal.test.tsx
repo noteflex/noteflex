@@ -40,12 +40,10 @@ describe("DailyLimitModal — Guest 영역 (ko)", () => {
     mockUseLang.mockReturnValue({ lang: "ko" });
   });
 
-  it("Guest 헤드라인 + 가치 3개 표시", () => {
+  it("Guest 헤드라인 + 가치 1개 표시 (정직 카피, faf4a31)", () => {
     renderModal({ tier: "guest" });
-    expect(screen.getByRole("heading", { name: "오늘은 여기까지." })).toBeInTheDocument();
-    expect(screen.getByText(/매일 7회 무료/)).toBeInTheDocument();
-    expect(screen.getByText(/Lv1~Lv5 단계 이용/)).toBeInTheDocument();
-    expect(screen.getByText(/AI 분석 보고서/)).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "오늘은 여기까지" })).toBeInTheDocument();
+    expect(screen.getByText(/무료 가입하면 하루 7세션으로 이어갈 수 있어요/)).toBeInTheDocument();
   });
 
   it("Guest CTA + 보조 버튼 표시", () => {
@@ -103,7 +101,7 @@ describe("DailyLimitModal — Free 영역 (ko)", () => {
     expect(screen.getByRole("heading", { name: "오늘 7회를 마치셨어요." })).toBeInTheDocument();
     expect(screen.getByText(/매일 무제한/)).toBeInTheDocument();
     expect(screen.getByText(/21단계 모두 열림/)).toBeInTheDocument();
-    expect(screen.getByText(/AI 풀 분석/)).toBeInTheDocument();
+    expect(screen.getByText(/상세 분석 — 약점 음표/)).toBeInTheDocument();
     expect(screen.getByText(/광고 없는 집중/)).toBeInTheDocument();
   });
 
@@ -173,10 +171,9 @@ describe("DailyLimitModal — 영어", () => {
 
   it("Guest 영어 헤드라인·가치 리스트·CTA", () => {
     renderModal({ tier: "guest" });
-    expect(screen.getByRole("heading", { name: "That's it for today." })).toBeInTheDocument();
-    expect(screen.getByText(/7 free sessions daily/)).toBeInTheDocument();
-    expect(screen.getByText(/Lv1 through Lv5/)).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Sign up — free" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "That's it for today" })).toBeInTheDocument();
+    expect(screen.getByText(/Sign up free for 7 sessions a day/)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Sign up free" })).toBeInTheDocument();
   });
 
   it("Free 영어 헤드라인·가치 리스트·CTA·가격", () => {
@@ -212,8 +209,9 @@ describe("DailyLimitModal — 메모리 #25 스타일 (Quick Mastery 영역 X)",
     expect(screen.getByText(/21단계 모두 열림/)).toBeInTheDocument();
   });
 
-  it("Guest 영역에 'Lv1~Lv5 단계 이용 가능' (모든 단계 X)", () => {
+  it("Guest 영역에 stage 범위 과장 표현 없음 (faf4a31 정직 카피 — '모든 단계'·'Lv1~Lv5' X)", () => {
     renderModal({ tier: "guest" });
-    expect(screen.getByText(/Lv1~Lv5 단계 이용 가능/)).toBeInTheDocument();
+    expect(screen.queryByText(/Lv1~Lv5/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/모든 단계/)).not.toBeInTheDocument();
   });
 });

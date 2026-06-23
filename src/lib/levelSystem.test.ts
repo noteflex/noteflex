@@ -18,6 +18,7 @@ import {
   isValidSublevel,
   type SublevelProgress,
   type Sublevel,
+  type RecentPlay,
 } from "./levelSystem";
 
 // 헬퍼: 기본 progress 객체 생성
@@ -32,6 +33,17 @@ function makeProgress(overrides: Partial<SublevelProgress> = {}): SublevelProgre
     passed: false,
     ...overrides,
   };
+}
+
+// 헬퍼: recent_plays 윈도우 엔트리 생성. 비지정 필드는 기본값.
+function makeWindow(entries: Partial<RecentPlay>[]): RecentPlay[] {
+  return entries.map((e) => ({
+    at: "2026-06-22T00:00:00Z",
+    attempts: 5,
+    correct: 5,
+    reaction_ratio: null,
+    ...e,
+  }));
 }
 
 describe("SUBLEVEL_CONFIGS", () => {
@@ -69,12 +81,24 @@ describe("calculateAccuracy", () => {
   });
 
   it("정답률 80% 정확히", () => {
-    const p = makeProgress({ total_attempts: 10, total_correct: 8 });
+    const p = makeProgress({
+      recent_plays: makeWindow([
+        { attempts: 5, correct: 4 },
+        { attempts: 5, correct: 4 },
+        { attempts: 5, correct: 4 },
+      ]),
+    });
     expect(calculateAccuracy(p)).toBeCloseTo(0.8);
   });
 
   it("정답률 100%", () => {
-    const p = makeProgress({ total_attempts: 5, total_correct: 5 });
+    const p = makeProgress({
+      recent_plays: makeWindow([
+        { attempts: 5, correct: 5 },
+        { attempts: 5, correct: 5 },
+        { attempts: 5, correct: 5 },
+      ]),
+    });
     expect(calculateAccuracy(p)).toBe(1);
   });
 
@@ -89,8 +113,11 @@ describe("checkPassed - 4개 조건 모두 충족 검증", () => {
     const p = makeProgress({
       play_count: 10,
       best_streak: 5,
-      total_attempts: 10,
-      total_correct: 9, // 90%
+      recent_plays: makeWindow([
+        { attempts: 10, correct: 9, reaction_ratio: 0.3 },
+        { attempts: 10, correct: 9, reaction_ratio: 0.3 },
+        { attempts: 10, correct: 9, reaction_ratio: 0.3 },
+      ]),
     });
     expect(checkPassed(p)).toBe(true);
   });
@@ -125,12 +152,15 @@ describe("checkPassed - 4개 조건 모두 충족 검증", () => {
     expect(checkPassed(p)).toBe(false);
   });
 
-  it("정확히 경계값 (10, 5, 85%) → passed=true", () => {
+  it("정확히 경계값 (5, 5, 85%) → passed=true", () => {
     const p = makeProgress({
-      play_count: 10,
+      play_count: 5, // 경계값 (MIN_PLAY_COUNT)
       best_streak: 5,
-      total_attempts: 100,
-      total_correct: 85, // 85% 정확히
+      recent_plays: makeWindow([
+        { attempts: 20, correct: 17, reaction_ratio: 0.3 }, // 윈도우 합 51/60 = 0.85 정확히
+        { attempts: 20, correct: 17, reaction_ratio: 0.3 },
+        { attempts: 20, correct: 17, reaction_ratio: 0.3 },
+      ]),
     });
     expect(checkPassed(p)).toBe(true);
   });
@@ -139,9 +169,11 @@ describe("checkPassed - 4개 조건 모두 충족 검증", () => {
     const p = makeProgress({
       play_count: 10,
       best_streak: 5,
-      total_attempts: 10,
-      total_correct: 9,
-      // avg_reaction_ratio 미기록
+      recent_plays: makeWindow([
+        { attempts: 10, correct: 9 }, // reaction_ratio: null 기본
+        { attempts: 10, correct: 9 },
+        { attempts: 10, correct: 9 },
+      ]),
     });
     expect(checkPassed(p)).toBe(true);
   });
@@ -151,9 +183,11 @@ describe("checkPassed - 4개 조건 모두 충족 검증", () => {
       sublevel: 1,
       play_count: 10,
       best_streak: 5,
-      total_attempts: 10,
-      total_correct: 9,
-      avg_reaction_ratio: 0.34,
+      recent_plays: makeWindow([
+        { attempts: 10, correct: 9, reaction_ratio: 0.34 },
+        { attempts: 10, correct: 9, reaction_ratio: 0.34 },
+        { attempts: 10, correct: 9, reaction_ratio: 0.34 },
+      ]),
     });
     expect(checkPassed(p)).toBe(true);
   });
@@ -175,17 +209,21 @@ describe("checkPassed - 4개 조건 모두 충족 검증", () => {
       sublevel: 3,
       play_count: 10,
       best_streak: 5,
-      total_attempts: 10,
-      total_correct: 9,
-      avg_reaction_ratio: 0.35,
+      recent_plays: makeWindow([
+        { attempts: 10, correct: 9, reaction_ratio: 0.35 },
+        { attempts: 10, correct: 9, reaction_ratio: 0.35 },
+        { attempts: 10, correct: 9, reaction_ratio: 0.35 },
+      ]),
     });
     const fail = makeProgress({
       sublevel: 3,
       play_count: 10,
       best_streak: 5,
-      total_attempts: 10,
-      total_correct: 9,
-      avg_reaction_ratio: 0.351,
+      recent_plays: makeWindow([
+        { attempts: 10, correct: 9, reaction_ratio: 0.351 },
+        { attempts: 10, correct: 9, reaction_ratio: 0.351 },
+        { attempts: 10, correct: 9, reaction_ratio: 0.351 },
+      ]),
     });
     expect(checkPassed(ok)).toBe(true);
     expect(checkPassed(fail)).toBe(false);
@@ -193,12 +231,13 @@ describe("checkPassed - 4개 조건 모두 충족 검증", () => {
 });
 
 describe("getCompletion - UI 진행률", () => {
-  it("아무것도 안 했을 때", () => {
+  it("아무것도 안 했을 때 — 표본 부족으로 acc·reaction 평가 보류", () => {
     const c = getCompletion(makeProgress());
     expect(c.playCount.satisfied).toBe(false);
     expect(c.bestStreak.satisfied).toBe(false);
     expect(c.accuracy.satisfied).toBe(false);
-    expect(c.avgReactionRatio.satisfied).toBe(true); // 미기록 → 통과 처리
+    expect(c.avgReactionRatio.satisfied).toBe(false); // 표본 < MIN_RECENT_SAMPLE
+    expect(c.sampleInsufficient).toBe(true);
     expect(c.allSatisfied).toBe(false);
   });
 
@@ -220,8 +259,11 @@ describe("getCompletion - UI 진행률", () => {
     const p = makeProgress({
       play_count: 10,
       best_streak: 5,
-      total_attempts: 10,
-      total_correct: 9,
+      recent_plays: makeWindow([
+        { attempts: 10, correct: 9 },
+        { attempts: 10, correct: 9 },
+        { attempts: 10, correct: 9 },
+      ]),
     });
     const c = getCompletion(p);
     expect(c.allSatisfied).toBe(true);
@@ -236,7 +278,14 @@ describe("getCompletion - UI 진행률", () => {
   });
 
   it("avg_reaction_ratio 기록 있을 때 current 반영", () => {
-    const p = makeProgress({ sublevel: 1, avg_reaction_ratio: 0.3 });
+    const p = makeProgress({
+      sublevel: 1,
+      recent_plays: makeWindow([
+        { attempts: 5, correct: 5, reaction_ratio: 0.3 },
+        { attempts: 5, correct: 5, reaction_ratio: 0.3 },
+        { attempts: 5, correct: 5, reaction_ratio: 0.3 },
+      ]),
+    });
     const c = getCompletion(p);
     expect(c.avgReactionRatio.current).toBe(0.3);
     expect(c.avgReactionRatio.satisfied).toBe(true);
