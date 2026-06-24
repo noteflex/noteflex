@@ -51,8 +51,9 @@ export default function PlayPage() {
   //   걸리면 게임으로 즉시 튕겨 무한 바운스. screen 전환을 넘어 유지되는 PlayPage 레벨 ref
   //   로 1회 소비 추적. 랜딩에서 Play 를 다시 눌러 /play 가 새로 마운트되면 자연 리셋.
   const guestAutoEntryConsumedRef = useRef(false);
-  // game_complete 는 play_start 와 1:1 정합 — 게임 화면 1회 진입(handleSelectSublevel)당
-  // 1회만 발화. 재시도/다음·이전 단계로 인한 NoteGame remount 에서는 재발화 금지.
+  // game_complete 는 게임 화면 1회 진입(handleSelectSublevel)당 1회만 발화 — 재시도/다음·
+  // 이전 단계로 인한 NoteGame remount 에서는 재발화 금지. play_start 는 NoteGame.
+  // handleCountdownComplete 가 마운트마다 발화하므로 둘은 동일 카운트가 아님(의도).
   const gameCompleteFiredRef = useRef(false);
   const [replayCounter, setReplayCounter] = useState(0);
   const [interstitialOpen, setInterstitialOpen] = useState(false);
@@ -189,7 +190,8 @@ export default function PlayPage() {
     setReplayCounter(0);
     gameCompleteFiredRef.current = false;
     setScreen("game");
-    trackEvent("play_start", { level, sublevel });
+    // play_start 는 NoteGame.handleCountdownComplete 단일 앵커에서 발화 — 모든 진입 경로가
+    // 카운트다운을 거치므로 여기서 호출하지 않음.
   };
 
   const handleGoMain = () => navigate("/");
@@ -278,7 +280,8 @@ export default function PlayPage() {
         <div className="safe-area-page flex-1 flex flex-col items-center px-4 overflow-y-auto">
           {/* §광고-유입 (2026-06-21): 비로그인 게스트는 LevelSelect 건너뛰고 Lv1-1 직행.
               LevelSelect.autoEnterSublevel 가 내부 handleSelect 를 1회 호출하여
-              일일한도 게이트(GUEST_LIMIT=3) + play_start 발화를 그대로 재사용.
+              일일한도 게이트(GUEST_LIMIT=3) 를 그대로 재사용. play_start 는 NoteGame.
+              handleCountdownComplete 단일 앵커에서 발화.
               2026-06-22: guestAutoEntryConsumedRef 로 /play 세션당 1회 제한
               ("나가기 → 레벨선택" 으로 돌아온 경우 무한 바운스 차단). */}
           {!authLoading && !user && !guestAutoEntryConsumedRef.current ? (

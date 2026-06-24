@@ -17,6 +17,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useT } from "@/contexts/LanguageContext";
 import { format } from "@/i18n/strings";
 import { playNote, playWrong, isSamplerReady, initSound, ensureAudioReady } from "@/lib/sound";
+import { trackEvent } from "@/lib/analytics";
 import { useNoteLogger } from "@/hooks/useNoteLogger";
 import { useSessionRecorder } from "@/hooks/useSessionRecorder";
 import { useRetryQueue } from "@/hooks/useRetryQueue";
@@ -651,6 +652,9 @@ export default function NoteGame({
   const totalCorrectRef   = useRef(0);
   const currentStreakRef  = useRef(0);
   const bestStreakRef     = useRef(0);
+  // play_start 는 모든 진입 경로의 공통 동기화 지점인 handleCountdownComplete 에서 단일
+  // 발화. NoteGame 마운트당 1회만 — CountdownOverlay onComplete 가 중복 호출돼도 차단.
+  const playStartFiredRef = useRef(false);
   const isCustom      = level === 0 && !!customNotes;
   const NOTES         = isCustom ? customNotes : getNotesForLevel(level);
   const needsKeySig   = level >= 5;
@@ -1320,6 +1324,12 @@ export default function NoteGame({
     setShowCountdown(false);
     setTimerKey(prev => prev + 1);
     updateNoteStartTime("카운트다운 종료");
+    // play_start 단일 앵커 — 게스트 직행·Free·재플레이 등 모든 진입 경로가 NoteGame 마운트
+    // 후 이 시점을 거치므로 경로별 누락이 구조적으로 사라짐. 한 마운트 내 1회 가드.
+    if (!playStartFiredRef.current) {
+      playStartFiredRef.current = true;
+      trackEvent("play_start", { level, sublevel });
+    }
     if (currentBatch.length === 0) return;
     // §1 (2026-05-01): audio context 활성화 보장 후 playNote.
     //  - sampler 미준비 시 initSound 완료 대기
@@ -1332,7 +1342,7 @@ export default function NoteGame({
       // fallback — synth로라도 시도
       playNote(getSoundKey(currentBatch[0]));
     });
-  }, [currentBatch]);
+  }, [currentBatch, level, sublevel]);
 
   /**
    * §4 (2026-05-01) — final-retry phase 다음 음표 진행.

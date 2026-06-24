@@ -39,7 +39,8 @@ interface LevelSelectProps {
   onGuestSignupRequest?: () => void;
   /**
    * 지정 시 LevelSelect 그리드를 그리지 않고 마운트 직후 1회 handleSelect 호출.
-   * (게스트 1-1 직행에 사용 — 일일한도/접근가능 게이트 + play_start 발화 경로 그대로 재사용.)
+   * (게스트 1-1 직행에 사용 — 일일한도/접근가능 게이트 경로 그대로 재사용. play_start 는
+   *  NoteGame.handleCountdownComplete 단일 앵커에서 발화.)
    * DailyLimitModal close 핸들러도 페이지 진입점 책임이므로 onAutoEnterAbort 로 위임.
    */
   autoEnterSublevel?: { level: number; sublevel: Sublevel };
@@ -235,7 +236,8 @@ export default function LevelSelect({
 
   // §광고-유입 (2026-06-21): 게스트 1-1 직행.
   //   autoEnterSublevel 지정 + loading·dailyLimit.isLoading 해소 후 1회 handleSelect 호출.
-  //   handleSelect 가 일일한도 게이트와 onSelectSublevel(play_start 경로)를 모두 책임.
+  //   handleSelect 가 일일한도 게이트와 onSelectSublevel(NoteGame 마운트 경로)를 책임.
+  //   play_start 는 NoteGame.handleCountdownComplete 단일 앵커에서 발화.
   //
   //   추가 — 오디오 준비 await:
   //     수동 진입은 LevelSelect 셀 클릭과 NoteGame 마운트 사이에 1~5초 간격이 있어 sampler
