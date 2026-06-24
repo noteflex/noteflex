@@ -51,6 +51,9 @@ export default function PlayPage() {
   //   걸리면 게임으로 즉시 튕겨 무한 바운스. screen 전환을 넘어 유지되는 PlayPage 레벨 ref
   //   로 1회 소비 추적. 랜딩에서 Play 를 다시 눌러 /play 가 새로 마운트되면 자연 리셋.
   const guestAutoEntryConsumedRef = useRef(false);
+  // game_complete 는 play_start 와 1:1 정합 — 게임 화면 1회 진입(handleSelectSublevel)당
+  // 1회만 발화. 재시도/다음·이전 단계로 인한 NoteGame remount 에서는 재발화 금지.
+  const gameCompleteFiredRef = useRef(false);
   const [replayCounter, setReplayCounter] = useState(0);
   const [interstitialOpen, setInterstitialOpen] = useState(false);
   const [lastResult, setLastResult] = useState<{
@@ -86,22 +89,29 @@ export default function PlayPage() {
     avgReactionRatio?: number;
   }) => {
     setLastResult(result);
-    trackEvent("game_complete", {
-      level: result.level,
-      sublevel: result.sublevel,
-      passed: result.passed,
-      just_passed: result.just_passed,
-      total_attempts: result.totalAttempts,
-      total_correct: result.totalCorrect,
-      best_streak: result.bestStreak,
-    });
+    if (!gameCompleteFiredRef.current) {
+      gameCompleteFiredRef.current = true;
+      trackEvent("game_complete", {
+        level: result.level,
+        sublevel: result.sublevel,
+        passed: result.passed,
+        just_passed: result.just_passed,
+        total_attempts: result.totalAttempts,
+        total_correct: result.totalCorrect,
+        best_streak: result.bestStreak,
+      });
+    }
     if (result.just_passed) {
       trackEvent("stage_unlock", {
         level: result.level,
         sublevel: result.sublevel,
       });
     }
-    if (onAdGameEnd(result.just_passed)) {
+    // 게스트 1-1 완료는 인터스티셜보다 가입 유도 다이얼로그 우선 — onAdGameEnd 호출 자체
+    // 를 건너뛰어 카운터 증가도 막아 다음 게임의 광고 빈도에 영향이 없도록.
+    const isGuestOneOneResult =
+      !user && result.level === 1 && result.sublevel === 1;
+    if (!isGuestOneOneResult && onAdGameEnd(result.just_passed)) {
       setInterstitialOpen(true);
       return;
     }
@@ -177,6 +187,7 @@ export default function PlayPage() {
     setSelectedLevel(level);
     setSelectedSublevel(sublevel);
     setReplayCounter(0);
+    gameCompleteFiredRef.current = false;
     setScreen("game");
     trackEvent("play_start", { level, sublevel });
   };
