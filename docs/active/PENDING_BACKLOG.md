@@ -7,12 +7,22 @@
 
 ---
 
+## 2026-06-25 결정·미결 묶음 (퍼널 진단·play_start 계측 수정·광고 보류)
+
+- [주의·계측 · 2026-06-25] **`play_start` 이벤트 수는 재시도 재발화 포함 → "게임 시작 횟수"로 해석 금지** — 6/25 수정으로 `play_start` 는 NoteGame 마운트(초기 + 재시도 + 다음·이전 단계)마다 1회 발화. 사용자 수 퍼널은 변함 없지만 이벤트 수는 재시도 비율만큼 부풀어 있음. 퍼널·전환율은 **사용자 수 기준으로만 해석**, 이벤트 수는 세션 활동성 보조지표로만 사용.
+- [최우선·다음 · 2026-06-25] **`guest_signup_nudge` 전환 재설계** — 6/25 퍼널에서 `game_complete` 9 → 가입 0 (n=5, 표본 작지만 nudge 본 사람 전원 미가입). 현 카피("진도 저장+7세션")가 게임 끝낸 사용자에게 가입 유인으로 약함. 화면 진단(시점·문구·CTA 위치·다이얼로그 점유율) → 재설계 → 광고로 바뀐 버전 검증 순서. 광고 재개 전제 조건.
+- [검증 대기 · 2026-06-25] **`begin_checkout`·`purchase` 0 이 행동인지 계측 누락인지 미확정** — 6/25 퍼널에서 `paywall_view` 3 → `begin_checkout` 0. `paywall_view` n=3 으로 표본 부족, 결제 흐름 자체 미발화인지 사용자가 안 누른 것인지 판정 불가. `guest_signup_nudge` 수정 후 `paywall_view`·`begin_checkout` 표본 확보되면 그때 판정.
+- [보류 · 2026-06-25] **광고 재개는 `guest_signup_nudge` 수정 후** — 막힌 건 유입·게임이 아니라 전환(아래 6/25 퍼널 진단). 안 바꾼 가입 화면에 광고비 투입은 아는 실패 재확인. 광고 목적은 표본 작은 단계(`nudge`·`paywall`)를 통계적으로 판정할 양 확보 — 그러려면 그 단계의 가설(nudge 재설계)이 먼저 코드에 들어가야 함.
+
+---
+
 ## 2026-06-19 결정·미결 묶음 (광고 첫 캠페인·GA4 수집 복구·랜딩 히어로·첫 가입자)
 
 - [✅ 2026-06-19] **GA4 수집 장애 진단·수정 (오늘의 핵심)** — 7일간 GA4 활성사용자·이벤트 0인데 Vercel은 방문자 집계 정상. 진단: 실시간 0 → 라이브 소스에 gtag·측정 ID 없음 → Vercel env(`VITE_GA_MEASUREMENT_ID=G-HHXHDJ6HF3`) 정상 → `src/lib/analytics.ts` 정상 → `main.tsx` `initAnalytics()` 호출 정상 → `dataLayer`엔 이벤트 쌓이나 `/g/collect` 전송 안 됨 → `window.gtag.toString()` 결과 커스텀 함수가 표준 스니펫과 다름. 근본 원인: `window.gtag`가 `(...args) => dataLayer.push(args)`(배열 래핑)으로 정의돼 `gtag.js`가 `dataLayer` 큐를 인식 못 함(표준은 `arguments`를 push). 수정: 일반 함수 선언 + `dataLayer.push(arguments)` 표준 형태로 교체. 검증: 배포 후 `collect?v=2&tid=G-HHXHDJ6HF3` 204 발화 + GA4 실시간 활성사용자 1 표시 → 수집 복구 확정. 주의: 본 수정 배포 이전 모든 GA4 데이터는 0(복구 불가). 측정은 이 시점부터 유효. 5f69c35.
 - [✅ 2026-06-19] **랜딩 히어로 개편 (영어 카피·게임 플레이 영상)** — 첫 화면이 "무슨 서비스인지" 3초 전달 실패, 모바일(방문 64%)에서 히어로가 비어 푸터가 첫 화면 노출. 11초 화면녹화에서 게임 영역만 크롭한 웹 최적화 영상(`src/assets/hero/hero.mp4` 164KB / `hero.webm` 205KB / 포스터 `crop_check.png` 886×1180) 추가, 영어 카피 교체("Read music faster." / "A game that trains your sight-reading. 5 minutes a day." / 버튼 아래 "Free to start. No card needed."), `<video autoPlay loop muted playsInline preload="metadata" poster aria-hidden>`(webm 1순위·mp4 2순위, aspect-ratio 886/1180) 삽입, 모바일 폰트·세로 간격 축소. `Strings.hero.ctaHint?` 옵셔널 신설로 `en.hero`만 갱신, `ko.hero`·다른 섹션·라우팅·게임 로직 무변경. a2eea5a.
 - [검증 대기 · 2026-06-19] **랜딩 히어로 배포 후 모바일·iOS 수동검증 (a2eea5a, push 후)** — push → Vercel 재배포 후 ① iPhone Safari(또는 DevTools 375×667 / 393×852) 첫 화면에 헤드라인·서브·영상·버튼·힌트 모두 노출 & 푸터 미노출 ② iOS 실기기 영상 자동재생·인라인·무음·무한반복 ③ 데스크톱(≥768px) 영상 크기 균형 ④ 한국어 전환 시 영문 힌트 미노출(옵셔널 분기) ⑤ Fast 3G에서 헤드라인이 영상 다운로드 전 즉시 노출(`preload="metadata"` 효과).
 - [신규·후속·분석] **GA4 핵심 이벤트 4개 계측 점검·추가** — 현재 `page_view`·`login` 수신 확인. `play_start`·서브레벨 통과·`paywall_view`·결제(`checkout`) 클릭 4개가 라이브에 들어가는지 점검, 누락 시 발화 추가. 이 4개 없으면 퍼널 진단 불가 — 측정 복구 다음 우선순위.
+  - ✅ 2026-06-25 **`play_start` 게스트 직행 누락 수정** — 6/25 퍼널 진단에서 `play_start`(8 users) < `game_complete`(9 users) 모순 발견. 원인: 게스트 1-1 직행이 LevelSelect 를 건너뛰어 기존 `PlayPage.handleSelectSublevel` 단일 발화부 누락. 수정: `play_start` 를 `NoteGame.handleCountdownComplete`(게임 entry 단일 앵커)에서 `playStartFiredRef` 1회 가드 발화로 통일, 기존 발화부 제거, `PlayPage`·`LevelSelect` 주석 정합. 파일 3개(+22 -7). 검증: 빌드 통과, GA4 실시간에서 게스트 1-1 `play_start` 1회 발화 확인. 부수효과: 재시도·다음 단계 remount 마다 재발화하므로 **사용자 수 퍼널은 무영향, 이벤트 수는 부풀음**. 2a112e0. push·배포는 주인님.
 - [신규·후속·랜딩] **한국어 히어로 카피 교체 검토** — 이번 라운드는 영어만 교체. 영문 효과(전환·이탈 지표) 확인 후 `ko.hero`도 동일 방향(기능 직설형)으로 교체 검토. 트리거 = 영문 히어로 배포 후 모바일 첫 화면 이탈률 변화 측정.
 - [운영 · 2026-06-25 체크포인트] **Google Ads 첫 캠페인 운영** — "Noteflex-검색테스트"(검색·클릭수 최대화·CPC 상한 없음·AI Max off / 미국·영국·캐나다·호주·영어 / 일 예산 ₩7,000 / 종료일 6/25 / 수동결제 ₩50,000 선충전 / phrase-match 5·헤드라인 5·설명 2). Day1~2: 노출 280→378, 클릭 6→8, CTR ~2.1%, 지출 ~₩1,809(검색 ₩1,293 + 파트너 ₩516) — 신규 캠페인 램프업 단계라 일 예산 미소진 정상. 현재 일시중지 없이 계속 운영. 종료일에 GA4 + Google Ads 같이 열어 퍼널 4분기(저클릭 / 클릭후이탈 / 플레이후미결제 / 저수요) 어디서 끊기는지 진단. 이후 한 번에 한 변수만 바꿔 재테스트. **총 한도 사전 설정**: 3~4주·20~30만원 내 신호 없으면 채널 전환.
 - [원칙 재확인 · 2026-06-19] **측정 살았으니 "랜딩 변경 → GA4 전후 전환율 비교" 사이클로 운영** — 가설은 데이터로 검증. n=1 단계에서 개입 금지(아래 첫 가입자 항목 참고).

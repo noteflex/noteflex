@@ -4,6 +4,35 @@
 
 ---
 
+## 2026-06-25
+
+### 분석: GA4 퍼널 첫 칸칸 진단 (오늘의 핵심)
+- 사용자 수 기준: 방문 43 → play_start 8 → game_complete 9 → guest_signup_nudge_view 5 → paywall_view 3 → begin_checkout 0 → 가입 0.
+- 이벤트 수: play_start 13 / game_complete 16 / nudge 12 / paywall 7.
+- 활성화(game_complete/방문) 21% — 제품은 사람을 잡음.
+- 진짜 절벽 두 곳:
+  - ① 방문 43 → play_start 8 (35명 증발, 81%, raw 신호 단단).
+  - ② game_complete 9 → 가입 0 (nudge 본 5명 중 0, 표본 작아 가설).
+- 막힌 건 유입·게임이 아니라 전환.
+
+### 계측: play_start < game_complete 모순 수정
+- 증상: 시작보다 완료가 많은 불가능한 형태 발견.
+- 원인: 게스트 1-1 직행이 LevelSelect를 건너뛰어 `play_start` 미발화.
+- 수정: `play_start`를 `handleCountdownComplete`(게임 entry 단일 앵커)에서 1회 가드 발화로 통일, `PlayPage.handleSelectSublevel` 발화 제거, `playStartFiredRef` 도입.
+- 파일 3개(`NoteGame.tsx`·`PlayPage.tsx`·`LevelSelect.tsx`, +22 -7). 2a112e0.
+- 검증: 빌드 통과, GA4 실시간에서 게스트 1-1 `play_start` 1회 발화 확인. 커밋 `fix(analytics): play_start를 게임 entry 단일 앵커에서 발화하도록 통일`. push·배포는 주인님.
+
+### 동작 변경 기록
+- 재시도·다음 단계 remount 마다 `play_start` 재발화. **사용자 수 퍼널은 무영향, 이벤트 수는 재시도 포함으로 부풀음** → 퍼널은 사용자 수로만 해석.
+- `play_start` ≥ `game_complete` 구조적 보장.
+
+### 결정: 광고 재개 보류
+- 막힌 건 전환이라 트래픽 추가로 해소 안 됨.
+- 안 바꾼 가입 화면에 광고비 투입 = 아는 실패 재확인.
+- `guest_signup_nudge` 화면 먼저 수정 후 바뀐 버전을 광고로 테스트하는 순서로 확정.
+
+---
+
 ## 2026-06-19
 
 ### 광고: Google Ads 첫 캠페인 운영 시작
